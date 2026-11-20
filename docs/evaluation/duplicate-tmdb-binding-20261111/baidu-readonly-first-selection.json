@@ -1,0 +1,154 @@
+{
+  "status": "FIRST_CANDIDATE_SELECTION_VERIFIED",
+  "startedAt": "2026-11-11T05:30:30.297441+00:00",
+  "scriptSha256": "641e32a663fb73f1a0c8dd91ba1120b155c0d710110d698040d549466560e873",
+  "derivedSelectionSourceSha256": "b51caad02287d365ee28b96cb9586f535e8b2d9e09e0e17a7d7875c4932ed0ed",
+  "derivation": {
+    "baseScriptSha256": "d79606ab1670d1559c651736d833a5349e707b2acb29b8d4e97ae8e279324e95",
+    "baseFunction": "production_select",
+    "change": "Read-only list inventory bound 100 -> 500; two-MiB response and production-selected four-file bound remain",
+    "productionCodeModified": false
+  },
+  "resourceGetRequests": 1,
+  "torrentGetRequests": 0,
+  "sqlWrites": 0,
+  "cloudWrites": 0,
+  "archiveRunRequests": 0,
+  "rawCredentialsOrResponsesWritten": false,
+  "previousManualBudget": {
+    "used": 3,
+    "maximum": 3
+  },
+  "protectedBefore": {
+    "resource_hub_task": {
+      "rows": 5,
+      "sha256": "ea9c1e5dd64940d2337b2b2bcba77c7fedaa3fac3b6c9e4a0350ee5f6bda7297"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "backend": {
+    "id": "993bc5bac12d83ee522c660ba7bfd31f4bed44050ff47eff260219dadc03ad0a",
+    "image": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+    "startedAt": "2026-11-11T05:24:08.901986855Z",
+    "running": true
+  },
+  "source": {
+    "id": "711354de91c2996ae1234bc3c0495f75fd5b1eb13b3f0f02af332a3a22fe0980",
+    "image": "sha256:76fe318b24b1c1222a6615918f5aedc83f772357d6ba01ed1e94458d63bdb58a",
+    "startedAt": "2026-11-10T04:34:59.004066406Z"
+  },
+  "identity": {
+    "identityId": 48,
+    "movieId": "x3xX",
+    "sourceType": "mv",
+    "externalId": "x3xX",
+    "matchStatus": "AUTO",
+    "titleCn": "霸王别姬",
+    "year": "1993"
+  },
+  "http": {
+    "responseBytes": 53274,
+    "responseSha256": "7bddba43d27019b862faae050df26e05e325590ac0e12462e079bb713416900d",
+    "httpStatus": 200,
+    "method": "GET",
+    "requestPathSha256": "eb059728dced944afae84b4f1c84d107084a3159f3bca02fdd75ac2748c4e824",
+    "bodyOrCredentialsSaved": false
+  },
+  "observedResourceShape": {
+    "type": "list",
+    "count": 146,
+    "old100ItemBoundWouldReject": true
+  },
+  "selection": {
+    "metadataCount": 4,
+    "reasons": [],
+    "eligibleBeforeTorrentDownload": true
+  },
+  "plannedFiles": [
+    {
+      "filename": "1080P_中文字幕_f4d9129250d1.txt",
+      "type": "MAGNET",
+      "quality": "1080P",
+      "explicitChineseSubtitle": true,
+      "infoHash": "f4d9129250d1fbaa208d733068818cd55854e124",
+      "sourceReferenceSha256": "a592d8a9e5c1b37656335b6f30434d3682f7d9a47b6a5a5f169d15f5eac9891e",
+      "contentWritten": false,
+      "bytes": 150,
+      "sha256": "4f8bfb1bf2a434c1d492275f18721ba8ebae7ae6de28da7b4a3f7852b878cd68",
+      "md5": "4c04c00e35cf85df0b6f9d96fcf0dad4",
+      "currentContentVerified": true
+    },
+    {
+      "filename": "4K_中文字幕_30dea15de96f.txt",
+      "type": "MAGNET",
+      "quality": "4K",
+      "explicitChineseSubtitle": true,
+      "infoHash": "30dea15de96f61be6d280a95d7e0c3e1b7101c31",
+      "sourceReferenceSha256": "df950c7062c5e03437eb48a7522604cc384d375f978ede9979ae18bfa6439935",
+      "contentWritten": false,
+      "bytes": 147,
+      "sha256": "6dcacbacbbb2c165cd3687bff5a3a41191368989c356592adfb67eb315b5c93e",
+      "md5": "34121b4bcccfce12ffbfbb05de7d4930",
+      "currentContentVerified": true
+    },
+    {
+      "filename": "1080P_中文字幕_f4d9129250d1.torrent",
+      "type": "TORRENT",
+      "quality": "1080P",
+      "explicitChineseSubtitle": true,
+      "infoHash": "f4d9129250d1fbaa208d733068818cd55854e124",
+      "sourceReferenceSha256": "a592d8a9e5c1b37656335b6f30434d3682f7d9a47b6a5a5f169d15f5eac9891e",
+      "contentWritten": false,
+      "maximumBytes": 2097152,
+      "currentTorrentContentVerified": false,
+      "requiredBeforeAnyCloudWrite": [
+        "Fetch exact source-owned torrent via /torrent-file route",
+        "Validate original info bytes BTIH equals paired 40-hex v1 magnet",
+        "Validate declared size and SHA-256",
+        "Reject redirects/account-only URL export"
+      ]
+    },
+    {
+      "filename": "4K_中文字幕_30dea15de96f.torrent",
+      "type": "TORRENT",
+      "quality": "4K",
+      "explicitChineseSubtitle": true,
+      "infoHash": "30dea15de96f61be6d280a95d7e0c3e1b7101c31",
+      "sourceReferenceSha256": "df950c7062c5e03437eb48a7522604cc384d375f978ede9979ae18bfa6439935",
+      "contentWritten": false,
+      "maximumBytes": 2097152,
+      "currentTorrentContentVerified": false,
+      "requiredBeforeAnyCloudWrite": [
+        "Fetch exact source-owned torrent via /torrent-file route",
+        "Validate original info bytes BTIH equals paired 40-hex v1 magnet",
+        "Validate declared size and SHA-256",
+        "Reject redirects/account-only URL export"
+      ]
+    }
+  ],
+  "expectedFolder": "/GYing Resource Hub/mv/霸王别姬（x3xX）/磁力种子",
+  "outstandingBaiduTasks": [],
+  "protectedAfter": {
+    "resource_hub_task": {
+      "rows": 5,
+      "sha256": "ea9c1e5dd64940d2337b2b2bcba77c7fedaa3fac3b6c9e4a0350ee5f6bda7297"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "protectedRowsRetained": true,
+  "completedAt": "2026-11-11T05:30:33.427456+00:00"
+}

@@ -1,0 +1,228 @@
+{
+  "status": "PASS",
+  "reviewer": "checkpoint_final_review",
+  "reviewedAt": "2026-11-10T15:25:41.483575+00:00",
+  "releasePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110",
+  "scope": "Independent static final delivery evidence review with exact SHA binding; no production I/O or live-runtime probe",
+  "blockingFindings": [],
+  "reviewedReferences": {
+    "plan.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\plan.json",
+      "sha256": "4bde4d85c494b2c04040b8c0340bd0d1fbfb98501cca5dfebcfb4db8fe973099"
+    },
+    "candidate-binding.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\candidate-binding.json",
+      "sha256": "c08816cc139a59bb76de1d1fcbae85efa858f4c2e35681a6f7a36f695dd28cd8"
+    },
+    "dependencies.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\dependencies.json",
+      "sha256": "ae1340586fae548b1c152b05f5edefb9a51f369feee188edcc4d0f90ee525594"
+    },
+    "offline-independent-review.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\offline-independent-review.json",
+      "sha256": "afd24ff84f9a5e0b237d3698e9a63f45928cf3bc64ec444166d4500280845d8c"
+    },
+    "prepare-independent-review.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\prepare-independent-review.json",
+      "sha256": "f97bdc000cf7872e5a67ecfb27002a54e6b130118902eba3242c9e40106d61f2"
+    },
+    "deployment-20261110T151029.955552Z.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\deployment-20261110T151029.955552Z.json",
+      "sha256": "46ac5714bd78d72af66de1b9ae32b539fedf1d3ea73983d90de90d71bf12a47f"
+    },
+    "acceptance-20261110T151132.671745Z.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\acceptance-20261110T151132.671745Z.json",
+      "sha256": "8b5e563da1225d041a2f6d20a8944f4e7822e3ed6ade080e28738a6d9b9cb32b"
+    },
+    "host-pin-20261110T151433.084345Z.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\host-pin-20261110T151433.084345Z.json",
+      "sha256": "e8f622f7016fa65ca039d763f141a85c988aca41d42dac081fe4251670f86698"
+    },
+    "daily-apply-20261110T151645.706782Z.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\daily-apply-20261110T151645.706782Z.json",
+      "sha256": "6c8fefcdcd261db63a67cf713f0d69fc7fc5e07ff78713550ce7fc9afb0419b4"
+    },
+    "final-read-only-20261110T151901.204784Z.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\final-read-only-20261110T151901.204784Z.json",
+      "sha256": "7889847ac89e8c1672304e553bcff54d2226a59c0846d4940e5106741257ddbe"
+    },
+    "next-candidate-readonly-20261110T151953.090241Z.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\next-candidate-readonly-20261110T151953.090241Z.json",
+      "sha256": "5542ed0440658dcea3522aea45541d34d0f90825e9fc567ae6f65eb9be882a9f"
+    },
+    "next-candidate-interpretation.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\next-candidate-interpretation.json",
+      "sha256": "ad3a15e37ff121ebc86008e753effc1a157093cfda91dfa4477cb8478ffce6d8"
+    },
+    "post-plan.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\post-plan.json",
+      "sha256": "67d1bbc432715378fe9d8a528cf4809cae170a4444e82af0a09417e4705dbf7f"
+    },
+    "daily-prepared.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\daily-prepared.json",
+      "sha256": "f3bb74fdd58400121177f3b60209fcfe2bad6792ff08a0a6166bb8c32ebd8f5f"
+    },
+    "daily-prepare-reservation.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\daily-prepare-reservation.json",
+      "sha256": "e22afe8dff3c0f76ca3d7687542979978cf69978ca8a3216f25878f8c58e2131"
+    },
+    "daily-apply-reservation.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\daily-apply-reservation.json",
+      "sha256": "455e27a1e1753f21c840cd792afdf3d30a55bacba71778b8bc416ae94270dcb0"
+    },
+    "backend-build-raw.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\backend-build-raw.json",
+      "sha256": "430351a1b19c2ad9eb39e06bc1d3ee6ceeb69206fd14ebfd1447afcfed4aa3d2"
+    },
+    "backend-source-manifest.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\backend-source-manifest.json",
+      "sha256": "a15df5e569067eb8b75a607a66914cf36739df71f9aa681bd4d8621f78b84642"
+    }
+  },
+  "sourceCommit": "2f282d26525b3ce64c5c854a7c237c61dc85b142",
+  "candidateBackendImage": "sha256:5b5530ed328738aca237776200825b71041002fd4cd5304286efc2e53855386d",
+  "candidateJarSha256": "ce41205a599890bf53314b214e5db0515d5e61584a0a54845487a0cc509c8cc0",
+  "checks": {
+    "fullReceiptBinding": {
+      "status": "PASS",
+      "evidence": "Exact original plan, binding, dependencies, offline and prepare reviews, deployment/acceptance, host pin/daily/final/Next raw+interpretation SHA references agree with immutable source commit/image/JAR; all 33 sealed files rehashed without drift."
+    },
+    "hostPinAndPostCheckpoint": {
+      "status": "PASS",
+      "hostCasAttempts": 1,
+      "postArtifacts": 3,
+      "hostConfigurationSha256": "a46bbc7fcda85f62f87d756c51113915f2edcfea0efdd222d59a53b7dfaeea29",
+      "evidence": "One bounded host CAS with known success, owner/group/DACL and task XML/profile retained; post-plan changes only backend id/image and one host private-config metadata hash. Post three-archive authentication/host content/Baidu vault/two-member queue proof recorded; no additional activation."
+    },
+    "additiveDailyCoverage": {
+      "status": "PASS",
+      "originalArtifacts": 44,
+      "currentArtifacts": 45,
+      "configurationSha256": "3ed90a283e8ac8a6447ffc692b30262e1e0bf64eb1854d758ec0988f84bddb29",
+      "evidence": "Prepared+exclusive reservation binds original and proposed hashes and exactly one release path addition; original private-config encrypted checkpoint authenticated. Before/proposed/after native dry runs preserve 44/45/45 counts, owner/group/DACL retained, no retry or auto restore. Natural/full backup remains false."
+    },
+    "finalRuntimeAndProtectedScope": {
+      "status": "PASS",
+      "liveBackend": {
+        "id": "0b96c7e0e4809269ad59ab717bfbc13a31de94d9360de256bb14b99fc7bce19f",
+        "image": "sha256:5b5530ed328738aca237776200825b71041002fd4cd5304286efc2e53855386d",
+        "startedAt": "2026-11-10T15:09:58.682715663Z"
+      },
+      "actualJarSha256": "ce41205a599890bf53314b214e5db0515d5e61584a0a54845487a0cc509c8cc0",
+      "configFields": 17,
+      "environmentVariables": 153,
+      "environmentMapSha256": "7351e37d8a625cca24d7a752690bf3c36f7986f32b4c58880bdb76a75d9a18c0",
+      "environmentSequenceEqual": false,
+      "evidence": "Deployment/acceptance/pin/final runtime semantic proofs match apart from verification timestamps. Candidate JAR/critical class and 440 files checked locally; HostConfig/networks/mounts/full Config/12 generations/protected whole-row scope retained. Host/daily hashes stable in final receipt."
+    },
+    "entryAndExistingAdminReadEvidence": {
+      "status": "PASS",
+      "anonymousAcceptanceGets": 20,
+      "existingAdminGets": 2,
+      "additionalFinalLocalGets": 2,
+      "evidence": "Anonymous entry checks reflect expected 200 pages/catalog, 404 denied internal paths, 401 local ADMIN and verified 302 access redirect boundaries with no redirect follow or credential. Two existing ADMIN GET dataset hashes/enabled flags/parent UNKNOWN projections match prepare; final two local GET bytes/hashes match acceptance."
+    },
+    "boundedDockerLogEvidence": {
+      "status": "PASS",
+      "since": "2026-11-10T15:09:58.682715663Z",
+      "until": "2026-11-10T15:18:40.896879+00:00",
+      "maxTailLines": 2000,
+      "streams": {
+        "stdout": {
+          "bytes": 1621,
+          "sha256": "083f27cfe00e456b56b6543a95898f2aa91490eccf19af9e50246287dd88cc2b",
+          "errorExceptionOomMatches": 0
+        },
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errorExceptionOomMatches": 0
+        }
+      },
+      "evidence": "Recorded bounded Docker stdout/stderr signatures contain zero ERROR/Exception/OutOfMemory/OOM regex matches. The interval ends before final runtime/completion; application file logs were not inspected."
+    },
+    "nextReadOnlyProjectionAndStatusInterpretation": {
+      "status": "PASS_WITH_DISCLOSED_REPORT_FIELD_ISSUE",
+      "rawReportStatus": "PAUSED",
+      "parentStatus": "PAUSED",
+      "workflowConclusion": "READ_ONLY_PREPARATION_COMPLETED_NO_ELIGIBLE_NEXT_IDENTITY",
+      "nextIdentityExists": true,
+      "nextIdentity": {
+        "identityId": 47,
+        "movieId": "0WG4",
+        "sourceType": "mv",
+        "externalId": "0WG4"
+      },
+      "metadataEligible": false,
+      "eligibleRealArchiveAcceptanceTargetAvailable": false,
+      "resourceTotalCount": 0,
+      "sourceResourceGetRequests": 1,
+      "newFilmTestBudgetUsed": 3,
+      "newFilmTestBudgetMaximum": 3,
+      "evidence": "Static sealed helper lines 30 and 52 show parent PAUSED status overwrites initial workflow passed. Retained-scope gates, completedAt and source projection support bounded read-only preparation completed; root interpretation wrapper preserves exact raw bytes and status. Identity 47 exists, but its one fetched source response has no resources; no real archive acceptance or additional target is established."
+    },
+    "idleAndNoAdditionalProductionActions": {
+      "status": "PASS",
+      "evidence": "All seven pin/daily/final idle snapshots have five zero counters. Reports record zero SQL/cloud writes, no extra activation/preview/UNKNOWN replay/scheduling restore; interpretation wrapper and this review perform no production I/O."
+    }
+  },
+  "parallelStaticReview": {
+    "reviewer": "delivery_docs",
+    "status": "PASS",
+    "blockingFindings": [],
+    "scope": "host/daily/final binding, metadata, final GET signatures and bounded Docker stream proof; prior subreview also checked candidate JAR440 and critical class"
+  },
+  "reportedProductionChangeCounts": {
+    "backendActivations": 1,
+    "hostConfigurationCasAttempts": 1,
+    "dailyAdditiveConfigurationCasSupportedByExclusiveReservation": 1,
+    "additionalCloudWrites": 0,
+    "additionalArchiveRunRequests": 0,
+    "unknownReplays": 0,
+    "schedulerRestorations": 0
+  },
+  "actionsDuringReview": {
+    "productionCommandsExecuted": 0,
+    "productionSqlRequests": 0,
+    "providerRequests": 0,
+    "httpRequests": 0,
+    "archiveDecryptions": 0,
+    "privateConfigurationContentsRead": 0,
+    "productionWrites": 0,
+    "serviceActivations": 0,
+    "sealedHelpersWritten": 0,
+    "reviewReceiptFilesWritten": 1
+  },
+  "nonBlockingFindings": [
+    {
+      "code": "NEXT_STATUS_FIELD_COLLISION",
+      "rawStatus": "PAUSED",
+      "workflowCompletionConcludedFromSeparateEvidence": true,
+      "originalReportPreserved": true,
+      "sealedHelperUnchanged": true,
+      "interpretationReference": {
+        "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\next-candidate-interpretation.json",
+        "sha256": "ad3a15e37ff121ebc86008e753effc1a157093cfda91dfa4477cb8478ffce6d8"
+      }
+    },
+    {
+      "code": "NEXT_METADATA_INELIGIBLE",
+      "identityId": 47,
+      "movieId": "0WG4",
+      "sourceResources": 0,
+      "sourceMetadataEligible": false,
+      "realArchiveAcceptanceCompleted": false,
+      "proposedAdditionalRealFilmTarget": null
+    }
+  ],
+  "limits": [
+    "PASS covers static consistency of the final delivery evidence and recorded successful deployment/pin/additive daily verification. It does not independently execute runtime probes, SQL, provider requests or decrypt archives.",
+    "Env key/value map is exact with 153 variables; live Env sequence is explicitly different. Original authenticated sequence preservation is not a claim that live sequence order is identical.",
+    "Twenty anonymous acceptance checks passed expected 200/401/404/302 boundaries; they are not twenty HTTP 200 responses. Existing authenticated GET may normally touch login_device.last_seen_at.",
+    "MinIO object read was by existing frontend Node peer on backend network/credentials; backend own MinIO business request remains unproved. PanSou service health remains unverified beyond TCP.",
+    "Daily native dry-run verified 45 artifacts and additive scope; no natural scheduled full backup or full backup execution is established.",
+    "Docker stream evidence ends at its recorded until and is limited to at most 2000 tail lines; no application file-log audit or universal error-free claim is made.",
+    "The current next identity exists but its fetched source metadata has zero resources and is ineligible. Real Baidu archive acceptance is not completed by this release evidence; manual/provider budget 3/3 remains exhausted.",
+    "This receipt grants no further provider authorization, real archive execution, UNKNOWN replay, scheduling restore, SQL restore, credential rotation, external content publication, additional activation or CAS."
+  ]
+}

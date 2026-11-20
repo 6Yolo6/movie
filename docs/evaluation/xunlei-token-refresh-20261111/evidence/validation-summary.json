@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-11",
+  "timezone": "Asia/Shanghai",
+  "affectedRuntime": "host scheduled token sync only",
+  "node": {
+    "passed": 62,
+    "failed": 0,
+    "reportSha256": "9ea276d4d3a22794083e7e709af9b47d1d273d049250235e34ddc043d128ae2a"
+  },
+  "windows": {
+    "passed": 21,
+    "failed": 0,
+    "command": "powershell.exe -NoProfile -File tools/tests/test_xunlei_live_session.ps1"
+  },
+  "readiness": {
+    "passed": 11,
+    "warnings": 1,
+    "failed": 0,
+    "warning": "historical fresh-schema coverage"
+  },
+  "hostScriptSha256": "59072646be277a17ba0215d0384d46277db213803689bea0335baccfa2091d2b",
+  "scriptActivatedByOriginalTask": true,
+  "appContainersRebuilt": false,
+  "actualPasswordSubmissions": 0,
+  "actualDriveWrites": 0,
+  "actualResult": "renewed / updated / validated=true / exit0",
+  "sourceBaselineCommit": "681d26f76c76c32de3d988b343fd60c6c5287b3c",
+  "productionBaiduEnabled": true
+}

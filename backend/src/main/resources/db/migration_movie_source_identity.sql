@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `movie_source_identity` (
   `movie_id` varchar(64) NOT NULL COMMENT '本站影片 ID',
   `source` varchar(20) NOT NULL COMMENT '数据来源：TMDB、GYING',
   `source_type` varchar(20) NOT NULL COMMENT '来源类型：movie、tv、mv、ac',
-  `external_id` varchar(100) NOT NULL COMMENT '来源站点影片 ID',
+  `external_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '来源站点影片 ID',
   `season` int NOT NULL DEFAULT '0' COMMENT '季号，电影或未知为 0',
   `confidence` decimal(5,2) NOT NULL DEFAULT '100.00' COMMENT '匹配置信度',
   `match_method` varchar(50) NOT NULL COMMENT '匹配方式',

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-11-04T13:23:34.907728+00:00",
+  "reviewProtocol": "catalog-answer-diagnostic-model-review-v1",
+  "checks": {
+    "reportByteHashMatches": true,
+    "allRowsRetained": true,
+    "uniqueReviewIdentities": true,
+    "allExecutedAnswerHashesMatch": true,
+    "allNeverExecutedAnswerHashesNull": true,
+    "validScoreValues": true,
+    "normalStoppedBeforeReview": true,
+    "newHumanReviewsZero": true
+  },
+  "reportSha256": "8eff43f9b8baf7dee64d9fd7f1d3e8fe4476a6088d82e932cecbdb8312d077aa",
+  "candidateReviewSha256": "88f876c88a51e3df2798690a4be8b2a4745d84b8d2e9f1ef61fd57b4272b02ab",
+  "reviewMarkdownSha256": "903f117a12443c7906ee9f2067a7998c79535a89368cd51e349eba38c20c39af",
+  "reviewRecords": 10,
+  "completedAnswerReviews": 8,
+  "fullThreeDimensionReviews": 6,
+  "qualityReviewV2Used": false,
+  "noInferenceExecutedByReviewer": true,
+  "noExternalLookupPerformedByReviewer": true,
+  "newHumanReviews": 0
+}

@@ -1,105 +1,135 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
-import { App, Badge, Button, Card, Empty, List, Space, Switch, Tag, Typography } from 'antd';
+import { Alert, App, Badge, Button, Card, Empty, List, Space, Switch, Tag, Typography } from 'antd';
 import { BellOutlined, CheckOutlined, CloudUploadOutlined, CommentOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { api } from '@/lib/api';
+import { api, readApiError } from '@/lib/api';
 import { UserNotification } from '@/types';
 import { useAuthStore } from '@/store/authStore';
 
 const { Title, Text, Paragraph } = Typography;
+const PAGE_SIZE = 20;
+const subscribeHydration = () => () => {};
+const clientHydration = () => true;
+const serverHydration = () => false;
 
 export default function NotificationsPage() {
     const { token } = useAuthStore();
     const { message } = App.useApp();
     const { t } = useTranslation();
-    const [loading, setLoading] = useState(true);
-    const [notifications, setNotifications] = useState<UserNotification[]>([]);
     const [page, setPage] = useState(1);
-    const [total, setTotal] = useState(0);
     const [unreadOnly, setUnreadOnly] = useState(false);
-    const [mounted, setMounted] = useState(false);
+    const mounted = useSyncExternalStore(subscribeHydration, clientHydration, serverHydration);
+    const [refresh, setRefresh] = useState(0);
+    const mutationController = useRef<AbortController | null>(null);
+    const query = '/api/notifications?' + new URLSearchParams({
+        page: String(page), size: String(PAGE_SIZE), unreadOnly: String(unreadOnly),
+    }).toString();
+    const request = useMemo(() => ({ page, query, token, refresh, t }), [page, query, token, refresh, t]);
+    const [snapshot, setSnapshot] = useState<{
+        request: typeof request | null;
+        notifications: UserNotification[];
+        total: number;
+        error: string | null;
+    }>({ request: null, notifications: [], total: 0, error: null });
+    // Only retain rows/totals from the same account and query during a refresh.
+    const sameQuery = !!token && snapshot.request?.query === query && snapshot.request?.token === token;
+    const notifications = sameQuery ? snapshot.notifications : [];
+    const total = sameQuery ? snapshot.total : 0;
+    const loading = !!token && snapshot.request !== request;
+    const error = snapshot.request === request ? snapshot.error : null;
 
     const refreshNavbarCount = () => {
         window.dispatchEvent(new Event('notifications:refresh'));
     };
 
-    const fetchNotifications = useCallback(async () => {
-        if (!token) {
-            setLoading(false);
-            return;
-        }
+    useEffect(() => {
+        const controller = new AbortController();
+        mutationController.current = controller;
+        return () => controller.abort();
+    }, [token]);
 
-        setLoading(true);
-        try {
-            const query = new URLSearchParams({
-                page: String(page),
-                size: '20',
-                unreadOnly: String(unreadOnly),
+    useEffect(() => {
+        const { query, token, page, t } = request;
+        if (!token) return;
+        const controller = new AbortController();
+        let active = true;
+        const fail = (error: string) => {
+            if (active) setSnapshot(previous => {
+                const sameQuery = previous.request?.query === query && previous.request?.token === token;
+                return { request, notifications: sameQuery ? previous.notifications : [],
+                    total: sameQuery ? previous.total : 0, error };
             });
-            const res = await api(`/api/notifications?${query.toString()}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setNotifications(data.records || []);
-                setTotal(data.total || 0);
-            } else {
-                message.error(t('notificationsLoadFailed'));
+        };
+        void (async () => {
+            try {
+                const response = await api(query, {
+                    signal: controller.signal,
+                    headers: { Authorization: 'Bearer ' + token },
+                });
+                if (!response.ok) {
+                    fail(await readApiError(response, t('notificationsLoadFailed')));
+                    return;
+                }
+                const data = await response.json();
+                if (!active) return;
+                const total = data.total || 0;
+                const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
+                if (page > lastPage) {
+                    setPage(lastPage);
+                    return;
+                }
+                setSnapshot({ request, notifications: data.records || [], total, error: null });
+            } catch {
+                fail(t('networkError'));
             }
-        } catch {
-            message.error(t('networkError'));
-        } finally {
-            setLoading(false);
-        }
-    }, [message, page, t, token, unreadOnly]);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    useEffect(() => {
-        fetchNotifications();
-    }, [fetchNotifications]);
+        })();
+        return () => { active = false; controller.abort(); };
+    }, [request]);
 
     const markRead = async (id: number) => {
-        if (!token) return;
+        const signal = mutationController.current?.signal;
+        if (!token || !signal || signal.aborted) return;
         try {
-            const res = await api(`/api/notifications/${id}/read`, {
-                method: 'PUT',
-                headers: { Authorization: `Bearer ${token}` },
+            const res = await api('/api/notifications/' + id + '/read', {
+                method: 'PUT', signal,
+                headers: { Authorization: 'Bearer ' + token },
             });
+            if (signal.aborted) return;
             if (res.ok) {
                 message.success(t('notificationMarkedRead'));
-                fetchNotifications();
+                setRefresh(value => value + 1);
                 refreshNavbarCount();
             } else {
                 message.error(t('operationFailed'));
             }
         } catch {
-            message.error(t('networkError'));
+            if (!signal.aborted) message.error(t('networkError'));
         }
     };
 
     const markAllRead = async () => {
-        if (!token) return;
+        const signal = mutationController.current?.signal;
+        if (!token || !signal || signal.aborted) return;
         try {
             const res = await api('/api/notifications/read-all', {
-                method: 'PUT',
-                headers: { Authorization: `Bearer ${token}` },
+                method: 'PUT', signal,
+                headers: { Authorization: 'Bearer ' + token },
             });
+            if (signal.aborted) return;
             if (res.ok) {
                 message.success(t('notificationsMarkedRead'));
                 setPage(1);
-                fetchNotifications();
+                // Refresh through the effect, never through a captured old-page callback.
+                setRefresh(value => value + 1);
                 refreshNavbarCount();
             } else {
                 message.error(t('operationFailed'));
             }
         } catch {
-            message.error(t('networkError'));
+            if (!signal.aborted) message.error(t('networkError'));
         }
     };
 
@@ -176,13 +206,16 @@ export default function NotificationsPage() {
                         </Space>
                     </div>
 
-                    <List
+                    {error && <Alert className="!mb-4" type="error" showIcon title={error}
+                        action={<Button onClick={() => setRefresh(value => value + 1)}>{t('retry')}</Button>} />}
+                    {(!error || notifications.length > 0) && <List<UserNotification>
                         loading={loading}
                         dataSource={notifications}
                         locale={{ emptyText: <Empty description={t('noNotifications')} /> }}
                         pagination={{
                             current: page,
-                            pageSize: 20,
+                            pageSize: PAGE_SIZE,
+                            showSizeChanger: false,
                             total,
                             onChange: setPage,
                             showTotal: (totalCount) => t('totalNotifications', { count: totalCount }),
@@ -227,7 +260,7 @@ export default function NotificationsPage() {
                                 />
                             </List.Item>
                         )}
-                    />
+                    />}
                 </Card>
             </div>
         </div>

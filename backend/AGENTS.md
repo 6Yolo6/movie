@@ -1,6 +1,6 @@
 # Backend Agent Notes
 
-- Work from `D:\lide_expert_manage\gying-movie\backend` for backend-only commands.
+- Resolve the repository with `git rev-parse --show-toplevel`, then work from its `backend` directory for backend-only commands.
 - Use Java 17 and Maven.
 - Before committing backend changes, run `mvn -q -DskipTests compile`.
 - Keep Resource Hub ingestion idempotent: prefer existing `movie_metadata` and `resource_link` rows over creating duplicates.

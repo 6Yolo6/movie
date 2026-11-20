@@ -1,0 +1,158 @@
+{
+  "status": "passed-with-public-image-verification-limit",
+  "taskDate": "2026-10-29",
+  "rawEvidenceTimeZone": "UTC",
+  "implementationCommit": "92c4bbbcceff8629d9bb20e0f7b60a511dd39b05",
+  "images": {
+    "backend": "sha256:95bbb204b4d01a246dfe5218d8318655c59edc471774526b1c73f1a5a836b893",
+    "frontend": "sha256:db1cc643cb8dad1c10071ac1b9b9c8ed14aea7ffe0188b308aeacfdf535b31a6"
+  },
+  "sourceBinding": {
+    "backendFiles": 347,
+    "backendCombinedSha256": "4ff9f2808898a633171eba95d36aaa10491d0223b25bba4ad56bcef0be35e65f",
+    "frontendFiles": 79,
+    "frontendManifestSha256": "7cac691926fa34106ea11d6cc404e1001322280f09beb0533a783a70792b76aa"
+  },
+  "backendTests": {
+    "tests": 765,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 30,
+    "passed": 735
+  },
+  "targetedBackendTests": 79,
+  "newBackendTests": 23,
+  "frontendTests": {
+    "newPauseScenarios": 8,
+    "existingAsyncListScenarios": 15,
+    "lint": true,
+    "typescript": true
+  },
+  "deployment": {
+    "startedAt": "2026-10-29T15:33:40.711451+00:00",
+    "completedAt": "2026-10-29T15:34:53.731386+00:00",
+    "gracefulExits": [
+      {
+        "service": "/gying-movie-backend-1",
+        "at": "2026-10-29T15:34:21.919204+00:00",
+        "Running": false,
+        "ExitCode": 143,
+        "OOMKilled": false,
+        "FinishedAt": "2026-10-29T15:34:21.073989591Z"
+      },
+      {
+        "service": "/gying-movie-frontend-1",
+        "at": "2026-10-29T15:34:50.455428+00:00",
+        "Running": false,
+        "ExitCode": 143,
+        "OOMKilled": false,
+        "FinishedAt": "2026-10-29T15:34:49.958677321Z"
+      }
+    ],
+    "affected": [
+      "backend",
+      "frontend"
+    ],
+    "backup": {
+      "directory": "G:\\gying-backups\\metadata-source-pause-20261029T153345.685852Z",
+      "artifacts": 6,
+      "authenticated": true
+    },
+    "configurationPreserved": true,
+    "unaffectedContainersPreserved": true,
+    "localAgentPreserved": true
+  },
+  "pauseAPI": {
+    "status": "passed",
+    "anonymousStatus": 401,
+    "invalidRequestChecks": [
+      {
+        "case": "body-1",
+        "status": 400
+      },
+      {
+        "case": "body-2",
+        "status": 400
+      },
+      {
+        "case": "body-3",
+        "status": 400
+      },
+      {
+        "case": "body-4",
+        "status": 400
+      },
+      {
+        "case": "body-5",
+        "status": 400
+      },
+      {
+        "case": "body-6",
+        "status": 400
+      },
+      {
+        "case": "body-7",
+        "status": 400
+      },
+      {
+        "case": "body-8",
+        "status": 400
+      },
+      {
+        "case": "body-9",
+        "status": 400
+      },
+      {
+        "case": "body-10",
+        "status": 400
+      },
+      {
+        "case": "source-UNKNOWN",
+        "status": 400
+      },
+      {
+        "case": "source-hits_movie",
+        "status": 400
+      },
+      {
+        "case": "source-POPULAR_MOVIE",
+        "status": 400
+      }
+    ],
+    "stateTransitions": [
+      {
+        "paused": true,
+        "observedUTC": "2026-10-29T15:36:16.138638+00:00",
+        "configurationAndFiveOtherFlagsPreserved": true,
+        "allComparedCursorsUnchanged": true,
+        "naturalWorkerCompatibleCursorChanges": []
+      },
+      {
+        "paused": false,
+        "observedUTC": "2026-10-29T15:36:16.732778+00:00",
+        "configurationAndFiveOtherFlagsPreserved": true,
+        "allComparedCursorsUnchanged": true,
+        "naturalWorkerCompatibleCursorChanges": []
+      }
+    ],
+    "restoration": {
+      "status": "confirmed",
+      "originalBooleanRestored": true,
+      "configurationAndFiveOtherFlagsPreserved": true,
+      "allComparedCursorsUnchanged": true,
+      "naturalWorkerCompatibleCursorChanges": []
+    }
+  },
+  "liveAdminUI": "live-admin-ui.json",
+  "publicBrowser": "public-browser.json",
+  "realMessagesPostsTransfers": 0,
+  "publicBrowserNetwork": "Existing loopback proxy in ephemeral browser; data and currently visible posters passed, full-page poster coverage remains partial; system settings unchanged",
+  "publicDataStatus": "passed",
+  "visiblePosterStatus": "passed",
+  "posterStatus": "partial",
+  "physicalPhoneTested": false,
+  "publicDirectBrowser": "Fake-IP DNS and navigation timeout retained separately",
+  "pageRangesChanged": false,
+  "sourceSelectionChanged": false,
+  "dailyBackupCurrentOverrideIncluded": true
+}

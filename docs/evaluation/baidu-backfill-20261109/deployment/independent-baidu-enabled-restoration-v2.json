@@ -1,0 +1,53 @@
+{
+    "status":  "restored-enabled-idle-exit0",
+    "startedAt":  "2026-11-08T17:34:46.0413607Z",
+    "executeRequested":  true,
+    "taskEnabled":  true,
+    "actualTaskRun":  true,
+    "hostCodeOrConfigurationWritten":  false,
+    "credentialsPrinted":  false,
+    "externalWritesPerformed":  false,
+    "noHandoffBefore":  {
+                            "idle":  true,
+                            "ticketExists":  true,
+                            "ticketSchemaValid":  true,
+                            "backendIdentityMatched":  true,
+                            "backendNumericUserMatched":  true,
+                            "remoteWritesPerformed":  false,
+                            "browserOpened":  false,
+                            "credentialValuesPrinted":  false
+                        },
+    "disabledXmlSha256":  "c730bd6c53dd081e36556e7030c07fba94d9392ec9f3fb3af69e4ea99380046d",
+    "installationBeforeSha256":  "655a47b998b7d468fd9c20b8ce09c88400837032a605bc8c654b4799ffa436df",
+    "postPinCheckpointManifestSha256":  "f86095bcc1dfae6bf365ef6330981cab341599698035febfb0827717c7081c59",
+    "enabledOnlyXmlDelta":  true,
+    "enabledXmlSha256":  "a18d999cb2a1b2a3aceb14d1fb8cae4e1d843237b86a729239831fd1f9f9cd28",
+    "noHandoffAfterEnable":  {
+                                 "idle":  true,
+                                 "ticketExists":  true,
+                                 "ticketSchemaValid":  true,
+                                 "backendIdentityMatched":  true,
+                                 "backendNumericUserMatched":  true,
+                                 "remoteWritesPerformed":  false,
+                                 "browserOpened":  false,
+                                 "credentialValuesPrinted":  false
+                             },
+    "noHandoffAfterRun":  {
+                              "idle":  true,
+                              "ticketExists":  true,
+                              "ticketSchemaValid":  true,
+                              "backendIdentityMatched":  true,
+                              "backendNumericUserMatched":  true,
+                              "remoteWritesPerformed":  false,
+                              "browserOpened":  false,
+                              "credentialValuesPrinted":  false
+                          },
+    "limited":  true,
+    "interactive":  true,
+    "lastTaskResult":  0,
+    "lastRunTime":  "2026-11-08T17:34:34.0000000Z",
+    "actualIdleStdoutCaptured":  false,
+    "idleInferredFromStrictNoHandoffGates":  true,
+    "installationAfterSha256":  "1a99f20783cc32e1c5cc253bf388114963f2e23b531d9f4129114ea90158e3fd",
+    "completedAt":  "2026-11-08T17:34:59.3687059Z"
+}

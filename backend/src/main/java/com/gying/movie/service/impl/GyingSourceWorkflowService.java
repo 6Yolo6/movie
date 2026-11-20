@@ -1,13 +1,22 @@
 package com.gying.movie.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gying.movie.client.GyingSourceClient;
 import com.gying.movie.client.PanSouClient;
 import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.TmdbClient;
 import com.gying.movie.client.XunleiClient;
+import com.gying.movie.client.BaiduWebClient;
+import com.gying.movie.entity.BaiduTransferTask;
+import com.gying.movie.service.IBaiduTransferTaskService;
+import com.gying.movie.service.IBaiduTransferRunnerService;
+import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.MovieSearchCandidate;
+import com.gying.movie.dto.MetadataCrawlRange;
 import com.gying.movie.dto.DiscoveredResource;
 import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.dto.ResourceHubPublishResult;
@@ -33,6 +42,8 @@ import com.gying.movie.utils.MovieTitleMatcher;
 import com.gying.movie.utils.ResourceTitleMatcher;
 import com.gying.movie.utils.SeasonSearchUtils;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.BaiduTemporaryScope;
+import com.gying.movie.utils.GyingTorrentLinks;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,6 +53,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,7 +65,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class GyingSourceWorkflowService {
+    private static final ObjectMapper CATALOG_MAPPER = new ObjectMapper();
+    private static final int MAX_CATALOG_PAGES = MetadataCrawlRange.maxPages("GYING");
+    private static final String CATALOG_CHECKPOINT = "catalogCollection";
     private static final Set<String> TYPE_CODES = Set.of("mv", "tv", "ac");
+    private static final Pattern RELEASE_YEAR_PATTERN = Pattern.compile("(?<!\\d)((?:18|19|20)\\d{2})(?!\\d)");
     private static final Pattern QUALITY_PATTERN = Pattern.compile(
             "(?i)(8K|4K|2160P|1080P|720P|HDR10\\+?|HDR|DV|杜比视界|蓝光|WEB[- .]?DL)");
     private static final int MAX_TRANSFER_CANDIDATES = 5;
@@ -61,11 +77,11 @@ public class GyingSourceWorkflowService {
     private static final String PANSOU_FALLBACK_REASON = "GYING 源当前不可用，已改用 PanSou 等其他来源处理";
     private static final String FALLBACK_UNAVAILABLE_REASON = "GYING 源当前不可用，其他来源也暂时不可用，已跳过本次操作";
     private static final String POSTER_SKIPPED_REASON = "GYING 源当前不可用，其他来源也未找到可用海报，已跳过本次操作";
-    private static final int MAX_PANSOU_SEASON_TARGETS = 5;
     private static final int MAX_PANSOU_SEARCH_KEYWORDS = 3;
 
     private final GyingSourceClient gyingSourceClient;
     private final TmdbClient tmdbClient;
+    private final SeasonMetadataCompletion seasonMetadataCompletion;
     private final PosterStorageService posterStorageService;
     private final PanSouClient panSouClient;
     private final IMovieMetadataService movieService;
@@ -78,6 +94,19 @@ public class GyingSourceWorkflowService {
     private final IQuarkShareService quarkShareService;
     private final IXunleiTransferTaskService xunleiTransferTaskService;
     private final IXunleiTransferRunnerService xunleiTransferRunnerService;
+
+    @Autowired(required = false)
+    private IBaiduTransferTaskService baiduTransferTaskService;
+    @Autowired(required = false)
+    private IBaiduTransferRunnerService baiduTransferRunnerService;
+    @Autowired(required = false)
+    private BaiduWebClient baiduWebClient;
+
+    @Autowired
+    private P2pArchiveTaskService p2pArchiveTaskService;
+
+    @Autowired
+    private ResourceHubProperties resourceHubProperties = new ResourceHubProperties();
 
     @Autowired
     public GyingSourceWorkflowService(
@@ -109,6 +138,9 @@ public class GyingSourceWorkflowService {
         this.quarkShareService = quarkShareService;
         this.xunleiTransferTaskService = xunleiTransferTaskService;
         this.xunleiTransferRunnerService = xunleiTransferRunnerService;
+        this.seasonMetadataCompletion = new SeasonMetadataCompletion(
+                tmdbClient, posterStorageService, movieService, sourceIdentityService,
+                resourceLinkService, discoveryResultService);
     }
 
     public GyingSourceWorkflowService(GyingSourceClient gc, TmdbClient tc, PosterStorageService pc, PanSouClient ps,
@@ -128,6 +160,15 @@ public class GyingSourceWorkflowService {
     }
 
     public List<MovieSearchCandidate> searchCandidates(String keyword, int limit) {
+        return searchCandidates(keyword, limit, true);
+    }
+
+    /** Suggestions identify a film; cloud resources are checked after selection. */
+    public List<MovieSearchCandidate> suggestCandidates(String keyword, int limit) {
+        return searchCandidates(keyword, limit, false);
+    }
+
+    private List<MovieSearchCandidate> searchCandidates(String keyword, int limit, boolean requireCloudResource) {
         String safeKeyword = required(keyword, "search keyword");
         int safeLimit = Math.min(Math.max(limit, 1), 30);
         List<Map<String, Object>> items = mapList(gyingSourceClient.get("/search", Map.of(
@@ -135,7 +176,7 @@ public class GyingSourceWorkflowService {
                 "mode", 2,
                 "limit", safeLimit)).get("items"));
         return items.stream()
-                .filter(this::hasSearchableCloudResource)
+                .filter(item -> !requireCloudResource || hasSearchableCloudResource(item))
                 .map(item -> {
                     String typeCode = stringValue(item.get("typeCode"));
                     String mid = stringValue(item.get("mid"));
@@ -157,7 +198,7 @@ public class GyingSourceWorkflowService {
                             mid,
                             localMovie == null ? null : localMovie.getId());
                 })
-                .filter(candidate -> hasText(candidate.getTitle())
+                .filter(candidate -> (requireCloudResource || candidate.getScore() > 0) && hasText(candidate.getTitle())
                         && hasText(candidate.getSourceType())
                         && hasText(candidate.getSourceId()))
                 .sorted(Comparator.comparingInt(MovieSearchCandidate::getScore).reversed())
@@ -175,7 +216,7 @@ public class GyingSourceWorkflowService {
             Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + typeCode + "/" + mid);
             return mapList(snapshot.get("resources")).stream().anyMatch(resource -> {
                 String provider = firstText(stringValue(resource.get("provider")), "").toUpperCase(Locale.ROOT);
-                return List.of("QUARK", "XUNLEI").contains(provider)
+                return resourceHubProperties.isDriveShareCollectionEnabled(provider)
                         && hasText(stringValue(resource.get("url")));
             });
         } catch (Exception ignored) {
@@ -199,17 +240,19 @@ public class GyingSourceWorkflowService {
 
         Map<String, Object> snapshot = gyingSourceClient.get(
                 "/movie/" + identity.getSourceType() + "/" + identity.getExternalId());
-        return selectTransferCandidates(mapList(snapshot.get("resources"))).stream()
+        return selectTransferCandidates(mapList(snapshot.get("resources")).stream()
+                .filter(item -> resourceHubProperties.isDriveShareCollectionEnabled(resourceProvider(item))).toList()).stream()
                 .map(item -> {
                     DiscoveredResource resource = new DiscoveredResource();
                     resource.setTitle(firstText(stringValue(item.get("title")), stringValue(snapshot.get("title"))));
-                    resource.setProvider(firstText(stringValue(item.get("provider")), "QUARK").toUpperCase());
+                    resource.setProvider(resourceProvider(item));
                     resource.setUrl(stringValue(item.get("url")));
                     resource.setCode(stringValue(item.get("code")));
                     resource.setSource("GYING");
                     resource.setSourceRef(stringValue(item.get("source_id")));
                     return resource;
                 })
+                .filter(item -> resourceHubProperties.isDriveShareCollectionEnabled(item.getProvider()))
                 .filter(item -> hasText(item.getUrl()))
                 .filter(item -> ResourceTitleMatcher.isRelevant(movie, item.getTitle(), null))
                 .limit(safeLimit)
@@ -217,106 +260,412 @@ public class GyingSourceWorkflowService {
     }
 
     public Map<String, Object> syncCatalogMetadata(String source, int page, int limit) {
+        return syncCatalogMetadata(source, page, limit, null);
+    }
+
+    /** Automatic crawls read a full catalog page, then process only this bounded batch. */
+    public Map<String, Object> syncCatalogMetadata(String source, int page, int limit, Integer offset) {
         String normalizedSource = required(source, "GYING catalog source").toUpperCase(Locale.ROOT);
         String typeCode = switch (normalizedSource) {
-            case "HITS_MOVIE", "CSCORE_MOVIE" -> "mv";
-            case "HITS_TV", "CSCORE_TV" -> "tv";
-            case "HITS_ANIME", "CSCORE_ANIME" -> "ac";
+            case "HITS_MOVIE", "CSCORE_MOVIE", "TIME_MOVIE", "SCORE_MOVIE" -> "mv";
+            case "HITS_TV", "CSCORE_TV", "TIME_TV", "SCORE_TV" -> "tv";
+            case "HITS_ANIME", "CSCORE_ANIME", "TIME_ANIME", "SCORE_ANIME" -> "ac";
             default -> throw new IllegalArgumentException("Unsupported GYING catalog source: " + source);
         };
-        String sort = normalizedSource.startsWith("CSCORE_") ? "cscore" : "hits";
-        int safePage = Math.min(Math.max(page, 1), 500);
+        String sort = normalizedSource.startsWith("CSCORE_") ? "cscore"
+                : normalizedSource.startsWith("TIME_") ? "time"
+                : normalizedSource.startsWith("SCORE_") ? "score" : "hits";
+        int safePage = Math.min(Math.max(page, 1), MAX_CATALOG_PAGES);
         int safeLimit = Math.min(Math.max(limit, 1), 20);
-        List<Map<String, Object>> candidates = fetchCatalogCandidates(typeCode, sort, safePage, safeLimit);
+        List<Map<String, Object>> pageItems = fetchCatalogCandidates(typeCode, sort, safePage,
+                offset == null ? safeLimit : 100);
+        int start = Math.min(Math.max(offset == null ? 0 : offset, 0), pageItems.size());
+        List<Map<String, Object>> candidates = pageItems.subList(start, Math.min(start + safeLimit, pageItems.size()));
         int inserted = 0;
         int linked = 0;
         int failed = 0;
+        int skipped = 0;
+        Map<String, String> completedInBatch = new LinkedHashMap<>();
         int directResourceLinks = 0;
+        int directResourceFailures = 0;
         Set<String> movieIds = new LinkedHashSet<>();
         Set<String> resourceDiscoveryMovieIds = new LinkedHashSet<>();
         Set<String> insertedMovieIds = new LinkedHashSet<>();
         List<String> errors = new ArrayList<>();
+        List<Map<String, Object>> failedItems = new ArrayList<>();
 
         for (Map<String, Object> candidate : candidates) {
             String mid = stringValue(candidate.get("mid"));
             try {
-                String title = stringValue(candidate.get("title"));
-                Integer year = integerValue(candidate.get("year"));
-                Integer season = "mv".equals(typeCode) ? null : integerValue(candidate.get("season"));
-                MovieMetadata existing = resolveLocalMovie(typeCode, mid, title, year);
-                if (existing != null) {
-                    GyingMetadataMatcher.SourceMetadata metadata = new GyingMetadataMatcher.SourceMetadata(
-                            typeCode, title, year, season, List.of(), List.of());
-                    GyingMetadataMatcher.MatchEvidence evidence = GyingMetadataMatcher.score(existing, metadata);
-                    if (!evidence.autoMatch()) {
-                        throw new IllegalStateException("GYING metadata did not pass strict local matching");
+                if (offset != null) {
+                    String fingerprint = catalogFingerprint(typeCode, candidate);
+                    String completedMovieId = completedInBatch.get(fingerprint);
+                    if (completedMovieId == null) completedMovieId = completedCatalogMovie(typeCode, candidate);
+                    if (completedMovieId != null) {
+                        skipped++;
+                        movieIds.add(completedMovieId);
+                        completedInBatch.put(fingerprint, completedMovieId);
+                        continue;
                     }
-                    saveIdentity(existing.getId(), "GYING", typeCode, required(mid, "GYING movie id"), season,
-                            evidence.score(), "STRICT_CATALOG_METADATA", "AUTO", evidence.reasons());
-                    movieIds.add(existing.getId());
-                    if (!hasActiveDiskResource(existing.getId())) {
-                        resourceDiscoveryMovieIds.add(existing.getId());
-                    }
-                    try {
-                        directResourceLinks += syncGyingDirectResources(
-                                existing.getId(), typeCode, mid);
-                    } catch (Exception resourceError) {
-                        if (errors.size() < 10) {
-                            errors.add(firstText(mid, "unknown") + " P2P: " + safeText(resourceError.getMessage()));
-                        }
-                    }
+                }
+                CatalogMovie resolved = resolveCatalogMovie(typeCode, candidate);
+                String movieId = resolved.movieId();
+                movieIds.add(movieId);
+                if (resolved.inserted()) {
+                    inserted++;
+                    insertedMovieIds.add(movieId);
+                } else {
                     linked++;
-                    continue;
                 }
-
-                String targetMovieId = gyingMovieId(typeCode, required(mid, "GYING movie id"));
-                gyingSourceClient.post("/ingest", Map.of(
-                        "typeCode", typeCode,
-                        "mid", mid,
-                        "targetMovieId", targetMovieId,
-                        "uploadPoster", true,
-                        "includeResources", false));
-                if (movieService.getById(targetMovieId) == null) {
-                    throw new IllegalStateException("GYING metadata was not saved: " + targetMovieId);
-                }
+                if (resolved.inserted() || !hasActiveDiskResource(movieId)) resourceDiscoveryMovieIds.add(movieId);
                 try {
-                    directResourceLinks += syncGyingDirectResources(targetMovieId, typeCode, mid);
-                } catch (Exception resourceError) {
-                    if (errors.size() < 10) {
-                        errors.add(firstText(mid, "unknown") + " P2P: " + safeText(resourceError.getMessage()));
+                    directResourceLinks += syncGyingDirectResources(movieId, typeCode, mid, offset != null);
+                    if (offset != null) {
+                        recordCatalogCompletion(movieId, typeCode, candidate);
+                        completedInBatch.put(catalogFingerprint(typeCode, candidate), movieId);
                     }
+                } catch (Exception resourceError) {
+                    directResourceFailures++;
+                    failedItems.add(catalogFailure(typeCode, candidate, "P2P", resourceError));
+                    if (errors.size() < 10) errors.add(mid + " P2P: " + resourceError.getClass().getSimpleName());
                 }
-                movieIds.add(targetMovieId);
-                insertedMovieIds.add(targetMovieId);
-                resourceDiscoveryMovieIds.add(targetMovieId);
-                inserted++;
             } catch (Exception error) {
                 failed++;
-                if (errors.size() < 10) {
-                    errors.add(firstText(mid, "unknown") + ": " + safeText(error.getMessage()));
-                }
+                failedItems.add(catalogFailure(typeCode, candidate, "METADATA", error));
+                if (errors.size() < 10) errors.add(firstText(mid, "unknown") + ": " + error.getClass().getSimpleName());
             }
         }
         Map<String, Object> result = new LinkedHashMap<>();
+        result.put("pageSize", pageItems.size());
         result.put("source", normalizedSource);
         result.put("page", safePage);
         result.put("requested", safeLimit);
-        result.put("processed", inserted + linked);
+        result.put("processed", inserted + linked + skipped);
+        result.put("skipped", skipped);
         result.put("inserted", inserted);
         result.put("linked", linked);
         result.put("movieIds", List.copyOf(movieIds));
         result.put("insertedMovieIds", List.copyOf(insertedMovieIds));
         result.put("resourceDiscoveryMovieIds", List.copyOf(resourceDiscoveryMovieIds));
         result.put("directResourceLinks", directResourceLinks);
+        result.put("directResourceFailures", directResourceFailures);
         result.put("failed", failed);
         result.put("errors", errors);
+        result.put("failedItems", failedItems);
         return result;
     }
 
+    /** Cheap heads used by daily updates; no per-movie enrichment or cloud work. */
+    public List<Map<String, Object>> catalogUpdateHead(String source, int page) {
+        String normalized = required(source, "GYING catalog source").toUpperCase(Locale.ROOT);
+        String typeCode = catalogUpdateType(normalized);
+        String sort = normalized.startsWith("CSCORE_") ? "cscore" : normalized.startsWith("TIME_") ? "time"
+                : normalized.startsWith("SCORE_") ? "score" : "hits";
+        if (page < 1 || page > MetadataUpdatesCheckpoint.HEAD_PAGES) throw new IllegalArgumentException("Invalid update head page");
+        Map<String, Object> response = gyingSourceClient.get("/catalog?typeCode=" + typeCode + "&sort=" + sort
+                + "&page=" + page + "&limit=100");
+        if (!(response.get("items") instanceof List<?> items) || items.size() > 100)
+            throw new IllegalStateException("GYING update catalog response is invalid");
+        for (Object item : items) if (!(item instanceof Map<?, ?>))
+            throw new IllegalStateException("GYING update catalog item is invalid");
+        return mapList(items);
+    }
+
+    public static String catalogUpdateType(String source) {
+        return switch (source) {
+            case "HITS_MOVIE", "CSCORE_MOVIE", "TIME_MOVIE", "SCORE_MOVIE" -> "mv";
+            case "HITS_TV", "CSCORE_TV", "TIME_TV", "SCORE_TV" -> "tv";
+            case "HITS_ANIME", "CSCORE_ANIME", "TIME_ANIME", "SCORE_ANIME" -> "ac";
+            default -> throw new IllegalArgumentException("Unsupported GYING update source");
+        };
+    }
+
+    public boolean catalogUpdateComplete(Map<String, Object> candidate) {
+        return completedCatalogMovie(normalizeTypeCode(stringValue(candidate.get("typeCode"))), candidate) != null;
+    }
+
+    /** COMPLETE requires the same successful metadata/P2P/archive path as automatic ranges. */
+    public boolean collectCatalogUpdate(Map<String, Object> candidate) {
+        String typeCode = normalizeTypeCode(stringValue(candidate.get("typeCode")));
+        String mid = required(stringValue(candidate.get("mid")), "GYING movie id");
+        if (!mid.matches("[A-Za-z0-9]{1,100}")) throw new IllegalArgumentException("Invalid GYING movie id");
+        CatalogMovie movie = resolveCatalogMovie(typeCode, candidate);
+        syncGyingDirectResources(movie.movieId(), typeCode, mid, true);
+        recordCatalogCompletion(movie.movieId(), typeCode, candidate);
+        return movie.inserted();
+    }
+
+    /** Exact source identity plus durable collection evidence; title matching alone never skips a crawl. */
+    private String completedCatalogMovie(String typeCode, Map<String, Object> candidate) {
+        MovieSourceIdentity identity = exactCatalogIdentity(typeCode, candidate);
+        if (identity == null) return null;
+        MovieMetadata movie = movieService.getById(identity.getMovieId());
+        if (movie == null || !identity.getMovieId().equals(movie.getId()) || movie.getDeletedAt() != null
+                || !"ACTIVE".equals(movie.getStatus()) || !GyingMetadataMatcher.typeCompatible(movie.getCategory(), typeCode)) return null;
+        ObjectNode evidence = catalogEvidence(identity);
+        JsonNode checkpoint = evidence.path(CATALOG_CHECKPOINT);
+        if (!checkpoint.isMissingNode()) {
+            return "COMPLETE".equals(checkpoint.path("status").asText())
+                    && movie.getId().equals(checkpoint.path("movieId").asText())
+                    && catalogFingerprint(typeCode, candidate).equals(checkpoint.path("fingerprint").asText())
+                    ? movie.getId() : null;
+        }
+        // A usable owned archive proves legacy collection completed beyond individual link writes.
+        // Partial P2P writes and failed archive enqueue must retain their automatic retry path.
+        var source = new GyingMetadataMatcher.SourceMetadata(typeCode, stringValue(candidate.get("title")),
+                integerValue(candidate.get("year")), integerValue(candidate.get("season")), List.of(), List.of());
+        if (!GyingMetadataMatcher.score(movie, source).autoMatch()) return null;
+        return resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movie.getId()).eq("status", "ACTIVE").eq("link_status", "NORMAL")
+                .eq("auto_collected", true).isNull("deleted_at").isNotNull("validated_at")
+                .eq("source", "GYING_P2P_ARCHIVE").eq("type", "TORRENT")) > 0 ? movie.getId() : null;
+    }
+
+    private MovieSourceIdentity exactCatalogIdentity(String typeCode, Map<String, Object> candidate) {
+        String mid = required(stringValue(candidate.get("mid")), "GYING movie id");
+        required(stringValue(candidate.get("title")), "GYING movie title");
+        if (!mid.matches("[A-Za-z0-9]{1,100}")) throw new IllegalArgumentException("Invalid GYING movie id");
+        Integer candidateSeason = "mv".equals(typeCode) ? null : GyingMetadataMatcher.validSeason(integerValue(candidate.get("season")));
+        int safeSeason = candidateSeason == null ? 0 : candidateSeason;
+        MovieSourceIdentity identity = sourceIdentityService.getOne(new QueryWrapper<MovieSourceIdentity>()
+                .eq("source", "GYING").eq("source_type", typeCode).eq("external_id", mid).eq("season", safeSeason)
+                .apply("BINARY external_id = BINARY {0}", mid).in("match_status", List.of("AUTO", "CONFIRMED"))
+                .orderByDesc("confidence").last("LIMIT 1"), false);
+        if (identity == null || identity.getId() == null || !"GYING".equals(identity.getSource())
+                || !typeCode.equals(identity.getSourceType()) || !mid.equals(identity.getExternalId())
+                || !Set.of("AUTO", "CONFIRMED").contains(identity.getMatchStatus()) || !hasText(identity.getMovieId())) return null;
+        return Objects.equals(safeSeason, identity.getSeason()) ? identity : null;
+    }
+
+    private void recordCatalogCompletion(String movieId, String typeCode, Map<String, Object> candidate) {
+        MovieSourceIdentity identity = exactCatalogIdentity(typeCode, candidate);
+        if (identity == null || !movieId.equals(identity.getMovieId())) {
+            throw new IllegalStateException("Collected GYING identity was not persisted");
+        }
+        ObjectNode evidence = catalogEvidence(identity);
+        ObjectNode checkpoint = evidence.putObject(CATALOG_CHECKPOINT);
+        checkpoint.put("status", "COMPLETE");
+        checkpoint.put("movieId", movieId);
+        checkpoint.put("fingerprint", catalogFingerprint(typeCode, candidate));
+        checkpoint.put("collectedAt", LocalDateTime.now().toString());
+        UpdateWrapper<MovieSourceIdentity> update = new UpdateWrapper<MovieSourceIdentity>()
+                .eq("id", identity.getId()).eq("movie_id", movieId).apply("BINARY movie_id = BINARY {0}", movieId)
+                .eq("source", "GYING").eq("source_type", typeCode).eq("external_id", identity.getExternalId())
+                .eq("season", identity.getSeason()).apply("BINARY external_id = BINARY {0}", identity.getExternalId())
+                .in("match_status", List.of("AUTO", "CONFIRMED"));
+        if (identity.getEvidenceJson() == null) update.isNull("evidence_json");
+        else update.apply("BINARY CAST(evidence_json AS CHAR) = BINARY {0}", identity.getEvidenceJson());
+        if (!sourceIdentityService.update(update.set("evidence_json", evidence.toString()).set("updated_at", LocalDateTime.now()))) {
+            throw new IllegalStateException("GYING collection checkpoint was not persisted");
+        }
+    }
+
+    private ObjectNode catalogEvidence(MovieSourceIdentity identity) {
+        if (hasText(identity.getEvidenceJson())) {
+            try {
+                JsonNode evidence = CATALOG_MAPPER.readTree(identity.getEvidenceJson());
+                if (evidence instanceof ObjectNode object) return object;
+            } catch (Exception ignored) { }
+        }
+        return CATALOG_MAPPER.createObjectNode();
+    }
+
+    private String catalogFingerprint(String typeCode, Map<String, Object> candidate) {
+        ObjectNode fingerprint = CATALOG_MAPPER.createObjectNode();
+        fingerprint.put("typeCode", typeCode);
+        fingerprint.put("mid", required(stringValue(candidate.get("mid")), "GYING movie id"));
+        fingerprint.put("title", required(stringValue(candidate.get("title")), "GYING movie title"));
+        fingerprint.put("year", integerValue(candidate.get("year")));
+        fingerprint.put("season", "mv".equals(typeCode) ? null : GyingMetadataMatcher.validSeason(integerValue(candidate.get("season"))));
+        return ResourceHubHashUtils.sha256(fingerprint.toString());
+    }
+
+    private record CatalogMovie(String movieId, boolean inserted) {}
+
+    /** Same idempotent metadata/P2P path for bounded, isolated item retries. */
+    public void retryCatalogItem(Map<String, Object> candidate) {
+        String typeCode = normalizeTypeCode(stringValue(candidate.get("typeCode")));
+        String mid = required(stringValue(candidate.get("mid")), "GYING movie id");
+        if (!mid.matches("[A-Za-z0-9]{1,100}")) throw new IllegalArgumentException("Invalid GYING movie id");
+        Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + typeCode + "/" + mid);
+        if (hasText(stringValue(snapshot.get("mid"))) && !mid.equals(stringValue(snapshot.get("mid")))) {
+            throw new IllegalStateException("Retry source identity changed");
+        }
+        Map<String, Object> fresh = new LinkedHashMap<>();
+        fresh.put("typeCode", typeCode); fresh.put("mid", mid);
+        for (String field : List.of("title", "year", "season")) if (snapshot.get(field) != null) fresh.put(field, snapshot.get(field));
+        CatalogMovie movie = resolveCatalogMovie(typeCode, fresh);
+        syncGyingDirectResources(movie.movieId(), typeCode, mid);
+    }
+
+    private CatalogMovie resolveCatalogMovie(String typeCode, Map<String, Object> candidate) {
+        String mid = required(stringValue(candidate.get("mid")), "GYING movie id");
+        String title = required(stringValue(candidate.get("title")), "GYING movie title");
+        Integer year = integerValue(candidate.get("year"));
+        Integer season = "mv".equals(typeCode) ? null : GyingMetadataMatcher.validSeason(integerValue(candidate.get("season")));
+        MovieMetadata existing = resolveLocalMovie(typeCode, mid, title, year);
+        CatalogMatch detailed = existing == null ? resolveNearYearCatalogMovie(typeCode, mid, title, year) : null;
+        if (detailed != null) existing = detailed.movie();
+        if (existing != null) {
+            var metadata = new GyingMetadataMatcher.SourceMetadata(typeCode, title, year, season, List.of(), List.of());
+            var evidence = detailed == null ? GyingMetadataMatcher.score(existing, metadata) : detailed.evidence();
+            if (!evidence.autoMatch()) {
+                detailed = resolveNearYearCatalogMovie(typeCode, mid, title, year);
+                if (detailed != null && existing.getId().equals(detailed.movie().getId())) evidence = detailed.evidence();
+            }
+            if (!evidence.autoMatch()) throw new IllegalStateException("GYING metadata did not pass strict local matching");
+            saveIdentity(existing.getId(), "GYING", typeCode, mid, season,
+                    evidence.score(), "STRICT_CATALOG_METADATA", "AUTO", evidence.reasons());
+            // Only repair impossible legacy ordinals after exact primary title + year validation.
+            // A legitimate season conflict remains a review item, never silently overwritten.
+            if (season != null && existing.getSeason() != null && existing.getSeason() > 99
+                    && title.equals(existing.getTitleCn()) && java.util.Objects.equals(year, existing.getYear())
+                    && year != null) {
+                MovieMetadata patch = new MovieMetadata();
+                patch.setId(existing.getId()); patch.setSeason(season);
+                if (!movieService.updateById(patch)) throw new IllegalStateException("Legacy season correction was not saved");
+                existing.setSeason(season);
+            }
+            return new CatalogMovie(existing.getId(), false);
+        }
+        String targetMovieId = gyingMovieId(typeCode, mid);
+        MovieMetadata target = movieService.getById(targetMovieId);
+        if (target != null && !targetMovieId.equals(target.getId())) {
+            throw new IllegalStateException("Case-sensitive local movie identity collision requires review");
+        }
+        gyingSourceClient.post("/ingest", Map.of("typeCode", typeCode, "mid", mid,
+                "targetMovieId", targetMovieId, "uploadPoster", true, "includeResources", false));
+        MovieMetadata saved = movieService.getById(targetMovieId);
+        if (saved == null || !targetMovieId.equals(saved.getId())) throw new IllegalStateException("GYING metadata was not saved");
+        return new CatalogMovie(targetMovieId, true);
+    }
+
+    private record CatalogMatch(MovieMetadata movie, GyingMetadataMatcher.MatchEvidence evidence) {}
+
+    /** A one-year release-date discrepancy needs cast/director evidence, not a lower match threshold. */
+    private CatalogMatch resolveNearYearCatalogMovie(String typeCode, String mid, String title, Integer year) {
+        if (!"mv".equals(typeCode) || year == null) return null;
+        List<MovieMetadata> candidates = movieService.list(new QueryWrapper<MovieMetadata>()
+                .ne("status", "DELETED").isNull("deleted_at")
+                .and(query -> query.eq("title_cn", title).or().eq("title_en", title))
+                .between("year", year - 1, year + 1).last("LIMIT 30")).stream()
+                .filter(movie -> movie.getYear() != null && Math.abs(movie.getYear() - year) <= 1
+                        && GyingMetadataMatcher.typeCompatible(movie.getCategory(), typeCode)
+                        && (MovieTitleMatcher.normalizedEquals(movie.getTitleCn(), title)
+                            || MovieTitleMatcher.normalizedEquals(movie.getTitleEn(), title)))
+                .toList();
+        if (candidates.isEmpty()) return null;
+        Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + typeCode + "/" + mid);
+        var source = sourceMetadata(typeCode, snapshot);
+        if (!MovieTitleMatcher.normalizedEquals(title, source.title()) || !year.equals(source.year())
+                || (hasText(stringValue(snapshot.get("mid"))) && !mid.equals(stringValue(snapshot.get("mid"))))) {
+            throw new IllegalStateException("Near-year source evidence requires review");
+        }
+        List<CatalogMatch> scored = candidates.stream()
+                .map(movie -> new CatalogMatch(movie, GyingMetadataMatcher.score(movie, source)))
+                .sorted((left, right) -> Integer.compare(right.evidence().score(), left.evidence().score())).toList();
+        CatalogMatch best = scored.get(0);
+        if (!best.evidence().autoMatch()
+                || !(best.evidence().reasons().contains("DIRECTOR") || best.evidence().reasons().contains("ACTOR"))
+                || (scored.size() > 1 && best.evidence().score() - scored.get(1).evidence().score() < 10)) {
+            throw new IllegalStateException("Near-year canonical match requires review");
+        }
+        return best;
+    }
+
+    private Map<String, Object> catalogFailure(String typeCode, Map<String, Object> candidate, String stage, Exception error) {
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("typeCode", typeCode);
+        item.put("mid", trim(stringValue(candidate.get("mid")), 100));
+        item.put("title", trim(stringValue(candidate.get("title")), 255));
+        if (integerValue(candidate.get("year")) != null) item.put("year", integerValue(candidate.get("year")));
+        if (integerValue(candidate.get("season")) != null) item.put("season", integerValue(candidate.get("season")));
+        item.put("stage", stage);
+        // Exception messages can include authenticated upstream URLs. Persist only a bounded category.
+        item.put("errorCategory", error.getClass().getSimpleName());
+        return item;
+    }
+
+    public Map<String, Object> syncMovieP2pResources(String movieId) {
+        MovieMetadata movie = movieService.getById(movieId);
+        if (movie == null || movie.getDeletedAt() != null || "DELETED".equals(movie.getStatus())) {
+            throw new IllegalArgumentException("Active movie required");
+        }
+        MovieSourceIdentity identity = sourceIdentityService.getOne(new QueryWrapper<MovieSourceIdentity>()
+                .eq("movie_id", movieId).eq("source", "GYING").in("match_status", List.of("AUTO", "CONFIRMED"))
+                .orderByDesc("confidence").last("LIMIT 1"), false);
+        if (identity == null || identity.getSourceType() == null || !Set.of("mv", "tv", "ac").contains(identity.getSourceType())
+                || identity.getExternalId() == null || !identity.getExternalId().matches("[A-Za-z0-9]+")) {
+            throw new IllegalStateException("Verified GYING movie identity required");
+        }
+        int count = syncGyingDirectResources(movieId, identity.getSourceType(), identity.getExternalId());
+        return Map.of("movieId", movieId, "directResourceLinks", count,
+                "status", count == 0 ? "NO_ELIGIBLE_SUBTITLED_P2P" : "ARCHIVE_QUEUED");
+    }
+
+    public record P2pCollection(String movieId, Long identityId, String typeCode, String mid,
+            int saved, List<ResourceLink> selected) {
+        public P2pCollection { selected = List.copyOf(selected); }
+    }
+
+    /** Exact verified identity only: no metadata ingestion, identity search, provider enqueue, or publishing. */
+    public P2pCollection collectMovieP2pResources(String movieId, Long identityId) {
+        MovieMetadata movie = movieService.getById(movieId);
+        if (movie == null || movie.getDeletedAt() != null || !"ACTIVE".equals(movie.getStatus())) throw new IllegalArgumentException("Active movie required");
+        MovieSourceIdentity identity = identityId == null ? null : sourceIdentityService.getById(identityId);
+        if (identity == null || !Objects.equals(movieId, identity.getMovieId()) || !"GYING".equals(identity.getSource())
+                || !Set.of("AUTO", "CONFIRMED").contains(identity.getMatchStatus()) || !Set.of("mv", "tv", "ac").contains(identity.getSourceType())
+                || identity.getExternalId() == null || !identity.getExternalId().matches("[A-Za-z0-9]{1,100}")) {
+            throw new IllegalArgumentException("Verified exact GYING identity required");
+        }
+        P2pCollection collected = collectGyingDirectResources(movieId, identity.getSourceType(), identity.getExternalId(), true, identityId);
+        return new P2pCollection(movieId, identityId, collected.typeCode(), collected.mid(), collected.saved(), collected.selected());
+    }
+
     private int syncGyingDirectResources(String movieId, String typeCode, String mid) {
+        return syncGyingDirectResources(movieId, typeCode, mid, false);
+    }
+
+    private int syncGyingDirectResources(String movieId, String typeCode, String mid, boolean requireValidResponse) {
+        P2pCollection collected = collectGyingDirectResources(movieId, typeCode, mid, false, null, requireValidResponse);
+        if (p2pArchiveTaskService != null && !collected.selected().isEmpty()) {
+            p2pArchiveTaskService.enqueue(movieId, typeCode, mid, collected.selected());
+        }
+        return collected.saved();
+    }
+
+    private P2pCollection collectGyingDirectResources(String movieId, String typeCode, String mid, boolean ownedOnly, Long identityId) {
+        return collectGyingDirectResources(movieId, typeCode, mid, ownedOnly, identityId, ownedOnly);
+    }
+
+    private P2pCollection collectGyingDirectResources(String movieId, String typeCode, String mid, boolean ownedOnly, Long identityId,
+            boolean requireValidResponse) {
         Map<String, Object> payload = gyingSourceClient.get("/resources/" + typeCode + "/" + mid);
+        if (requireValidResponse && (!(payload.get("resources") instanceof List<?>)
+                || (hasText(stringValue(payload.get("mid"))) && !mid.equals(stringValue(payload.get("mid"))))
+                || (hasText(stringValue(payload.get("typeCode"))) && !typeCode.equals(stringValue(payload.get("typeCode")))))) {
+            throw new IllegalStateException("Invalid GYING resource response");
+        }
+        if (ownedOnly) {
+            MovieSourceIdentity current = sourceIdentityService.getById(identityId);
+            if (current == null || !Objects.equals(movieId, current.getMovieId()) || !"GYING".equals(current.getSource())
+                    || !Set.of("AUTO", "CONFIRMED").contains(current.getMatchStatus()) || !Objects.equals(typeCode, current.getSourceType())
+                    || !Objects.equals(mid, current.getExternalId())) throw new IllegalArgumentException("GYING identity changed during collection");
+        }
         int saved = 0;
-        for (Map<String, Object> item : mapList(payload.get("resources"))) {
+        List<ResourceLink> selected = new ArrayList<>();
+        Set<String> archiveTorrentRefs = new LinkedHashSet<>();
+        Set<String> archiveChineseVersions = new LinkedHashSet<>();
+        List<Map<String, Object>> resources = mapList(payload.get("resources"));
+        for (Map<String, Object> item : resources) {
+            if ("TORRENT".equalsIgnoreCase(stringValue(item.get("type")))
+                    && "P2P".equalsIgnoreCase(firstText(stringValue(item.get("provider")), "P2P"))
+                    && "中文字幕（来源标注）".equals(stringValue(item.get("subtitle")))) {
+                archiveChineseVersions.add(firstText(stringValue(item.get("source_ref")), stringValue(item.get("source_id")))
+                        + ":" + firstText(stringValue(item.get("quality")), stringValue(item.get("resolution"))));
+            }
+        }
+        for (Map<String, Object> item : resources) {
             String url = firstText(
                     stringValue(item.get("url")),
                     stringValue(item.get("magnet")),
@@ -340,12 +689,44 @@ public class GyingSourceWorkflowService {
                     || !"P2P".equals(provider)) {
                 continue;
             }
+            String sourceRef = trim(firstText(stringValue(item.get("source_ref")),
+                    stringValue(item.get("source_id")), ""), 100);
+            if (GyingTorrentLinks.isAccountDownload(url)) {
+                // Compatibility with older source services: never persist an account-only URL.
+                if ("TORRENT".equals(type) && hasText(sourceRef) && sourceRef.matches("[A-Za-z0-9]+")) archiveTorrentRefs.add(sourceRef);
+                continue;
+            }
+            if ("MAGNET".equals(type) && Boolean.TRUE.equals(item.get("archive_torrent"))) {
+                archiveTorrentRefs.add(sourceRef);
+            }
             String urlHash = ResourceHubHashUtils.sha256(url);
-            ResourceLink link = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+            ResourceLink link = permanentResource(resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                    .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                     .eq("movie_id", movieId)
+                    .eq(ownedOnly, "source", "GYING").eq(ownedOnly, "provider", "P2P").eq(ownedOnly, "auto_collected", true)
                     .and(query -> query.eq("url_hash", urlHash).or().eq("url", url))
                     .isNull("deleted_at")
-                    .last("LIMIT 1"), false);
+                    .last("LIMIT 1"), false));
+            if (link == null && "TORRENT".equals(type) && hasText(sourceRef)) {
+                // Public torrent mirrors can rotate: reuse the stable BT identity.
+                link = permanentResource(resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                        .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
+                        .eq("movie_id", movieId).eq("source", "GYING").eq("source_ref", sourceRef)
+                        .eq("type", "TORRENT").eq("provider", "P2P").eq(ownedOnly, "auto_collected", true).isNull("deleted_at")
+                        .orderByDesc("updated_at").last("LIMIT 1"), false));
+            }
+            String collectionSlot = stringValue(item.get("collection_slot"));
+            if (link == null && collectionSlot != null && Set.of("1080P", "4K").contains(collectionSlot)) {
+                // A new release replaces this resolution slot instead of growing the catalog forever.
+                link = permanentResource(resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                        .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
+                        .eq("movie_id", movieId).eq("source", "GYING").eq("auto_collected", true)
+                        .eq("type", type).eq("provider", "P2P").eq("quality", collectionSlot)
+                        .isNull("deleted_at").orderByDesc("updated_at").last("LIMIT 1"), false));
+            }
+            if (ownedOnly && link != null && (!"GYING".equals(link.getSource()) || !"P2P".equals(link.getProvider()) || !Boolean.TRUE.equals(link.getAutoCollected()))) {
+                link = null;
+            }
             LocalDateTime now = LocalDateTime.now();
             if (link == null) {
                 link = new ResourceLink();
@@ -368,14 +749,16 @@ public class GyingSourceWorkflowService {
             if (hasText(quality) && !displayTitle.contains(quality)) {
                 displayTitle = displayTitle + " [" + quality + "]";
             }
-            String sourceRef = trim(firstText(stringValue(item.get("source_ref")),
-                    stringValue(item.get("source_id")), ""), 100);
             if (hasText(sourceRef) && (displayTitle.equals("《" + movieTitle + "》磁力资源")
                     || displayTitle.equals("《" + movieTitle + "》种子资源"))) {
                 displayTitle = displayTitle + " #" + sourceRef;
             }
             link.setName(trim(displayTitle, 255));
             link.setQuality(trim(quality, 50));
+            String subtitle = "MAGNET".equals(type) && hasText(sourceRef)
+                    && archiveChineseVersions.contains(sourceRef + ":" + quality)
+                    ? "中文字幕（来源标注）" : stringValue(item.get("subtitle"));
+            link.setSubtitle(trim(subtitle, 50));
             link.setType(type);
             link.setProvider("P2P");
             link.setUrl(url);
@@ -386,8 +769,7 @@ public class GyingSourceWorkflowService {
             link.setLinkStatus("NORMAL");
             link.setReportCount(0);
             link.setSource("GYING");
-            link.setSourceRef(trim(firstText(stringValue(item.get("source_ref")),
-                    stringValue(item.get("source_id")), ""), 100));
+            link.setSourceRef(sourceRef);
             link.setSourceUrl(firstText(stringValue(item.get("source_url")),
                     "https://www.xn--wcv59z.com/" + typeCode + "/" + mid));
             link.setAutoCollected(true);
@@ -395,18 +777,26 @@ public class GyingSourceWorkflowService {
             link.setLastCheckError(null);
             link.setUpdatedAt(now);
             link.setDeletedAt(null);
-            if (link.getId() == null) {
-                resourceLinkService.save(link);
-            } else {
-                resourceLinkService.updateById(link);
+            if (!(link.getId() == null ? resourceLinkService.save(link) : resourceLinkService.updateById(link))) {
+                throw new IllegalStateException("GYING P2P resource was not persisted");
             }
             saved++;
+            selected.add(link);
         }
-        return saved;
+        if (!selected.isEmpty()) {
+            List<ResourceLink> torrentDescriptors = selected.stream()
+                    .filter(link -> "MAGNET".equals(link.getType()) && archiveTorrentRefs.contains(link.getSourceRef()))
+                    .filter(link -> selected.stream().noneMatch(other -> "TORRENT".equals(other.getType())
+                            && Objects.equals(other.getSourceRef(), link.getSourceRef())))
+                    .map(P2pArchiveTaskService::torrentDescriptor).toList();
+            selected.addAll(torrentDescriptors);
+        }
+        return new P2pCollection(movieId, null, typeCode, mid, saved, selected);
     }
 
     private boolean hasActiveDiskResource(String movieId) {
         return resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .eq("type", "DISK")
                 .eq("status", "ACTIVE")
@@ -418,7 +808,7 @@ public class GyingSourceWorkflowService {
     public List<Map<String, Object>> catalogCandidates(String typeCode, String sort, int page, int limit) {
         String safeType = normalizeTypeCode(typeCode);
         String safeSort = Set.of("score", "time", "hits", "cscore").contains(sort) ? sort : "score";
-        int safePage = Math.min(Math.max(page, 1), 500);
+        int safePage = Math.min(Math.max(page, 1), MAX_CATALOG_PAGES);
         int safeLimit = Math.min(Math.max(limit, 1), 60);
         List<Map<String, Object>> items = fetchCatalogCandidates(
                 safeType, safeSort, safePage, safeLimit);
@@ -469,11 +859,10 @@ public class GyingSourceWorkflowService {
                 items.add(ensureMovieResource(
                         stringValue(candidate.get("typeCode")),
                         stringValue(candidate.get("mid"))));
-                if ("PARTIAL".equals(stringValue(items.get(items.size() - 1).get("status")))) {
-                    partial++;
-                } else {
-                    succeeded++;
-                }
+                String status = stringValue(items.get(items.size() - 1).get("status"));
+                if ("FAILED".equals(status)) failed++;
+                else if (Set.of("PARTIAL", "CHECK_REQUIRED", "NO_TRANSFERABLE_RESOURCE").contains(status)) partial++;
+                else succeeded++;
             } catch (Exception error) {
                 Map<String, Object> failedItem = new LinkedHashMap<>(candidate);
                 failedItem.put("status", "FAILED");
@@ -488,213 +877,54 @@ public class GyingSourceWorkflowService {
 
     public Map<String, Object> ensureRemainingSeasons(String movieId, int maxPages) {
         MovieMetadata movie = movieService.getById(required(movieId, "local movie id"));
-        if (movie == null || "DELETED".equalsIgnoreCase(movie.getStatus())) {
+        if (movie == null || movie.getDeletedAt() != null || "DELETED".equalsIgnoreCase(movie.getStatus())) {
             throw new IllegalArgumentException("Movie not found: " + movieId);
         }
+        if ("mv".equals(movie.getCategory()) || "movie".equals(movie.getTmdbType())) {
+            return new MovieCollectionCompletion(tmdbClient, posterStorageService, movieService, sourceIdentityService)
+                    .complete(movie, () -> loadGyingSeries(movie, maxPages));
+        }
+        return seasonMetadataCompletion.complete(movie, existingSeasons -> loadGyingSeries(movie, maxPages));
+    }
+
+    private List<MovieMetadata> loadGyingSeries(MovieMetadata movie, int maxPages) {
         MovieSourceIdentity identity = findGyingIdentity(movie.getId());
-        List<Map<String, Object>> seasons;
-        try {
-            if (identity == null) {
-                identity = discoverGyingIdentity(movie, maxPages);
-            }
-            if (identity == null) {
-                throw new IllegalStateException("No exact GYING series match found");
-            }
-            seasons = mapList(gyingSourceClient.get(
-                    "/series?typeCode=" + identity.getSourceType() + "&mid=" + identity.getExternalId()
-                            + "&maxPages=" + Math.min(Math.max(maxPages, 1), 50)).get("items"));
-        } catch (Exception error) {
-            if (!isUpstreamUnavailable(error)) {
-                throw error;
-            }
-            return ensureRemainingSeasonsViaPanSou(movie);
-        }
-        List<Map<String, Object>> items = new ArrayList<>();
-        int completed = 0;
-        int failed = 0;
-        int skipped = 0;
-        boolean sourceUnavailable = false;
-        for (Map<String, Object> season : seasons) {
-            if (sourceUnavailable) {
-                skipped++;
-                items.add(skippedSeasonItem(season, GYING_UNAVAILABLE_REASON));
-                continue;
-            }
+        if (identity == null) identity = discoverGyingIdentity(movie, maxPages);
+        if (identity == null) throw new IllegalStateException("No exact GYING series match found");
+        MovieMetadata anchor = ingestMovieMetadata(identity.getSourceType(), identity.getExternalId(), false).movie();
+        List<Map<String, Object>> members = mapList(gyingSourceClient.get(
+                "/series?typeCode=" + identity.getSourceType() + "&mid=" + identity.getExternalId()
+                        + "&maxPages=" + Math.min(Math.max(maxPages, 1), 50)).get("items"));
+        List<MovieMetadata> imported = new ArrayList<>();
+        imported.add(anchor);
+        Set<String> seen = new LinkedHashSet<>(); seen.add(identity.getSourceType() + "/" + identity.getExternalId());
+        for (Map<String, Object> item : members) {
+            String type = firstText(stringValue(item.get("typeCode")), identity.getSourceType());
+            String mid = stringValue(item.get("mid"));
+            if (!hasText(mid) || !seen.add(type + "/" + mid)) continue;
+            if (!type.equals(identity.getSourceType())) continue;
+            String family = stringValue(item.get("seriesName"));
+            if (!hasText(family) || !MovieTitleMatcher.normalizedEquals(family, anchor.getSeriesName())) continue;
             try {
-                items.add(ensureMovieResource(
-                        stringValue(season.get("typeCode")), stringValue(season.get("mid"))));
-                completed++;
-            } catch (Exception error) {
-                if (isUpstreamUnavailable(error)) {
-                    sourceUnavailable = true;
-                    skipped++;
-                    items.add(skippedSeasonItem(season, GYING_UNAVAILABLE_REASON));
-                    continue;
-                }
-                Map<String, Object> item = new LinkedHashMap<>(season);
-                item.put("status", "FAILED");
-                item.put("error", safeText(error.getMessage()));
-                items.add(item);
-                failed++;
+                // Refresh existing seasons too: bind both source IDs and replace series-wide artwork.
+                imported.add(ingestMovieMetadata(type, mid, false).movie());
+            } catch (Exception ignored) {
+                // Successful imports remain; missing metadata can fall back to TMDB.
             }
         }
-        Map<String, Object> outcome = new LinkedHashMap<>();
-        outcome.put("discovered", seasons.size());
-        outcome.put("completed", completed);
-        outcome.put("skipped", skipped);
-        outcome.put("failed", failed);
-        if (skipped > 0 && completed == 0 && failed == 0) {
-            return ensureRemainingSeasonsViaPanSou(movie);
-        }
-        if (skipped > 0) {
-            outcome.put("reason", GYING_UNAVAILABLE_REASON);
-        }
-        outcome.put("items", items);
-        return outcome;
+        return imported;
     }
 
-    /**
-     * PanSou fallback for the season workflow. When the GYING source cannot serve the
-     * season list it fills the local season rows that still have no active resource
-     * instead of failing the whole operation.
-     */
-    private Map<String, Object> ensureRemainingSeasonsViaPanSou(MovieMetadata movie) {
-        List<MovieMetadata> targets = missingSeasonTargets(movie);
-        List<Map<String, Object>> items = new ArrayList<>();
-        int completed = 0;
-        int skipped = 0;
-        int failed = 0;
-        boolean fallbackUnavailable = false;
-        for (MovieMetadata target : targets) {
-            if (fallbackUnavailable) {
-                skipped++;
-                items.add(skippedForUnavailableSource(target.getId(), FALLBACK_UNAVAILABLE_REASON));
-                continue;
-            }
-            try {
-                Map<String, Object> item = fillSeasonResourceFromPanSou(target);
-                items.add(item);
-                String status = stringValue(item.get("status"));
-                if ("FILLED".equals(status)) {
-                    completed++;
-                } else if ("FAILED".equals(status)) {
-                    failed++;
-                } else {
-                    skipped++;
-                }
-            } catch (Exception error) {
-                if (isUpstreamUnavailable(error)) {
-                    fallbackUnavailable = true;
-                    skipped++;
-                    items.add(skippedForUnavailableSource(target.getId(), FALLBACK_UNAVAILABLE_REASON));
-                    continue;
-                }
-                failed++;
-                Map<String, Object> failedItem = new LinkedHashMap<>();
-                failedItem.put("movieId", target.getId());
-                failedItem.put("title", firstText(target.getTitleCn(), target.getTitleEn()));
-                failedItem.put("season", target.getSeason());
-                failedItem.put("source", "PANSOU");
-                failedItem.put("status", "FAILED");
-                failedItem.put("error", safeText(error.getMessage()));
-                items.add(failedItem);
-            }
-        }
-        Map<String, Object> outcome = new LinkedHashMap<>();
-        outcome.put("mode", "PANSOU_FALLBACK");
-        outcome.put("source", "PANSOU");
-        outcome.put("gyingUnavailable", true);
-        outcome.put("discovered", targets.size());
-        outcome.put("completed", completed);
-        outcome.put("skipped", skipped);
-        outcome.put("failed", failed);
-        outcome.put("reason", PANSOU_FALLBACK_REASON);
-        outcome.put("items", items);
-        if (completed == 0) {
-            if (failed > 0) {
-                outcome.put("status", "FAILED");
-                outcome.put("reason", "GYING 源当前不可用，PanSou 候选资源转移失败，已跳过本次操作");
-            } else {
-                outcome.put("status", "SKIPPED");
-                outcome.put("reason", targets.isEmpty()
-                        ? "GYING 源当前不可用，本地没有需要补齐剩余季的资源"
-                        : "GYING 源当前不可用，PanSou 未找到可补齐的季资源，已跳过本次操作");
-            }
-        }
-        return outcome;
-    }
-
-    private List<MovieMetadata> missingSeasonTargets(MovieMetadata movie) {
-        String seriesKey = firstText(
-                movie.getSeriesName(),
-                SeasonSearchUtils.baseTitle(firstText(movie.getTitleCn(), movie.getTitleEn())),
-                movie.getTitleCn(),
-                movie.getTitleEn());
-        QueryWrapper<MovieMetadata> query = new QueryWrapper<MovieMetadata>()
-                .ne("status", "DELETED")
-                .in("category", List.of("tv", "ac"))
-                .last("LIMIT 40");
-        if (movie.getTmdbId() != null && "tv".equalsIgnoreCase(firstText(movie.getTmdbType(), "tv"))) {
-            query.eq("tmdb_id", movie.getTmdbId());
-        } else if (hasText(seriesKey)) {
-            query.and(item -> item.eq("series_name", seriesKey)
-                    .or().eq("title_cn", seriesKey)
-                    .or().eq("title_en", seriesKey));
-        }
-        List<MovieMetadata> rows = new ArrayList<>(movieService.list(query));
-        if (rows.stream().noneMatch(row -> movie.getId().equals(row.getId()))) {
-            rows.add(movie);
-        }
-        return rows.stream()
-                .filter(row -> hasText(row.getId()))
-                .filter(row -> !hasActiveDiskResource(row.getId()))
-                .sorted(Comparator.comparingInt(row -> row.getSeason() == null ? 1 : row.getSeason()))
-                .limit(MAX_PANSOU_SEASON_TARGETS)
-                .toList();
-    }
-
-    private Map<String, Object> fillSeasonResourceFromPanSou(MovieMetadata movie) {
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("movieId", movie.getId());
-        result.put("title", firstText(movie.getTitleCn(), movie.getTitleEn()));
-        result.put("season", movie.getSeason());
-        result.put("source", "PANSOU");
-        if (hasActiveDiskResource(movie.getId())) {
-            result.put("status", "SKIPPED");
-            result.put("reason", "本地已有可用资源");
-            return result;
-        }
-        List<Map<String, Object>> candidates = panSouCandidates(movie, MAX_TRANSFER_CANDIDATES);
-        if (candidates.isEmpty()) {
-            result.put("status", "SKIPPED");
-            result.put("reason", "PanSou 未找到匹配的候选资源");
-            return result;
-        }
-        List<String> errors = new ArrayList<>();
-        for (Map<String, Object> candidate : candidates) {
-            try {
-                ResourceLink local = transferAndPublishLocally(movie, candidate);
-                markMovieAvailable(movie);
-                result.put("status", "FILLED");
-                result.put("resourceId", local == null ? null : local.getId());
-                result.put("provider", local == null ? candidate.get("provider") : local.getProvider());
-                result.put("url", local == null ? candidate.get("url") : local.getUrl());
-                result.put("candidateTitle", candidate.get("title"));
-                result.put("attempts", errors.size() + 1);
-                result.put("errors", errors);
-                return result;
-            } catch (Exception error) {
-                if (isUpstreamUnavailable(error)) {
-                    throw error;
-                }
-                errors.add(firstText(stringValue(candidate.get("title")), "候选资源")
-                        + ": " + safeText(error.getMessage()));
-            }
-        }
-        result.put("status", "FAILED");
-        result.put("attempts", errors.size());
-        result.put("errors", errors);
-        result.put("reason", errors.isEmpty() ? "PanSou 候选资源转移失败" : errors.get(errors.size() - 1));
+    public Map<String, Object> syncMovieMetadata(String movieId) {
+        MovieMetadata movie = movieService.getById(required(movieId, "local movie id"));
+        if (movie == null || movie.getDeletedAt() != null || "DELETED".equals(movie.getStatus()))
+            throw new IllegalArgumentException("Movie not found");
+        MovieSourceIdentity identity = findGyingIdentity(movieId);
+        if (identity == null) identity = discoverGyingIdentity(movie, 0);
+        if (identity == null) return Map.of("status", "SKIPPED", "reason", "未找到唯一可信的 GYING 对应影片，保留原元数据");
+        GyingMovieMetadata ingested = ingestMovieMetadata(identity.getSourceType(), identity.getExternalId(), false);
+        Map<String,Object> result = movieMetadataResult(ingested);
+        result.put("status", "UPDATED");
         return result;
     }
 
@@ -705,8 +935,15 @@ public class GyingSourceWorkflowService {
                 break;
             }
             List<DiscoveredResource> found = new ArrayList<>();
-            found.addAll(panSouClient.searchQuark(keyword, limit));
-            found.addAll(panSouClient.searchClouds(keyword, Set.of("XUNLEI"), limit));
+            if (resourceHubProperties.isDriveShareCollectionEnabled("QUARK")) {
+                found.addAll(panSouClient.searchQuark(keyword, limit));
+            }
+            if (resourceHubProperties.isDriveShareCollectionEnabled("XUNLEI")) {
+                found.addAll(panSouClient.searchClouds(keyword, Set.of("XUNLEI"), limit));
+            }
+            if (resourceHubProperties.isDriveShareCollectionEnabled("BAIDU")) {
+                found.addAll(panSouClient.searchClouds(keyword, Set.of("BAIDU"), limit));
+            }
             for (DiscoveredResource resource : found) {
                 if (resource == null || !hasText(resource.getUrl())) {
                     continue;
@@ -774,79 +1011,45 @@ public class GyingSourceWorkflowService {
         if (movie == null || "DELETED".equalsIgnoreCase(movie.getStatus())) {
             throw new IllegalArgumentException("Movie not found: " + movieId);
         }
-        if (movie.getTmdbId() != null && hasText(movie.getTmdbType())) {
+        // GYING artwork is per installment and takes precedence even for TMDB-origin rows.
+        try {
+            MovieSourceIdentity identity = findGyingIdentity(movie.getId());
+            if (identity == null) identity = discoverGyingIdentity(movie, 0);
+            if (identity != null) {
+                saveLocalTmdbIdentity(movie);
+                Map<String,Object> result = gyingSourceClient.post("/poster", Map.of(
+                        "typeCode", identity.getSourceType(), "mid", identity.getExternalId(), "targetMovieId", movie.getId()));
+                if ("UPDATED".equalsIgnoreCase(stringValue(result.get("status")))
+                        && hasText(stringValue(result.get("posterUrl")))) return result;
+            }
+        } catch (Exception unavailable) {
+            // A GYING outage must not prevent any item in a batch from falling back to TMDB.
+        }
+        if (movie.getTmdbId() != null && Set.of("movie", "tv").contains(firstText(movie.getTmdbType(), ""))) {
             try {
-                String mediaType = movie.getTmdbType().trim().toLowerCase(Locale.ROOT);
-                if (Set.of("movie", "tv").contains(mediaType)) {
-                    JsonNode details = tmdbClient.fetchDetails(mediaType, movie.getTmdbId());
-                    String posterObject = posterStorageService.storeTmdbPoster(
-                            mediaType,
-                            movie.getTmdbId(),
-                            details.path("poster_path").asText(null));
-                    if (hasText(posterObject)) {
-                        movie.setPosterUrl(posterObject);
-                        movie.setUpdatedAt(LocalDateTime.now());
-                        movieService.updateById(movie);
-                        return Map.of(
-                                "movieId", movie.getId(),
-                                "source", "TMDB",
-                                "posterUrl", posterObject,
-                                "status", "UPDATED");
-                    }
+                String poster = storeMovieTmdbPoster(movie, movie.getTmdbType(), movie.getTmdbId());
+                if (hasText(poster)) {
+                    movie.setPosterUrl(poster); movie.setUpdatedAt(LocalDateTime.now());
+                    movieService.updateById(movie); saveLocalTmdbIdentity(movie);
+                    return Map.of("movieId", movie.getId(), "source", "TMDB", "posterUrl", poster, "status", "UPDATED");
                 }
-            } catch (Exception ignored) {
-                // The GYING source remains the fallback when TMDB or poster storage is unavailable.
-            }
+            } catch (Exception unavailable) { /* Try exact title lookup below. */ }
         }
-        Map<String, Object> tmdbSearchPoster = repairPosterViaTmdbSearch(movie);
-        if (tmdbSearchPoster != null) {
-            return tmdbSearchPoster;
+        Map<String,Object> searched = repairPosterViaTmdbSearch(movie);
+        return searched != null ? searched : Map.of("movieId", movie.getId(), "status", "SKIPPED",
+                "reason", "GYING/TMDB 暂无可信的本季海报，保留原图");
+    }
+
+    private String storeMovieTmdbPoster(MovieMetadata movie, String type, Long id) {
+        if ("tv".equals(type)) {
+            int number = movie.getSeason() == null ? 1 : movie.getSeason();
+            JsonNode season = tmdbClient.fetchSeasonDetails(id, number);
+            if (season == null || season.path("season_number").asInt(-1) != number) return null;
+            return posterStorageService.storeTmdbSeasonPoster(id, number, season.path("poster_path").asText(null));
         }
-        MovieSourceIdentity identity = findGyingIdentity(movie.getId());
-        try {
-            if (identity == null) {
-                identity = discoverGyingIdentity(movie, 20);
-            }
-        } catch (Exception error) {
-            if (!isUpstreamUnavailable(error)) {
-                throw error;
-            }
-            return skippedForUnavailableSource(movie.getId(), POSTER_SKIPPED_REASON);
-        }
-        if (identity == null) {
-            return Map.of(
-                    "movieId", movie.getId(),
-                    "status", "SKIPPED",
-                    "reason", "No TMDB poster or exact GYING match found");
-        }
-        Map<String, Object> result;
-        try {
-            result = gyingSourceClient.post("/poster", Map.of(
-                    "typeCode", identity.getSourceType(),
-                    "mid", identity.getExternalId(),
-                    "targetMovieId", movie.getId()));
-        } catch (Exception error) {
-            if (!isUpstreamUnavailable(error)) {
-                throw error;
-            }
-            return skippedForUnavailableSource(movie.getId(), POSTER_SKIPPED_REASON);
-        }
-        if ("UPDATED".equalsIgnoreCase(stringValue(result.get("status")))
-                && hasText(stringValue(result.get("posterUrl")))) {
-            return result;
-        }
-        Map<String, Object> failed = new LinkedHashMap<>();
-        failed.put("movieId", movie.getId());
-        failed.put("source", "GYING");
-        failed.put("typeCode", identity.getSourceType());
-        failed.put("mid", identity.getExternalId());
-        failed.put("status", "FAILED");
-        String reason = stringValue(result.get("reason"));
-        if (!hasText(reason)) {
-            reason = stringValue(result.get("error"));
-        }
-        failed.put("reason", hasText(reason) ? reason : "GYING poster repair returned no poster");
-        return failed;
+        JsonNode details = tmdbClient.fetchDetails(type, id);
+        if (details == null || details.path("id").asLong() != id) return null;
+        return posterStorageService.storeTmdbPoster(type, id, details.path("poster_path").asText(null));
     }
 
     /**
@@ -867,26 +1070,32 @@ public class GyingSourceWorkflowService {
         if (items == null) {
             return null;
         }
-        for (TmdbListItem item : items) {
-            if (!matchesTmdbSearchResult(movie, item)) {
-                continue;
-            }
+        List<TmdbListItem> matched = items.stream()
+                .filter(item -> matchesTmdbSearchResult(movie, item))
+                .sorted(Comparator.comparingInt((TmdbListItem item) -> tmdbSearchMatchScore(movie, item)).reversed())
+                .toList();
+        if (matched.size() > 1 && tmdbSearchMatchScore(movie, matched.get(0))
+                == tmdbSearchMatchScore(movie, matched.get(1))) return null;
+        for (TmdbListItem item : matched) {
             try {
-                JsonNode details = tmdbClient.fetchDetails(item.getMediaType(), item.getTmdbId());
-                String posterObject = posterStorageService.storeTmdbPoster(
-                        item.getMediaType(),
-                        item.getTmdbId(),
-                        details.path("poster_path").asText(null));
+                String posterObject = storeMovieTmdbPoster(movie, item.getMediaType(), item.getTmdbId());
                 if (!hasText(posterObject)) {
                     continue;
                 }
+                String mediaType = item.getMediaType().trim().toLowerCase(Locale.ROOT);
+                if (movie.getTmdbId() != null && (!movie.getTmdbId().equals(item.getTmdbId())
+                        || !mediaType.equals(movie.getTmdbType()))) continue;
+                movie.setTmdbId(item.getTmdbId());
+                movie.setTmdbType(mediaType);
                 movie.setPosterUrl(posterObject);
                 movie.setUpdatedAt(LocalDateTime.now());
                 movieService.updateById(movie);
                 Map<String, Object> result = new LinkedHashMap<>();
                 result.put("movieId", movie.getId());
+                saveLocalTmdbIdentity(movie);
                 result.put("source", "TMDB_SEARCH");
                 result.put("tmdbId", item.getTmdbId());
+                result.put("tmdbType", mediaType);
                 result.put("posterUrl", posterObject);
                 result.put("status", "UPDATED");
                 return result;
@@ -898,26 +1107,65 @@ public class GyingSourceWorkflowService {
     }
 
     private boolean matchesTmdbSearchResult(MovieMetadata movie, TmdbListItem item) {
+        return tmdbSearchMatchScore(movie, item) > 0;
+    }
+
+    private int tmdbSearchMatchScore(MovieMetadata movie, TmdbListItem item) {
         if (item == null || item.getTmdbId() == null || !hasText(item.getMediaType())) {
-            return false;
+            return 0;
         }
         String category = firstText(movie.getCategory(), "").toLowerCase(Locale.ROOT);
         boolean typeCompatible = "tv".equalsIgnoreCase(item.getMediaType())
                 ? Set.of("tv", "ac").contains(category)
-                : "mv".equals(category);
+                : Set.of("mv", "ac").contains(category);
         if (!typeCompatible) {
-            return false;
+            return 0;
         }
-        List<String> expected = titleVariants(movie.getTitleCn(), movie.getTitleEn(), movie.getSeriesName());
+
+        List<String> expected = titleVariants(movie.getTitleCn(), movie.getTitleEn());
         List<String> candidates = titleVariants(item.getTitle(), item.getOriginalTitle());
+        int score = 0;
         for (String left : expected) {
             for (String right : candidates) {
                 if (MovieTitleMatcher.normalizedEquals(left, right)) {
-                    return true;
+                    score = Math.max(score, 100);
                 }
             }
         }
-        return false;
+        if (score == 0) {
+            return 0;
+        }
+
+        Integer movieYear = movie.getYear();
+        Integer itemYear = parseReleaseYear(item.getReleaseDate());
+        if (movieYear != null && itemYear != null) {
+            if (movieYear.equals(itemYear)) {
+                score += 30;
+            } else if ("mv".equals(category)) {
+                return 0;
+            } else {
+                score -= 10;
+            }
+        }
+        if (item.getPopularity() != null) {
+            score += Math.min((int) Math.round(item.getPopularity() / 20.0), 15);
+        }
+        return Math.max(score, 0);
+    }
+
+    private Integer parseReleaseYear(String value) {
+        if (!hasText(value) || value.length() < 4) {
+            return null;
+        }
+        Matcher matcher = RELEASE_YEAR_PATTERN.matcher(value);
+        if (!matcher.find()) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(matcher.group(1));
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     private static List<String> titleVariants(String... values) {
@@ -934,23 +1182,26 @@ public class GyingSourceWorkflowService {
     }
 
     public Map<String, Object> repairMissingPosters(int limit) {
+        return repairMissingPosters(limit, null, false);
+    }
+
+    public Map<String, Object> repairMissingPosters(int limit, List<String> movieIds, boolean refreshExisting) {
+        if (movieIds != null && (movieIds.isEmpty() || movieIds.size() > 100
+                || movieIds.stream().anyMatch(id -> id == null || id.isBlank())))
+            throw new IllegalArgumentException("请选择 1–100 部有效影片");
+        if (refreshExisting && movieIds == null) throw new IllegalArgumentException("刷新已有海报必须选择影片");
         int safeLimit = Math.min(Math.max(limit, 1), 100);
-        List<MovieMetadata> movies = movieService.list(new QueryWrapper<MovieMetadata>()
-                .ne("status", "DELETED")
-                .and(query -> query.isNull("poster_url").or().eq("poster_url", ""))
-                .orderByDesc("updated_at")
-                .last("LIMIT " + safeLimit));
+        QueryWrapper<MovieMetadata> query = new QueryWrapper<MovieMetadata>()
+                .ne("status", "DELETED").isNull("deleted_at");
+        if (movieIds != null) query.in("id", movieIds);
+        if (!refreshExisting) query.and(filter -> filter.isNull("poster_url").or().eq("poster_url", ""));
+        List<MovieMetadata> movies = movieService.list(query.orderByDesc("updated_at")
+                .last("LIMIT " + (movieIds == null ? safeLimit : movieIds.size())));
         List<Map<String, Object>> items = new ArrayList<>();
         int repaired = 0;
         int skipped = 0;
         int failed = 0;
-        boolean sourceUnavailable = false;
         for (MovieMetadata movie : movies) {
-            if (sourceUnavailable) {
-                skipped++;
-                items.add(skippedForUnavailableSource(movie.getId(), GYING_UNAVAILABLE_REASON));
-                continue;
-            }
             try {
                 Map<String, Object> result = repairMoviePoster(movie.getId());
                 items.add(result);
@@ -958,13 +1209,9 @@ public class GyingSourceWorkflowService {
                 if ("UPDATED".equals(status)) repaired++;
                 else if ("SKIPPED".equals(status)) {
                     skipped++;
-                    if (Boolean.TRUE.equals(result.get("skipped"))) {
-                        sourceUnavailable = true;
-                    }
                 } else failed++;
             } catch (Exception error) {
                 if (isUpstreamUnavailable(error)) {
-                    sourceUnavailable = true;
                     skipped++;
                     items.add(skippedForUnavailableSource(movie.getId(), GYING_UNAVAILABLE_REASON));
                     continue;
@@ -1074,13 +1321,101 @@ public class GyingSourceWorkflowService {
         return result;
     }
 
-    public Map<String, Object> ensureMovieResource(String typeCode, String mid) {
-        Map<String, Object> result = ensurePrimaryMovieResource(typeCode, mid);
-        return ensureMissingOwnedProviders(
-                normalizeTypeCode(typeCode), required(mid, "GYING movie id"), result);
+    /** Strict weekly chart input; never substitute all-time catalog or another chart. */
+    public List<Map<String, Object>> weeklyPopularCandidates(String typeCode, int limit) {
+        String type = normalizeTypeCode(typeCode);
+        return mapList(gyingSourceClient.get("/weekly-popular?typeCode=" + type
+                + "&limit=" + Math.min(Math.max(limit, 1), 20)).get("items"));
     }
 
-    private Map<String, Object> ensurePrimaryMovieResource(String typeCode, String mid) {
+    /** Reuse one existing share; do not fill every provider and consume duplicate cloud storage. */
+    public Map<String, Object> ensureWeeklyMovieResource(String typeCode, String mid) {
+        return ensurePrimaryMovieResource(typeCode, mid, true);
+    }
+
+    /** Both manual entry points complete each video provider and collect P2P metadata. */
+    public Map<String, Object> ensureMovieResource(String typeCode, String mid) {
+        GyingMovieMetadata ingested = ingestMovieMetadata(typeCode, mid, false);
+        Map<String, Object> result = movieMetadataResult(ingested);
+        List<String> errors = new ArrayList<>();
+        try {
+            int saved = syncGyingDirectResources(ingested.movie().getId(), ingested.typeCode(), ingested.mid());
+            result.put("directResourceLinks", saved);
+            result.put("p2pStatus", saved == 0 ? "NO_RESOURCE" : "SYNCED");
+        } catch (Exception error) {
+            result.put("directResourceLinks", 0);
+            result.put("p2pStatus", "FAILED");
+            errors.add("P2P: " + safeText(error.getMessage()));
+        }
+        List<Map<String, Object>> providerResults = new ArrayList<>();
+        for (String provider : List.of("QUARK", "XUNLEI", "BAIDU")) {
+            try {
+                providerResults.add(ensureVideoProvider(ingested, provider));
+            } catch (ShareCheckUnavailableException error) {
+                providerResults.add(new LinkedHashMap<>(Map.of("provider", provider, "status", "CHECK_REQUIRED",
+                        "unclear", 1, "error", safeText(error.getMessage()))));
+            } catch (Exception error) {
+                providerResults.add(new LinkedHashMap<>(Map.of("provider", provider, "status", "FAILED",
+                        "failed", 1, "error", safeText(error.getMessage()))));
+            }
+        }
+        int published = 0;
+        int repaired = 0;
+        int reshared = 0;
+        int retransferred = 0;
+        int skipped = 0;
+        int providerFailures = 0;
+        int unclear = 0;
+        int missing = 0;
+        boolean available = false;
+        for (Map<String, Object> item : providerResults) {
+            String status = stringValue(item.get("status"));
+            int valid = countValue(item, "valid");
+            int itemRepaired = countValue(item, "repaired");
+            if ("PUBLISHED".equals(status) || valid > 0 || itemRepaired > 0) available = true;
+            if ("PUBLISHED".equals(status)) published++;
+            if ("NO_CANDIDATE".equals(status)) missing++;
+            skipped += valid;
+            repaired += itemRepaired;
+            reshared += countValue(item, "reshared");
+            retransferred += countValue(item, "retransferred");
+            providerFailures += countValue(item, "failed");
+            unclear += countValue(item, "unclear");
+            if ("FAILED".equals(status)) {
+                errors.add(item.get("provider") + ": " + safeText(stringValue(item.get("error"))));
+            }
+            if (Set.of("PUBLISHED", "REPAIRED").contains(status) && !result.containsKey("resourceId")) {
+                for (String field : List.of("resourceId", "sourceId", "transferMode", "sourceCandidateId", "transferErrors")) {
+                    if (item.containsKey(field)) result.put(field, item.get(field));
+                }
+            }
+        }
+        if (available) markMovieAvailable(ingested.movie());
+        int failed = providerFailures + ("FAILED".equals(result.get("p2pStatus")) ? 1 : 0);
+        result.put("providerResults", providerResults);
+        result.put("providersPublished", published);
+        result.put("providersMissing", missing);
+        result.put("providerFailures", providerFailures);
+        result.put("repaired", repaired + published);
+        result.put("reshared", reshared);
+        result.put("retransferred", retransferred);
+        result.put("skipped", skipped);
+        result.put("failed", failed);
+        result.put("unclear", unclear);
+        result.put("errors", errors);
+        result.put("status", failed > 0 ? (available ? "PARTIAL" : "FAILED")
+                : unclear > 0 ? "CHECK_REQUIRED"
+                : missing > 0 ? (available ? "PARTIAL" : "NO_TRANSFERABLE_RESOURCE")
+                : published > 0 || repaired > 0 ? "PUBLISHED" : "ALREADY_PUBLISHED");
+        return result;
+    }
+
+    private int countValue(Map<String, Object> result, String field) {
+        Integer value = integerValue(result.get(field));
+        return value == null ? 0 : value;
+    }
+
+    private Map<String, Object> ensurePrimaryMovieResource(String typeCode, String mid, boolean weekly) {
         GyingMovieMetadata ingested = ingestMovieMetadata(typeCode, mid, true);
         String safeType = ingested.typeCode();
         String safeMid = ingested.mid();
@@ -1092,6 +1427,9 @@ public class GyingSourceWorkflowService {
         Map<String, Object> result = movieMetadataResult(ingested);
 
         if (!ownResources.isEmpty()) {
+            ownResources = ownResources.stream().filter(this::isVideoResource)
+                    .filter(item -> resourceHubProperties.isDriveVideoEnabled(resourceProvider(item))).toList();
+            if (ownResources.isEmpty()) { result.put("status", "DISABLED"); return result; }
             String ownState = ownResourceState(ownResources);
             ResourceLink own = findResourceBySourceIds(movie.getId(),
                     ownResources.stream().map(item -> stringValue(item.get("source_id"))).toList());
@@ -1110,9 +1448,33 @@ public class GyingSourceWorkflowService {
         }
 
         ResourceLink local = findPublishableLocalResource(movie.getId());
+        if (local != null && (!resourceHubProperties.isDriveVideoEnabled(local.getProvider())
+                || !resourceHubProperties.isDriveGyingPublishEnabled(local.getProvider()))) {
+            local = null;
+            for (var provider : com.gying.movie.config.CloudDriveProvider.values()) {
+                if (resourceHubProperties.isDriveVideoEnabled(provider.name()) && resourceHubProperties.isDriveGyingPublishEnabled(provider.name())) {
+                    local = findPublishableLocalResource(movie.getId(), provider.name());
+                    if (local != null) break;
+                }
+            }
+        }
         if (local == null) {
-            List<Map<String, Object>> candidates = selectTransferCandidates(allResources);
+            List<Map<String, Object>> candidates = selectTransferCandidates(allResources.stream()
+                    .filter(item -> resourceHubProperties.isDriveVideoEnabled(resourceProvider(item)))
+                    .filter(item -> resourceHubProperties.isDriveShareCollectionEnabled(resourceProvider(item)))
+                    .filter(item -> resourceHubProperties.isDriveShareTransferEnabled(resourceProvider(item)))
+                    .filter(item -> resourceHubProperties.isDriveShareEnabled(resourceProvider(item)))
+                    .filter(item -> resourceHubProperties.isDriveGyingPublishEnabled(resourceProvider(item))).toList());
             if (candidates.isEmpty()) {
+                if (java.util.Arrays.stream(com.gying.movie.config.CloudDriveProvider.values())
+                        .filter(com.gying.movie.config.CloudDriveProvider::isSupported)
+                        .anyMatch(provider -> !resourceHubProperties.isDriveShareCollectionEnabled(provider.name())
+                                || !resourceHubProperties.isDriveShareTransferEnabled(provider.name())
+                                || !resourceHubProperties.isDriveShareEnabled(provider.name())
+                                || !resourceHubProperties.isDriveGyingPublishEnabled(provider.name()))) {
+                    result.put("status", "DISABLED");
+                    return result;
+                }
                 result.put("status", "NO_TRANSFERABLE_RESOURCE");
                 markMovieTrailer(movie);
                 return result;
@@ -1121,7 +1483,7 @@ public class GyingSourceWorkflowService {
             Map<String, Object> selected = null;
             for (Map<String, Object> candidate : candidates) {
                 try {
-                    local = transferAndPublishLocally(movie, candidate);
+                    local = transferAndPublishLocally(movie, candidate, weekly);
                     selected = candidate;
                     break;
                 } catch (Exception error) {
@@ -1153,99 +1515,166 @@ public class GyingSourceWorkflowService {
         return result;
     }
 
-    private Map<String, Object> ensureMissingOwnedProviders(
-            String typeCode, String mid, Map<String, Object> result) {
-        Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + typeCode + "/" + mid);
-        if (snapshot == null || snapshot.isEmpty()) {
+    private Map<String, Object> ensureVideoProvider(GyingMovieMetadata ingested, String provider) {
+        if (!resourceHubProperties.isDriveVideoEnabled(provider) || !resourceHubProperties.isDriveGyingPublishEnabled(provider)) {
+            return new LinkedHashMap<>(Map.of("provider", provider, "status", "DISABLED"));
+        }
+        MovieMetadata movie = ingested.movie();
+        List<Map<String, Object>> own = mapList(ingested.snapshot().get("ownResources")).stream()
+                .filter(item -> provider.equals(resourceProvider(item)))
+                .filter(this::isVideoResource).toList();
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("provider", provider);
+        if (!own.isEmpty()) {
+            Map<String, Object> checked = checkMoviePublishedResources(ingested.typeCode(), ingested.mid(), own);
+            result.putAll(checked);
+            if (countValue(checked, "invalid") > 0) {
+                Map<String, Object> repair = repairCheckedPublishedResources(checked);
+                result.putAll(repair);
+                int failed = countValue(repair, "failed") + countValue(repair, "skipped");
+                int unclear = countValue(checked, "unclear") + countValue(repair, "unclear");
+                result.put("failed", failed);
+                result.put("unclear", unclear);
+                result.put("status", failed > 0 ? "FAILED" : unclear > 0 ? "CHECK_REQUIRED" : "REPAIRED");
+                if (failed > 0) result.put("error", firstText(
+                        String.join("; ", stringList(repair.get("errors"))),
+                        mapList(repair.get("items")).stream()
+                                .map(item -> stringValue(item.get("repairError"))).filter(this::hasText)
+                                .findFirst().orElse(null), "Invalid published share could not be repaired"));
+            } else {
+                result.put("status", countValue(checked, "unclear") > 0 ? "CHECK_REQUIRED" : "ALREADY_PUBLISHED");
+            }
+            // An existing unknown/failed share is never treated as missing and duplicated.
             return result;
         }
-        List<Map<String, Object>> resources = mapList(snapshot.get("resources"));
-        Set<String> ownedProviders = mapList(snapshot.get("ownResources")).stream()
-                .map(this::resourceProvider)
-                .filter(Set.of("QUARK", "XUNLEI")::contains)
-                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        MovieMetadata movie = movieService.getById(
-                required(stringValue(result.get("localMovieId")), "local movie id"));
-        if (movie == null) {
-            throw new IllegalStateException("Movie not found after GYING ensure: " + result.get("localMovieId"));
-        }
 
-        List<Map<String, Object>> providerResults = new ArrayList<>();
-        int published = 0;
-        int failed = 0;
-        for (String provider : List.of("QUARK", "XUNLEI")) {
-            Map<String, Object> providerResult = new LinkedHashMap<>();
-            providerResult.put("provider", provider);
-            if (ownedProviders.contains(provider)) {
-                providerResult.put("status", "ALREADY_PUBLISHED");
-                providerResults.add(providerResult);
-                continue;
+        ResourceLink local = findPublishableLocalResource(movie.getId(), provider);
+        if (local != null) {
+            Map<String, Object> localItem = new LinkedHashMap<>();
+            localItem.put("url", local.getUrl());
+            localItem.put("provider", provider);
+            LinkCheckResult check = checkShareLinks(List.of(localItem)).get(local.getUrl());
+            updatePublishedLinkHealth(local, check);
+            if (check == null || !check.checked()) {
+                result.put("status", "CHECK_REQUIRED");
+                result.put("unclear", 1);
+                result.put("resourceId", local.getId());
+                return result;
             }
-
-            List<Map<String, Object>> candidates = selectTransferCandidates(resources.stream()
+            if (!check.valid()) local = null;
+        }
+        boolean transferred = false;
+        if (local == null) {
+            if (!resourceHubProperties.isDriveShareEnabled(provider)
+                    || !resourceHubProperties.isDriveShareTransferEnabled(provider)
+                    || !resourceHubProperties.isDriveShareCollectionEnabled(provider)) {
+                result.put("status", "DISABLED");
+                return result;
+            }
+            List<Map<String, Object>> candidates = selectTransferCandidates(mapList(ingested.snapshot().get("resources")).stream()
                     .filter(item -> provider.equals(resourceProvider(item)))
-                    .toList());
+                    .filter(this::isVideoResource).toList());
             if (candidates.isEmpty()) {
-                providerResult.put("status", "NO_CANDIDATE");
-                providerResults.add(providerResult);
-                continue;
+                result.put("status", "NO_CANDIDATE");
+                return result;
             }
-
-            try {
-                ResourceLink local = findPublishableLocalResource(movie.getId(), provider);
-                Map<String, Object> selected = null;
-                List<String> transferErrors = new ArrayList<>();
-                if (local == null) {
-                    for (Map<String, Object> candidate : candidates) {
-                        try {
-                            local = transferAndPublishLocally(movie, candidate);
-                            selected = candidate;
-                            break;
-                        } catch (Exception error) {
-                            transferErrors.add(firstText(stringValue(candidate.get("source_id")), "unknown")
-                                    + ": " + safeText(error.getMessage()));
-                        }
-                    }
+            List<String> transferErrors = new ArrayList<>();
+            for (Map<String, Object> candidate : candidates) {
+                try {
+                    local = transferAndPublishLocally(movie, candidate);
+                    result.put("sourceCandidateId", candidate.get("source_id"));
+                    transferred = true;
+                    break;
+                } catch (ShareCheckUnavailableException error) {
+                    throw error;
+                } catch (Exception error) {
+                    transferErrors.add(firstText(stringValue(candidate.get("source_id")), "unknown")
+                            + ": " + safeText(error.getMessage()));
                 }
-                if (local == null) {
-                    throw new IllegalStateException("All " + provider + " transfer candidates failed: "
-                            + String.join("; ", transferErrors));
-                }
-                Map<String, Object> publishedResult = publishLocalResource(typeCode, mid, movie, local);
-                String sourceId = required(stringValue(publishedResult.get("sourceId")),
-                        "published GYING source id");
-                verifyPublishedUpdate(typeCode, mid, sourceId, local.getUrl());
-                providerResult.put("status", "PUBLISHED");
-                providerResult.put("resourceId", local.getId());
-                providerResult.put("sourceId", sourceId);
-                providerResult.put("transferMode", selected != null);
-                if (selected != null) {
-                    providerResult.put("sourceCandidateId", selected.get("source_id"));
-                }
-                if (!transferErrors.isEmpty()) {
-                    providerResult.put("transferErrors", transferErrors);
-                }
-                ownedProviders.add(provider);
-                published++;
-            } catch (Exception error) {
-                providerResult.put("status", "FAILED");
-                providerResult.put("error", safeText(error.getMessage()));
-                failed++;
             }
-            providerResults.add(providerResult);
+            result.put("transferErrors", transferErrors);
+            if (local == null) throw new IllegalStateException("All " + provider + " transfer candidates failed: "
+                    + String.join("; ", transferErrors));
         }
-
-        result.put("providerResults", providerResults);
-        result.put("providersPublished", published);
-        result.put("providerFailures", failed);
-        if (failed > 0) {
-            result.put("status", ownedProviders.isEmpty() ? "FAILED" : "PARTIAL");
-        } else if (published > 0) {
-            result.put("status", Boolean.TRUE.equals(result.get("repairRequired"))
-                    ? "PUBLISHED_NEEDS_REPAIR" : "PUBLISHED");
-            markMovieAvailable(movie);
-        }
+        requireConfirmedValid(local.getUrl(), provider);
+        Map<String, Object> published = publishLocalResource(ingested.typeCode(), ingested.mid(), movie, local);
+        String sourceId = required(stringValue(published.get("sourceId")), "published GYING source id");
+        verifyPublishedUpdate(ingested.typeCode(), ingested.mid(), sourceId, local.getUrl());
+        result.put("status", "PUBLISHED");
+        result.put("resourceId", local.getId());
+        result.put("sourceId", sourceId);
+        result.put("transferMode", transferred);
+        result.put("url", local.getUrl());
+        result.put("retransferred", transferred ? 1 : 0);
         return result;
+    }
+
+    private boolean isVideoResource(Map<String, Object> item) {
+        String type = stringValue(item.get("type"));
+        return !hasText(type) || "DISK".equalsIgnoreCase(type);
+    }
+
+    private Map<String, LinkCheckResult> checkShareLinks(List<Map<String, Object>> items) {
+        Map<String, String> links = new LinkedHashMap<>();
+        for (Map<String, Object> item : items) {
+            String url = stringValue(item.get("url"));
+            if (hasText(url)) links.putIfAbsent(url, resourceProvider(item));
+        }
+        if (links.isEmpty()) return Map.of();
+        var checks = new LinkedHashMap<String, LinkCheckResult>();
+        var legacy = new LinkedHashMap<String, String>();
+        for (var entry : links.entrySet()) {
+            if (!"BAIDU".equalsIgnoreCase(entry.getValue())) { legacy.put(entry.getKey(), entry.getValue()); continue; }
+            try {
+                if (baiduWebClient != null) checks.put(entry.getKey(), new LinkCheckResult(entry.getKey(), true,
+                        baiduWebClient.validateOwnShare(entry.getKey()), "Baidu own account verification"));
+            } catch (Exception unavailable) {
+                checks.put(entry.getKey(), new LinkCheckResult(entry.getKey(), false, false, "BAIDU_CHECK_UNAVAILABLE"));
+            }
+        }
+        if (!legacy.isEmpty()) {
+            try {
+                var results = panSouClient.checkLinksByProvider(legacy);
+                if (results != null) checks.putAll(results);
+            } catch (Exception unavailable) { /* Other provider results remain usable. */ }
+        }
+        return checks;
+    }
+
+    private Map<String, Object> checkMoviePublishedResources(
+            String typeCode, String mid, List<Map<String, Object>> own) {
+        Map<String, LinkCheckResult> checks = checkShareLinks(own);
+        List<Map<String, Object>> items = new ArrayList<>();
+        int valid = 0;
+        int invalid = 0;
+        int unclear = 0;
+        for (Map<String, Object> source : own) {
+            Map<String, Object> item = new LinkedHashMap<>(source);
+            item.put("type_code", typeCode);
+            item.put("mid", mid);
+            item.put("provider", resourceProvider(source));
+            LinkCheckResult check = checks.get(stringValue(source.get("url")));
+            String status = check == null || !check.checked() ? "UNCLEAR" : check.valid() ? "VALID" : "INVALID";
+            item.put("checkStatus", status);
+            item.put("checkMessage", check == null ? null : safeText(check.message()));
+            if ("VALID".equals(status)) valid++;
+            else if ("INVALID".equals(status)) invalid++;
+            else unclear++;
+            ResourceLink local = findLocalPublishedResource(item);
+            updatePublishedLinkHealth(local, check);
+            items.add(item);
+        }
+        return new LinkedHashMap<>(Map.of("items", items, "checked", items.size(),
+                "valid", valid, "invalid", invalid, "unclear", unclear));
+    }
+
+    private void updatePublishedLinkHealth(ResourceLink local, LinkCheckResult check) {
+        if (local == null || check == null || !check.checked()) return;
+        local.setLinkStatus(check.valid() ? "NORMAL" : "INVALID");
+        local.setValidatedAt(LocalDateTime.now());
+        local.setLastCheckError(check.valid() ? null : safeText(check.message()));
+        local.setUpdatedAt(LocalDateTime.now());
+        if (!resourceLinkService.updateById(local)) throw new IllegalStateException("Share health was not persisted");
     }
 
     private GyingMovieMetadata ingestMovieMetadata(
@@ -1254,12 +1683,18 @@ public class GyingSourceWorkflowService {
             boolean includeResources) {
         String safeType = normalizeTypeCode(typeCode);
         String safeMid = required(mid, "GYING movie id");
+        MovieSourceIdentity known = sourceIdentityService.getOne(new QueryWrapper<MovieSourceIdentity>()
+                .eq("source", "GYING").eq("source_type", safeType).eq("external_id", safeMid)
+                .apply("BINARY external_id = BINARY {0}", safeMid).last("LIMIT 1"), false);
+        MovieMetadata owned = known == null ? movieService.getById(safeMid) : movieService.getById(known.getMovieId());
+        if (owned != null && (owned.getDeletedAt() != null || "DELETED".equalsIgnoreCase(owned.getStatus())))
+            throw new IllegalArgumentException("Deleted canonical metadata is not restored by series completion");
         Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + safeType + "/" + safeMid);
 
         GyingMetadataMatcher.SourceMetadata sourceMetadata = sourceMetadata(safeType, snapshot);
         MovieMetadata canonical = resolveLocalMovie(
                 safeType, safeMid, sourceMetadata.title(), sourceMetadata.year());
-        MovieMetadata seriesTemplate = canonical == null ? findSeriesTemplate(sourceMetadata) : null;
+        MovieMetadata seriesTemplate = canonical == null && !"mv".equals(safeType) ? findSeriesTemplate(sourceMetadata) : null;
         String localMovieId = canonical != null
                 ? canonical.getId()
                 : seriesTemplate != null ? seasonMovieId(seriesTemplate, sourceMetadata.season()) : safeMid;
@@ -1283,8 +1718,33 @@ public class GyingSourceWorkflowService {
             movie.setUpdatedAt(LocalDateTime.now());
             movieService.updateById(movie);
         }
+        String seriesName = stringValue(snapshot.get("seriesName"));
+        Integer season = integerValue(snapshot.get("season"));
+        if (hasText(seriesName)) movie.setSeriesName(seriesName);
+        if (season != null && season > 0 && season <= 99) movie.setSeason(season);
+        if (canonical != null && "ac".equals(canonical.getCategory())) movie.setCategory("ac");
+        movieService.updateById(movie);
         bindSourceIdentities(movie, safeType, safeMid, sourceMetadata);
+        if (movie.getTmdbId() == null) bindExactTmdbIdentity(movie);
         return new GyingMovieMetadata(safeType, safeMid, snapshot, movie);
+    }
+
+    private void bindExactTmdbIdentity(MovieMetadata movie) {
+        try {
+            String query = "mv".equals(movie.getCategory()) ? movie.getTitleCn()
+                    : firstText(movie.getSeriesName(), movie.getTitleCn());
+            List<TmdbListItem> matches = tmdbClient.searchMulti(query, 20).stream()
+                    .filter(item -> matchesTmdbSearchResult(movie, item)).toList();
+            if (matches.size() != 1) return;
+            TmdbListItem match = matches.get(0);
+            int season = "movie".equals(match.getMediaType()) ? 0 : movie.getSeason() == null ? 1 : movie.getSeason();
+            MovieSourceIdentity owner = sourceIdentityService.getOne(new QueryWrapper<MovieSourceIdentity>()
+                    .eq("source", "TMDB").eq("source_type", match.getMediaType())
+                    .eq("external_id", match.getTmdbId().toString()).eq("season", season).last("LIMIT 1"), false);
+            if (owner != null && !movie.getId().equals(owner.getMovieId())) return;
+            movie.setTmdbId(match.getTmdbId()); movie.setTmdbType(match.getMediaType());
+            movieService.updateById(movie); saveLocalTmdbIdentity(movie);
+        } catch (Exception unavailable) { /* GYING sync remains useful without TMDB. */ }
     }
 
     private Map<String, Object> movieMetadataResult(GyingMovieMetadata ingested) {
@@ -1293,6 +1753,8 @@ public class GyingSourceWorkflowService {
         result.put("typeCode", ingested.typeCode());
         result.put("mid", ingested.mid());
         result.put("localMovieId", ingested.movie().getId());
+        result.put("seriesName", ingested.movie().getSeriesName());
+        result.put("season", ingested.movie().getSeason());
         result.put("title", firstText(
                 ingested.movie().getTitleCn(),
                 stringValue(snapshot.get("title")),
@@ -1331,9 +1793,10 @@ public class GyingSourceWorkflowService {
 
     /** Publishes an already stored Resource Hub share to its mapped GYING movie. */
     public boolean publishResourceToGying(ResourceLink resource) {
-        if (resource == null || resource.getId() == null || !hasText(resource.getUrl())
+        if (resource == null || isTemporaryResource(resource)
+                || resource.getId() == null || !hasText(resource.getUrl())
                 || !"DISK".equalsIgnoreCase(resource.getType())
-                || !Set.of("QUARK", "XUNLEI").contains(firstText(resource.getProvider(), "").toUpperCase(Locale.ROOT))) {
+                || !resourceHubProperties.isDriveGyingPublishEnabled(resource.getProvider())) {
             return false;
         }
         MovieSourceIdentity identity = findGyingIdentity(resource.getMovieId());
@@ -1509,7 +1972,7 @@ public class GyingSourceWorkflowService {
             ResourceLink local = findLocalPublishedResource(item);
             String provider = firstText(stringValue(item.get("provider")),
                     local == null ? "QUARK" : local.getProvider()).toUpperCase(Locale.ROOT);
-            QuarkTransferTask transfer = "XUNLEI".equals(provider) ? null : findRepairTransfer(local, item);
+            QuarkTransferTask transfer = "QUARK".equals(provider) ? findRepairTransfer(local, item) : null;
             XunleiTransferTask xunleiTransfer = "XUNLEI".equals(provider)
                     ? findRepairXunleiTransfer(local, item) : null;
             boolean canRetransfer = hasText(stringValue(item.get("mid")))
@@ -1566,11 +2029,7 @@ public class GyingSourceWorkflowService {
         return repairCheckedPublishedResources(checked);
     }
 
-    /**
-     * Repair a movie as a whole.  Unlike the resource-id endpoint this also
-     * fills a missing provider, so an invalid Quark link and a missing Xunlei
-     * link can be fixed in one operation.
-     */
+    /** Complete each selected movie using the same workflow as the ensure action. */
     public Map<String, Object> repairPublishedResourcesByMovieKeys(List<String> movieKeys) {
         if (movieKeys == null || movieKeys.isEmpty()) {
             throw new IllegalArgumentException("At least one movie key is required");
@@ -1581,7 +2040,9 @@ public class GyingSourceWorkflowService {
         int skipped = 0;
         int reshared = 0;
         int retransferred = 0;
+        int unclear = 0;
         List<String> errors = new ArrayList<>();
+        if (movieKeys.size() > 100) throw new IllegalArgumentException("At most 100 movie keys are allowed");
         for (String key : new LinkedHashSet<>(movieKeys)) {
             try {
                 String[] parts = requiredMovieKey(key);
@@ -1592,10 +2053,7 @@ public class GyingSourceWorkflowService {
                 retransferred += integerValue(item.get("retransferred")) == null ? 0 : integerValue(item.get("retransferred"));
                 skipped += integerValue(item.get("skipped")) == null ? 0 : integerValue(item.get("skipped"));
                 failed += integerValue(item.get("failed")) == null ? 0 : integerValue(item.get("failed"));
-                stringList(item.get("xunleiErrors")).stream()
-                        .map(error -> key + ": " + error)
-                        .limit(Math.max(0, 20 - errors.size()))
-                        .forEach(errors::add);
+                unclear += countValue(item, "unclear");
                 if (hasText(stringValue(item.get("repairError"))) && errors.size() < 20) {
                     errors.add(key + ": " + stringValue(item.get("repairError")));
                 }
@@ -1616,38 +2074,82 @@ public class GyingSourceWorkflowService {
         result.put("retransferred", retransferred);
         result.put("skipped", skipped);
         result.put("failed", failed);
+        result.put("unclear", unclear);
         result.put("items", items);
         result.put("errors", errors);
         return result;
     }
 
+    /** Resolve resource IDs to their owning movie, and complete each movie only once. */
     public Map<String, Object> repairPublishedResourcesByKeys(List<String> keys) {
-        if (keys == null || keys.isEmpty()) {
-            throw new IllegalArgumentException("At least one resource ID or movie key is required");
+        if (keys == null || keys.isEmpty() || keys.size() > 100) {
+            throw new IllegalArgumentException("Between 1 and 100 resource IDs or movie keys are required");
         }
-        List<String> movieKeys = keys.stream()
-                .filter(value -> value != null && value.matches("(?i)(mv|tv|ac)/.+"))
-                .toList();
-        List<String> sourceIds = keys.stream()
-                .filter(value -> value == null || !value.matches("(?i)(mv|tv|ac)/.+"))
-                .toList();
-        if (movieKeys.isEmpty()) return repairPublishedResourcesBySourceIds(sourceIds);
-        if (sourceIds.isEmpty()) return repairPublishedResourcesByMovieKeys(movieKeys);
-        Map<String, Object> resources = repairPublishedResourcesBySourceIds(sourceIds);
-        Map<String, Object> movies = repairPublishedResourcesByMovieKeys(movieKeys);
-        Map<String, Object> result = new LinkedHashMap<>();
-        for (String field : List.of("checked", "repaired", "reshared", "retransferred", "skipped", "failed")) {
-            int left = integerValue(resources.get(field)) == null ? 0 : integerValue(resources.get(field));
-            int right = integerValue(movies.get(field)) == null ? 0 : integerValue(movies.get(field));
-            result.put(field, left + right);
+        Set<String> movieKeys = new LinkedHashSet<>();
+        List<String> sourceIds = new ArrayList<>();
+        for (String value : keys) {
+            String key = required(value, "resource ID or movie key").trim();
+            if (key.matches("(?i)(mv|tv|ac)/.+")) {
+                String[] parts = requiredMovieKey(key);
+                movieKeys.add(parts[0] + "/" + parts[1]);
+            } else sourceIds.add(requiredSourceId(key));
         }
-        List<Map<String, Object>> items = new ArrayList<>(mapList(resources.get("items")));
-        items.addAll(mapList(movies.get("items")));
-        result.put("items", items);
-        List<String> errors = new ArrayList<>();
-        errors.addAll(stringList(resources.get("errors")));
-        errors.addAll(stringList(movies.get("errors")));
-        result.put("errors", errors.stream().limit(20).toList());
+        List<String> notFound = new ArrayList<>();
+        if (!sourceIds.isEmpty()) {
+            Set<String> normalized = normalizeSourceIds(sourceIds);
+            Map<String, Object> response = gyingSourceClient.get("/my-resources", Map.of(
+                    "limit", 1000, "sourceIds", String.join(",", normalized)));
+            Set<String> found = new LinkedHashSet<>();
+            for (Map<String, Object> item : mapList(response.get("items"))) {
+                String id = stringValue(item.get("source_id"));
+                if (!normalized.contains(id)) continue;
+                String[] parts = requiredMovieKey(stringValue(item.get("type_code")) + "/" + stringValue(item.get("mid")));
+                movieKeys.add(parts[0] + "/" + parts[1]);
+                found.add(id);
+            }
+            normalized.stream().filter(id -> !found.contains(id)).forEach(notFound::add);
+        }
+        Map<String, Object> result = movieKeys.isEmpty()
+                ? new LinkedHashMap<>(Map.of("checked", 0, "repaired", 0, "reshared", 0, "retransferred", 0,
+                        "skipped", 0, "failed", 0, "unclear", 0, "items", List.of(), "errors", List.of()))
+                : repairPublishedResourcesByMovieKeys(new ArrayList<>(movieKeys));
+        List<Map<String, Object>> movies = mapList(result.get("items"));
+        List<Map<String, Object>> resources = new ArrayList<>();
+        for (Map<String, Object> movie : movies) {
+            for (Map<String, Object> provider : mapList(movie.get("providerResults"))) {
+                for (Map<String, Object> checked : mapList(provider.get("items"))) {
+                    Map<String, Object> item = new LinkedHashMap<>(checked);
+                    item.put("gyingResourceId", movie.get("movieKey"));
+                    item.put("movie_title", movie.get("title"));
+                    if ("REPAIRED".equals(item.get("repairStatus"))) {
+                        item.put("url", item.get("newUrl"));
+                        item.put("checkStatus", "VALID");
+                    }
+                    resources.add(item);
+                }
+                if ("PUBLISHED".equals(provider.get("status"))) {
+                    Map<String, Object> item = new LinkedHashMap<>();
+                    item.put("source_id", provider.get("sourceId"));
+                    item.put("resourceId", provider.get("resourceId"));
+                    item.put("type_code", movie.get("typeCode"));
+                    item.put("mid", movie.get("mid"));
+                    item.put("gyingResourceId", movie.get("movieKey"));
+                    item.put("title", movie.get("title"));
+                    item.put("movie_title", movie.get("title"));
+                    item.put("provider", provider.get("provider"));
+                    item.put("url", provider.get("url"));
+                    item.put("checkStatus", "VALID");
+                    item.put("repairStatus", "REPAIRED");
+                    resources.add(item);
+                }
+            }
+        }
+        result.put("movieResults", movies);
+        result.put("items", resources);
+        result.put("valid", resources.stream().filter(item -> "VALID".equals(item.get("checkStatus"))).count());
+        result.put("invalid", resources.stream().filter(item -> "INVALID".equals(item.get("checkStatus"))).count());
+        result.put("requested", new LinkedHashSet<>(keys).size());
+        result.put("notFound", notFound);
         return result;
     }
 
@@ -1662,82 +2164,11 @@ public class GyingSourceWorkflowService {
     }
 
     private Map<String, Object> repairOneMovie(String typeCode, String mid) {
-        Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + typeCode + "/" + mid);
-        List<Map<String, Object>> own = mapList(snapshot.get("ownResources"));
-        Map<String, LinkCheckResult> checks = new LinkedHashMap<>();
-        Map<String, String> links = new LinkedHashMap<>();
-        for (Map<String, Object> item : own) {
-            String url = stringValue(item.get("url"));
-            if (hasText(url)) links.putIfAbsent(url, firstText(stringValue(item.get("provider")), "QUARK"));
-        }
-        if (!links.isEmpty()) {
-            checks.putAll(panSouClient.checkLinksByProvider(links));
-        }
-        List<Map<String, Object>> invalid = own.stream().filter(item -> {
-            LinkCheckResult check = checks.get(stringValue(item.get("url")));
-            return check != null && check.checked() && !check.valid();
-        }).map(item -> {
-            Map<String, Object> enriched = new LinkedHashMap<>(item);
-            enriched.putIfAbsent("type_code", typeCode);
-            enriched.putIfAbsent("mid", mid);
-            enriched.putIfAbsent("provider", firstText(stringValue(item.get("provider")), "QUARK"));
-            enriched.put("checkStatus", "INVALID");
-            return enriched;
-        }).toList();
-        Map<String, Object> checked = new LinkedHashMap<>();
-        checked.put("items", invalid);
-        checked.put("checked", invalid.size());
-        checked.put("invalid", invalid.size());
-        Map<String, Object> repairedExisting = repairCheckedPublishedResources(checked);
-
-        Map<String, Object> refreshed = gyingSourceClient.get("/movie/" + typeCode + "/" + mid);
-        boolean hasXunlei = mapList(refreshed.get("ownResources")).stream()
-                .anyMatch(item -> "XUNLEI".equalsIgnoreCase(stringValue(item.get("provider"))));
-        int retransferred = integerValue(repairedExisting.get("retransferred")) == null ? 0 : integerValue(repairedExisting.get("retransferred"));
-        Map<String, Object> result = new LinkedHashMap<>();
+        Map<String, Object> result = ensureMovieResource(typeCode, mid);
         result.put("movieKey", typeCode + "/" + mid);
-        result.put("repaired", integerValue(repairedExisting.get("repaired")) == null ? 0 : repairedExisting.get("repaired"));
-        result.put("reshared", integerValue(repairedExisting.get("reshared")) == null ? 0 : repairedExisting.get("reshared"));
-        result.put("retransferred", retransferred);
-        result.put("skipped", 0);
-        result.put("failed", repairedExisting.get("failed"));
-        if (!hasXunlei) {
-            GyingMovieMetadata ingested = ingestMovieMetadata(typeCode, mid, true);
-            List<Map<String, Object>> xunleiResources = mapList(ingested.snapshot().get("resources")).stream()
-                    .filter(item -> "XUNLEI".equalsIgnoreCase(stringValue(item.get("provider"))))
-                    .toList();
-            List<Map<String, Object>> candidates = selectTransferCandidates(xunleiResources);
-            boolean added = false;
-            List<String> xunleiErrors = new ArrayList<>();
-            int xunleiAttempts = 0;
-            for (Map<String, Object> candidate : candidates) {
-                xunleiAttempts++;
-                try {
-                    ResourceLink local = transferAndPublishLocally(ingested.movie(), candidate);
-                    Map<String, Object> published = publishLocalResource(typeCode, mid, ingested.movie(), local);
-                    verifyPublishedUpdate(typeCode, mid, required(stringValue(published.get("sourceId")), "published GYING source id"), local.getUrl());
-                    result.put("xunleiStatus", "PUBLISHED");
-                    result.put("retransferred", retransferred + 1);
-                    result.put("repaired", (integerValue(result.get("repaired")) == null
-                            ? 0 : integerValue(result.get("repaired"))) + 1);
-                    added = true;
-                    break;
-                } catch (Exception error) {
-                    if (xunleiErrors.size() < 10) {
-                        xunleiErrors.add(firstText(stringValue(candidate.get("source_id")), "unknown")
-                                + ": " + safeText(error.getMessage()));
-                    }
-                }
-            }
-            if (!added) {
-                result.put("xunleiStatus", candidates.isEmpty() ? "NO_CANDIDATE" : "FAILED");
-                result.put("xunleiAttempts", xunleiAttempts);
-                result.put("xunleiErrors", xunleiErrors);
-                result.put("repairStatus", "PARTIAL");
-                result.put("failed", (integerValue(result.get("failed")) == null ? 0 : integerValue(result.get("failed"))) + 1);
-            }
-        } else {
-            result.put("xunleiStatus", "ALREADY_PUBLISHED");
+        result.put("repairStatus", result.get("status"));
+        if (!stringList(result.get("errors")).isEmpty()) {
+            result.put("repairError", String.join("; ", stringList(result.get("errors"))));
         }
         return result;
     }
@@ -1749,6 +2180,7 @@ public class GyingSourceWorkflowService {
         int retransferred = 0;
         int skipped = 0;
         int failed = 0;
+        int unclear = 0;
         List<String> errors = new ArrayList<>();
         for (Map<String, Object> item : items) {
             if (!"INVALID".equals(stringValue(item.get("checkStatus")))) {
@@ -1757,7 +2189,15 @@ public class GyingSourceWorkflowService {
             try {
                 ResourceLink local = findLocalPublishedResource(item);
                 String provider = firstText(stringValue(item.get("provider")), local == null ? "QUARK" : local.getProvider()).toUpperCase(Locale.ROOT);
-                QuarkTransferTask transfer = "XUNLEI".equals(provider) ? null : findRepairTransfer(local, item);
+                if (!resourceHubProperties.isDriveVideoEnabled(provider) || !resourceHubProperties.isDriveGyingPublishEnabled(provider)
+                        || !resourceHubProperties.isDriveShareTransferEnabled(provider)
+                        || !resourceHubProperties.isDriveShareEnabled(provider)) {
+                    skipped++;
+                    item.put("repairStatus", "SKIPPED");
+                    item.put("repairError", "该网盘转存或 GYING 发布已关闭");
+                    continue;
+                }
+                QuarkTransferTask transfer = "QUARK".equals(provider) ? findRepairTransfer(local, item) : null;
                 XunleiTransferTask xunleiTransfer = "XUNLEI".equals(provider) ? findRepairXunleiTransfer(local, item) : null;
                 MovieMetadata movie = local == null ? null : movieService.getById(local.getMovieId());
                 if (movie == null && transfer != null) {
@@ -1775,10 +2215,14 @@ public class GyingSourceWorkflowService {
                         transfer.setStatus("SUBMITTED");
                         transfer.setLastError(null);
                         transfer.setUpdatedAt(LocalDateTime.now());
-                        transferTaskService.updateById(transfer);
+                        if (!transferTaskService.updateById(transfer)) {
+                            throw new IllegalStateException("Quark repair task was not persisted");
+                        }
                         newUrl = quarkShareService.ensureShareUrl(transfer);
                         requireConfirmedValid(newUrl, "QUARK");
                         repairMode = "RESHARED";
+                    } catch (ShareCheckUnavailableException error) {
+                        throw error;
                     } catch (Exception error) {
                         reshareError = safeText(error.getMessage());
                         newUrl = null;
@@ -1787,10 +2231,14 @@ public class GyingSourceWorkflowService {
 
                 if (!hasText(newUrl) && xunleiTransfer != null && hasText(xunleiTransfer.getSavedPath())) {
                     try {
+                        xunleiTransfer.setShareUrl(null);
+                        xunleiTransfer.setShareUrlHash(null);
                         xunleiTransfer.setStatus("WAITING_SHARE");
                         xunleiTransfer.setLastError(null);
                         xunleiTransfer.setUpdatedAt(LocalDateTime.now());
-                        xunleiTransferTaskService.updateById(xunleiTransfer);
+                        if (!xunleiTransferTaskService.updateById(xunleiTransfer)) {
+                            throw new IllegalStateException("Xunlei repair task was not persisted");
+                        }
                         xunleiTransferRunnerService.submitOne(xunleiTransfer.getId());
                         xunleiTransfer = xunleiTransferTaskService.getById(xunleiTransfer.getId());
                         newUrl = xunleiTransfer == null ? null : xunleiTransfer.getShareUrl();
@@ -1798,6 +2246,8 @@ public class GyingSourceWorkflowService {
                             requireConfirmedValid(newUrl, "XUNLEI");
                             repairMode = "RESHARED";
                         }
+                    } catch (ShareCheckUnavailableException error) {
+                        throw error;
                     } catch (Exception error) {
                         reshareError = safeText(error.getMessage());
                         newUrl = null;
@@ -1815,18 +2265,19 @@ public class GyingSourceWorkflowService {
                         }
                     }
                     List<Map<String, Object>> providerResources = mapList(snapshot.get("resources")).stream()
-                            .filter(candidate -> provider.equalsIgnoreCase(firstText(
-                                    stringValue(candidate.get("provider")), "QUARK")))
-                            .toList();
+                            .filter(candidate -> provider.equals(resourceProvider(candidate)))
+                            .filter(this::isVideoResource).toList();
                     List<Map<String, Object>> candidates = selectTransferCandidates(providerResources);
                     List<String> candidateErrors = new ArrayList<>();
                     for (Map<String, Object> candidate : candidates) {
                         try {
                             transferOutcome = transferCandidate(movie, candidate);
-                            requireConfirmedValid(transferOutcome.shareUrl(), stringValue(candidate.get("provider")));
+                            requireConfirmedValid(transferOutcome.shareUrl(), resourceProvider(candidate));
                             newUrl = transferOutcome.shareUrl();
                             repairMode = "RETRANSFERRED";
                             break;
+                        } catch (ShareCheckUnavailableException error) {
+                            throw error;
                         } catch (Exception error) {
                             candidateErrors.add(firstText(stringValue(candidate.get("source_id")), "unknown")
                                     + ": " + safeText(error.getMessage()));
@@ -1848,7 +2299,7 @@ public class GyingSourceWorkflowService {
                 String mid = required(stringValue(item.get("mid")), "GYING movie id");
                 String title = transferOutcome == null
                         ? firstText(stringValue(item.get("title")), "GYING Resource")
-                        : buildResourceTitle(movie, transferOutcome.discovery().getTitle(), "QUARK");
+                        : buildResourceTitle(movie, transferOutcome.discovery().getTitle(), provider);
                 gyingSourceClient.post("/update", Map.of(
                         "sourceId", sourceId,
                         "typeCode", typeCode,
@@ -1856,17 +2307,16 @@ public class GyingSourceWorkflowService {
                         "title", title,
                         "panurl", newUrl,
                         "panpw", "XUNLEI".equalsIgnoreCase(provider)
-                                ? firstText(XunleiClient.extractShareCode(newUrl), "") : "",
+                                ? Objects.toString(XunleiClient.extractShareCode(newUrl), "") : "BAIDU".equalsIgnoreCase(provider)
+                                        ? Objects.toString(BaiduWebClient.extractShareCode(newUrl), "") : "",
                         "is", integerValue(item.get("login_visible")) == null
                                 ? 0 : integerValue(item.get("login_visible"))));
                 verifyPublishedUpdate(typeCode, mid, sourceId, newUrl);
                 ResourceLink updated = local == null ? new ResourceLink() : local;
                 applyRepairedLink(updated, item, movie, title, newUrl,
                         transferOutcome == null ? provider : transferOutcome.discovery().getProvider());
-                if (updated.getId() == null) {
-                    resourceLinkService.save(updated);
-                } else {
-                    resourceLinkService.updateById(updated);
+                if (!(updated.getId() == null ? resourceLinkService.save(updated) : resourceLinkService.updateById(updated))) {
+                    throw new IllegalStateException("Repaired resource was not persisted");
                 }
                 if (transferOutcome != null) {
                     bindDiscoveryToResource(transferOutcome.discovery(), updated);
@@ -1882,6 +2332,10 @@ public class GyingSourceWorkflowService {
                 } else {
                     retransferred++;
                 }
+            } catch (ShareCheckUnavailableException error) {
+                unclear++;
+                item.put("repairStatus", "CHECK_REQUIRED");
+                item.put("repairError", safeText(error.getMessage()));
             } catch (Exception error) {
                 failed++;
                 item.put("repairStatus", "FAILED");
@@ -1900,6 +2354,7 @@ public class GyingSourceWorkflowService {
         result.put("retransferred", retransferred);
         result.put("skipped", skipped);
         result.put("failed", failed);
+        result.put("unclear", unclear);
         result.put("items", items);
         result.put("errors", errors);
         if (checked.containsKey("requested")) {
@@ -1931,33 +2386,51 @@ public class GyingSourceWorkflowService {
     }
 
     private ResourceLink transferAndPublishLocally(MovieMetadata movie, Map<String, Object> candidate) {
-        TransferOutcome outcome = transferCandidate(movie, candidate);
+        return transferAndPublishLocally(movie, candidate, false);
+    }
+
+    private ResourceLink transferAndPublishLocally(MovieMetadata movie, Map<String, Object> candidate, boolean weekly) {
+        TransferOutcome outcome = transferCandidate(movie, candidate, weekly);
+        if (outcome.discovery() == null || !"DISK".equalsIgnoreCase(outcome.discovery().getResourceType())) {
+            throw new IllegalStateException("Selected share contains metadata files only; no video resource to publish");
+        }
+        if (!weekly) requireConfirmedValid(outcome.shareUrl(), resourceProvider(candidate));
         ResourceHubPublishResult publishResult = resourceHubPublishService.publishDiscovery(outcome.discovery().getId());
         if (publishResult.getFailed() > 0 || publishResult.getResourceIds().isEmpty()) {
             throw new IllegalStateException(firstText(
                     publishResult.getErrors().isEmpty() ? null : publishResult.getErrors().get(0),
                     "Local resource publish failed"));
         }
-        return resourceLinkService.getById(publishResult.getResourceIds().get(0));
+        return permanentResource(resourceLinkService.getById(publishResult.getResourceIds().get(0)));
     }
 
     private TransferOutcome transferCandidate(MovieMetadata movie, Map<String, Object> candidate) {
+        return transferCandidate(movie, candidate, false);
+    }
+
+    private TransferOutcome transferCandidate(MovieMetadata movie, Map<String, Object> candidate, boolean weekly) {
         String originalUrl = required(stringValue(candidate.get("url")), "GYING source URL");
-        String provider = firstText(stringValue(candidate.get("provider")), "QUARK").toUpperCase(Locale.ROOT);
+        String provider = resourceProvider(candidate);
+        if (!resourceHubProperties.isDriveShareTransferEnabled(provider)) {
+            throw new IllegalStateException("该网盘尚未接入或转存已关闭: " + provider);
+        }
         if ("XUNLEI".equals(provider)) {
             if (xunleiTransferTaskService == null || xunleiTransferRunnerService == null) {
                 throw new IllegalStateException("Xunlei transfer service unavailable");
             }
             return transferXunleiCandidate(movie, candidate, originalUrl);
         }
+        if ("BAIDU".equals(provider)) return transferBaiduCandidate(movie, candidate, originalUrl);
+        if (!"QUARK".equals(provider)) throw new IllegalStateException("Unsupported cloud drive provider");
         String urlHash = ResourceHubHashUtils.sha256(originalUrl);
-        ResourceDiscoveryResult discovery = discoveryResultService.getOne(
+        ResourceDiscoveryResult discovery = permanentDiscovery(discoveryResultService.getOne(
                 new QueryWrapper<ResourceDiscoveryResult>()
+                        .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                         .eq("movie_id", movie.getId())
                         .eq("original_url_hash", urlHash)
                         .orderByDesc("updated_at")
                         .last("LIMIT 1"),
-                false);
+                false));
         LocalDateTime now = LocalDateTime.now();
         String title = buildResourceTitle(movie, stringValue(candidate.get("title")),
                 stringValue(candidate.get("provider")));
@@ -2002,6 +2475,13 @@ public class GyingSourceWorkflowService {
             transferTaskService.save(transfer);
         }
         if (!hasText(transfer.getShareUrl())) {
+            if (weekly) {
+                // Do not register daily follow-ups for a weekly chart transfer.
+                transfer.setRequestPayload("{\"origin\":\"GYING_WEEKLY_ONE_SHOT\"}");
+                if (!transferTaskService.updateById(transfer)) {
+                    throw new IllegalStateException("Weekly one-shot transfer policy was not persisted");
+                }
+            }
             QuarkTransferRunResult transferResult = transferRunnerService.submitOne(transfer.getId());
             if (transferResult.getFailed() > 0) {
                 throw new IllegalStateException(firstText(
@@ -2027,8 +2507,9 @@ public class GyingSourceWorkflowService {
         originalUrl = XunleiClient.normalizeShareUrl(originalUrl, stringValue(candidate.get("code")));
         String urlHash = ResourceHubHashUtils.sha256(originalUrl);
         LocalDateTime now = LocalDateTime.now();
-        ResourceDiscoveryResult discovery = discoveryResultService.getOne(new QueryWrapper<ResourceDiscoveryResult>()
-                .eq("movie_id", movie.getId()).eq("original_url_hash", urlHash).orderByDesc("updated_at").last("LIMIT 1"), false);
+        ResourceDiscoveryResult discovery = permanentDiscovery(discoveryResultService.getOne(new QueryWrapper<ResourceDiscoveryResult>()
+                .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
+                .eq("movie_id", movie.getId()).eq("original_url_hash", urlHash).orderByDesc("updated_at").last("LIMIT 1"), false));
         if (discovery == null) {
             discovery = new ResourceDiscoveryResult(); discovery.setMovieId(movie.getId()); discovery.setSource(resourceSource(candidate));
             discovery.setSourceRef(trim(stringValue(candidate.get("source_id")), 100)); discovery.setOriginalUrl(originalUrl);
@@ -2051,11 +2532,71 @@ public class GyingSourceWorkflowService {
         return new TransferOutcome(discovery, null, transfer.getShareUrl());
     }
 
+    private TransferOutcome transferBaiduCandidate(MovieMetadata movie, Map<String, Object> candidate, String originalUrl) {
+        if (baiduTransferTaskService == null || baiduTransferRunnerService == null || baiduWebClient == null) {
+            throw new IllegalStateException("Baidu transfer service unavailable");
+        }
+        originalUrl = BaiduWebClient.normalizeShareUrl(originalUrl, stringValue(candidate.get("code")));
+        String urlHash = ResourceHubHashUtils.sha256(originalUrl);
+        LocalDateTime now = LocalDateTime.now();
+        var discovery = permanentDiscovery(discoveryResultService.getOne(new QueryWrapper<ResourceDiscoveryResult>()
+                .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
+                .eq("movie_id", movie.getId()).eq("provider", "BAIDU").eq("original_url_hash", urlHash)
+                .orderByDesc("updated_at").last("LIMIT 1"), false));
+        if (discovery == null) {
+            discovery = new ResourceDiscoveryResult(); discovery.setMovieId(movie.getId()); discovery.setSource(resourceSource(candidate));
+            discovery.setSourceRef(trim(stringValue(candidate.get("source_id")), 100)); discovery.setOriginalUrl(originalUrl);
+            discovery.setOriginalUrlHash(urlHash); discovery.setCreatedAt(now);
+            discovery.setTitle(trim(buildResourceTitle(movie, stringValue(candidate.get("title")), "BAIDU"), 255));
+            discovery.setProvider("BAIDU"); discovery.setResourceType("DISK");
+            discovery.setCode(trim(stringValue(candidate.get("code")), 50)); discovery.setStatus("DISCOVERED");
+            discovery.setUpdatedAt(now);
+            if (!discoveryResultService.save(discovery)) throw new IllegalStateException("Baidu discovery not persisted");
+        }
+        var transfer = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>().eq("scope_key", BaiduTemporaryScope.PERMANENT)
+                .eq("movie_id", movie.getId()).eq("original_url_hash", urlHash).last("LIMIT 1"), false);
+        if (transfer == null) {
+            transfer = new BaiduTransferTask(); transfer.setScopeKey(BaiduTemporaryScope.PERMANENT);
+            transfer.setDiscoveryResultId(discovery.getId()); transfer.setMovieId(movie.getId());
+            transfer.setOriginalUrl(originalUrl); transfer.setOriginalUrlHash(urlHash); transfer.setStatus("PENDING");
+            transfer.setPhase("NEW"); transfer.setAttempts(0); transfer.setCreatedAt(now); transfer.setUpdatedAt(now);
+            try {
+                if (!baiduTransferTaskService.save(transfer)) throw new IllegalStateException("Baidu task not persisted");
+            } catch (org.springframework.dao.DuplicateKeyException raced) {
+                transfer = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>().eq("scope_key", BaiduTemporaryScope.PERMANENT)
+                        .eq("movie_id", movie.getId()).eq("original_url_hash", urlHash).last("LIMIT 1"), false);
+                if (!BaiduTemporaryScope.isPermanent(transfer)) throw raced;
+            }
+        }
+        if (!BaiduTemporaryScope.isPermanent(transfer)) {
+            throw new IllegalStateException("BAIDU_TEMPORARY_TASK_NOT_ARCHIVABLE");
+        }
+        var result = baiduTransferRunnerService.submitOne(transfer.getId());
+        if (result.getFailed() > 0) throw new IllegalStateException("Baidu transfer requires review: "
+                + (result.getErrors().isEmpty() ? "BAIDU_NOT_READY" : result.getErrors().get(0)));
+        transfer = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>()
+                .eq("scope_key", BaiduTemporaryScope.PERMANENT).eq("id", transfer.getId()), false);
+        discovery = discoveryResultService.getById(discovery.getId());
+        if (!BaiduTemporaryScope.isPermanent(transfer) || discovery == null
+                || BaiduTemporaryScope.isTemporaryDiscovery(discovery)
+                || !"SUCCEEDED".equals(transfer.getStatus()) || !hasText(transfer.getShareUrl())
+                || !baiduWebClient.validateOwnShare(transfer.getShareUrl())) {
+            throw new IllegalStateException("Baidu own share is not ready");
+        }
+        return new TransferOutcome(discovery, null, transfer.getShareUrl());
+    }
+
     private Map<String, Object> publishLocalResource(
             String typeCode,
             String siteMid,
             MovieMetadata movie,
             ResourceLink resource) {
+        if (isTemporaryResource(resource)) {
+            throw new IllegalStateException("BAIDU_TEMPORARY_RESOURCE_NOT_PUBLISHABLE");
+        }
+        if (!resourceHubProperties.isDriveGyingPublishEnabled(resource.getProvider())) {
+            throw new IllegalStateException("该网盘 GYING 发布已关闭");
+        }
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("resourceId", resource.getId());
         payload.put("typeCode", normalizeTypeCode(typeCode));
@@ -2070,17 +2611,29 @@ public class GyingSourceWorkflowService {
         return gyingSourceClient.post("/publish", payload);
     }
 
+    private boolean isTemporaryResource(ResourceLink resource) {
+        return resource != null && BaiduTemporaryScope.RESOURCE_SOURCE.equalsIgnoreCase(resource.getSource());
+    }
+
+    private ResourceLink permanentResource(ResourceLink resource) {
+        return isTemporaryResource(resource) ? null : resource;
+    }
+
+    private ResourceDiscoveryResult permanentDiscovery(ResourceDiscoveryResult discovery) {
+        return BaiduTemporaryScope.isTemporaryDiscovery(discovery) ? null : discovery;
+    }
+
     private List<Map<String, Object>> selectTransferCandidates(List<Map<String, Object>> resources) {
         List<Map<String, Object>> ordered = resources.stream()
                 .filter(item -> !Boolean.TRUE.equals(item.get("is_own")))
-                .filter(item -> List.of("QUARK", "XUNLEI").contains(firstText(stringValue(item.get("provider")), "QUARK").toUpperCase()))
+                .filter(item -> List.of("QUARK", "XUNLEI", "BAIDU").contains(resourceProvider(item)))
                 .filter(item -> hasText(stringValue(item.get("url"))))
                 .sorted((left, right) -> qualityScore(stringValue(right.get("title")))
                         - qualityScore(stringValue(left.get("title"))))
                 .limit(20)
                 .toList();
         Map<String, String> links = new LinkedHashMap<>();
-        ordered.forEach(item -> links.put(stringValue(item.get("url")), firstText(stringValue(item.get("provider")), "QUARK")));
+        ordered.forEach(item -> links.put(stringValue(item.get("url")), resourceProvider(item)));
         Map<String, LinkCheckResult> checks;
         try {
             checks = panSouClient.checkLinksByProvider(links);
@@ -2090,8 +2643,7 @@ public class GyingSourceWorkflowService {
         Map<String, LinkCheckResult> resolvedChecks = checks;
         return ordered.stream()
                 .filter(item -> {
-                    if ("XUNLEI".equalsIgnoreCase(firstText(
-                            stringValue(item.get("provider")), "QUARK"))) {
+                    if ("XUNLEI".equals(resourceProvider(item))) {
                         return true;
                     }
                     LinkCheckResult check = resolvedChecks.get(stringValue(item.get("url")));
@@ -2107,6 +2659,7 @@ public class GyingSourceWorkflowService {
 
     private ResourceLink findPublishableLocalResource(String movieId, String preferredProvider) {
         QueryWrapper<ResourceLink> wrapper = new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .eq("status", "ACTIVE")
                 .eq("audit_status", 1)
@@ -2118,8 +2671,8 @@ public class GyingSourceWorkflowService {
         if (hasText(preferredProvider)) {
             wrapper.eq("provider", preferredProvider.toUpperCase(Locale.ROOT));
         }
-        return resourceLinkService.getOne(wrapper
-                .last("ORDER BY CASE WHEN provider='QUARK' THEN 0 WHEN provider='XUNLEI' THEN 1 ELSE 2 END, updated_at DESC LIMIT 1"), false);
+        return permanentResource(resourceLinkService.getOne(wrapper
+                .last("ORDER BY CASE WHEN provider='QUARK' THEN 0 WHEN provider='XUNLEI' THEN 1 ELSE 2 END, updated_at DESC LIMIT 1"), false));
     }
 
     private ResourceLink findResourceBySourceIds(String movieId, List<String> sourceIds) {
@@ -2127,29 +2680,32 @@ public class GyingSourceWorkflowService {
         if (ids.isEmpty()) {
             return null;
         }
-        return resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+        return permanentResource(resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .in("source_ref", ids)
                 .eq("status", "ACTIVE")
-                .last("LIMIT 1"), false);
+                .last("LIMIT 1"), false));
     }
 
     private ResourceLink findLocalPublishedResource(Map<String, Object> item) {
         String sourceId = stringValue(item.get("source_id"));
         if (hasText(sourceId)) {
-            ResourceLink bySource = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+            ResourceLink bySource = permanentResource(resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                    .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                     .eq("source_ref", sourceId)
                     .orderByDesc("updated_at")
-                    .last("LIMIT 1"), false);
+                    .last("LIMIT 1"), false));
             if (bySource != null) {
                 return bySource;
             }
         }
         String url = stringValue(item.get("url"));
-        return hasText(url) ? resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+        return hasText(url) ? permanentResource(resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("url", url)
                 .orderByDesc("updated_at")
-                .last("LIMIT 1"), false) : null;
+                .last("LIMIT 1"), false)) : null;
     }
 
     private QuarkTransferTask findRepairTransfer(ResourceLink local, Map<String, Object> item) {
@@ -2196,7 +2752,7 @@ public class GyingSourceWorkflowService {
         }
         if (links.isEmpty()) return "ALREADY_PUBLISHED_CHECK_REQUIRED";
         try {
-            Map<String, LinkCheckResult> checks = panSouClient.checkLinksByProvider(links);
+            Map<String, LinkCheckResult> checks = checkShareLinks(ownResources);
             if (checks.values().stream().anyMatch(check -> check != null && check.checked() && check.valid())) {
                 return "ALREADY_PUBLISHED";
             }
@@ -2229,7 +2785,8 @@ public class GyingSourceWorkflowService {
         link.setUrl(newUrl);
         link.setUrlHash(ResourceHubHashUtils.sha256(newUrl));
         link.setCode("XUNLEI".equalsIgnoreCase(provider)
-                ? XunleiClient.extractShareCode(newUrl) : null);
+                ? XunleiClient.extractShareCode(newUrl) : "BAIDU".equalsIgnoreCase(provider)
+                    ? BaiduWebClient.extractShareCode(newUrl) : null);
         link.setAuditStatus(1);
         link.setStatus("ACTIVE");
         link.setLinkStatus("NORMAL");
@@ -2273,17 +2830,24 @@ public class GyingSourceWorkflowService {
     private void requireConfirmedValid(String url, String provider) {
         String safeUrl = required(url, "new cloud share URL");
         String safeProvider = firstText(provider, "QUARK").toUpperCase(Locale.ROOT);
-        if ("XUNLEI".equals(safeProvider)) {
+        if ("BAIDU".equals(safeProvider)) {
+            if (baiduWebClient == null || !baiduWebClient.validateOwnShare(safeUrl)) {
+                throw new ShareCheckUnavailableException("BAIDU_SHARE_UNAVAILABLE");
+            }
             return;
         }
-        LinkCheckResult check = panSouClient.checkLinksByProvider(Map.of(safeUrl, safeProvider)).get(safeUrl);
+        LinkCheckResult check = checkShareLinks(List.of(Map.of("url", safeUrl, "provider", safeProvider))).get(safeUrl);
         if (check == null || !check.checked()) {
-            throw new IllegalStateException("Unable to confirm new Quark share: "
+            throw new ShareCheckUnavailableException("Unable to confirm new " + safeProvider + " share: "
                     + (check == null ? "missing link check result" : safeText(check.message())));
         }
         if (!check.valid()) {
-            throw new IllegalStateException("New Quark share is invalid: " + safeText(check.message()));
+            throw new IllegalStateException("New " + safeProvider + " share is invalid: " + safeText(check.message()));
         }
+    }
+
+    private static class ShareCheckUnavailableException extends IllegalStateException {
+        ShareCheckUnavailableException(String message) { super(message); }
     }
 
     private void verifyPublishedUpdate(String typeCode, String mid, String sourceId, String expectedUrl) {
@@ -2329,18 +2893,19 @@ public class GyingSourceWorkflowService {
                     .eq("source", "GYING")
                     .eq("source_type", normalizedType)
                     .eq("external_id", mid)
+                    .apply("BINARY external_id = BINARY {0}", mid)
                     .in("match_status", List.of("AUTO", "CONFIRMED"))
                     .orderByDesc("confidence")
                     .last("LIMIT 1"), false);
             if (identity != null) {
                 MovieMetadata mapped = movieService.getById(identity.getMovieId());
-                if (mapped != null && !"DELETED".equalsIgnoreCase(mapped.getStatus())) {
+                if (mapped != null && mapped.getDeletedAt() == null && !"DELETED".equalsIgnoreCase(mapped.getStatus())) {
                     return mapped;
                 }
             }
         }
         MovieMetadata byId = hasText(mid) ? movieService.getById(mid) : null;
-        if (byId != null && !"DELETED".equalsIgnoreCase(byId.getStatus())) {
+        if (byId != null && mid.equals(byId.getId()) && byId.getDeletedAt() == null && !"DELETED".equalsIgnoreCase(byId.getStatus())) {
             return byId;
         }
         if (!hasText(title)) {
@@ -2400,6 +2965,7 @@ public class GyingSourceWorkflowService {
                                 .or().like("aliases", baseTitle))
                         .last("LIMIT 20"))
                 .stream()
+                .filter(movie -> "tv".equals(movie.getTmdbType()))
                 .filter(movie -> GyingMetadataMatcher.typeCompatible(movie.getCategory(), source.typeCode()))
                 .filter(movie -> MovieTitleMatcher.isExactMatch(movie, baseTitle))
                 .sorted(Comparator.comparing(movie -> movie.getSeason() == null ? 999 : movie.getSeason()))
@@ -2450,6 +3016,138 @@ public class GyingSourceWorkflowService {
         return item;
     }
 
+    /** Automatic TMDB follow-up only: exact anchors, aggregate uniqueness, and search-only discovery. */
+    public MovieSourceIdentity resolveTmdbUpdateGyingIdentity(String movieId) {
+        MovieMetadata movie = movieService.getById(required(movieId, "local movie id"));
+        if (!strictAutomaticMovie(movie)) throw new IllegalStateException("GYING_STRICT_LOCAL_METADATA_REQUIRED");
+        List<MovieSourceIdentity> known = sourceIdentityService.list(new QueryWrapper<MovieSourceIdentity>()
+                .eq("movie_id", movieId).eq("source", "GYING").in("match_status", List.of("AUTO", "CONFIRMED")));
+        if (!known.isEmpty()) {
+            if (known.size() != 1 || !strictAutomaticIdentity(movie, known.get(0)))
+                throw new IllegalStateException("GYING_STRICT_IDENTITY_REVIEW_REQUIRED");
+            MovieSourceIdentity identity = known.get(0);
+            Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + identity.getSourceType() + "/" + identity.getExternalId());
+            if (snapshot == null || !identity.getExternalId().equals(snapshot.get("mid"))
+                    || !identity.getSourceType().equals(snapshot.get("typeCode")))
+                throw new IllegalStateException("GYING_STRICT_DETAIL_IDENTITY_CHANGED");
+            if (!strictAutomaticCandidate(movie, snapshot, identity.getSourceType()) || !strictAutomaticCanonical(movie, snapshot))
+                throw new IllegalStateException("GYING_STRICT_DETAIL_REVIEW_REQUIRED");
+            return identity;
+        }
+        LinkedHashSet<String> queries = new LinkedHashSet<>();
+        for (String title : new String[] {movie.getSeriesName(), movie.getTitleCn(), movie.getTitleEn()})
+            if (hasText(title)) queries.add(title.trim());
+        Map<String, Map<String, Object>> matches = new LinkedHashMap<>();
+        for (String type : gyingTypeCodes(movie)) {
+            for (String query : queries) {
+                Map<String, Object> response = gyingSourceClient.get("/search", Map.of("q", query, "typeCode", type, "mode", 3, "limit", 20));
+                if (response == null || !(response.get("items") instanceof List<?> items))
+                    throw new IllegalStateException("GYING_SEARCH_RESPONSE_INVALID");
+                for (Object raw : items) {
+                    if (!(raw instanceof Map<?, ?>)) throw new IllegalStateException("GYING_SEARCH_ITEM_INVALID");
+                    @SuppressWarnings("unchecked") Map<String, Object> candidate = (Map<String, Object>) raw;
+                    if (!strictAutomaticCandidate(movie, candidate, type)) continue;
+                    String key = type + "/" + candidate.get("mid");
+                    Map<String, Object> previous = matches.putIfAbsent(key, candidate);
+                    if (previous != null && (!Objects.equals(previous.get("year"), candidate.get("year"))
+                            || !Objects.equals(previous.get("season"), candidate.get("season"))))
+                        throw new IllegalStateException("GYING_SEARCH_METADATA_CONFLICT");
+                }
+            }
+        }
+        if (matches.isEmpty()) throw new IllegalStateException("GYING_NO_STRICT_MATCH");
+        if (matches.size() != 1) throw new IllegalStateException("GYING_AMBIGUOUS_STRICT_MATCH");
+        Map<String, Object> candidate = matches.values().iterator().next();
+        if (!strictAutomaticCanonical(movie, candidate)) throw new IllegalStateException("GYING_CANONICAL_REVIEW_REQUIRED");
+        String type = (String) candidate.get("typeCode");
+        String mid = (String) candidate.get("mid");
+        MovieSourceIdentity saved = saveIdentity(movie.getId(), "GYING", type, mid,
+                "mv".equals(type) ? 0 : strictAutomaticInteger(candidate.get("season")), 100,
+                "TMDB_UPDATE_EXACT_SEARCH", "AUTO", List.of("EXACT_TITLE", "EXACT_TYPE", "EXACT_YEAR", "EXACT_SEASON", "UNIQUE_MID", "CANONICAL"));
+        if (saved.getId() == null) throw new IllegalStateException("GYING_IDENTITY_NOT_PERSISTED");
+        MovieSourceIdentity persisted = sourceIdentityService.getById(saved.getId());
+        if (!strictAutomaticIdentity(movie, persisted) || !type.equals(persisted.getSourceType()) || !mid.equals(persisted.getExternalId()))
+            throw new IllegalStateException("GYING_IDENTITY_ACK_INVALID");
+        return persisted;
+    }
+
+    private boolean strictAutomaticMovie(MovieMetadata movie) {
+        return movie != null && hasText(movie.getId()) && movie.getDeletedAt() == null && "ACTIVE".equals(movie.getStatus())
+                && movie.getTmdbId() != null && movie.getTmdbId() > 0 && movie.getTmdbLastSyncAt() != null
+                && movie.getYear() != null && movie.getYear() >= 1801 && movie.getYear() <= LocalDateTime.now().getYear() + 5
+                && (("movie".equals(movie.getTmdbType()) && "mv".equals(movie.getCategory()))
+                    || ("tv".equals(movie.getTmdbType()) && Set.of("tv", "ac").contains(Objects.toString(movie.getCategory(), ""))
+                        && GyingMetadataMatcher.validSeason(movie.getSeason()) != null));
+    }
+
+    private boolean strictAutomaticIdentity(MovieMetadata movie, MovieSourceIdentity identity) {
+        if (identity == null || identity.getId() == null || !movie.getId().equals(identity.getMovieId())
+                || !"GYING".equals(identity.getSource()) || !Set.of("AUTO", "CONFIRMED").contains(Objects.toString(identity.getMatchStatus(), ""))
+                || !gyingTypeCodes(movie).contains(identity.getSourceType()) || identity.getExternalId() == null
+                || !identity.getExternalId().matches("[A-Za-z0-9]{1,100}")
+                || !Objects.equals("mv".equals(identity.getSourceType()) ? 0 : movie.getSeason(), identity.getSeason())) return false;
+        List<MovieSourceIdentity> owners = sourceIdentityService.list(new QueryWrapper<MovieSourceIdentity>()
+                .eq("source", "GYING").eq("external_id", identity.getExternalId())
+                .apply("BINARY external_id = BINARY {0}", identity.getExternalId())
+                .eq("season", identity.getSeason()).in("match_status", List.of("AUTO", "CONFIRMED")));
+        return owners.size() == 1 && Objects.equals(identity.getId(), owners.get(0).getId())
+                && movie.getId().equals(owners.get(0).getMovieId()) && identity.getSourceType().equals(owners.get(0).getSourceType())
+                && "GYING".equals(owners.get(0).getSource()) && identity.getExternalId().equals(owners.get(0).getExternalId())
+                && Objects.equals(identity.getSeason(), owners.get(0).getSeason())
+                && Set.of("AUTO", "CONFIRMED").contains(Objects.toString(owners.get(0).getMatchStatus(), ""));
+    }
+
+    private Integer strictAutomaticInteger(Object value) {
+        if (!(value instanceof Byte || value instanceof Short || value instanceof Integer || value instanceof Long)) return null;
+        long number = ((Number) value).longValue();
+        return number >= Integer.MIN_VALUE && number <= Integer.MAX_VALUE ? (int) number : null;
+    }
+
+    private boolean strictAutomaticCandidate(MovieMetadata movie, Map<String, Object> candidate, String requestedType) {
+        Integer year = strictAutomaticInteger(candidate.get("year"));
+        Integer season = strictAutomaticInteger(candidate.get("season"));
+        return requestedType.equals(candidate.get("typeCode")) && gyingTypeCodes(movie).contains(requestedType)
+                && candidate.get("mid") instanceof String mid && mid.matches("[A-Za-z0-9]{1,100}")
+                && candidate.get("title") instanceof String title && MovieTitleMatcher.isExactMatch(movie, title)
+                && year != null && year.equals(movie.getYear())
+                && ("mv".equals(requestedType) ? true
+                    : season != null && season >= 1 && season <= 99 && season.equals(movie.getSeason()));
+    }
+
+    /** Recheck all canonical owners using the same exact anchors before creating any binding. */
+    private String strictAutomaticNormalizedTitle(String value) {
+        return value.trim().toLowerCase(Locale.ROOT).replaceAll("[\\s\\p{Punct}，。！？、：；（）《》【】「」『』·]+", "");
+    }
+
+    private boolean strictAutomaticCanonical(MovieMetadata movie, Map<String, Object> candidate) {
+        String mid = (String) candidate.get("mid");
+        String type = (String) candidate.get("typeCode");
+        int season = "mv".equals(type) ? 0 : strictAutomaticInteger(candidate.get("season"));
+        List<MovieSourceIdentity> owners = sourceIdentityService.list(new QueryWrapper<MovieSourceIdentity>()
+                .eq("source", "GYING").eq("external_id", mid).apply("BINARY external_id = BINARY {0}", mid).eq("season", season));
+        if (owners.stream().anyMatch(owner -> !movie.getId().equals(owner.getMovieId()) || !type.equals(owner.getSourceType())
+                || !"GYING".equals(owner.getSource()) || !mid.equals(owner.getExternalId()) || !Objects.equals(season, owner.getSeason()))) return false;
+        MovieMetadata byId = movieService.getById(mid);
+        if (byId != null && !movie.getId().equals(byId.getId())) return false;
+        String title = (String) candidate.get("title");
+        SeasonSearchUtils.SeasonQuery parsed = SeasonSearchUtils.parse(title);
+        String base = parsed == null ? title : parsed.baseTitle();
+        String normalized = strictAutomaticNormalizedTitle(title);
+        String normalizedBase = strictAutomaticNormalizedTitle(base);
+        String normalizeSql = "LOWER(REGEXP_REPLACE(COALESCE(%s,''), '[[:space:][:punct:]，。！？、：；（）《》【】「」『』·]+', ''))";
+        List<MovieMetadata> local = movieService.list(new QueryWrapper<MovieMetadata>().eq("status", "ACTIVE").isNull("deleted_at")
+                .eq("year", movie.getYear()).in("category", gyingTypeCodes(movie))
+                .and(q -> q.apply(normalizeSql.formatted("title_cn") + " IN ({0},{1})", normalized, normalizedBase)
+                        .or().apply(normalizeSql.formatted("title_en") + " IN ({0},{1})", normalized, normalizedBase)
+                        .or().apply(normalizeSql.formatted("series_name") + " IN ({0},{1})", normalized, normalizedBase)
+                        .or().apply(normalizeSql.formatted("aliases") + " LIKE {0}", "%" + normalized + "%")
+                        .or().apply(normalizeSql.formatted("aliases") + " LIKE {0}", "%" + normalizedBase + "%")).last("LIMIT 31"));
+        if (local.size() > 30) return false;
+        List<MovieMetadata> exact = local.stream().filter(item -> item != null && item.getDeletedAt() == null && "ACTIVE".equals(item.getStatus()))
+                .filter(item -> strictAutomaticCandidate(item, candidate, type)).toList();
+        return exact.size() == 1 && movie.getId().equals(exact.get(0).getId());
+    }
+
     private MovieSourceIdentity findGyingIdentity(String movieId) {
         return sourceIdentityService.getOne(new QueryWrapper<MovieSourceIdentity>()
                 .eq("movie_id", movieId)
@@ -2465,6 +3163,7 @@ public class GyingSourceWorkflowService {
         if (searched != null) {
             return searched;
         }
+        if (maxPages <= 0) return null;
         int pages = Math.min(Math.max(maxPages, 1), 50);
         for (String typeCode : typeCodes) {
             for (int page = 1; page <= pages; page++) {
@@ -2543,6 +3242,7 @@ public class GyingSourceWorkflowService {
             MovieMetadata movie, List<String> typeCodes) {
         LinkedHashSet<String> queries = new LinkedHashSet<>();
         if (movie != null) {
+            if (hasText(movie.getSeriesName())) queries.add(movie.getSeriesName().trim());
             if (hasText(movie.getTitleCn())) queries.add(movie.getTitleCn().trim());
             if (hasText(movie.getTitleEn())) queries.add(movie.getTitleEn().trim());
             if (hasText(movie.getSeriesName())) queries.add(movie.getSeriesName().trim());
@@ -2650,9 +3350,16 @@ public class GyingSourceWorkflowService {
                 .eq("source", source)
                 .eq("source_type", sourceType)
                 .eq("external_id", externalId)
+                .apply("BINARY external_id = BINARY {0}", externalId)
                 .eq("season", safeSeason)
                 .last("LIMIT 1"), false);
         LocalDateTime now = LocalDateTime.now();
+        if (identity != null && !externalId.equals(identity.getExternalId())) {
+            throw new IllegalStateException("Case-sensitive source identity collision requires migration");
+        }
+        if (identity != null && identity.getMovieId() != null && !movieId.equals(identity.getMovieId())) {
+            throw new IllegalStateException("Source identity belongs to another canonical movie");
+        }
         if (identity == null) {
             identity = new MovieSourceIdentity();
             identity.setCreatedAt(now);
@@ -2665,10 +3372,14 @@ public class GyingSourceWorkflowService {
         identity.setConfidence(BigDecimal.valueOf(confidence));
         identity.setMatchMethod(method);
         identity.setMatchStatus(status);
-        identity.setEvidenceJson("{\"score\":" + confidence + ",\"reasons\":\""
-                + String.join(",", reasons) + "\"}");
+        ObjectNode evidence = catalogEvidence(identity);
+        evidence.put("score", confidence);
+        evidence.put("reasons", String.join(",", reasons));
+        identity.setEvidenceJson(evidence.toString());
         identity.setUpdatedAt(now);
-        if (identity.getId() == null) sourceIdentityService.save(identity); else sourceIdentityService.updateById(identity);
+        if (!(identity.getId() == null ? sourceIdentityService.save(identity) : sourceIdentityService.updateById(identity))) {
+            throw new IllegalStateException("Source identity was not persisted");
+        }
         return identity;
     }
 
@@ -2685,6 +3396,7 @@ public class GyingSourceWorkflowService {
     }
     private long activeResourceCount(String movieId) {
         return resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .eq("status", "ACTIVE")
                 .isNull("deleted_at"));
@@ -2818,18 +3530,19 @@ public class GyingSourceWorkflowService {
     }
 
     private String resourceProvider(Map<String, Object> item) {
-        String provider = firstText(stringValue(item.get("provider")), "");
-        if (hasText(provider)) {
-            return provider.toUpperCase(Locale.ROOT);
-        }
-        String url = stringValue(item.get("url"));
-        if (hasText(url) && url.toLowerCase(Locale.ROOT).contains("xunlei.com")) {
-            return "XUNLEI";
-        }
-        if (hasText(url) && url.toLowerCase(Locale.ROOT).contains("quark.cn")) {
-            return "QUARK";
-        }
-        return "";
+        if (item == null) return "";
+        var declared = com.gying.movie.config.CloudDriveProvider.from(stringValue(item.get("provider")));
+        if (hasText(stringValue(item.get("provider")))) return declared == null ? "" : declared.name();
+        try {
+            var uri = java.net.URI.create(stringValue(item.get("url")));
+            if (!"https".equalsIgnoreCase(uri.getScheme()) || uri.getUserInfo() != null || uri.getPort() != -1) return "";
+            return switch (Objects.toString(uri.getHost(), "").toLowerCase(Locale.ROOT)) {
+                case "pan.xunlei.com" -> "XUNLEI";
+                case "pan.quark.cn" -> "QUARK";
+                case "pan.baidu.com" -> "BAIDU";
+                default -> "";
+            };
+        } catch (Exception invalid) { return ""; }
     }
 
     private String siteKey(String typeCode, String mid) {

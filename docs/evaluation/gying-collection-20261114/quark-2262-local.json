@@ -1,0 +1,47 @@
+{
+  "capturedAt": "2026-11-14T18:30:45.684252+08:00",
+  "status": "READ_ONLY_LOCAL_CHECKPOINT",
+  "rowCount": 1,
+  "rowSha256": "5edd50616905b9209e3b695341d0d622953e46a54bc9dbd99fa2c0f093e19861",
+  "fields": {
+    "id": 2262,
+    "discovery_result_id": 9904,
+    "movie_id": "gying_mv_bWxV",
+    "status": "RUNNING",
+    "attempts": 1,
+    "started_at": "2026-11-13 00:23:32.000000",
+    "finished_at": null,
+    "created_at": "2026-11-13 00:23:32.000000",
+    "updated_at": "2026-11-13 00:23:32.000000"
+  },
+  "originalUrlPresent": true,
+  "savedPathPresent": false,
+  "shareUrlPresent": false,
+  "lastErrorPresent": false,
+  "payloads": {
+    "request_payload": {
+      "present": true,
+      "byteLength": null,
+      "sha256": null,
+      "shape": {
+        "origin": {
+          "type": "str",
+          "length": 6
+        },
+        "targetPath": {
+          "type": "str",
+          "length": 25
+        }
+      }
+    },
+    "response_payload": {
+      "present": false,
+      "byteLength": null,
+      "sha256": null,
+      "shape": null
+    }
+  },
+  "remoteTaskIds": [],
+  "remoteTaskIdCount": 0,
+  "backendStartedAt": "2026-11-13T05:27:00.80354556Z"
+}

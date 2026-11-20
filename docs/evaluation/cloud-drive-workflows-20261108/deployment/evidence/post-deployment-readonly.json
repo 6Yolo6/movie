@@ -1,0 +1,295 @@
+{
+  "checkedAt": "2026-11-08T14:35:07.711065+00:00",
+  "status": "passed",
+  "sourceCommit": "6b4104f2cabb570ebc40867162a507fdcf46532d",
+  "deploymentReceiptSha256": "f200cdd6ebc9d3116591acf2fc637e8571756f356bb7665cc0ec484ef41e2d01",
+  "restrictedStateOrKeyRead": false,
+  "productionWrites": false,
+  "realLoginTransferPublishing": false,
+  "checks": [
+    {
+      "name": "backend fixed candidate image",
+      "status": "PASS"
+    },
+    {
+      "name": "backend exact runtime parameters",
+      "status": "PASS"
+    },
+    {
+      "name": "backend reviewed Compose chain",
+      "status": "PASS"
+    },
+    {
+      "name": "backend running with zero restart/OOM",
+      "status": "PASS"
+    },
+    {
+      "name": "frontend fixed candidate image",
+      "status": "PASS"
+    },
+    {
+      "name": "frontend exact runtime parameters",
+      "status": "PASS"
+    },
+    {
+      "name": "frontend reviewed Compose chain",
+      "status": "PASS"
+    },
+    {
+      "name": "frontend running with zero restart/OOM",
+      "status": "PASS"
+    },
+    {
+      "name": "Actual backend JAR matches frozen candidate",
+      "status": "PASS"
+    },
+    {
+      "name": "All actual frontend artifacts match frozen candidate",
+      "status": "PASS"
+    },
+    {
+      "name": "All unrelated container identities/start/restarts preserved",
+      "status": "PASS"
+    },
+    {
+      "name": "Agent and other local managed records unchanged",
+      "status": "PASS"
+    },
+    {
+      "name": "Agent ready record and runtime JAR unchanged",
+      "status": "PASS"
+    },
+    {
+      "name": "Agent process creation/listener identity matches",
+      "status": "PASS"
+    },
+    {
+      "name": "Agent ordinary-permission live argv",
+      "status": "UNKNOWN"
+    },
+    {
+      "name": "All four existing local service health entry points remain HTTP200",
+      "status": "PASS"
+    },
+    {
+      "name": "Persisted stage keys match pre-deployment baseline",
+      "status": "PASS"
+    },
+    {
+      "name": "No drive config keys written during this deployment/read-only verification",
+      "status": "PASS"
+    },
+    {
+      "name": "Real local entry http://127.0.0.1/",
+      "status": "PASS"
+    },
+    {
+      "name": "Real local entry http://127.0.0.1/api/movies/list?page=1&size=1",
+      "status": "PASS"
+    },
+    {
+      "name": "Real local entry http://127.0.0.1:8880/api/movies/list?page=1&size=1",
+      "status": "PASS"
+    },
+    {
+      "name": "Actual startup-to-independent-verification logs have no ERROR/Exception/OOM and no restart",
+      "status": "PASS"
+    }
+  ],
+  "runtime": {
+    "backend": {
+      "containerId": "defa419359eaabb5a4cd3fd55133dba84e42d6babd7f82dff9ccb9f103687986",
+      "imageId": "sha256:2925c3b129e1ddf505f0483403ae5c3eb11c4675fbb6f8cec6af96ffcb78c6d4",
+      "startedAt": "2026-11-08T14:33:56.222151011Z",
+      "restartCount": 0,
+      "running": true,
+      "oomKilled": false,
+      "runtimeSha256": "1bb7330c787d7c85d20a7a77810a009ba46858a541890e2b3bc539608b28786d",
+      "configurationPreserved": true,
+      "composeLayerCount": 13,
+      "composeChainMatches": true,
+      "environmentValuesPrinted": false,
+      "actualJarSha256": "21dd135cdc9f604e0d2f2ab9a62e43e40e616e2bd64638a7f7ea7cfc465c95f6"
+    },
+    "frontend": {
+      "containerId": "808e5bfe32d218ff8ce00292ba24feb630df48da19df7414e4e2f7177c9c9af6",
+      "imageId": "sha256:35cce07fe8af5dbcd6b625b96d0c6c3a83b91995766989b865d5ae282744359f",
+      "startedAt": "2026-11-08T14:34:20.129068821Z",
+      "restartCount": 0,
+      "running": true,
+      "oomKilled": false,
+      "runtimeSha256": "3cbf0ccaae7fa19b4cc0bb67ad2cad5567dd586fb94d0f37d1a0bdc91535dd13",
+      "configurationPreserved": true,
+      "composeLayerCount": 7,
+      "composeChainMatches": true,
+      "environmentValuesPrinted": false,
+      "actualArtifacts": {
+        "files": 375,
+        "mismatchCount": 0,
+        "mismatchedPaths": []
+      }
+    }
+  },
+  "unaffectedContainers": {
+    "checked": 11,
+    "excludedKnownRemovedOwnedBuildContainers": [
+      "/gying-cloud-drive-package-7cb045b5e476"
+    ],
+    "missing": [],
+    "new": [],
+    "changed": []
+  },
+  "agent": {
+    "checkedAt": "2026-11-08T14:35:09.843845+00:00",
+    "privilege": "ordinary current token",
+    "restrictedStateOrKeyRead": false,
+    "managedRecords": {
+      "backend": {
+        "recordSha256": "98bbdbc0a0ba29bcb2817ceec2c99e1ac72c6d955f88940b89eab2aee2ad25e0",
+        "processId": 4992,
+        "instanceId": "bae7404a-043e-49d0-b3e0-ff9879478b18",
+        "startedAt": "2026-11-08T01:36:49.5166714Z"
+      },
+      "frontend": {
+        "recordSha256": "f669957ff365e99e5f2631938c019d85226df52b7eac3dc3ed3557a6af98911d",
+        "processId": 17880,
+        "instanceId": "2c7e5d85-04b8-4aac-8d97-60c59f0a5222",
+        "startedAt": "2026-11-08T01:37:09.7316974Z"
+      },
+      "router": {
+        "recordSha256": "c9827089f9d80cd417f08121fb39f44b653b5782931b2719bcb075575f5bb0c4",
+        "processId": 8908,
+        "instanceId": "11e8e5da-20fe-4684-b287-de5208eeb9b2",
+        "startedAt": "2026-11-08T01:37:01.4830735Z"
+      },
+      "ollama": {
+        "recordSha256": "4cb11bd306d1ed8ca799a739a1e7bb5ca314cb86cfebe42b0598aaf65e731139",
+        "processId": 24652,
+        "instanceId": "6c9302cf-152a-464b-badb-0549a360c101",
+        "startedAt": "2026-11-08T01:36:42.8911574Z"
+      }
+    },
+    "readyMatchesStoredRecord": true,
+    "runtimeJarSha256": "1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64",
+    "runtimeJarMatchesExpected": true,
+    "freshProcess": {
+      "processExists": true,
+      "processId": 4992,
+      "creationTimeUtc": "2026-11-08T01:36:49.5166710Z",
+      "listenerCount": 1,
+      "listenerOwnedByRecordedProcess": true,
+      "executablePathAvailable": false,
+      "executableMatches": null,
+      "commandLineAvailable": false,
+      "expectedRuntimeAppears": null,
+      "commandLineSha256": null
+    },
+    "creationTimeMatchesStoredRecord": true,
+    "liveArgvStatus": "UNKNOWN",
+    "health": {
+      "agent": {
+        "httpStatus": 200,
+        "bodySha256": "85f919e1e1ed84a36563bfcc9681dcf04e007d967695165b728c2036b04aeb30"
+      },
+      "router": {
+        "httpStatus": 200,
+        "bodySha256": "cbbf9f816d04c5c2be65365d4539a268e741760e502d3bf0907aed26834cd0cb"
+      },
+      "agentFrontend": {
+        "httpStatus": 200,
+        "bodySha256": "ff77a2543b74428ace6feaeddf342ca6a0cf4bf4b6abc9ff49fef2fc5cd13c63"
+      },
+      "ollama": {
+        "httpStatus": 200,
+        "bodySha256": "9bf1e9079ca4d42c0cf543680b3c7a54957ddbec19d170d7e064ad9152f3d206"
+      }
+    }
+  },
+  "cloudConfiguration": {
+    "driveKeyCount": 0,
+    "driveKeys": [],
+    "stageObservation": {
+      "stageKeysPresent": 0,
+      "disabledStageKeys": [],
+      "oldBackendCompatible": true
+    },
+    "initialStageBaseline": {
+      "stageKeysPresent": 0,
+      "disabledStageKeys": [],
+      "oldBackendCompatible": true
+    },
+    "accountOrDirectoryValuesReadOrPrinted": false
+  },
+  "localEntries": [
+    {
+      "url": "http://127.0.0.1/",
+      "httpStatus": 200,
+      "bodySha256": "b74db35035f8286537eb6cd5d45b8e722f90af57cffbe9184a78624d634e4d42"
+    },
+    {
+      "url": "http://127.0.0.1/api/movies/list?page=1&size=1",
+      "httpStatus": 200,
+      "bodySha256": "f431e5347481ca8ebe6f4079356bb60f0d413c9f6cab57f48d660f57c4cd87ce"
+    },
+    {
+      "url": "http://127.0.0.1:8880/api/movies/list?page=1&size=1",
+      "httpStatus": 200,
+      "bodySha256": "f431e5347481ca8ebe6f4079356bb60f0d413c9f6cab57f48d660f57c4cd87ce"
+    }
+  ],
+  "summary": {
+    "PASS": 21,
+    "FAIL": 0,
+    "UNKNOWN": 1
+  },
+  "completedAt": "2026-11-08T14:35:56.678031+00:00",
+  "logObservation": {
+    "path": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\independent-log-observation.json",
+    "sha256": "2112ad04c97a55df0b9afa8895a754f348dba544cd867bca23fd0e6965d1cc8a",
+    "report": {
+      "checkedAt": "2026-11-08T14:35:55.765806+00:00",
+      "scope": "Actual newly deployed backend/frontend logs through completion of independent read-only verification",
+      "rawLogsPrintedOrArchived": false,
+      "productionWrites": false,
+      "services": {
+        "backend": {
+          "containerId": "defa419359eaabb5a4cd3fd55133dba84e42d6babd7f82dff9ccb9f103687986",
+          "imageId": "sha256:2925c3b129e1ddf505f0483403ae5c3eb11c4675fbb6f8cec6af96ffcb78c6d4",
+          "windowStart": "2026-11-08T14:33:56.222151011Z",
+          "windowEnd": "2026-11-08T14:35:55.765806+00:00",
+          "logsExitCode": 0,
+          "lines": 24,
+          "bytes": 3180,
+          "logBytesSha256": "721ffff2a0ebc5a42ca9a4945cd3f486b79eb8fe1c797075b323da9d6a41d764",
+          "counts": {
+            "ERROR": 0,
+            "Exception": 0,
+            "OOM": 0
+          },
+          "running": true,
+          "restartCount": 0,
+          "oomKilled": false
+        },
+        "frontend": {
+          "containerId": "808e5bfe32d218ff8ce00292ba24feb630df48da19df7414e4e2f7177c9c9af6",
+          "imageId": "sha256:35cce07fe8af5dbcd6b625b96d0c6c3a83b91995766989b865d5ae282744359f",
+          "windowStart": "2026-11-08T14:34:20.129068821Z",
+          "windowEnd": "2026-11-08T14:35:55.765806+00:00",
+          "logsExitCode": 0,
+          "lines": 5,
+          "bytes": 300,
+          "logBytesSha256": "8833f5f4aac18a458e52e12472f288cc277730cb42776e9c51517ad6758bfee0",
+          "counts": {
+            "ERROR": 0,
+            "Exception": 0,
+            "OOM": 0
+          },
+          "running": true,
+          "restartCount": 0,
+          "oomKilled": false
+        }
+      },
+      "status": "passed"
+    }
+  }
+}

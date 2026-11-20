@@ -1,0 +1,25 @@
+{
+  "sourceJarSha256": "f805f0655d8acf134b58c85908cbaef84302e16ac0b38675c197c4b9489d68b4",
+  "transferPerformed": false,
+  "productionDatabaseLoaded": false,
+  "containerRemoved": true,
+  "fixtureRunId": "d6275106256941dfbce1b98686e4b51c",
+  "rows": [
+    {
+      "taskId": 2177,
+      "selectedUrlSha256": "44099bc9d313d428c92260071d5d2ce5b4f8e933f908ab5060ce47125575bdff",
+      "expectedDirectoryVerified": true,
+      "recursive": true,
+      "elapsedMillis": 24107,
+      "transferPerformed": false
+    },
+    {
+      "taskId": 2176,
+      "selectedUrlSha256": "cd8ac85834509aa18c097acd2a3ab12da1cca59b932a0d8e712d9ce3ba13d153",
+      "expectedDirectoryVerified": true,
+      "recursive": true,
+      "elapsedMillis": 10748,
+      "transferPerformed": false
+    }
+  ]
+}

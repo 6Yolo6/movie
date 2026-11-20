@@ -134,4 +134,44 @@ class SocialPublishingAdminControllerTest {
         verify(logService).update(any(UpdateWrapper.class));
         verify(targetService).removeById(11L);
     }
+
+    @Test
+    void overviewIncludesProcessingAndUnconfirmedOutcomesWithOneGroupedCountQuery() {
+        when(logService.listMaps(any(QueryWrapper.class))).thenReturn(List.of(
+                Map.of("status", "POSTED", "cnt", 12L),
+                Map.of("status", "PENDING", "cnt", 2L),
+                Map.of("status", "PREPARING", "cnt", 3L),
+                Map.of("status", "PUBLISHING", "cnt", 4L),
+                Map.of("status", "PREPARE_FAILED", "cnt", 5L),
+                Map.of("status", "FAILED", "cnt", 6L),
+                Map.of("status", "UNKNOWN", "cnt", 7L)));
+        when(publisherClient.health()).thenReturn(Map.of("ok", true));
+
+        var data = controller.overview("Bearer admin").getData();
+
+        assertEquals(12L, data.get("posted")); assertEquals(2L, data.get("pending"));
+        assertEquals(7L, data.get("processing")); assertEquals(11L, data.get("failed"));
+        assertEquals(7L, data.get("unknown"));
+        verify(logService).listMaps(any(QueryWrapper.class));
+        verify(authHelper).requireAdmin("Bearer admin");
+    }
+
+    @Test
+    void overviewNormalizesGroupedStatusCaseWithoutLosingCounts() {
+        when(logService.listMaps(any(QueryWrapper.class))).thenReturn(List.of(
+                Map.of("status", "posted", "cnt", 4L),
+                Map.of("status", "POSTED", "cnt", 5L),
+                Map.of("status", "prepare_failed", "cnt", 2L),
+                Map.of("status", "publishing", "cnt", 3L),
+                Map.of("status", "unknown", "cnt", 1L)));
+        when(publisherClient.health()).thenReturn(Map.of("ok", true));
+
+        var data = controller.overview("Bearer admin").getData();
+
+        assertEquals(9L, data.get("posted"));
+        assertEquals(2L, data.get("failed"));
+        assertEquals(3L, data.get("processing"));
+        assertEquals(1L, data.get("unknown"));
+        assertEquals(0L, data.get("pending"));
+    }
 }

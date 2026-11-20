@@ -1,0 +1,178 @@
+{
+  "checkedAt": "2026-11-08T14:17:01.201017+00:00",
+  "status": "passed",
+  "cases": 41,
+  "sourceFiles": {
+    "backend": 360,
+    "frontend": 74
+  },
+  "allRuntimeCommandsMocked": true,
+  "productionWrites": false,
+  "helperPrepareCaptureApplyExecuteCalled": false,
+  "checks": [
+    {
+      "name": "No stage keys permits compatible old application",
+      "passed": true
+    },
+    {
+      "name": "All eight stage keys true permit old application",
+      "passed": true
+    },
+    {
+      "name": "Disabled resource.hub.drive.quark.discovery_enabled blocks old application",
+      "passed": true
+    },
+    {
+      "name": "Disabled resource.hub.drive.quark.transfer_enabled blocks old application",
+      "passed": true
+    },
+    {
+      "name": "Disabled resource.hub.drive.quark.share_enabled blocks old application",
+      "passed": true
+    },
+    {
+      "name": "Disabled resource.hub.drive.quark.gying_publish_enabled blocks old application",
+      "passed": true
+    },
+    {
+      "name": "Disabled resource.hub.drive.xunlei.discovery_enabled blocks old application",
+      "passed": true
+    },
+    {
+      "name": "Disabled resource.hub.drive.xunlei.transfer_enabled blocks old application",
+      "passed": true
+    },
+    {
+      "name": "Disabled resource.hub.drive.xunlei.share_enabled blocks old application",
+      "passed": true
+    },
+    {
+      "name": "Disabled resource.hub.drive.xunlei.gying_publish_enabled blocks old application",
+      "passed": true
+    },
+    {
+      "name": "Invalid/duplicate cloud stages reject 10",
+      "passed": true
+    },
+    {
+      "name": "Invalid/duplicate cloud stages reject 11",
+      "passed": true
+    },
+    {
+      "name": "Invalid/duplicate cloud stages reject 12",
+      "passed": true
+    },
+    {
+      "name": "Blocked rollback restores missing using fixed candidate",
+      "passed": true
+    },
+    {
+      "name": "Blocked rollback restores original-stopped using fixed candidate",
+      "passed": true
+    },
+    {
+      "name": "Blocked rollback restores candidate-stopped using fixed candidate",
+      "passed": true
+    },
+    {
+      "name": "Blocked rollback restores candidate-running using fixed candidate",
+      "passed": true
+    },
+    {
+      "name": "Candidate restoration rejects unknown-image",
+      "passed": true
+    },
+    {
+      "name": "Candidate restoration rejects runtime-drift",
+      "passed": true
+    },
+    {
+      "name": "Unattempted backend is never restored",
+      "passed": true
+    },
+    {
+      "name": "Final stopped-writer stage rejection restores missing",
+      "passed": true
+    },
+    {
+      "name": "Final stopped-writer stage rejection restores original-stopped",
+      "passed": true
+    },
+    {
+      "name": "Final stopped-writer stage rejection restores candidate-stopped",
+      "passed": true
+    },
+    {
+      "name": "Initial rollback stage rejection restores missing",
+      "passed": true
+    },
+    {
+      "name": "Initial rollback stage rejection restores original-stopped",
+      "passed": true
+    },
+    {
+      "name": "Initial rollback stage rejection restores candidate-stopped",
+      "passed": true
+    },
+    {
+      "name": "SQL timeout during initial guard restores missing",
+      "passed": true
+    },
+    {
+      "name": "SQL timeout during initial guard restores original-stopped",
+      "passed": true
+    },
+    {
+      "name": "SQL timeout during initial guard restores candidate-stopped",
+      "passed": true
+    },
+    {
+      "name": "SQL timeout during final guard restores missing",
+      "passed": true
+    },
+    {
+      "name": "SQL timeout during final guard restores original-stopped",
+      "passed": true
+    },
+    {
+      "name": "SQL timeout during final guard restores candidate-stopped",
+      "passed": true
+    },
+    {
+      "name": "SQL launch-error during initial guard restores missing",
+      "passed": true
+    },
+    {
+      "name": "SQL launch-error during initial guard restores original-stopped",
+      "passed": true
+    },
+    {
+      "name": "SQL launch-error during initial guard restores candidate-stopped",
+      "passed": true
+    },
+    {
+      "name": "SQL launch-error during final guard restores missing",
+      "passed": true
+    },
+    {
+      "name": "SQL launch-error during final guard restores original-stopped",
+      "passed": true
+    },
+    {
+      "name": "SQL launch-error during final guard restores candidate-stopped",
+      "passed": true
+    },
+    {
+      "name": "Current Git and frozen backend production source binding",
+      "passed": true
+    },
+    {
+      "name": "Current Git and frozen frontend production source binding",
+      "passed": true
+    },
+    {
+      "name": "Common current idle only reads Movie queue",
+      "passed": true
+    }
+  ]
+}

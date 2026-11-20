@@ -1,0 +1,23 @@
+{
+  "sourceCommit": "1adbc336cdadefa48be40ff37082a6de840fbd41",
+  "jarSha256": "dfdd6c7900fa594fef83e6f9c43070aff19c9e4584fc1564d7e94b5f302f691f",
+  "sourceManifestSha256": "3efc2da7982c85ec4093476f425ebf8c898cbf1f50997c9b49222d0bcc9d752c",
+  "sourceFileCount": 421,
+  "baseImageId": "sha256:807798b99d0054bca76f98126b960a010333e672d1675a05abb2b252631f77c4",
+  "deployed": false,
+  "at": "2026-11-15T08:56:46.078469+00:00",
+  "imageId": "sha256:3094a644b065d0546ee0d06fea5e8128abb14f79d42c829cb6d007674e893707",
+  "imageTag": "gying-movie-backend:metadata-updates-20261115-1adbc33-b7e16bcd",
+  "runtimeImageConfigPreservedExceptCandidateLabels": true,
+  "imageJarHashVerified": true,
+  "buildNetwork": "none",
+  "productionMounts": [],
+  "testsRerun": false,
+  "productionContainersUnchanged": true,
+  "runnerSha256": "1abb8da89783988bbc085dca6bb922071324a40c2c6f6170c0527a7f24c1f825",
+  "dockerfileSha256": "37853ee51ea64b3ba0e0ea111f20037932c0a6bce0fd1738b94c260e59e36ca5",
+  "packageProof": {
+    "path": "D:\\gying-movie\\movie\\tmp\\metadata-updates-87d4524eefce\\package-proof.json",
+    "sha256": "c8770d00283167f3b29bb2781de6c49128f14bbd3bb6fb684054b229d13d6173"
+  }
+}

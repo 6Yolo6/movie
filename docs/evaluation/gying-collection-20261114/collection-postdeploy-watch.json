@@ -1,0 +1,254 @@
+{
+  "capturedAt": "2026-11-14T13:13:20.285205+00:00",
+  "metadata": [
+    {
+      "id": 17872,
+      "source": "TMDB",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "maxAttempts": 3,
+      "updatedAt": "2026-11-14 21:02:14.000000",
+      "finishedAt": "2026-11-14 21:02:14.000000",
+      "lastErrorPresent": false,
+      "listSource": "TOP_RATED_MOVIE",
+      "page": 487,
+      "skipped": null,
+      "directResourceLinks": null,
+      "directResourceFailures": null,
+      "crawlCounters": {
+        "attempted": 20,
+        "failed": 0,
+        "deferred": 0,
+        "pageSize": 20,
+        "nextPage": 488,
+        "nextOffset": 0
+      }
+    },
+    {
+      "id": 17873,
+      "source": "GYING",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "maxAttempts": 3,
+      "updatedAt": "2026-11-14 21:03:00.000000",
+      "finishedAt": "2026-11-14 21:03:00.000000",
+      "lastErrorPresent": false,
+      "listSource": "HITS_TV",
+      "page": 1,
+      "skipped": 0,
+      "directResourceLinks": 10,
+      "directResourceFailures": 0,
+      "crawlCounters": {
+        "attempted": 20,
+        "failed": 0,
+        "deferred": 0,
+        "pageSize": 48,
+        "nextPage": 1,
+        "nextOffset": 20
+      }
+    }
+  ],
+  "duplicateSkipped": 0,
+  "archives": [
+    {
+      "id": 17874,
+      "source": "QUARK",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "maxAttempts": 3,
+      "updatedAt": "2026-11-14 21:04:25.000000",
+      "finishedAt": "2026-11-14 21:04:25.000000",
+      "lastErrorPresent": false,
+      "fileCount": 4,
+      "totalBytes": 204421
+    },
+    {
+      "id": 17875,
+      "source": "BAIDU",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "maxAttempts": 3,
+      "updatedAt": "2026-11-14 21:03:44.000000",
+      "finishedAt": "2026-11-14 21:03:44.000000",
+      "lastErrorPresent": false,
+      "fileCount": 4,
+      "totalBytes": 204421
+    },
+    {
+      "id": 17876,
+      "source": "QUARK",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "maxAttempts": 3,
+      "updatedAt": "2026-11-14 21:05:55.000000",
+      "finishedAt": "2026-11-14 21:05:55.000000",
+      "lastErrorPresent": false,
+      "fileCount": 2,
+      "totalBytes": 25673
+    },
+    {
+      "id": 17877,
+      "source": "BAIDU",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "maxAttempts": 3,
+      "updatedAt": "2026-11-14 21:05:28.000000",
+      "finishedAt": "2026-11-14 21:05:28.000000",
+      "lastErrorPresent": false,
+      "fileCount": 2,
+      "totalBytes": 25673
+    },
+    {
+      "id": 17878,
+      "source": "QUARK",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "maxAttempts": 3,
+      "updatedAt": "2026-11-14 21:07:07.000000",
+      "finishedAt": "2026-11-14 21:07:07.000000",
+      "lastErrorPresent": false,
+      "fileCount": 2,
+      "totalBytes": 52490
+    },
+    {
+      "id": 17879,
+      "source": "BAIDU",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "maxAttempts": 3,
+      "updatedAt": "2026-11-14 21:06:47.000000",
+      "finishedAt": "2026-11-14 21:06:47.000000",
+      "lastErrorPresent": false,
+      "fileCount": 2,
+      "totalBytes": 52490
+    },
+    {
+      "id": 17880,
+      "source": "QUARK",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "maxAttempts": 3,
+      "updatedAt": "2026-11-14 21:08:32.000000",
+      "finishedAt": "2026-11-14 21:08:32.000000",
+      "lastErrorPresent": false,
+      "fileCount": 2,
+      "totalBytes": 15803
+    },
+    {
+      "id": 17881,
+      "source": "BAIDU",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "maxAttempts": 3,
+      "updatedAt": "2026-11-14 21:08:04.000000",
+      "finishedAt": "2026-11-14 21:08:04.000000",
+      "lastErrorPresent": false,
+      "fileCount": 2,
+      "totalBytes": 15803
+    },
+    {
+      "id": 17882,
+      "source": "QUARK",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "maxAttempts": 3,
+      "updatedAt": "2026-11-14 21:10:07.000000",
+      "finishedAt": "2026-11-14 21:10:07.000000",
+      "lastErrorPresent": false,
+      "fileCount": 4,
+      "totalBytes": 83549
+    },
+    {
+      "id": 17883,
+      "source": "BAIDU",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "maxAttempts": 3,
+      "updatedAt": "2026-11-14 21:09:36.000000",
+      "finishedAt": "2026-11-14 21:09:36.000000",
+      "lastErrorPresent": false,
+      "fileCount": 4,
+      "totalBytes": 83549
+    },
+    {
+      "id": 17884,
+      "source": "QUARK",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "maxAttempts": 3,
+      "updatedAt": "2026-11-14 21:11:42.000000",
+      "finishedAt": "2026-11-14 21:11:42.000000",
+      "lastErrorPresent": false,
+      "fileCount": 4,
+      "totalBytes": 358781
+    },
+    {
+      "id": 17885,
+      "source": "BAIDU",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "maxAttempts": 3,
+      "updatedAt": "2026-11-14 21:11:10.000000",
+      "finishedAt": "2026-11-14 21:11:10.000000",
+      "lastErrorPresent": false,
+      "fileCount": 4,
+      "totalBytes": 358781
+    },
+    {
+      "id": 17886,
+      "source": "QUARK",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "maxAttempts": 3,
+      "updatedAt": "2026-11-14 21:13:03.000000",
+      "finishedAt": "2026-11-14 21:13:03.000000",
+      "lastErrorPresent": false,
+      "fileCount": 2,
+      "totalBytes": 131307
+    },
+    {
+      "id": 17887,
+      "source": "BAIDU",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "maxAttempts": 3,
+      "updatedAt": "2026-11-14 21:12:39.000000",
+      "finishedAt": "2026-11-14 21:12:39.000000",
+      "lastErrorPresent": false,
+      "fileCount": 2,
+      "totalBytes": 131307
+    }
+  ],
+  "providerSummary": {
+    "QUARK": {
+      "total": 7,
+      "statuses": {
+        "SUCCEEDED": 7
+      },
+      "successFiles": 20
+    },
+    "BAIDU": {
+      "total": 7,
+      "statuses": {
+        "SUCCEEDED": 7
+      },
+      "successFiles": 20
+    }
+  },
+  "activeArchiveIds": [],
+  "attentionArchiveIds": [],
+  "guard": {
+    "status": "PASS_NATURAL_BAIDU_PARENT_SCHEDULER_DELTA",
+    "workerEnabled": true,
+    "otherProtectedSectionsExact": true,
+    "historicalSixFullRowsUnchanged": true,
+    "currentChildFullRowUnchanged": true,
+    "parentRawRowChanged": true,
+    "parentInvariantProjectionSha256": "27360a8d04479aaba473f07caaa80dc0e3c1960fce89a78ed6d7f9480190e8db",
+    "parentRevision": 1509,
+    "parentBlockedReason": "CHILD_FAILED"
+  },
+  "productionSqlWrites": 0,
+  "cloudRequests": 0,
+  "containerChanges": 0
+}

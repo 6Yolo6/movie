@@ -1,0 +1,28 @@
+{
+  "workflowConclusion": "READ_ONLY_PREPARATION_COMPLETED_NO_ELIGIBLE_NEXT_IDENTITY",
+  "parentStatus": "PAUSED",
+  "originalReport": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\next-candidate-readonly-20261110T151953.090241Z.json",
+    "sha256": "5542ed0440658dcea3522aea45541d34d0f90825e9fc567ae6f65eb9be882a9f"
+  },
+  "originalStatusFieldPreserved": true,
+  "statusFieldIssue": "The initial workflow status is overwritten by the parent status returned by select. Interpret the parent status separately; terminal passed is not a top-level receipt status. CompletedAt and retained-scope gates show the bounded read-only preparation completed.",
+  "nextIdentity": {
+    "identityId": 47,
+    "movieId": "0WG4",
+    "sourceType": "mv",
+    "externalId": "0WG4"
+  },
+  "resourceTotalCount": 0,
+  "sourceEligibleEstimate": false,
+  "realArchiveAcceptanceCompleted": false,
+  "proposedAdditionalRealFilmTarget": null,
+  "newFilmTestBudgetUsed": 3,
+  "newFilmTestBudgetMaximum": 3,
+  "additionalAuthorizationRequested": false,
+  "unknownReplayedOrResolved": false,
+  "schedulerRestored": false,
+  "additionalProductionIo": 0,
+  "sealedHelperChanged": false,
+  "createdAt": "2026-11-10T15:22:52.798304+00:00"
+}

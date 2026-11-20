@@ -1,0 +1,20 @@
+{
+  "observedAt": "2026-11-15T09:45:23.873618+00:00",
+  "task": {
+    "id": 18069,
+    "source": "BAIDU",
+    "status": "FAILED",
+    "attempts": 1,
+    "max_attempts": 3,
+    "scheduled_at": "2026-11-15 18:12:48.000000",
+    "updated_at": "2026-11-15 17:42:48.000000",
+    "stage": "UPLOAD_TORRENT",
+    "errorCode": "API_REJECTED",
+    "errorCategory": "BaiduActionException",
+    "baiduUploadIntentStatus": "REJECTED",
+    "lastErrorSha256": "6c77f57790df787b138825e2def93d2aa166822a74790d351d9a3fdf2ca85664"
+  },
+  "productionWrites": 0,
+  "manualRetry": false,
+  "originalLegacyRowsUntouched": true
+}

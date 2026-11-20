@@ -1,0 +1,162 @@
+[
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-1280-dark-connected.png",
+    "sha256": "465249fdbf3c2515972f0f500eb7c9f95091bdf9e8e7dd76698133079d9a892c",
+    "bytes": 105953
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-1280-dark-pending.png",
+    "sha256": "a6d0bb1b4b7f85cf971ddd0a465a20388718c29e90b77f2371ec221153c830ff",
+    "bytes": 116899
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-1280-dark-seed-verification.png",
+    "sha256": "848f08aea2831508bee6e76fed96bc488cf34628c35fe6063e854687412999af",
+    "bytes": 118480
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-1280-dark.png",
+    "sha256": "a3cc719a436a7553085639d829b897947bc7f85aafcd334d614a9ad0a4b8da6e",
+    "bytes": 201651
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-1280-light-connected.png",
+    "sha256": "d5d3f79b532383497f4cf00785de28f72cd289e3e2071ce8e043657eb38a4e40",
+    "bytes": 102807
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-1280-light-pending.png",
+    "sha256": "0c3c5258d3ed026df53574b54cc02d679d551160fba29525ee453e5a9e084afb",
+    "bytes": 113292
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-1280-light-seed-verification.png",
+    "sha256": "4b03cd656a6e0b3486b5b46b72702cffee89a97d19640b500b4b0e28957dfa47",
+    "bytes": 116831
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-1280-light.png",
+    "sha256": "94ab322a661c9e56067a76f3bed5af3cd75d5043d86c83ce3850022b3ac09b5b",
+    "bytes": 201676
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-390-dark-connected.png",
+    "sha256": "37bcd1a69d175e2713e36e16299549129a794ab4e63cee7cbe657b44a3659167",
+    "bytes": 105719
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-390-dark-pending.png",
+    "sha256": "528c64fd55f43d0b99bd96b82362d552a0a351bcf109e557f38aac201005d14b",
+    "bytes": 118673
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-390-dark-seed-verification.png",
+    "sha256": "d337859bd1c9a6bc5487e97c9c8a83a037be73174262c9d847de37245576c1fe",
+    "bytes": 117803
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-390-dark.png",
+    "sha256": "3bad065f275fcafb20246d0026c75c2eb728167cab4349792dd142c8d0224de2",
+    "bytes": 193375
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-390-light-connected.png",
+    "sha256": "6250b30f99905ebef5989e7d87503e629127758496a2497199c8274aef6b8c71",
+    "bytes": 107102
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-390-light-pending.png",
+    "sha256": "193ea592e6f9259f9a0b6e33d5a1e7c0ca612fd5b3bb681af53a31b106d573c0",
+    "bytes": 119483
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-390-light-seed-verification.png",
+    "sha256": "763a8a2acf0d6854acec1c4a61de4967e00d61bbb39efa5d9a43cd170f457b0d",
+    "bytes": 117011
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-390-light.png",
+    "sha256": "82496c2015c65d02f696c6731e3e9f5b8d3e684cdef70c75333066983281c772",
+    "bytes": 191786
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-1280-dark-connected.png",
+    "sha256": "53d3b190a423caa42d92d1429a4f1ffc89d4f884849bdad11ce42f22ffd31592",
+    "bytes": 105475
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-1280-dark-pending.png",
+    "sha256": "b46ccfc7f9e5f377f1d6f5b52d19c096fac4940bbd564ac81306a767939edc4d",
+    "bytes": 116434
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-1280-dark-seed-verification.png",
+    "sha256": "c7b572996b92c2f2be31b0739cdf76a458adc28646439893be2b8137ede71e1a",
+    "bytes": 122669
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-1280-dark.png",
+    "sha256": "949ebce7b39a051e3e0a30e85ecb1d158e224368acdca07b0afc2beda8c69b8c",
+    "bytes": 206344
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-1280-light-connected.png",
+    "sha256": "41cd21a4648d9762b815288ca9ac1fadc64fc403b4bcc4c2287b1642ea711029",
+    "bytes": 107225
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-1280-light-pending.png",
+    "sha256": "2e750563c5feae47d4c0395140b1bce646991fc43365c44f07c4bf8ba6712b54",
+    "bytes": 118303
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-1280-light-seed-verification.png",
+    "sha256": "7d5ddb843e58fd009bc1fdba3eac232c9d5a06bc546172be4298b8cf019e799b",
+    "bytes": 124168
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-1280-light.png",
+    "sha256": "557a38063fb50faf45003cf3ba0cedca963555109164ea978bc864b1fc99e2a9",
+    "bytes": 210462
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-390-dark-connected.png",
+    "sha256": "d641df26d19798e1fc714f61520d0e6dbed38cfb8d4eb7a7b3d31a3cefa8c4a2",
+    "bytes": 105072
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-390-dark-pending.png",
+    "sha256": "373b3eb15aad244aefb05ee8a7192e48bcb9dd32a67b63b018507f64623c9d05",
+    "bytes": 117734
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-390-dark-seed-verification.png",
+    "sha256": "7f4462f37516ba3cddff1e2e8fa0688d8e69421dcf0ac5d74d0b7e1f75e63341",
+    "bytes": 118236
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-390-dark.png",
+    "sha256": "52b09dda22b3610a7eba572ff61254807fd9fb3662af2b25a964497651ae46e7",
+    "bytes": 196639
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-390-light-connected.png",
+    "sha256": "484b3f3528d1f46260f5988e25dac9a1f28b6800f43da9a1e4a1d7c6ba869b0a",
+    "bytes": 109496
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-390-light-pending.png",
+    "sha256": "de2fd31c467ca57929e6388b9674e44e1e6bdd8f4a84eda4561aa0949d114c63",
+    "bytes": 121250
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-390-light-seed-verification.png",
+    "sha256": "8f1dfea192f8cee12ed775d6444ee45aa02d6ac5fed908b586b3e0f25ec001a5",
+    "bytes": 118342
+  },
+  {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-390-light.png",
+    "sha256": "374bf8f3e922959d9a1d8c7e80d15bf388a3f5a3646a5f0dcc5fa08f850e9d0d",
+    "bytes": 197997
+  }
+]

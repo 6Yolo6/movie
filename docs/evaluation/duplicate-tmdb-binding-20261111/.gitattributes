@@ -1,0 +1,5 @@
+# Preserve receipt and frozen helper bytes so recorded SHA-256 matches Git blobs.
+*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+*.py -text
+*.md text eol=lf
+.gitattributes text eol=lf

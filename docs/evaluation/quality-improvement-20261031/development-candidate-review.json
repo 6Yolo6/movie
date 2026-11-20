@@ -1,0 +1,1964 @@
+{
+  "schemaVersion": 1,
+  "reviewProtocol": "development-candidate-requirement-review-v1",
+  "reviewedAt": "2026-10-31T12:05:15Z",
+  "reviewer": {
+    "kind": "model",
+    "name": "Codex"
+  },
+  "reportFile": "docs/evaluation/quality-improvement-20261031/development-candidate-report.json",
+  "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+  "dataset": {
+    "version": "gying-development-v3",
+    "datasetFileSha256": "1a75e3f9a1bfd38132c51d52099d7381af2f98af9017379e4a887c8204d8dee7",
+    "freezeFileSha256": "77d2a07d7d289f0400bc3287f260c01633e422e70f1112e947d078be921c1c7f",
+    "datasetCanonicalSha256": "70ee9ddab7ad2ad537cc98b0cec31fb92738c3a6a643d1ff0e3cd0aec34ebfeb",
+    "split": "development",
+    "provenance": "implementer-development-one-actual-candidate-round"
+  },
+  "candidateBinding": {
+    "agentJarSha256": "2156f19e7497a2a0657bc1fb4cfe617694f66e448d4131ea0c98847486d177ee",
+    "movieJarSha256": "001c59e19f35795fb2ff0a79e22ba3a9ad5cb95264b8ad07e9d61310d29152ad",
+    "movieSourceSha256": "344ea0afe71f423a86fea58797ba1548f616a70b684f72ea8e95189fee110d7a",
+    "catalogClassSha256": "0b7385fd84427fc00cb06e81b830001a0f19f2450256459e1e1b9bcc4c0d3433",
+    "snapshotSha256": "0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a",
+    "snapshotRows": 12822
+  },
+  "scope": {
+    "evaluation": "本轮唯一实际执行的隔离Agent与真实Movie CatalogResearch候选类观测；以记录的answer、工具候选证据、queryPlan和submittedHistory逐条模型辅助判断。",
+    "responsePresentation": "API字段和工具证据可核对；不声称网站已将片名、年份、评分或理由卡片展示。runner拼接的submittedHistory不是新增原始answer文本。",
+    "websiteUserSessionUsed": false,
+    "browserUiVerified": false,
+    "productionQueueClaimed": false,
+    "productionStateEnabled": false,
+    "realMessagesPostsTransfers": 0,
+    "independentHumanHoldout": false,
+    "newHumanReviews": 0,
+    "laterFixesIncluded": false,
+    "limitations": [
+      "实现方development一次15轮观测，不是网站USER验收、独立留出集或生产准确率。",
+      "所有结论绑定首轮报告和回答哈希；后续修复未计为本轮通过，也未覆盖首轮答案。",
+      "公开元数据是本轮可用证据；语言来源、电视特辑类型、镜头排除和未提及剧情不可由字段或简介沉默推断。"
+    ]
+  },
+  "definitions": {
+    "verdicts": [
+      "满足",
+      "有用但不完全",
+      "未满足",
+      "证据不足",
+      "有效澄清"
+    ],
+    "conditionStatuses": [
+      "satisfied",
+      "violated",
+      "unknown",
+      "notApplicable",
+      "conflict"
+    ],
+    "hardConstraintStatus": "整体回答处理的硬条件状态；冲突解释题的satisfied表示正确处理不可能条件，不表示找到了符合电影。",
+    "scores": {
+      "scale": "0=已证实失败或没有可用答案；1=仅部分有用/部分有据；2=在声明的证据范围内满足该维度；null=缺证或没有可评的电影事实，不推测。",
+      "factuality": "仅核对实际记录可支持或反驳的事实，不把未检索事实猜成对错。",
+      "grounding": "实际答复和推荐理由是否由本轮证据支持。",
+      "usefulness": "实际可用程度；单项有用不把包含未满足硬条件的整份清单升级为通过。"
+    },
+    "satisfactionCount": "只计verdict=满足；有效澄清单独列，部分有用和未知不算满足。"
+  },
+  "executionSummary": {
+    "plannedCases": 10,
+    "plannedTurns": 15,
+    "executedTurns": 15,
+    "programCompletedTurns": 15,
+    "unexecutedTurns": 0,
+    "answeredTurns": 15,
+    "agentExitCode": 0,
+    "harnessExitCode": 0,
+    "agentGracefullyStopped": true
+  },
+  "reviewSummary": {
+    "reviewedRows": 15,
+    "modelAssessedRows": 15,
+    "newHumanReviewedRows": 0,
+    "verdictCounts": {
+      "满足": 0,
+      "有用但不完全": 1,
+      "未满足": 8,
+      "证据不足": 4,
+      "有效澄清": 2
+    },
+    "requirementSatisfiedTurns": 0,
+    "effectiveClarificationTurns": 2,
+    "partiallyUsefulTurns": 1,
+    "unmetTurns": 8,
+    "insufficientEvidenceTurns": 4,
+    "scoreDimensions": {
+      "factuality": {
+        "scored": 7,
+        "unknown": 8
+      },
+      "grounding": {
+        "scored": 15,
+        "unknown": 0
+      },
+      "usefulness": {
+        "scored": 15,
+        "unknown": 0
+      }
+    },
+    "primaryCauseCounts": {
+      "documentary_genre_contract_mismatch": 1,
+      "language_union_and_region_misparse": 1,
+      "train_theme_evidence_unavailable": 1,
+      "empty_previous_list_handled": 1,
+      "version_lookup_false_clarification": 1,
+      "current_version_and_operation_lost": 1,
+      "animal_injury_exclusion_unverified": 1,
+      "candidate_fields_match_but_answer_detail_missing": 1,
+      "movie_type_metadata_conflict": 1,
+      "historical_subject_guard_ignores_available_history": 1,
+      "adaptation_relation_misrouted_to_details": 1,
+      "unnecessary_web_permission_clarification": 1,
+      "runtime_conflict_correctly_explained": 1,
+      "core_theme_relevance_gate_not_supported": 1,
+      "theme_strengthening_and_soft_preference_update_lost": 1
+    },
+    "note": "15/15程序completed不是15/15需求满足；新增真人=0；一次development结果不报告为生产准确率。"
+  },
+  "reviews": [
+    {
+      "caseId": "dev-v3-01",
+      "sourceGroup": "dev-v3-film-restoration-process",
+      "repetition": 1,
+      "turn": 1,
+      "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+      "answerSha256": "c4317cc93e473cb896743028c7c678a6af9b029e76414fe31920c8fd95f4644b",
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex"
+      },
+      "execution": {
+        "executed": true,
+        "programStatus": "completed",
+        "apiCode": 200
+      },
+      "requestText": "想看记录修复师怎样修复旧胶片的纪录片，给我两部就好。这里的“旧胶片修复”是主题，不是片名。",
+      "answerText": "本次片库检索没有找到可确认的候选。\n本次联网结果没有足够相关的影视依据，请补充人物、场景、语言或大致年代。",
+      "verdict": "证据不足",
+      "hardConstraintStatus": "unknown",
+      "primaryCause": {
+        "code": "documentary_genre_contract_mismatch",
+        "label": "纪录题材标签契约不一致导致片库筛空",
+        "observation": "计划将主题正确放入 semanticText，但 genresAll=[纪录片] 与固定快照仅有纪录标签不一致；诚实空答不能证明有效落实了纪录片检索。",
+        "confidence": "high"
+      },
+      "conditionChecks": [
+        {
+          "condition": "按修复师修复旧胶片的过程主题检索",
+          "status": "satisfied",
+          "observed": "semanticText 明确为记录修复师怎样修复旧胶片的纪录片，没有把整句塞入 titles。"
+        },
+        {
+          "condition": "纪录题材筛选正确落到片库标签",
+          "status": "violated",
+          "observed": "计划为 genresAll=[纪录片]；固定快照纪录=283、纪录片=0，题材精确筛选构成空集。"
+        },
+        {
+          "condition": "实际候选符合修复过程主题",
+          "status": "unknown",
+          "observed": "片库和联网最终均无候选，没有简介或来源可核查。"
+        },
+        {
+          "condition": "最多两部且不拿电影史影片补足",
+          "status": "satisfied",
+          "observed": "limit=2，实际返回0部，未填入不相关片目。"
+        },
+        {
+          "condition": "没有足够依据时如实说明",
+          "status": "satisfied",
+          "observed": "回答仅说明本次没有可确认候选，没有声称此类电影不存在。"
+        }
+      ],
+      "limits": [
+        "题目是否存在精确解未知；本轮空结果不能证明片库没有相关纪录片。",
+        "联网 webResults=[] 且 truncated=true，只能说明本次没有返回可用依据，不能推断全网不存在。",
+        "满足诚实说明这一局部行为，不等于满足寻找相关纪录片的整体需求。"
+      ],
+      "nextAction": "统一纪录/纪录片题材别名后，以修复过程主题检查真实召回及简介；仍无相关依据时保留本次未知说明，不用电影史影片补数。",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "additionalCauses": [],
+      "evidence": {
+        "reportRowPointer": "rows[0]",
+        "queryPlan": {
+          "intent": "search",
+          "semanticText": "记录修复师怎样修复旧胶片的纪录片",
+          "category": "mv",
+          "inheritContext": false,
+          "genresAll": [
+            "纪录片"
+          ],
+          "limit": 2,
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "tools": [
+          {
+            "reportPointer": "rows[0].evidence[0]",
+            "tool": "queryCatalog",
+            "queriedAt": "2026-10-31T11:41:24.184835900Z",
+            "returned": 0,
+            "total": 0,
+            "truncated": false,
+            "recalledTotal": null,
+            "unverifiedConditions": [],
+            "candidates": []
+          },
+          {
+            "reportPointer": "rows[0].evidence[1]",
+            "tool": "searchMovieWeb",
+            "queriedAt": "2026-10-31T11:41:32.595413500Z",
+            "returned": 0,
+            "total": null,
+            "truncated": true,
+            "recalledTotal": null,
+            "unverifiedConditions": null,
+            "provider": "bing-html",
+            "rawReturned": 0,
+            "identityReturned": 0,
+            "finalWebResultCount": 0,
+            "externalLinksVerifiedNow": false,
+            "candidates": []
+          }
+        ],
+        "submittedHistoryMessageCount": 0,
+        "submittedCandidateIds": [],
+        "snapshotGenreCounts": {
+          "snapshotSha256": "0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a",
+          "纪录": 283,
+          "纪录片": 0
+        }
+      }
+    },
+    {
+      "caseId": "dev-v3-02",
+      "sourceGroup": "dev-v3-language-or-and-runtime",
+      "repetition": 1,
+      "turn": 1,
+      "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+      "answerSha256": "64191451fbce715ad59861180fefdbbe1ea5ffcc8d96cc2c5da5d45762487369",
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex"
+      },
+      "execution": {
+        "executed": true,
+        "programStatus": "completed",
+        "apiCode": 200
+      },
+      "requestText": "找动画电影，原始对白是中文或西班牙语，片长至少70分钟但严格小于95分钟，列最多三部；只有配音语言的信息就先标成未核验。",
+      "answerText": "按本次已识别条件找到 1 部，先展示 1 部。",
+      "verdict": "未满足",
+      "hardConstraintStatus": "violated",
+      "primaryCause": {
+        "code": "language_union_and_region_misparse",
+        "label": "语言并集被缩窄并被错误转换成地区限制",
+        "observation": "中文或西班牙语被计划变成只有西班牙语，并额外要求西班牙地区；原始对白与通用语言字段也未区分。",
+        "confidence": "high"
+      },
+      "conditionChecks": [
+        {
+          "condition": "动画电影",
+          "status": "satisfied",
+          "observed": "候选考古奇兵：翡翠石碑的诅咒，category=mv、genres含动画。"
+        },
+        {
+          "condition": "原始对白中文或西班牙语，按并集处理",
+          "status": "violated",
+          "observed": "languagesAny=[西班牙语]，中文缺失；regionsAny=[西班牙] 是用户未要求的额外条件。"
+        },
+        {
+          "condition": "候选原始对白得到核验",
+          "status": "unknown",
+          "observed": "证据只有 languages=[Spanish]，没有原始对白与发行配音的字段来源区分。"
+        },
+        {
+          "condition": "70分钟<=片长<95分钟",
+          "status": "satisfied",
+          "observed": "minRuntime=70、maxRuntime=94；候选 runtimeMinutes=89。"
+        },
+        {
+          "condition": "最多三部",
+          "status": "satisfied",
+          "observed": "limit=3，返回1部。"
+        },
+        {
+          "condition": "只有通用或配音语言依据时标未核验",
+          "status": "violated",
+          "observed": "unverifiedConditions=[]，候选只给符合本次可核验筛选条件，没有原始对白待核验标记。"
+        }
+      ],
+      "limits": [
+        "不能据此断言该电影真实原始对白不合格；不合格的是并集解析和核验说明。",
+        "通用 languages 字段不是原始对白的充分证明；候选数量少于上限本身不是失败。"
+      ],
+      "nextAction": "保留中文与西班牙语的并集，禁止语言词自动添加制作地区；为原始对白单独记录来源和核验状态，缺依据时移入待核验线索。",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "additionalCauses": [
+        "原始对白字段证据不足"
+      ],
+      "evidence": {
+        "reportRowPointer": "rows[1]",
+        "queryPlan": {
+          "intent": "search",
+          "inheritContext": false,
+          "genresAny": [
+            "动画"
+          ],
+          "minRuntime": 70,
+          "maxRuntime": 94,
+          "limit": 3,
+          "regionsAny": [
+            "西班牙"
+          ],
+          "languagesAny": [
+            "西班牙语"
+          ],
+          "category": "mv",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "tools": [
+          {
+            "reportPointer": "rows[1].evidence[0]",
+            "tool": "queryCatalog",
+            "queriedAt": "2026-10-31T11:41:52.949780100Z",
+            "returned": 1,
+            "total": 1,
+            "truncated": false,
+            "recalledTotal": null,
+            "unverifiedConditions": [],
+            "candidates": [
+              {
+                "id": "tmdb_movie_676701",
+                "titleCn": "考古奇兵：翡翠石碑的诅咒",
+                "titleEn": "Tadeo Jones 3: La Tabla Esmeralda",
+                "year": 2022,
+                "category": "mv",
+                "genres": [
+                  "动画",
+                  "冒险",
+                  "家庭",
+                  "喜剧",
+                  "奇幻"
+                ],
+                "directors": [
+                  "Enrique Gato"
+                ],
+                "languages": [
+                  "Spanish"
+                ],
+                "runtimeMinutes": 89,
+                "rating": 7.5,
+                "ratingSource": "any",
+                "reasons": [
+                  "符合本次可核验的片库筛选条件"
+                ]
+              }
+            ]
+          }
+        ],
+        "submittedHistoryMessageCount": 0,
+        "submittedCandidateIds": []
+      }
+    },
+    {
+      "caseId": "dev-v3-03",
+      "sourceGroup": "dev-v3-rating-source-and-missing",
+      "repetition": 1,
+      "turn": 1,
+      "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+      "answerSha256": "e0e1fdb278964fc91f8240811b6512c421a7c8d90ee1dd2c486d034e0acc701f",
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex"
+      },
+      "execution": {
+        "executed": true,
+        "programStatus": "completed",
+        "apiCode": 200
+      },
+      "requestText": "找以火车旅行为主题的纪录电影，最多四部，按豆瓣评分从高到低排；没有豆瓣分的放最后并写“暂无”，不能拿IMDb分补。",
+      "answerText": "片库召回的候选暂没有足够剧情依据，继续联网核对。\n本次联网结果没有足够相关的影视依据，请补充人物、场景、语言或大致年代。",
+      "verdict": "证据不足",
+      "hardConstraintStatus": "unknown",
+      "primaryCause": {
+        "code": "train_theme_evidence_unavailable",
+        "label": "火车旅行核心主题没有可确认的候选证据",
+        "observation": "片库召回后未保留可核验候选，联网也无最终可用结果；能确认评分来源计划正确，不能确认主题清单或排序实际满足。",
+        "confidence": "high"
+      },
+      "conditionChecks": [
+        {
+          "condition": "纪录电影且主题为火车旅行",
+          "status": "unknown",
+          "observed": "semanticText 指向火车旅行的纪录，但未形成纪录题材结构化限制，最终 movies=[]、webResults=[]。"
+        },
+        {
+          "condition": "最多四部",
+          "status": "satisfied",
+          "observed": "limit=4，实际最终0部，没有补不相关影片。"
+        },
+        {
+          "condition": "按豆瓣评分降序，不用IMDb补分",
+          "status": "satisfied",
+          "observed": "计划 ratingSource=douban、sort=rating_desc，没有把来源替换成IMDb。"
+        },
+        {
+          "condition": "缺豆瓣分放最后并标暂无",
+          "status": "notApplicable",
+          "observed": "本轮没有展示候选，缺分位置及标签未得到实际验证。"
+        },
+        {
+          "condition": "提供可核验的主题依据",
+          "status": "unknown",
+          "observed": "recalledTotal=155，但没有保留下来的剧情依据；联网 rawReturned=1、最终returned=0。"
+        }
+      ],
+      "limits": [
+        "不能由无最终候选推断片库或全网不存在火车旅行纪录电影。",
+        "没有非空清单，无法据此验收评分缺失置末、暂无标签或真实分数排序。",
+        "本轮泛化的补充人物/场景/语言/年代提示未解决明确主题的证据缺口。"
+      ],
+      "nextAction": "对火车旅行及纪录题材分别落实检索条件，只保留有主题摘要或来源支持的电影；有候选后再核对豆瓣原始分及缺分展示。",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "additionalCauses": [],
+      "evidence": {
+        "reportRowPointer": "rows[2]",
+        "queryPlan": {
+          "intent": "search",
+          "inheritContext": false,
+          "limit": 4,
+          "sort": "rating_desc",
+          "semanticText": "找以火车旅行为主题的纪录",
+          "category": "mv",
+          "ratingSource": "douban",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "tools": [
+          {
+            "reportPointer": "rows[2].evidence[0]",
+            "tool": "queryCatalog",
+            "queriedAt": "2026-10-31T11:42:02.474371800Z",
+            "returned": 0,
+            "total": 0,
+            "truncated": true,
+            "recalledTotal": 155,
+            "unverifiedConditions": [],
+            "candidates": []
+          },
+          {
+            "reportPointer": "rows[2].evidence[1]",
+            "tool": "searchMovieWeb",
+            "queriedAt": "2026-10-31T11:42:27.142987Z",
+            "returned": 0,
+            "total": null,
+            "truncated": true,
+            "recalledTotal": null,
+            "unverifiedConditions": null,
+            "provider": "bing-html",
+            "rawReturned": 1,
+            "identityReturned": 1,
+            "finalWebResultCount": 0,
+            "externalLinksVerifiedNow": false,
+            "candidates": []
+          }
+        ],
+        "submittedHistoryMessageCount": 0,
+        "submittedCandidateIds": []
+      }
+    },
+    {
+      "caseId": "dev-v3-03",
+      "sourceGroup": "dev-v3-rating-source-and-missing",
+      "repetition": 1,
+      "turn": 2,
+      "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+      "answerSha256": "93eabd68bf5e0e654b9c61b24fecb78761a384ab8124cc8dfc563fd7958af207",
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex"
+      },
+      "execution": {
+        "executed": true,
+        "programStatus": "completed",
+        "apiCode": 200
+      },
+      "requestText": "现在改用IMDb评分排，还是刚才这些片，不要重新补片。",
+      "answerText": "上一轮没有可用的影片候选，暂不能在那份列表中筛选或排序。请先补充查找条件，或明确要重新查片库。",
+      "verdict": "有效澄清",
+      "hardConstraintStatus": "satisfied",
+      "primaryCause": {
+        "code": "empty_previous_list_handled",
+        "label": "准确处理上一轮候选为空的排序请求",
+        "observation": "上一轮实际候选集合为空，回答明确说明不能在那份列表排序，没有重新补片或虚构IMDb分。",
+        "confidence": "high"
+      },
+      "conditionChecks": [
+        {
+          "condition": "保持上一轮候选身份集合",
+          "status": "satisfied",
+          "observed": "submittedContext.candidateIds=[]；本轮仍 movies=[]。"
+        },
+        {
+          "condition": "切换IMDb降序",
+          "status": "satisfied",
+          "observed": "计划 ratingSource=imdb、sort=rating_desc、scope=previousResults。"
+        },
+        {
+          "condition": "不增加候选",
+          "status": "satisfied",
+          "observed": "返回0部，没有改成片库新搜索来补片。"
+        },
+        {
+          "condition": "无法排序时有效说明",
+          "status": "satisfied",
+          "observed": "回答准确说明上一轮没有可用候选，并让用户明确是否重新检索。"
+        },
+        {
+          "condition": "缺IMDb分置末且标暂无",
+          "status": "notApplicable",
+          "observed": "前轮为空，不存在可排序或缺分候选。"
+        }
+      ],
+      "limits": [
+        "这是对空列表的有效处理，不证明非空候选集上的IMDb排序已经通过。",
+        "上一轮主题检索本身仍证据不足。"
+      ],
+      "nextAction": "保留当前空列表处理；后续取得非空且主题核验过的候选集时，再单独验证只切换评分来源和顺序。",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "additionalCauses": [],
+      "evidence": {
+        "reportRowPointer": "rows[3]",
+        "queryPlan": {
+          "intent": "clarify",
+          "inheritContext": false,
+          "limit": 4,
+          "sort": "rating_desc",
+          "semanticText": "找以火车旅行为主题的纪录",
+          "category": "mv",
+          "ratingSource": "imdb",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": [],
+          "scope": "previousResults",
+          "clarification": "上一轮没有可用的影片候选，暂不能在那份列表中筛选或排序。请先补充查找条件，或明确要重新查片库。"
+        },
+        "tools": [
+          {
+            "reportPointer": "rows[3].evidence[0]",
+            "tool": "queryCatalog",
+            "queriedAt": "2026-10-31T11:42:42.423003Z",
+            "returned": 0,
+            "total": 0,
+            "truncated": null,
+            "recalledTotal": null,
+            "unverifiedConditions": null,
+            "candidates": []
+          }
+        ],
+        "submittedHistoryMessageCount": 2,
+        "submittedCandidateIds": []
+      }
+    },
+    {
+      "caseId": "dev-v3-04",
+      "sourceGroup": "dev-v3-same-title-edition",
+      "repetition": 1,
+      "turn": 1,
+      "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+      "answerSha256": "e9b9b41bf6210b3b89271fcb1dc3e82b20451ea71fbf9763fddce347ce9773c8",
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex"
+      },
+      "execution": {
+        "executed": true,
+        "programStatus": "completed",
+        "apiCode": 200
+      },
+      "requestText": "片库里的《小妇人》是不是有多个电影版本？请用年份和导演区分，不要把几个版本的演员混在一起。",
+      "answerText": "用户询问《小妇人》是否存在多个电影版本，并要求以年份和导演为区分标准，明确排除演员混杂情况。此问题属于对现有片库内容的确认与分类请求，不涉及新查询条件。",
+      "verdict": "未满足",
+      "hardConstraintStatus": "violated",
+      "primaryCause": {
+        "code": "version_lookup_false_clarification",
+        "label": "明确的版本查询被变成没有问题的澄清",
+        "observation": "计划 intent=clarify，工具未执行版本检索；回答仅复述需求，没有提供版本年份/导演，也没有提出消除歧义的问题。",
+        "confidence": "high"
+      },
+      "conditionChecks": [
+        {
+          "condition": "查询片库中有依据的小妇人电影版本",
+          "status": "violated",
+          "observed": "虽有 titles=[小妇人]、category=mv，但 intent=clarify 使工具直接返回澄清文本和空候选。"
+        },
+        {
+          "condition": "按年份和导演区分版本",
+          "status": "violated",
+          "observed": "回答没有任何版本、年份或导演资料。"
+        },
+        {
+          "condition": "不混用演员",
+          "status": "satisfied",
+          "observed": "未输出演员；这不弥补版本答案缺失。"
+        },
+        {
+          "condition": "缺资料时说明实际缺失或有效澄清",
+          "status": "violated",
+          "observed": "回答没有说查到或未查到什么，也没有问用户任何需要补充的版本信息。"
+        }
+      ],
+      "limits": [
+        "工具空结果来自clarify分支，不能据此断言片库没有小妇人或没有多个版本。",
+        "没有实际版本证据，电影事实维度留空。"
+      ],
+      "nextAction": "将带明确标题的版本确认请求路由到电影检索，用实体ID、年份和导演逐项分开；只有身份仍不清楚时才提出针对性澄清。",
+      "scores": {
+        "factuality": null,
+        "grounding": 0,
+        "usefulness": 0
+      },
+      "additionalCauses": [],
+      "evidence": {
+        "reportRowPointer": "rows[4]",
+        "queryPlan": {
+          "intent": "clarify",
+          "semanticText": "片库里的《小妇人》是不是有多个电影版本？请用年份和导演区分，不要把几个版本的演员混在一起。",
+          "clarification": "用户询问《小妇人》是否存在多个电影版本，并要求以年份和导演为区分标准，明确排除演员混杂情况。此问题属于对现有片库内容的确认与分类请求，不涉及新查询条件。",
+          "inheritContext": false,
+          "titles": [
+            "小妇人"
+          ],
+          "limit": 10,
+          "category": "mv",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "tools": [
+          {
+            "reportPointer": "rows[4].evidence[0]",
+            "tool": "queryCatalog",
+            "queriedAt": "2026-10-31T11:43:03.047289900Z",
+            "returned": 0,
+            "total": 0,
+            "truncated": null,
+            "recalledTotal": null,
+            "unverifiedConditions": null,
+            "candidates": []
+          }
+        ],
+        "submittedHistoryMessageCount": 0,
+        "submittedCandidateIds": []
+      }
+    },
+    {
+      "caseId": "dev-v3-04",
+      "sourceGroup": "dev-v3-same-title-edition",
+      "repetition": 1,
+      "turn": 2,
+      "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+      "answerSha256": "aa53a9829494d5f1fd9086a804c16c866492ed7a0ea5bbb506746c99ed76c518",
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex"
+      },
+      "execution": {
+        "executed": true,
+        "programStatus": "completed",
+        "apiCode": 200
+      },
+      "requestText": "只查2019年那个版本的主演，其他版本不要带进来。",
+      "answerText": "用户询问《小妇及人》是否存在多个电影版本，并要求以年份和导演为区分标准，明确排除演员混杂情况。此问题属于对现有片库内容的确认与分类请求，不涉及新查询条件。",
+      "verdict": "未满足",
+      "hardConstraintStatus": "violated",
+      "primaryCause": {
+        "code": "current_version_and_operation_lost",
+        "label": "当前2019版主演要求被旧澄清覆盖",
+        "observation": "当前轮给出了2019年和主演操作，但最终计划继续第一轮语义与无效澄清，标题/年份/主演查找没有落实；回答还将小妇人写成小妇及人。",
+        "confidence": "high"
+      },
+      "conditionChecks": [
+        {
+          "condition": "限定小妇人2019年电影版本",
+          "status": "violated",
+          "observed": "最终计划未保留 titles=[小妇人]、category=mv 或2019年份条件，继续旧semanticText。"
+        },
+        {
+          "condition": "主演与2019版身份绑定",
+          "status": "violated",
+          "observed": "没有查询或返回任何主演及候选身份。"
+        },
+        {
+          "condition": "排除其他版本",
+          "status": "notApplicable",
+          "observed": "没有返回版本或演员，无法检验身份绑定。"
+        },
+        {
+          "condition": "前轮无候选时再查或有效澄清",
+          "status": "violated",
+          "observed": "历史提供片名，当前给出年份，仍只复述首轮需求，未重新检索也未问针对性的身份问题。"
+        }
+      ],
+      "limits": [
+        "前轮没有候选，但片名和当前年份已可支持新一次版本查询。",
+        "没有演员答案，不能据此判断真实演员事实对错。"
+      ],
+      "nextAction": "从历史保留片名，让当前2019年及主演操作覆盖旧意图；没有前轮候选时允许按标题+年份重新查资料，不沿用clarify文本。",
+      "scores": {
+        "factuality": null,
+        "grounding": 0,
+        "usefulness": 0
+      },
+      "additionalCauses": [
+        "回答中的标题转写错误"
+      ],
+      "evidence": {
+        "reportRowPointer": "rows[5]",
+        "queryPlan": {
+          "intent": "clarify",
+          "semanticText": "片库里的《小妇人》是不是有多个电影版本？请用年份和导演区分，不要把几个版本的演员混在一起。",
+          "clarification": "用户询问《小妇及人》是否存在多个电影版本，并要求以年份和导演为区分标准，明确排除演员混杂情况。此问题属于对现有片库内容的确认与分类请求，不涉及新查询条件。",
+          "inheritContext": false,
+          "limit": 10,
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "tools": [
+          {
+            "reportPointer": "rows[5].evidence[0]",
+            "tool": "queryCatalog",
+            "queriedAt": "2026-10-31T11:43:16.913375800Z",
+            "returned": 0,
+            "total": 0,
+            "truncated": null,
+            "recalledTotal": null,
+            "unverifiedConditions": null,
+            "candidates": []
+          }
+        ],
+        "submittedHistoryMessageCount": 2,
+        "submittedCandidateIds": []
+      }
+    },
+    {
+      "caseId": "dev-v3-05",
+      "sourceGroup": "dev-v3-content-absence-evidence",
+      "repetition": 1,
+      "turn": 1,
+      "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+      "answerSha256": "c4317cc93e473cb896743028c7c678a6af9b029e76414fe31920c8fd95f4644b",
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex"
+      },
+      "execution": {
+        "executed": true,
+        "programStatus": "completed",
+        "apiCode": 200
+      },
+      "requestText": "想看野外徒步纪录片，但必须没有动物受伤的镜头。如果你没有逐场内容指南或可核查的相关说明，就不要保证这一点，可以直接说还不能确认。",
+      "answerText": "本次片库检索没有找到可确认的候选。\n本次联网结果没有足够相关的影视依据，请补充人物、场景、语言或大致年代。",
+      "verdict": "证据不足",
+      "hardConstraintStatus": "unknown",
+      "primaryCause": {
+        "code": "animal_injury_exclusion_unverified",
+        "label": "没有动物受伤镜头的排除条件缺少内容证据",
+        "observation": "没有候选或逐场内容指南，回答没有保证安全，但也没有针对动物受伤排除给出明确核验状态；片库计划还遗漏徒步语义且使用不匹配的纪录片标签。",
+        "confidence": "high"
+      },
+      "conditionChecks": [
+        {
+          "condition": "野外徒步纪录片",
+          "status": "unknown",
+          "observed": "片库计划只有genresAny=[纪录片]，没有徒步semanticText；该题材标签与快照纪录不一致，最终片库和联网皆无候选。"
+        },
+        {
+          "condition": "明确排除动物受伤镜头",
+          "status": "unknown",
+          "observed": "没有逐场指南或可核查的镜头排除说明。"
+        },
+        {
+          "condition": "没有相关依据不得保证排除成立",
+          "status": "satisfied",
+          "observed": "回答没有保证候选不含动物受伤镜头，也没有把简介沉默当作安全依据。"
+        },
+        {
+          "condition": "证据不足时说明待核验或请求针对性核查",
+          "status": "violated",
+          "observed": "unverifiedConditions=[]，最终只给泛化无结果和补充人物/场景/语言/年代提示，没有解释动物受伤条件仍未核验。"
+        }
+      ],
+      "limits": [
+        "不保证安全是正确局部行为，但没有证据足以判断该排除要求满足。",
+        "没有实际候选，不能声称某影片包含或不包含动物受伤镜头。",
+        "联网以整段请求查询且最终无结果，不构成逐场内容验证。"
+      ],
+      "nextAction": "保留徒步主题并统一纪录题材别名；为动物受伤排除单列未核验状态，只有逐场指南或明确可靠说明才确认，否则直接说明仍不能确认。",
+      "scores": {
+        "factuality": 2,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "additionalCauses": [
+        "徒步主题未进入片库语义",
+        "纪录/纪录片题材标签不一致"
+      ],
+      "evidence": {
+        "reportRowPointer": "rows[6]",
+        "queryPlan": {
+          "intent": "search",
+          "category": "mv",
+          "inheritContext": false,
+          "genresAny": [
+            "纪录片"
+          ],
+          "limit": 10,
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "tools": [
+          {
+            "reportPointer": "rows[6].evidence[0]",
+            "tool": "queryCatalog",
+            "queriedAt": "2026-10-31T11:43:36.187724500Z",
+            "returned": 0,
+            "total": 0,
+            "truncated": false,
+            "recalledTotal": null,
+            "unverifiedConditions": [],
+            "candidates": []
+          },
+          {
+            "reportPointer": "rows[6].evidence[1]",
+            "tool": "searchMovieWeb",
+            "queriedAt": "2026-10-31T11:43:41.906975800Z",
+            "returned": 0,
+            "total": null,
+            "truncated": true,
+            "recalledTotal": null,
+            "unverifiedConditions": null,
+            "provider": "bing-html",
+            "rawReturned": 0,
+            "identityReturned": 0,
+            "finalWebResultCount": 0,
+            "externalLinksVerifiedNow": false,
+            "candidates": []
+          }
+        ],
+        "submittedHistoryMessageCount": 0,
+        "submittedCandidateIds": [],
+        "snapshotGenreCounts": {
+          "snapshotSha256": "0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a",
+          "纪录": 283,
+          "纪录片": 0
+        }
+      }
+    },
+    {
+      "caseId": "dev-v3-06",
+      "sourceGroup": "dev-v3-constraint-replacement-history",
+      "repetition": 1,
+      "turn": 1,
+      "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+      "answerSha256": "e44edcbd7efb81c50502753202355d79c1c8bc497d5a7964f92516b480fe7ed9",
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex"
+      },
+      "execution": {
+        "executed": true,
+        "programStatus": "completed",
+        "apiCode": 200
+      },
+      "requestText": "先找2000至2010年上映、最多110分钟的音乐电影，给两部并列出年份。",
+      "answerText": "按本次已识别条件找到 17 部，先展示 2 部。",
+      "verdict": "有用但不完全",
+      "hardConstraintStatus": "satisfied",
+      "primaryCause": {
+        "code": "candidate_fields_match_but_answer_detail_missing",
+        "label": "API候选字段满足筛选，回答文本缺逐项年份",
+        "observation": "两项候选的年份、片长、音乐题材和mv类型字段均匹配，但记录的answer只有总数，没有逐条片名/年份；本轮没有验证网页是否将结构化字段展示给用户。",
+        "confidence": "high"
+      },
+      "conditionChecks": [
+        {
+          "condition": "音乐电影",
+          "status": "satisfied",
+          "observed": "电台司令: 彩虹里与放牛班的春天均category=mv、genres含音乐；简介分别为音乐现场录像和合唱题材。"
+        },
+        {
+          "condition": "2000至2010年，含端点",
+          "status": "satisfied",
+          "observed": "yearFrom=2000、yearTo=2010；返回年份2008与2004。"
+        },
+        {
+          "condition": "片长<=110分钟",
+          "status": "satisfied",
+          "observed": "maxRuntime=110；返回43与97分钟。"
+        },
+        {
+          "condition": "最多两部",
+          "status": "satisfied",
+          "observed": "limit=2，实际返回2部。"
+        },
+        {
+          "condition": "给出每部的年份",
+          "status": "unknown",
+          "observed": "evidence.movies 含年份，后轮submittedHistory中也有runner拼接的年份行；原始answer文本只说找到17部先展示2部，未验证浏览器展示。"
+        }
+      ],
+      "limits": [
+        "仅按记录的API answer和工具候选证据评估；没有网站USER或浏览器UI验证。",
+        "不额外要求长片、剧情片或院线电影，43分钟本身没有违反用户的片长上限。",
+        "字段通过不等于文字答案已经提供用户要求的逐项年份。"
+      ],
+      "nextAction": "在最终答案中直接列出两部片名、年份和可核验片长；另用网站USER真实入口验证候选字段确实呈现，再判断完整需求满足。",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 1
+      },
+      "additionalCauses": [],
+      "evidence": {
+        "reportRowPointer": "rows[7]",
+        "queryPlan": {
+          "intent": "search",
+          "inheritContext": false,
+          "genresAll": [
+            "音乐"
+          ],
+          "yearFrom": 2000,
+          "yearTo": 2010,
+          "maxRuntime": 110,
+          "limit": 2,
+          "category": "mv",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "tools": [
+          {
+            "reportPointer": "rows[7].evidence[0]",
+            "tool": "queryCatalog",
+            "queriedAt": "2026-10-31T11:43:45.703992100Z",
+            "returned": 2,
+            "total": 17,
+            "truncated": true,
+            "recalledTotal": null,
+            "unverifiedConditions": [],
+            "candidates": [
+              {
+                "id": "1MeM",
+                "titleCn": "电台司令: 彩虹里",
+                "titleEn": " Radiohead: In Rainbows",
+                "year": 2008,
+                "category": "mv",
+                "genres": [
+                  "纪录",
+                  "音乐"
+                ],
+                "directors": [
+                  "David Barnard"
+                ],
+                "languages": [
+                  "英语"
+                ],
+                "runtimeMinutes": 43,
+                "rating": 9.5,
+                "ratingSource": "any",
+                "reasons": [
+                  "符合本次可核验的片库筛选条件"
+                ]
+              },
+              {
+                "id": "gying_mv_X5Dz",
+                "titleCn": "放牛班的春天",
+                "titleEn": " Les choristes",
+                "year": 2004,
+                "category": "mv",
+                "genres": [
+                  "剧情",
+                  "音乐",
+                  "励志"
+                ],
+                "directors": [
+                  "克里斯托夫·巴哈蒂"
+                ],
+                "languages": [
+                  "法语"
+                ],
+                "runtimeMinutes": 97,
+                "rating": 9.3,
+                "ratingSource": "any",
+                "reasons": [
+                  "符合本次可核验的片库筛选条件"
+                ]
+              }
+            ]
+          }
+        ],
+        "submittedHistoryMessageCount": 0,
+        "submittedCandidateIds": []
+      }
+    },
+    {
+      "caseId": "dev-v3-06",
+      "sourceGroup": "dev-v3-constraint-replacement-history",
+      "repetition": 1,
+      "turn": 2,
+      "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+      "answerSha256": "8588ea11850b49c8a92cd31a537ddfcc78c4a882339c7a5746feb1b6f47c8d35",
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex"
+      },
+      "execution": {
+        "executed": true,
+        "programStatus": "completed",
+        "apiCode": 200
+      },
+      "requestText": "年份改成2015年及以后，其他条件不变，重新给两部。",
+      "answerText": "按本次已识别条件找到 42 部，先展示 2 部。",
+      "verdict": "证据不足",
+      "hardConstraintStatus": "unknown",
+      "primaryCause": {
+        "code": "movie_type_metadata_conflict",
+        "label": "首项候选的电影类型标签与电视特辑简介冲突",
+        "observation": "年份替换、音乐条件、片长上限及数量保留正确；RAYE候选category=mv但简介明写电视特辑节目，缺少足以消除类型冲突的电影资料。",
+        "confidence": "high"
+      },
+      "conditionChecks": [
+        {
+          "condition": "以>=2015替换旧年份范围",
+          "status": "satisfied",
+          "observed": "计划yearFrom=2015，无旧yearTo，scope=catalog；候选2024与2023，均为新候选。"
+        },
+        {
+          "condition": "保留音乐题材",
+          "status": "satisfied",
+          "observed": "genresAll=[音乐]，两项genres均包含音乐。"
+        },
+        {
+          "condition": "保留电影类型",
+          "status": "unknown",
+          "observed": "两项category=mv；首项RAYE at the Royal Albert Hall简介明确写电视特辑节目，不能仅凭mv标签确认真实电影类型。"
+        },
+        {
+          "condition": "保留片长<=110分钟",
+          "status": "satisfied",
+          "observed": "maxRuntime=110；候选80与103分钟。"
+        },
+        {
+          "condition": "最多两部且不交集旧年份",
+          "status": "satisfied",
+          "observed": "limit=2，返回2部，与第一轮身份及2000—2010年份均不同。"
+        }
+      ],
+      "limits": [
+        "范围替换逻辑有真实执行证据，不应把类型证据冲突误归为年份替换失败。",
+        "不能仅据电视特辑文字断言作品必然不属于任何电影形态，也不能仅据mv标签断言它满足电影要求。",
+        "坂本龙一：杰作的影片/音乐会记录简介支持另一项，但首项未标类型待核验，整份两部清单尚不能完整验收。"
+      ],
+      "nextAction": "对电视特辑与电影类型冲突明确标待核验或换成有电影类型依据的候选；继续保留已正确执行的新年份、音乐、片长和数量条件。",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 1
+      },
+      "additionalCauses": [],
+      "evidence": {
+        "reportRowPointer": "rows[8]",
+        "queryPlan": {
+          "intent": "search",
+          "inheritContext": false,
+          "genresAll": [
+            "音乐"
+          ],
+          "maxRuntime": 110,
+          "limit": 2,
+          "category": "mv",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": [],
+          "yearFrom": 2015,
+          "scope": "catalog"
+        },
+        "tools": [
+          {
+            "reportPointer": "rows[8].evidence[0]",
+            "tool": "queryCatalog",
+            "queriedAt": "2026-10-31T11:43:50.843285200Z",
+            "returned": 2,
+            "total": 42,
+            "truncated": true,
+            "recalledTotal": null,
+            "unverifiedConditions": [],
+            "candidates": [
+              {
+                "id": "za3R",
+                "titleCn": "RAYE at the Royal Albert Hall",
+                "year": 2024,
+                "category": "mv",
+                "genres": [
+                  "音乐"
+                ],
+                "directors": [
+                  "保罗·达格代尔"
+                ],
+                "languages": [
+                  "英语"
+                ],
+                "runtimeMinutes": 80,
+                "rating": 9.5,
+                "ratingSource": "any",
+                "reasons": [
+                  "符合本次可核验的片库筛选条件"
+                ]
+              },
+              {
+                "id": "3gLG",
+                "titleCn": "坂本龙一：杰作",
+                "titleEn": " Ryuichi Sakamoto | Opus",
+                "year": 2023,
+                "category": "mv",
+                "genres": [
+                  "音乐",
+                  "纪录"
+                ],
+                "directors": [
+                  "空音央"
+                ],
+                "languages": [
+                  "日语"
+                ],
+                "runtimeMinutes": 103,
+                "rating": 9.4,
+                "ratingSource": "any",
+                "reasons": [
+                  "符合本次可核验的片库筛选条件"
+                ]
+              }
+            ]
+          }
+        ],
+        "submittedHistoryMessageCount": 2,
+        "submittedCandidateIds": [
+          "1MeM",
+          "gying_mv_X5Dz"
+        ],
+        "typeConflictQuote": {
+          "id": "za3R",
+          "category": "mv",
+          "summaryPrefix": "电视特辑节目"
+        }
+      }
+    },
+    {
+      "caseId": "dev-v3-06",
+      "sourceGroup": "dev-v3-constraint-replacement-history",
+      "repetition": 1,
+      "turn": 3,
+      "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+      "answerSha256": "8cdb3fce8820d87f81ee852424ff70a85edaa1613aa0ad8da2b713f4dfe017c6",
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex"
+      },
+      "execution": {
+        "executed": true,
+        "programStatus": "completed",
+        "apiCode": 200
+      },
+      "requestText": "我问的是最开始那份2000到2010年列表里的第一部，它的导演是谁？",
+      "answerText": "当前可核对的候选上下文只有最新一轮，无法确定您指的更早列表中的影片。请提供那部的片名或那份列表，再核对对应资料。",
+      "verdict": "未满足",
+      "hardConstraintStatus": "violated",
+      "primaryCause": {
+        "code": "historical_subject_guard_ignores_available_history",
+        "label": "旧列表保护忽略了历史中已提供的首部身份",
+        "observation": "当前candidateContext只有最新列表，但submittedHistory明确含第一轮首部电台司令: 彩虹里(2008)、ID 1MeM；回答仍称无法确定，未用已有身份再查导演。",
+        "confidence": "high"
+      },
+      "conditionChecks": [
+        {
+          "condition": "指向第一轮实际首部",
+          "status": "violated",
+          "observed": "第一轮首部为1MeM；历史提供编号、片名、年份及ID，最终却scope=previousResults指向当前最新候选上下文并澄清。"
+        },
+        {
+          "condition": "返回与该身份一致的导演",
+          "status": "violated",
+          "observed": "未执行1MeM详情查询、未给导演；第一轮候选证据导演为David Barnard。"
+        },
+        {
+          "condition": "只有历史真的缺失或无法定位时才有效澄清",
+          "status": "violated",
+          "observed": "较早候选完整详情未在当前context中，但历史身份足够定位；将有历史的情况当作无法定位。"
+        },
+        {
+          "condition": "不误用最新首部或猜导演",
+          "status": "satisfied",
+          "observed": "没有猜最新首部RAYE或错误导演，避免了另一种实体错答。"
+        }
+      ],
+      "limits": [
+        "未猜错导演是正确局部行为，但不等于本轮澄清有效。",
+        "旧列表导演详情无需从历史文本猜测，可使用已提供ID重新查证。"
+      ],
+      "nextAction": "从submittedHistory恢复第一轮实际首部ID 1MeM，再读取对应详情；仅在片名/年份/ID确实缺失或多义时请求补充。",
+      "scores": {
+        "factuality": 0,
+        "grounding": 0,
+        "usefulness": 0
+      },
+      "additionalCauses": [],
+      "evidence": {
+        "reportRowPointer": "rows[9]",
+        "queryPlan": {
+          "intent": "clarify",
+          "inheritContext": false,
+          "genresAll": [
+            "音乐"
+          ],
+          "maxRuntime": 110,
+          "limit": 2,
+          "category": "mv",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": [],
+          "yearFrom": 2000,
+          "scope": "previousResults",
+          "yearTo": 2010,
+          "clarification": "当前可核对的候选上下文只有最新一轮，无法确定您指的更早列表中的影片。请提供那部的片名或那份列表，再核对对应资料。"
+        },
+        "tools": [
+          {
+            "reportPointer": "rows[9].evidence[0]",
+            "tool": "queryCatalog",
+            "queriedAt": "2026-10-31T11:43:54.597309Z",
+            "returned": 0,
+            "total": 0,
+            "truncated": null,
+            "recalledTotal": null,
+            "unverifiedConditions": null,
+            "candidates": []
+          }
+        ],
+        "submittedHistoryMessageCount": 4,
+        "submittedCandidateIds": [
+          "za3R",
+          "3gLG"
+        ],
+        "firstTurnSubjectFromSubmittedHistory": {
+          "id": "1MeM",
+          "title": "电台司令: 彩虹里",
+          "year": 2008,
+          "firstTurnDirectorEvidence": [
+            "David Barnard"
+          ]
+        }
+      }
+    },
+    {
+      "caseId": "dev-v3-07",
+      "sourceGroup": "dev-v3-original-author-role",
+      "repetition": 1,
+      "turn": 1,
+      "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+      "answerSha256": "c12fb1cd90ce6f7f8d068d140001511fe8bbb23afe025c8acd3436e289d38f24",
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex"
+      },
+      "execution": {
+        "executed": true,
+        "programStatus": "completed",
+        "apiCode": 200
+      },
+      "requestText": "找村上春树原著改编的电影，最多三部，写清对应哪篇原作并给依据。这里说的是原作者，不是让你查他当主演或导演的作品。",
+      "answerText": "无法确定你指的是哪一部，请选择前一轮影片，或补充片名、年份及导演等版本信息。",
+      "verdict": "未满足",
+      "hardConstraintStatus": "violated",
+      "primaryCause": {
+        "code": "adaptation_relation_misrouted_to_details",
+        "label": "原作改编关系检索误走详情和人物补全",
+        "observation": "trace.arguments原为intent=details且无标题、无演员；后端最终计划又追加演员明基·村上，再澄清要求选择不存在的前轮影片。",
+        "confidence": "high"
+      },
+      "conditionChecks": [
+        {
+          "condition": "电影改编自村上春树原作",
+          "status": "violated",
+          "observed": "没有改编关系查询或任何作品候选，关系请求被当成无标题details。"
+        },
+        {
+          "condition": "不把原作者当演员或导演过滤",
+          "status": "violated",
+          "observed": "后端最终actors=[明基·村上]；原始tool arguments没有actors，不能全部归因于模型直接添加演员。"
+        },
+        {
+          "condition": "写明对应原作并给依据",
+          "status": "violated",
+          "observed": "没有电影、原作或对应改编依据。"
+        },
+        {
+          "condition": "最多三部",
+          "status": "satisfied",
+          "observed": "limit=3，未返回候选。"
+        },
+        {
+          "condition": "澄清与当前任务相关",
+          "status": "violated",
+          "observed": "submittedHistory=[]，却要求选择前一轮影片；这是推荐关系请求，无需先指定某一部。"
+        }
+      ],
+      "limits": [
+        "空结果来自错误details/clarify路径，不证明没有村上春树改编电影。",
+        "不能凭相似主题或记忆补写改编事实；本輪缺少任何关系来源。"
+      ],
+      "nextAction": "把原著改编请求路由为检索及关系核验；人物自动补全先辨作者语境，禁止把村上春树部分命中为演员，再逐项给电影与原作关系依据。",
+      "scores": {
+        "factuality": null,
+        "grounding": 0,
+        "usefulness": 0
+      },
+      "additionalCauses": [
+        "后端人物补全把原作者语境误命中演员"
+      ],
+      "evidence": {
+        "reportRowPointer": "rows[10]",
+        "queryPlan": {
+          "intent": "clarify",
+          "titles": [],
+          "semanticText": "村上春树原著改编",
+          "seedTitle": "",
+          "inheritContext": false,
+          "limit": 3,
+          "category": "mv",
+          "actors": [
+            "明基·村上"
+          ],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": [],
+          "clarification": "无法确定你指的是哪一部，请选择前一轮影片，或补充片名、年份及导演等版本信息。"
+        },
+        "tools": [
+          {
+            "reportPointer": "rows[10].evidence[0]",
+            "tool": "queryCatalog",
+            "queriedAt": "2026-10-31T11:44:06.907455400Z",
+            "returned": 0,
+            "total": 0,
+            "truncated": null,
+            "recalledTotal": null,
+            "unverifiedConditions": null,
+            "candidates": []
+          }
+        ],
+        "submittedHistoryMessageCount": 0,
+        "submittedCandidateIds": []
+      }
+    },
+    {
+      "caseId": "dev-v3-08",
+      "sourceGroup": "dev-v3-dated-official-release",
+      "repetition": 1,
+      "turn": 1,
+      "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+      "answerSha256": "b08aa6bd11ccfe7eb075f7301ef29dd0c76310cca46b011369125961133610ad",
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex"
+      },
+      "execution": {
+        "executed": true,
+        "programStatus": "completed",
+        "apiCode": 200
+      },
+      "requestText": "截至你本次查询这一天，官方有没有宣布《花样年华》4K修复版在中国大陆的新一轮院线重映？给公告来源和发布日期；只查公告，不帮我买票。",
+      "answerText": "该查询涉及具体时间点的官方公告，且要求提供公告来源和发布日期，但未明确说明是否允许联网查询或是否需验证信息真实性。由于当前日期为2026年10月31日，而《花样年华》4K修复版的院线重映信息属于动态事件，需通过官方渠道核实，且无历史记录表明在该日期前已发布相关公告。因此，该请求属于对特定时间点事件的确认，超出常规影视数据库查询范围，需联网验证。建议明确是否允许联网查询，否则无法提供准确答案。",
+      "verdict": "未满足",
+      "hardConstraintStatus": "violated",
+      "primaryCause": {
+        "code": "unnecessary_web_permission_clarification",
+        "label": "已要求只读公告检索却额外索要联网许可",
+        "observation": "答复日期正确，但没有执行公告检索或给来源/发布日期，反而要求用户再允许联网；无历史记录表明已有公告也没有实际检索证据。",
+        "confidence": "high"
+      },
+      "conditionChecks": [
+        {
+          "condition": "记录实际查询日期",
+          "status": "satisfied",
+          "observed": "answer及semanticText使用2026-10-31，与本轮UTC/Asia-Shanghai日期一致。"
+        },
+        {
+          "condition": "核查中国大陆新一轮4K修复版院线重映官方公告",
+          "status": "violated",
+          "observed": "intent=clarify，仅queryCatalog直接回澄清文本；没有searchMovieWeb或官方来源检索。"
+        },
+        {
+          "condition": "提供公告来源与发布日期",
+          "status": "violated",
+          "observed": "没有任何公告来源或发布日期。"
+        },
+        {
+          "condition": "区分新公告、历史公告及转载日期",
+          "status": "unknown",
+          "observed": "没有公告证据可供区分，当前是否已有新公告仍未知。"
+        },
+        {
+          "condition": "不得购票或外部写操作",
+          "status": "satisfied",
+          "observed": "本轮realMessagesPostsTransfers=0；该轮没有购票或写工具。"
+        },
+        {
+          "condition": "未知公告状态不作缺乏证据的结论",
+          "status": "violated",
+          "observed": "声称无历史记录表明该日期前已有公告，没有检索记录支持；又用许可问题阻断清楚的只读任务。"
+        }
+      ],
+      "limits": [
+        "本轮没有查询公告，不能判断官方是否已宣布，更不能把未查询说成没有公告。",
+        "日期正确与没有购票是局部符合，不弥补公告答案缺失。"
+      ],
+      "nextAction": "直接执行用户已请求的只读官方公告检索，保留4K版本、大陆院线、新一轮和实际日期条件；记录原始来源与发布日期，证据不足时只说仍未知。",
+      "scores": {
+        "factuality": null,
+        "grounding": 0,
+        "usefulness": 0
+      },
+      "additionalCauses": [],
+      "evidence": {
+        "reportRowPointer": "rows[11]",
+        "queryPlan": {
+          "intent": "clarify",
+          "semanticText": "截至2026-10-31，官方有没有宣布《花样年华》4K修复版在中国大陆的新一轮院线重映？给公告来源和发布日期；只查公告，不帮我买票。",
+          "clarification": "该查询涉及具体时间点的官方公告，且要求提供公告来源和发布日期，但未明确说明是否允许联网查询或是否需验证信息真实性。由于当前日期为2026年10月31日，而《花样年华》4K修复版的院线重映信息属于动态事件，需通过官方渠道核实，且无历史记录表明在该日期前已发布相关公告。因此，该请求属于对特定时间点事件的确认，超出常规影视数据库查询范围，需联网验证。建议明确是否允许联网查询，否则无法提供准确答案。",
+          "inheritContext": false,
+          "titles": [
+            "花样年华"
+          ],
+          "limit": 10,
+          "regionsAny": [
+            "中国大陆",
+            "大陆"
+          ],
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "tools": [
+          {
+            "reportPointer": "rows[11].evidence[0]",
+            "tool": "queryCatalog",
+            "queriedAt": "2026-10-31T11:44:34.026443400Z",
+            "returned": 0,
+            "total": 0,
+            "truncated": null,
+            "recalledTotal": null,
+            "unverifiedConditions": null,
+            "candidates": []
+          }
+        ],
+        "submittedHistoryMessageCount": 0,
+        "submittedCandidateIds": []
+      }
+    },
+    {
+      "caseId": "dev-v3-09",
+      "sourceGroup": "dev-v3-contradictory-runtime",
+      "repetition": 1,
+      "turn": 1,
+      "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+      "answerSha256": "f9389e14d14eddda8288cb355b866e3cb5d2d869cf3ce25384281f858bc2ac05",
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex"
+      },
+      "execution": {
+        "executed": true,
+        "programStatus": "completed",
+        "apiCode": 200
+      },
+      "requestText": "找一部电影，片长至少150分钟，同时不能超过100分钟。这两个都是硬条件；先告诉我条件能不能同时满足。",
+      "answerText": "条件矛盾：片长不能同时至少150分钟且不超过100分钟，无法满足。 片长的最低要求超过最高限制，两个硬条件不能同时满足。请确认要修改哪一项。",
+      "verdict": "有效澄清",
+      "hardConstraintStatus": "satisfied",
+      "primaryCause": {
+        "code": "runtime_conflict_correctly_explained",
+        "label": "正确解释不相容片长条件并请求修改",
+        "observation": "回答先明确>=150且<=100不能同时成立，然后询问修改哪一项，未虚构候选或私自放宽。",
+        "confidence": "high"
+      },
+      "conditionChecks": [
+        {
+          "condition": "识别两个片长硬条件同时不可能满足",
+          "status": "conflict",
+          "observed": "最低150高于最高100，答案准确解释数学冲突。"
+        },
+        {
+          "condition": "先判断可同时满足与否",
+          "status": "satisfied",
+          "observed": "答案首句即说明条件矛盾、无法满足。"
+        },
+        {
+          "condition": "询问愿意修改哪项，不自行放宽",
+          "status": "satisfied",
+          "observed": "明确请确认要修改哪一项，没有截短版或拆集建议冒充满足。"
+        },
+        {
+          "condition": "不虚构候选",
+          "status": "satisfied",
+          "observed": "intent=clarify，movies=[]。"
+        }
+      ],
+      "limits": [
+        "这是满足冲突解释需求的有效澄清，不是找到了满足不可能条件的电影。",
+        "后端最终计划额外出现actors=[50分]，原始arguments没有该演员；本轮clarify分支未让它影响答案。"
+      ],
+      "nextAction": "保留当前冲突解释和澄清；为人物自动补全增加数字/单位上下文边界，防止片长文字被补成演员。",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "additionalCauses": [
+        "后端人物补全将150分钟部分文本误命中演员50分，未影响本轮答案"
+      ],
+      "evidence": {
+        "reportRowPointer": "rows[12]",
+        "queryPlan": {
+          "intent": "clarify",
+          "semanticText": "片长至少150分钟，同时不能超过100分钟",
+          "clarification": "条件矛盾：片长不能同时至少150分钟且不超过100分钟，无法满足。 片长的最低要求超过最高限制，两个硬条件不能同时满足。请确认要修改哪一项。",
+          "inheritContext": false,
+          "limit": 10,
+          "category": "mv",
+          "actors": [
+            "50分"
+          ],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "tools": [
+          {
+            "reportPointer": "rows[12].evidence[0]",
+            "tool": "queryCatalog",
+            "queriedAt": "2026-10-31T11:44:44.797407600Z",
+            "returned": 0,
+            "total": 0,
+            "truncated": null,
+            "recalledTotal": null,
+            "unverifiedConditions": null,
+            "candidates": []
+          }
+        ],
+        "submittedHistoryMessageCount": 0,
+        "submittedCandidateIds": []
+      }
+    },
+    {
+      "caseId": "dev-v3-10",
+      "sourceGroup": "dev-v3-soft-preference-relaxation",
+      "repetition": 1,
+      "turn": 1,
+      "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+      "answerSha256": "c6538ce9a800db88d46f672ac44987b670fc6abd44e0057f724105d3c84f38a9",
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex"
+      },
+      "execution": {
+        "executed": true,
+        "programStatus": "completed",
+        "apiCode": 200
+      },
+      "requestText": "想看以小镇电影院为故事重要场景的剧情电影，不要剧集。最好结尾温暖，但这只是偏好；先给最多三部，并说明剧情依据。",
+      "answerText": "根据本次片库简介核对后保留 3 部可能符合描述的候选，依据列在下方。",
+      "verdict": "未满足",
+      "hardConstraintStatus": "violated",
+      "primaryCause": {
+        "code": "core_theme_relevance_gate_not_supported",
+        "label": "主题相关性门槛把不支持影院场景的简介当成依据",
+        "observation": "保留狗镇、遇见你之前、存身三项，但其本轮简介及reasons只支持小镇或剧情等词，没有支持电影院为重要场景的资料。",
+        "confidence": "high"
+      },
+      "conditionChecks": [
+        {
+          "condition": "剧情电影，不要剧集",
+          "status": "satisfied",
+          "observed": "三项均category=mv且genres含剧情；seriesName是系列名，不等同剧集类别。"
+        },
+        {
+          "condition": "小镇电影院是故事重要场景",
+          "status": "unknown",
+          "observed": "三项简介均没有电影院场景依据，不能据本轮材料验证核心主题。"
+        },
+        {
+          "condition": "提供支持主题的剧情依据",
+          "status": "violated",
+          "observed": "狗镇引用受害剧情，遇见你之前引用人生/心灵归属，存身引用避难所；均不支持电影院重要场景。"
+        },
+        {
+          "condition": "最多三部",
+          "status": "satisfied",
+          "observed": "limit=3、returned=3。"
+        },
+        {
+          "condition": "温暖结尾为软偏好，未知要说明",
+          "status": "unknown",
+          "observed": "语义保留最好结尾温暖，但没有结尾来源或明确未知说明；无需把不温暖本身当硬条件失败。"
+        }
+      ],
+      "limits": [
+        "简介不提电影院不能证明现实影片绝无电影院；此处确定的问题是返回依据不支持用户要求的核心主题。",
+        "可能符合的泛化措辞不能替代主题证据，不能把只命中小镇、剧情等词视为符合影院要求。"
+      ],
+      "nextAction": "相关性判断逐项要求支持小镇电影院重要场景的明确情节片段；没有该依据的候选不进入推荐清单，结尾偏好单独注明来源或未知。",
+      "scores": {
+        "factuality": null,
+        "grounding": 0,
+        "usefulness": 0
+      },
+      "additionalCauses": [],
+      "evidence": {
+        "reportRowPointer": "rows[13]",
+        "queryPlan": {
+          "intent": "search",
+          "semanticText": "以小镇电影院为故事重要场景的剧情电影，最好结尾温暖",
+          "inheritContext": false,
+          "genresAll": [
+            "剧情"
+          ],
+          "limit": 3,
+          "category": "mv",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "tools": [
+          {
+            "reportPointer": "rows[13].evidence[0]",
+            "tool": "queryCatalog",
+            "queriedAt": "2026-10-31T11:45:10.594856600Z",
+            "returned": 3,
+            "total": 3,
+            "truncated": true,
+            "recalledTotal": 152,
+            "unverifiedConditions": [],
+            "candidates": [
+              {
+                "id": "tmdb_movie_553",
+                "titleCn": "狗镇",
+                "titleEn": "Dogville",
+                "year": 2003,
+                "category": "mv",
+                "genres": [
+                  "犯罪",
+                  "剧情",
+                  "惊悚"
+                ],
+                "directors": [
+                  "拉斯·冯·提尔"
+                ],
+                "languages": [
+                  "English"
+                ],
+                "runtimeMinutes": 178,
+                "rating": 7.7,
+                "ratingSource": "any",
+                "reasons": [
+                  "资料关键词：为、以、剧情、小",
+                  "简介语义候选（需结合资料核对）",
+                  "剧情资料依据：“格蕾丝日以继夜的劳作，终难逃过不幸的事情发生。一个镇民在警察搜捕后，强暴了格蕾丝。龌龊的事情拉开了序幕：人们开始随意的污辱她，甚至连汤姆，也揭开了善良的面具，格”"
+                ]
+              },
+              {
+                "id": "tmdb_movie_296096",
+                "titleCn": "遇见你之前",
+                "titleEn": "Me Before You",
+                "year": 2016,
+                "category": "mv",
+                "genres": [
+                  "剧情",
+                  "爱情"
+                ],
+                "directors": [
+                  "西娅·沙洛克"
+                ],
+                "languages": [
+                  "English"
+                ],
+                "runtimeMinutes": 110,
+                "rating": 7.9,
+                "ratingSource": "any",
+                "reasons": [
+                  "资料关键词：剧情、小、温暖、镇",
+                  "简介语义候选（需结合资料核对）",
+                  "剧情资料依据：“小露使出浑身解数，两人都得到宝贵的的意外收获，重新找到人生与心灵的归属。”"
+                ]
+              },
+              {
+                "id": "tmdb_movie_64720",
+                "titleCn": "存身",
+                "titleEn": "Take Shelter",
+                "year": 2011,
+                "category": "mv",
+                "genres": [
+                  "惊悚",
+                  "剧情",
+                  "恐怖"
+                ],
+                "directors": [
+                  "杰夫·尼科尔斯"
+                ],
+                "languages": [
+                  "English"
+                ],
+                "runtimeMinutes": 120,
+                "rating": 7.0,
+                "ratingSource": "any",
+                "reasons": [
+                  "资料关键词：为、剧情、小、镇",
+                  "简介语义候选（需结合资料核对）",
+                  "剧情资料依据：“柯蒂斯·拉弗奇与妻子萨曼莎及六岁失聪女儿汉娜生活在俄亥俄州小镇。当他开始被骇人梦境困扰时，选择独自承受这些幻象，并将焦虑转化为在后院执迷于修建风暴避难所的行为。”"
+                ]
+              }
+            ]
+          }
+        ],
+        "submittedHistoryMessageCount": 0,
+        "submittedCandidateIds": []
+      }
+    },
+    {
+      "caseId": "dev-v3-10",
+      "sourceGroup": "dev-v3-soft-preference-relaxation",
+      "repetition": 1,
+      "turn": 2,
+      "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+      "answerSha256": "8e5b37d3c11ac7ecf995e25df5dc02bc57b9ea0678c90d70cf36cfcd4680d7cc",
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex"
+      },
+      "execution": {
+        "executed": true,
+        "programStatus": "completed",
+        "apiCode": 200
+      },
+      "requestText": "结尾不用温暖也行，但电影院必须是核心场景，电影类型和最多三部都别改。",
+      "answerText": "根据本次片库简介核对后保留 2 部可能符合描述的候选，依据列在下方。",
+      "verdict": "未满足",
+      "hardConstraintStatus": "violated",
+      "primaryCause": {
+        "code": "theme_strengthening_and_soft_preference_update_lost",
+        "label": "加强影院主题和移除结尾偏好没有落实到当前计划",
+        "observation": "计划沿用最好结尾温暖和重要场景的旧语义，丢失genresAll=[剧情]；返回的天堂电影院有核心影院依据，另一项遇见你之前没有。",
+        "confidence": "high"
+      },
+      "conditionChecks": [
+        {
+          "condition": "去除温暖结尾偏好",
+          "status": "violated",
+          "observed": "当前semanticText仍含最好结尾温暖，没有反映用户已放弃该偏好。"
+        },
+        {
+          "condition": "电影院必须是核心场景",
+          "status": "violated",
+          "observed": "未把重要场景加强为核心场景；两项中天堂电影院简介支持放映师、胶片失火及返乡，遇见你之前简介仅支持小镇看护关系。"
+        },
+        {
+          "condition": "保留剧情电影，不要剧集",
+          "status": "satisfied",
+          "observed": "实际两项均mv且genres含剧情；但计划丢失genresAll=[剧情]，条件保留的通用行为没有通过。"
+        },
+        {
+          "condition": "最多三部",
+          "status": "satisfied",
+          "observed": "limit=3，实际返回2部。"
+        },
+        {
+          "condition": "只保留有核心影院证据的清单",
+          "status": "violated",
+          "observed": "天堂电影院有据，遇见你之前没有相关依据却被放入同一可能符合清单。"
+        }
+      ],
+      "limits": [
+        "天堂电影院提供了一项有用候选，但整份回答仍未满足全部候选的核心主题要求。",
+        "不据简介沉默断言遇见你之前绝无电影院；缺少核心场景支持且未明确单列为不满足要求的线索，足以判该清单不能验收。",
+        "实际返回仍是剧情电影，不把计划genre丢失误说成本轮已返回非剧情或剧集。"
+      ],
+      "nextAction": "用当前轮要求替换软偏好并把电影院核心场景设为硬主题；保留剧情/mv/limit3，先保留天堂电影院，移除或明确单列未证实主题的其他影片。",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 1
+      },
+      "additionalCauses": [
+        "候选相关性核验仍接受不支持核心影院的简介"
+      ],
+      "evidence": {
+        "reportRowPointer": "rows[14]",
+        "queryPlan": {
+          "intent": "search",
+          "semanticText": "以小镇电影院为故事重要场景的剧情电影，最好结尾温暖",
+          "inheritContext": false,
+          "limit": 3,
+          "category": "mv",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "tools": [
+          {
+            "reportPointer": "rows[14].evidence[0]",
+            "tool": "queryCatalog",
+            "queriedAt": "2026-10-31T11:46:32.992893300Z",
+            "returned": 2,
+            "total": 2,
+            "truncated": true,
+            "recalledTotal": 161,
+            "unverifiedConditions": [],
+            "candidates": [
+              {
+                "id": "tmdb_movie_11216",
+                "titleCn": "天堂电影院",
+                "titleEn": "Nuovo Cinema Paradiso",
+                "year": 1988,
+                "category": "mv",
+                "genres": [
+                  "剧情",
+                  "爱情"
+                ],
+                "directors": [
+                  "朱塞佩·托纳多雷"
+                ],
+                "languages": [
+                  "Italian"
+                ],
+                "runtimeMinutes": 124,
+                "rating": 8.4,
+                "ratingSource": "any",
+                "reasons": [
+                  "资料关键词：剧情、小、镇、院",
+                  "简介语义候选（需结合资料核对）",
+                  "剧情资料依据：“在意大利南部小镇姜卡尔多，童年的小多多不仅喜欢看电影，还喜欢看放映师艾弗达“剪”电影：在40年代的意大利小镇上，电影在放映之前都要经由牧师检查，把认为观众不宜的”"
+                ]
+              },
+              {
+                "id": "tmdb_movie_296096",
+                "titleCn": "遇见你之前",
+                "titleEn": "Me Before You",
+                "year": 2016,
+                "category": "mv",
+                "genres": [
+                  "剧情",
+                  "爱情"
+                ],
+                "directors": [
+                  "西娅·沙洛克"
+                ],
+                "languages": [
+                  "English"
+                ],
+                "runtimeMinutes": 110,
+                "rating": 7.9,
+                "ratingSource": "any",
+                "reasons": [
+                  "资料关键词：剧情、小、温暖、镇",
+                  "简介语义候选（需结合资料核对）",
+                  "剧情资料依据：“小露使出浑身解数，两人都得到宝贵的的意外收获，重新找到人生与心灵的归属。”"
+                ]
+              }
+            ]
+          }
+        ],
+        "submittedHistoryMessageCount": 2,
+        "submittedCandidateIds": [
+          "tmdb_movie_553",
+          "tmdb_movie_296096",
+          "tmdb_movie_64720"
+        ]
+      }
+    }
+  ]
+}

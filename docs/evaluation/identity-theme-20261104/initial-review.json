@@ -1,0 +1,540 @@
+{
+  "schemaVersion": 1,
+  "reviewProtocol": "catalog-answer-diagnostic-model-review-v1",
+  "hashContract": {
+    "reportSha256": "SHA-256 of original report file bytes; report.json was read only and preserved verbatim.",
+    "answerSha256": "SHA-256 of original answer string encoded as UTF-8; null only when this turn was never executed and no answer exists.",
+    "usesQualityReviewV2": false
+  },
+  "reviewer": {
+    "kind": "model",
+    "name": "Codex validation_setup subagent",
+    "newHumanReviews": 0,
+    "separateAgentReview": true,
+    "independentModelTypeClaimed": false,
+    "previousDevelopmentReviewObserved": true,
+    "independentBlindReviewClaimed": false
+  },
+  "reviewedAt": "2026-11-04T13:23:00.156991+00:00",
+  "reportFile": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\final-probes\\report.json",
+  "reportSha256": "8eff43f9b8baf7dee64d9fd7f1d3e8fe4476a6088d82e932cecbdb8312d077aa",
+  "agentJarSha256": "ed32390d3047cf71368696940fc26029e334631ef3f3e8de53e22929ba7917a5",
+  "movieJarSha256": "1d06d8dbb16773cef8aa2ddd1381696bdfbb4574777d3436e7777731aae4c204",
+  "scope": {
+    "candidateOnly": true,
+    "deployed": false,
+    "websiteUserSessionUsed": false,
+    "productionBrowserVerified": false,
+    "observedDevelopmentQuestions": true,
+    "independentHoldout": false,
+    "independentQualityImprovementClaimed": false,
+    "newHumanReviews": 0,
+    "snapshotDate": "2026-10-31",
+    "snapshotRows": 12822,
+    "snapshotIsAtomicDatabaseSnapshot": false,
+    "snapshotTmdbTypeRows": 0,
+    "historicalContext": "Fixture rounds from actual earlier candidate responses; not production owner/TTL queue verification.",
+    "oldAnswersOrScoresChanged": false,
+    "noInferenceReplay": true,
+    "noExternalFactLookupsPerformedByReviewer": true,
+    "normalCleanupVerified": true
+  },
+  "definitions": {
+    "scores": "0=无可用目标或已证实关键错误；1=部分满足/部分依据；2=在声明证据范围内满足该维度；null=事实未知，或执行失败/未执行没有可评答案。",
+    "factuality": "评价最终正文实际断言；已核对片库字段不代表外部权威复验；关键电影身份资料未知时保持null，不据简介未提及就断言没有。",
+    "grounding": "评价本次资料是否支持回答及请求；引文存在不等于完整主题蕴含。",
+    "usefulness": "按原需求给目标或有效澄清；一般列表/职业百科不计已找到要求的具体影片。",
+    "hardConstraints": "met=本次证据范围内明确成立；partial=部分条件成立其余未知；unmet=已知冲突；unknown=无足够证据或没有可评回答。逐项判断另见hardConstraintChecks。",
+    "execution": "completed只证明执行结束；错误和未执行单独记录，三维null，未使用机械passed协议。"
+  },
+  "summary": {
+    "plannedCases": 6,
+    "plannedTurns": 10,
+    "executedTurns": 9,
+    "completedTurns": 8,
+    "executionFailedTurns": 1,
+    "notExecutedTurns": 1,
+    "mechanicalAssertionProtocolUsed": false,
+    "mechanicallyPassedTurns": null,
+    "verdictCounts": {
+      "未满足": 3,
+      "证据不足": 1,
+      "部分有用": 1,
+      "有效澄清": 2,
+      "满足": 1,
+      "执行失败": 1,
+      "未执行": 1
+    },
+    "scoreDimensionCounts": {
+      "factuality": {
+        "scored": 6,
+        "unknown": 4
+      },
+      "grounding": {
+        "scored": 8,
+        "unknown": 2
+      },
+      "usefulness": {
+        "scored": 8,
+        "unknown": 2
+      }
+    },
+    "fullThreeDimensionReviews": 6,
+    "modelDiagnosedCompletedRows": 8,
+    "reviewRecords": 10,
+    "newHumanReviews": 0,
+    "durationSecondsSum": 378.59,
+    "tokens": null,
+    "monetaryCost": null
+  },
+  "crossCuttingFindings": {
+    "knownFalsePositivePresentation": "本次胶片修复与电影院候选阶段均未保留旧不支持主题的候选；音乐第二轮未列电视特辑或只由mv推断电影的作品。仅为本次已观察请求的现象，不报告通用误判率或独立提升。",
+    "remainingSparseRecall": "胶片/原声动画/音乐第一轮没有推荐片目；电影身份摘要支持在0条tmdbType旧快照上较稀疏，空结果不能计质量满足。",
+    "remainingIdentityQuestions": "小妇人疑问句未保留电影要求；2019 season=1引出元数据冲突，详情投影的身份资料更少。真实电影事实未知且未外部复验。",
+    "missingCoreSceneFollowup": "电影院首轮WEB_TIMEOUT，软偏好撤回/核心场景强化的第二轮未提交；该修复不能按本轮真实模型验收关闭。"
+  },
+  "reviews": [
+    {
+      "caseId": "dev-v3-01",
+      "repetition": 1,
+      "turn": 1,
+      "reportRowPointer": "rows[0]",
+      "executed": true,
+      "executionStatus": "completed",
+      "answerSha256": "4b288857fe41ce2791426fef5bae92edce43b49c932a94ed287fa1735b7bf2ae",
+      "requestText": "想看记录修复师怎样修复旧胶片的纪录片，给我两部就好。这里的“旧胶片修复”是主题，不是片名。",
+      "verdict": "未满足",
+      "scores": {
+        "factuality": 2,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "hardConstraints": "unknown",
+      "hardConstraintChecks": [
+        {
+          "constraint": "纪录片",
+          "status": "unknown",
+          "evidence": "没有最终影片候选。"
+        },
+        {
+          "constraint": "修复师修复旧胶片过程",
+          "status": "unknown",
+          "evidence": "最终没有影片或对应剧情引文；职业百科不能证明某纪录片满足主题。"
+        },
+        {
+          "constraint": "最多两部",
+          "status": "met",
+          "evidence": "实际列出0部，没有用不合条件候选凑数。"
+        }
+      ],
+      "failureCategories": [
+        "candidates",
+        "facts"
+      ],
+      "reason": "完整修复师/旧胶片修复过程进入semanticText且纪录片、limit=2保持；77项召回经相关性与一次二次蕴含审查后保留0项。正文未再将胶片拍摄里程当作修复过程，也未推荐无依据的影片；但只给“老电影修复师 - 百度百科”的一般职业资料标题，不能交付所求纪录片。表述“不足以确认唯一影片”也不贴合本题可给两部的推荐请求。",
+      "limits": [
+        "空结果不证明不存在符合主题的纪录片；本次最多核验前8项召回，并存在truncated和1个过期语义候选。",
+        "本次只证明旧胶片里程的错误推荐没有出现在最终回答，不能推算通用误判率。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-02",
+      "repetition": 1,
+      "turn": 1,
+      "reportRowPointer": "rows[1]",
+      "executed": true,
+      "executionStatus": "completed",
+      "answerSha256": "36411c42de05762e0e9018d406d21f869d6e14423e8508aa47940251daab708d",
+      "requestText": "找动画电影，原始对白是中文或西班牙语，片长至少70分钟但严格小于95分钟，列最多三部；只有配音语言的信息就先标成未核验。",
+      "verdict": "未满足",
+      "scores": {
+        "factuality": 2,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "hardConstraints": "unknown",
+      "hardConstraintChecks": [
+        {
+          "constraint": "动画电影",
+          "status": "unknown",
+          "evidence": "没有具体候选；计划ac和filmIdentityRequired=true正确。"
+        },
+        {
+          "constraint": "原始对白中文或西班牙语",
+          "status": "unknown",
+          "evidence": "原始对白明确未核验，检索并集正确但无具体影片依据。"
+        },
+        {
+          "constraint": "70分钟<=片长<95分钟",
+          "status": "unknown",
+          "evidence": "minRuntime70/maxRuntime94正确，未给实际影片数值。"
+        },
+        {
+          "constraint": "最多三部",
+          "status": "met",
+          "evidence": "实际列出0部。"
+        }
+      ],
+      "failureCategories": [
+        "candidates",
+        "facts"
+      ],
+      "reason": "计划正确保留ac、电影身份要求、中文或西班牙语并集、70<=片长<=94分钟和limit=3；明确原始对白与配音字段不能区分。实际片库保留0项，正文只有一般动画长片列表搜索摘要，不能核对任何具体片目的语言或片长，因此未交付可用候选。没有把配音信息断言为原始对白。",
+      "limits": [
+        "本次未核验原声；泛列表不能代替所需语种与时长的逐项证据。",
+        "没有具体影片事实断言，factuality=2评价的是忠实报告资料边界，不等于原声已核实。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-04",
+      "repetition": 1,
+      "turn": 1,
+      "reportRowPointer": "rows[2]",
+      "executed": true,
+      "executionStatus": "completed",
+      "answerSha256": "2eb5401656bd2480f9d3457e79897b7abf49d2fd3f0fe3666ed5c1568134d6f7",
+      "requestText": "片库里的《小妇人》是不是有多个电影版本？请用年份和导演区分，不要把几个版本的演员混在一起。",
+      "verdict": "证据不足",
+      "scores": {
+        "factuality": null,
+        "grounding": 2,
+        "usefulness": 1
+      },
+      "hardConstraints": "partial",
+      "hardConstraintChecks": [
+        {
+          "constraint": "只列有依据的小妇人电影版本",
+          "status": "unknown",
+          "evidence": "两个同名记录有年份/导演，但电影身份分别conflict/uncertain；无外部复验。"
+        },
+        {
+          "constraint": "按年份和导演区分",
+          "status": "met",
+          "evidence": "2019和1994与各自导演字段对应。"
+        },
+        {
+          "constraint": "不混用演员",
+          "status": "met",
+          "evidence": "正文每行演员取自对应ID的本次数组。"
+        }
+      ],
+      "failureCategories": [
+        "conditions",
+        "facts"
+      ],
+      "reason": "2019/格蕾塔·葛韦格与1994/Gillian Armstrong分别列出，演员按各自片库ID绑定，未把两版演员混用。电影身份仍未确证：2019记录mv与season=1被标conflict，1994仅mv为uncertain；正文主动提示冲突与缺证。最终plan却没有category且filmIdentityRequired=false，疑问“是不是有多个电影版本”没有保留为电影要求，不能将两行计已核验电影清单。",
+      "limits": [
+        "season=1仅是本次数据字段，不足以由审阅者断言真实作品为剧集。",
+        "不访问外部资料，2019/1994真实电影身份事实维度保留null；不据未返回其他年份断言不存在。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-04",
+      "repetition": 1,
+      "turn": 2,
+      "reportRowPointer": "rows[3]",
+      "executed": true,
+      "executionStatus": "completed",
+      "answerSha256": "510a2b392e5d821c3f272360f361324bea8b9f4c1d6c2b73f4db2f99de0e0150",
+      "requestText": "只查2019年那个版本的主演，其他版本不要带进来。",
+      "verdict": "部分有用",
+      "scores": {
+        "factuality": null,
+        "grounding": 2,
+        "usefulness": 1
+      },
+      "hardConstraints": "partial",
+      "hardConstraintChecks": [
+        {
+          "constraint": "限定2019版本",
+          "status": "met",
+          "evidence": "selectedId=gying_mv_M4Lk且详情ID和年份相符。"
+        },
+        {
+          "constraint": "主演绑定对应版本",
+          "status": "met",
+          "evidence": "3名正文主演逐项来自同ID详情，未混用1994数组。"
+        },
+        {
+          "constraint": "电影版本身份",
+          "status": "unknown",
+          "evidence": "详情投影未保留搜索时season/mediaIdentity，正文明确电影身份缺证。"
+        },
+        {
+          "constraint": "排除其他版本",
+          "status": "met",
+          "evidence": "正文没有1994版演员。"
+        }
+      ],
+      "failureCategories": [
+        "facts"
+      ],
+      "reason": "按前轮2019年的gying_mv_M4Lk定位，详情仍为同ID/2019年；主演西尔莎·罗南、艾玛·沃森、弗洛伦丝·皮尤与本次详情数组一致，没有拿1994版演员补答。详情投影只给3名演员且fieldsTruncated=true；电影身份只剩mv及剧情、明确仍待核验，因此演员线索有用但不能据此完成严格电影身份核验。",
+      "limits": [
+        "3名返回主演不是完整演员表；详情truncated=true不能被隐去。",
+        "未验证原作或权威发行身份；电影身份factuality保持null。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-05",
+      "repetition": 1,
+      "turn": 1,
+      "reportRowPointer": "rows[4]",
+      "executed": true,
+      "executionStatus": "completed",
+      "answerSha256": "9cfccf9c3a5746a11b65227decc74496543d7236000e06a9c3819ee66713ba65",
+      "requestText": "想看野外徒步纪录片，但必须没有动物受伤的镜头。如果你没有逐场内容指南或可核查的相关说明，就不要保证这一点，可以直接说还不能确认。",
+      "verdict": "有效澄清",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "hardConstraints": "unknown",
+      "hardConstraintChecks": [
+        {
+          "constraint": "野外徒步纪录片",
+          "status": "unknown",
+          "evidence": "最终没有候选，也不据空结果否定此类作品存在。"
+        },
+        {
+          "constraint": "没有动物受伤镜头",
+          "status": "unknown",
+          "evidence": "缺少逐场内容指南或相关可核查说明。"
+        },
+        {
+          "constraint": "无依据不能保证排除",
+          "status": "met",
+          "evidence": "正文明确未核实该排除要求且未保证。"
+        }
+      ],
+      "failureCategories": [],
+      "reason": "野外徒步与纪录片保持，未再误限ac；9项召回经两次主题审查后保留0项，联网6项也没有足够依据。正文明确普通简介无法逐场核验动物受伤排除、需要内容指南，不做无动物受伤保证。用户明确允许直接说明尚不能确认，本轮在这个边界内提供了有效澄清。",
+      "limits": [
+        "有效澄清不等于已找到合条件纪录片或已核验动物伤害镜头。",
+        "本次语义二次审查在候选阶段调用1次；没有逐场内容证据。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 1,
+      "reportRowPointer": "rows[5]",
+      "executed": true,
+      "executionStatus": "completed",
+      "answerSha256": "cb34866fec34fc651fbf38dce1a0029c6bc4e0acc78215ef47a8bde539f8d289",
+      "requestText": "先找2000至2010年上映、最多110分钟的音乐电影，给两部并列出年份。",
+      "verdict": "未满足",
+      "scores": {
+        "factuality": 2,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "hardConstraints": "unknown",
+      "hardConstraintChecks": [
+        {
+          "constraint": "音乐电影",
+          "status": "unknown",
+          "evidence": "电影身份审查保留0部，泛榜单不能确认所需作品。"
+        },
+        {
+          "constraint": "2000<=年份<=2010",
+          "status": "unknown",
+          "evidence": "范围计划正确，但无具体候选年份。"
+        },
+        {
+          "constraint": "片长<=110分钟",
+          "status": "unknown",
+          "evidence": "上限保持，但无具体片长。"
+        },
+        {
+          "constraint": "最多两部",
+          "status": "met",
+          "evidence": "实际列出0部，未凑数。"
+        }
+      ],
+      "failureCategories": [
+        "candidates",
+        "facts"
+      ],
+      "reason": "年份2000至2010、音乐、maxRuntime110、limit2、mv与filmIdentityRequired=true正确。11部实际返回候选全部因身份缺证或冲突未保留，正文没有再把录音棚现场录像当成已确认电影，也没有用错年份/时长凑数；但最后只给一般豆瓣音乐电影TOP20标题，未交付任何满足本题的候选。回答未展示具体身份缺证原因，主要限制只留在工具evidence。",
+      "limits": [
+        "11部被拒绝不证明实际都不是电影或不存在合条件音乐电影。",
+        "旧快照0条tmdbType；摘要型身份要求会使召回稀疏，不能据程序过滤通过计推荐质量满足。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 2,
+      "reportRowPointer": "rows[6]",
+      "executed": true,
+      "executionStatus": "completed",
+      "answerSha256": "732e4309c8430aff259ca27ac12887b057d6dce8ec36b45011e9b4d452b49c7c",
+      "requestText": "年份改成2015年及以后，其他条件不变，重新给两部。",
+      "verdict": "满足",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "hardConstraints": "met",
+      "hardConstraintChecks": [
+        {
+          "constraint": "年份>=2015且替换旧区间",
+          "status": "met",
+          "evidence": "2023与2018均>=2015；plan不再有旧yearTo。"
+        },
+        {
+          "constraint": "保留音乐电影及<=110分钟",
+          "status": "met",
+          "evidence": "音乐字段/简介与影片自指可核对，103/84均<=110。"
+        },
+        {
+          "constraint": "最多两部",
+          "status": "met",
+          "evidence": "最终列出2部，第三个supported候选未超量展示。"
+        }
+      ],
+      "failureCategories": [],
+      "reason": "yearFrom=2015替换原2000至2010区间，旧yearTo移除；音乐、maxRuntime110、limit2、mv与电影身份要求保留。正文只列坂本龙一：杰作2023/103分钟和冷战2018/84分钟；二者音乐字段与简介相符，前者“影片记录”钢琴音乐会、后者“影片以”及音乐家/民谣主线提供本次影片自指和音乐依据。没有将电视特辑或单凭mv的作品充作本次音乐电影。",
+      "limits": [
+        "此处满足仅按本次片库元数据与原文支持判定，不声称外部权威电影身份复验。",
+        "38项是宽召回总量，返回20项中17身份被拒绝、3项supported后按2项展示；不能把38项计合条件电影。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 3,
+      "reportRowPointer": "rows[7]",
+      "executed": true,
+      "executionStatus": "completed",
+      "answerSha256": "e0c69e106c0a088987ff5b72214ecef89675a56fa1055d2cf1e5f8ed9b9946f7",
+      "requestText": "我问的是最开始那份2000到2010年列表里的第一部，它的导演是谁？",
+      "verdict": "有效澄清",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "hardConstraints": "unknown",
+      "hardConstraintChecks": [
+        {
+          "constraint": "指向第一轮实际首项",
+          "status": "unknown",
+          "evidence": "第一轮candidateIds/candidates为空，没有首项可指。"
+        },
+        {
+          "constraint": "导演与第一轮身份一致",
+          "status": "unknown",
+          "evidence": "没有已定位身份，因此不猜导演。"
+        },
+        {
+          "constraint": "首轮空时澄清",
+          "status": "met",
+          "evidence": "明确较早列表无可核对候选并要求片名/版本。"
+        }
+      ],
+      "failureCategories": [],
+      "reason": "最开始2000至2010年的第一轮实际没有影片候选，因此没有可定位的首项。正文正确要求补充片名/版本，没有误用最新一轮的坂本龙一：杰作或冷战，也没有猜导演。符合rubric明确允许的空历史列表澄清路径。",
+      "limits": [
+        "这不是成功回答首项导演，也不是生产同owner/TTL任务链验收。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-10",
+      "repetition": 1,
+      "turn": 1,
+      "reportRowPointer": "rows[8]",
+      "executed": true,
+      "executionStatus": "error",
+      "answerSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "requestText": "想看以小镇电影院为故事重要场景的剧情电影，不要剧集。最好结尾温暖，但这只是偏好；先给最多三部，并说明剧情依据。",
+      "verdict": "执行失败",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      },
+      "hardConstraints": "unknown",
+      "hardConstraintChecks": [
+        {
+          "constraint": "剧情电影且非剧集",
+          "status": "unknown",
+          "evidence": "没有最终回答；候选阶段设置正确。"
+        },
+        {
+          "constraint": "小镇电影院重要场景",
+          "status": "unknown",
+          "evidence": "二次审查后无保留项，联网未完成。"
+        },
+        {
+          "constraint": "最多三部",
+          "status": "unknown",
+          "evidence": "终态无回答不能冒称质量通过。"
+        },
+        {
+          "constraint": "主题剧情依据",
+          "status": "unknown",
+          "evidence": "没有最终可用引文。"
+        }
+      ],
+      "failureCategories": [
+        "execution",
+        "web"
+      ],
+      "reason": "原计划保留剧情电影、mv/电影身份、重要电影院场景与limit3；片库137项宽召回、20项返回中的18项身份剔除，剩余2项经一次二次主题审查后全部剔除。随后联网WEB_TIMEOUT，API最终error且answer为空。候选阶段没有再以小镇人物片段充作电影院证据，但终态没有可评分回答，三维全部null，不把错误请求计有效澄清或质量通过。",
+      "limits": [
+        "错误报告中的空数组不是对真实电影内容的否定。",
+        "本题执行失败；不能声称电影核心场景质量闭环已通过。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-10",
+      "repetition": 1,
+      "turn": 2,
+      "reportRowPointer": "rows[9]",
+      "executed": false,
+      "executionStatus": null,
+      "answerSha256": null,
+      "requestText": "结尾不用温暖也行，但电影院必须是核心场景，电影类型和最多三部都别改。",
+      "verdict": "未执行",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      },
+      "hardConstraints": "unknown",
+      "hardConstraintChecks": [
+        {
+          "constraint": "剧情电影且非剧集",
+          "status": "unknown",
+          "evidence": "本轮未提交。"
+        },
+        {
+          "constraint": "电影院核心场景",
+          "status": "unknown",
+          "evidence": "本轮未提交。"
+        },
+        {
+          "constraint": "最多三部",
+          "status": "unknown",
+          "evidence": "本轮未提交。"
+        },
+        {
+          "constraint": "撤回温暖软偏好",
+          "status": "unknown",
+          "evidence": "本轮未提交。"
+        }
+      ],
+      "failureCategories": [
+        "execution"
+      ],
+      "reason": "前轮dev-v3-10 t1未completed，runner按无推理重试规则未提交本轮。撤回温暖偏好并加强电影院核心场景的行为本次完全未观察，三维null，不能重用Java回归或旧回答填成真实模型满足。",
+      "limits": [
+        "未执行不等于模型判断失败或成功，原因是前轮程序失败。"
+      ]
+    }
+  ]
+}

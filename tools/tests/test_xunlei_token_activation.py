@@ -12,7 +12,7 @@ import subprocess
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
-DOCKER = shutil.which("docker")
+DOCKER = shutil.which("docker") or (r"C:\Users\ASUS\AppData\Local\Programs\DockerDesktop\resources\bin\docker.exe" if os.name == "nt" else None)
 IMAGE = os.environ.get("XUNLEI_ACTIVATION_TEST_IMAGE", "gying-movie-backend")
 SCRIPT = (ROOT / "tools/sync-xunlei-edge-token.ps1").read_text(encoding="utf-8-sig")
 MATCH = re.search(r"\$stateJson \| & \$DockerPath exec -i \$container sh -c '((?:''|[^'])*)'", SCRIPT)
@@ -38,7 +38,8 @@ class ActivationTests(unittest.TestCase):
     def run_activation(self, setup="", command=COMMAND):
         body = (
             f"set -eu; mkdir -m 700 {DATA}; " + setup +
-            f"sh -c {shell_quote(command)}; " +
+            f"expected=$(sha256sum {DATA}/xunlei-auth.json); expected=${{expected%% *}}; " +
+            f'sh -c {shell_quote(command)} xunlei-test "$expected"; ' +
             f"stat -c '%u:%g %a' {DATA}/xunlei-auth.json; " +
             f"cat {DATA}/xunlei-auth.json; " +
             f"test -z \"$(find {DATA} -name '.xunlei-auth.*' -print)\""
@@ -49,8 +50,8 @@ class ActivationTests(unittest.TestCase):
         self.assertEqual(permission, "10001:10001 600")
         self.assertEqual(json.loads(content), json.loads(PAYLOAD))
 
-    def test_first_write_unicode_owner_and_mode(self):
-        self.run_activation()
+    def test_replacement_unicode_owner_and_mode(self):
+        self.run_activation(f"printf old > {DATA}/xunlei-auth.json; ")
 
     def test_existing_state_is_atomically_replaced(self):
         self.run_activation(f"printf old > {DATA}/xunlei-auth.json; chmod 600 {DATA}/xunlei-auth.json; ")
@@ -60,13 +61,36 @@ class ActivationTests(unittest.TestCase):
         self.assertNotEqual(broken, COMMAND)
         body = (
             f"set -eu; mkdir -m 700 {DATA}; printf old > {DATA}/xunlei-auth.json; "
-            f"if sh -c {shell_quote(broken)}; then exit 91; fi; "
+            f"expected=$(sha256sum {DATA}/xunlei-auth.json); expected=${{expected%% *}}; "
+            f'if sh -c {shell_quote(broken)} xunlei-test "$expected"; then exit 91; fi; '
             f"test \"$(cat {DATA}/xunlei-auth.json)\" = old; "
             f"test -z \"$(find {DATA} -name '.xunlei-auth.*' -print)\"; echo rollback-preserved"
         )
         result = self.run_shell(body)
         self.assertEqual(result.returncode, 0, result.stderr.decode(errors="replace"))
         self.assertEqual(result.stdout.strip(), b"rollback-preserved")
+
+    def test_concurrent_refresh_is_preserved(self):
+        body = (
+            f"set -eu; mkdir -m 700 {DATA}; printf concurrent > {DATA}/xunlei-auth.json; "
+            f"set +e; sh -c {shell_quote(COMMAND)} xunlei-test stale-hash; result=$?; set -e; "
+            f'test "$result" = 75; test "$(cat {DATA}/xunlei-auth.json)" = concurrent; '
+            f"test -z \"$(find {DATA} -name '.xunlei-auth.*' -print)\"; echo conflict-preserved"
+        )
+        result = self.run_shell(body)
+        self.assertEqual(result.returncode, 0, result.stderr.decode(errors="replace"))
+        self.assertEqual(result.stdout.strip(), b"conflict-preserved")
+
+    def test_missing_original_is_not_silently_bootstrapped(self):
+        body = (
+            f"set -eu; mkdir -m 700 {DATA}; "
+            f"if sh -c {shell_quote(COMMAND)} xunlei-test missing; then exit 91; fi; "
+            f"test ! -e {DATA}/xunlei-auth.json; "
+            f"test -z \"$(find {DATA} -name '.xunlei-auth.*' -print)\"; echo original-missing"
+        )
+        result = self.run_shell(body)
+        self.assertEqual(result.returncode, 0, result.stderr.decode(errors="replace"))
+        self.assertEqual(result.stdout.strip(), b"original-missing")
 
 
 def shell_quote(value):

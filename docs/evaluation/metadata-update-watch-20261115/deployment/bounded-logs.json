@@ -1,0 +1,41 @@
+{
+  "observedAt": "2026-11-15T09:49:07.528211+00:00",
+  "services": [
+    {
+      "service": "backend",
+      "since": "2026-11-15T09:17:54.753167054Z",
+      "untilObservedAt": "2026-11-15T09:49:07.139787+00:00",
+      "tailLimitPerDockerStream": 2000,
+      "stdoutBytes": 6141,
+      "stderrBytes": 0,
+      "stdoutSha256": "eedde790a4fd19205bf055d0d73453d8ae2f563736f31e723a58df1d16ec040e",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "errorMatches": 0,
+      "exceptionMatches": 0,
+      "outOfMemoryMatches": 0,
+      "restartCount": 0,
+      "oomKilled": false,
+      "running": true
+    },
+    {
+      "service": "frontend",
+      "since": "2026-11-15T09:18:25.551656339Z",
+      "untilObservedAt": "2026-11-15T09:49:07.528211+00:00",
+      "tailLimitPerDockerStream": 2000,
+      "stdoutBytes": 300,
+      "stderrBytes": 0,
+      "stdoutSha256": "d787fcd935d0f4a9e4b09f37eb82038ad0add5414038d69c5337d7cc078ea729",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "errorMatches": 0,
+      "exceptionMatches": 0,
+      "outOfMemoryMatches": 0,
+      "restartCount": 0,
+      "oomKilled": false,
+      "running": true
+    }
+  ],
+  "applicationFileLogsRead": false,
+  "rawLogsWritten": false,
+  "productionMutations": 0,
+  "knownNewBaiduArchiveApiRejection": "18069 API_REJECTED, FAILED attempt1/3, scheduled 2026-11-15 18:12:48 Asia/Shanghai"
+}

@@ -1,0 +1,111 @@
+{
+  "status": "PASS",
+  "scope": "READONLY_NEW_RUN_CLONE_PATHS_AND_PRESERVED_FAILURE_RESTORATION_EVIDENCE_BYTES",
+  "atUtc": "2026-11-15T12:40:43.349716+00:00",
+  "runDirectory": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-after-host-idle",
+  "initialInventory": [
+    "BackendRollout.py",
+    "FollowUpDeclarations.py",
+    "HostReadyAdapter.py",
+    "deployment-binding.json"
+  ],
+  "files": {
+    "BackendRollout.py": {
+      "reviewedOriginal": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\BackendRollout.py",
+        "sha256": "bcfff01eb52c4c7c44b2733cd4d8168c06ac4d76b47b08c40a2af7406f2748f7"
+      },
+      "previousRun": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-idle-retry\\BackendRollout.py",
+        "sha256": "bcfff01eb52c4c7c44b2733cd4d8168c06ac4d76b47b08c40a2af7406f2748f7"
+      },
+      "clone": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-after-host-idle\\BackendRollout.py",
+        "sha256": "bcfff01eb52c4c7c44b2733cd4d8168c06ac4d76b47b08c40a2af7406f2748f7"
+      },
+      "allBytesEqual": true
+    },
+    "FollowUpDeclarations.py": {
+      "reviewedOriginal": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\FollowUpDeclarations.py",
+        "sha256": "96039a5159483577e384177fae070cca25c577ec433fca20a5c52c9ed920c1c9"
+      },
+      "previousRun": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-idle-retry\\FollowUpDeclarations.py",
+        "sha256": "96039a5159483577e384177fae070cca25c577ec433fca20a5c52c9ed920c1c9"
+      },
+      "clone": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-after-host-idle\\FollowUpDeclarations.py",
+        "sha256": "96039a5159483577e384177fae070cca25c577ec433fca20a5c52c9ed920c1c9"
+      },
+      "allBytesEqual": true
+    },
+    "HostReadyAdapter.py": {
+      "reviewedOriginal": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\HostReadyAdapter.py",
+        "sha256": "7c799fa149eb80681a3aeda15739ca25d3601fbd19d58f76cb3d95b02d780625"
+      },
+      "previousRun": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-idle-retry\\HostReadyAdapter.py",
+        "sha256": "7c799fa149eb80681a3aeda15739ca25d3601fbd19d58f76cb3d95b02d780625"
+      },
+      "clone": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-after-host-idle\\HostReadyAdapter.py",
+        "sha256": "7c799fa149eb80681a3aeda15739ca25d3601fbd19d58f76cb3d95b02d780625"
+      },
+      "allBytesEqual": true
+    },
+    "deployment-binding.json": {
+      "reviewedOriginal": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\deployment-binding.json",
+        "sha256": "afc15bccadfe4f8654b016086d4fd04ff8a9f6e0b5338ad88b52a3ac4f746921"
+      },
+      "previousRun": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-idle-retry\\deployment-binding.json",
+        "sha256": "afc15bccadfe4f8654b016086d4fd04ff8a9f6e0b5338ad88b52a3ac4f746921"
+      },
+      "clone": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-after-host-idle\\deployment-binding.json",
+        "sha256": "afc15bccadfe4f8654b016086d4fd04ff8a9f6e0b5338ad88b52a3ac4f746921"
+      },
+      "allBytesEqual": true
+    }
+  },
+  "checks": {
+    "newRunInitiallyExactlyFourFiles": true,
+    "fourCloneFilesExactReviewedAndPreviousRunBytes": true,
+    "sameOriginalReleaseParent": true,
+    "newFilesAreRegularNotSymlinks": true,
+    "noOldPreparedReservationReceiptAckOrOverlayCopied": true,
+    "previousExecuteFailureBytesPreserved": true,
+    "previousWorkerRestorationEvidenceBytesPreserved": true,
+    "samePriorV2PathAndBoundByteSha": true
+  },
+  "previousExecuteFailure": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-idle-retry\\failure-2026-11-15T123311.888447_0000.json",
+    "sha256": "a996f3495dfd37194ea48099341b3897fb615f95761d31e6cd591f3994cfc233"
+  },
+  "previousWorkerRestorationEvidence": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-idle-retry\\worker-restored-old-backend.json",
+    "sha256": "67da7f7cedb8f439120a46e7175dcb1705584cbf8457df977304252a5a8a8ce2"
+  },
+  "reviewedV4Implementation": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\backend-rollout-v4-independent-review.json",
+    "sha256": "33ca6642f1af83fcebc41fa8e363fe37c99ece0e932e7b84e992b07952a2bc0c"
+  },
+  "priorCloneIsolationReview": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-idle-retry-isolation-independent-review.json",
+    "sha256": "0f3d5376badef1de482aac7bee126d4ba3a373b0cccf96f841ce8861c8df5b99"
+  },
+  "noNewHelperLogicOrBuildOrTestsRequired": true,
+  "freshCliProcessRequired": true,
+  "newRuntimePlanAndAllOriginalIdleGatesRequired": true,
+  "wholeOriginalReleaseDailyCoverageTargetUnchanged": true,
+  "waitLogicAdded": false,
+  "taskAllowlistExpanded": false,
+  "historicalRunningTaskIdentityConfirmed": false,
+  "nextTaskWindowVerifiedByReviewer": false,
+  "newPrepareOrExecuteInvokedByReviewer": false,
+  "productionMutationPerformed": false,
+  "testsRerun": false
+}

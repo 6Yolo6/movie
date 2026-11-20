@@ -1,6 +1,8 @@
 package com.gying.movie.config;
 
 import lombok.Data;
+import com.gying.movie.dto.MetadataCrawlRange;
+import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Data
@@ -10,19 +12,109 @@ public class ResourceHubProperties {
     private boolean autoApprove = true;
     private Tmdb tmdb = new Tmdb();
     private Gying gying = new Gying();
+    private Tvmaze tvmaze = new Tvmaze();
     private Pansou pansou = new Pansou();
     private Quark quark = new Quark();
     private Xunlei xunlei = new Xunlei();
+    private Baidu baidu = new Baidu();
     private Worker worker = new Worker();
     private QqChannelPublisher qqChannelPublisher = new QqChannelPublisher();
+
+    public boolean isDriveDiscoveryEnabled(String provider) {
+        CloudDriveProvider drive = CloudDriveProvider.from(provider);
+        if (drive == null) return false;
+        return switch (drive) {
+            case QUARK -> quark.isDiscoveryEnabled();
+            case XUNLEI -> xunlei.isDiscoveryEnabled();
+            case BAIDU -> baidu.isDiscoveryEnabled();
+        };
+    }
+
+    public boolean isDriveTransferEnabled(String provider) {
+        CloudDriveProvider drive = CloudDriveProvider.from(provider);
+        if (drive == null) return false;
+        return switch (drive) {
+            case QUARK -> quark.isTransferEnabled();
+            case XUNLEI -> xunlei.isEnabled();
+            case BAIDU -> baidu.isEnabled();
+        };
+    }
+
+    public boolean isDriveGyingPublishEnabled(String provider) {
+        CloudDriveProvider drive = CloudDriveProvider.from(provider);
+        if (drive == null) return false;
+        return switch (drive) {
+            case QUARK -> quark.isGyingPublishEnabled();
+            case XUNLEI -> xunlei.isGyingPublishEnabled();
+            case BAIDU -> baidu.isGyingPublishEnabled();
+        };
+    }
+
+    public boolean isDriveShareEnabled(String provider) {
+        CloudDriveProvider drive = CloudDriveProvider.from(provider);
+        if (drive == null) return false;
+        return switch (drive) {
+            case QUARK -> quark.isShareEnabled();
+            case XUNLEI -> xunlei.isShareEnabled();
+            case BAIDU -> baidu.isShareEnabled();
+        };
+    }
+
+    /** File policy is independent of workflow stages; unknown providers never collect. */
+    public boolean isDriveVideoEnabled(String provider) {
+        var drive = CloudDriveProvider.from(provider);
+        if (drive == null) return false;
+        return switch (drive) {
+            case QUARK -> quark.isVideoEnabled();
+            case XUNLEI -> xunlei.isVideoEnabled();
+            case BAIDU -> baidu.isVideoEnabled();
+        };
+    }
+
+    public boolean isDriveTorrentEnabled(String provider) {
+        var drive = CloudDriveProvider.from(provider);
+        if (drive == null) return false;
+        return switch (drive) {
+            case QUARK -> quark.isTorrentEnabled();
+            case XUNLEI -> xunlei.isTorrentEnabled();
+            case BAIDU -> baidu.isTorrentEnabled();
+        };
+    }
+
+    public boolean isDriveFileCollectionEnabled(String provider) {
+        return isDriveVideoEnabled(provider) || isDriveTorrentEnabled(provider);
+    }
+
+    /** Legacy Quark/Xunlei transfers restore video trees; torrents use the small-file archive. */
+    public boolean isDriveShareCollectionEnabled(String provider) {
+        return isDriveDiscoveryEnabled(provider) && ("BAIDU".equalsIgnoreCase(provider)
+                ? isDriveFileCollectionEnabled(provider) : isDriveVideoEnabled(provider));
+    }
+
+    public boolean isDriveShareTransferEnabled(String provider) {
+        return isDriveTransferEnabled(provider) && ("BAIDU".equalsIgnoreCase(provider)
+                ? isDriveFileCollectionEnabled(provider) : isDriveVideoEnabled(provider));
+    }
 
     @Data
     public static class Tmdb {
         private String baseUrl = "https://api.themoviedb.org/3";
         private String apiKey;
         private boolean autoSyncEnabled = false;
+        private boolean autoSyncUpdatesOnly = false;
         private String autoSyncSources = "TRENDING_MOVIE_DAY,TRENDING_TV_DAY,POPULAR_MOVIE,POPULAR_TV";
         private int autoSyncPage = 1;
+        private int autoSyncEndPage;
+        private Map<String, MetadataCrawlRange> autoSyncRanges = Map.of();
+
+        public MetadataCrawlRange rangeFor(String source) {
+            return autoSyncRanges.getOrDefault(source, new MetadataCrawlRange(autoSyncPage, getAutoSyncEndPage()));
+        }
+
+        // Missing range configuration preserves the legacy single-page scope.
+        public int getAutoSyncEndPage() {
+            return Math.max(autoSyncPage, autoSyncEndPage);
+        }
         private int autoSyncMaxItems = 20;
         private int autoSyncIntervalHours = 24;
         private boolean autoDiscoveryEnabled = true;
@@ -36,10 +128,47 @@ public class ResourceHubProperties {
     public static class Gying {
         private boolean discoveryEnabled = true;
         private boolean autoSyncEnabled = false;
+        private boolean autoSyncUpdatesOnly = false;
         private String autoSyncSources = "HITS_MOVIE,HITS_TV,HITS_ANIME,CSCORE_MOVIE,CSCORE_TV,CSCORE_ANIME";
+        private volatile Map<String, Boolean> autoSyncPausedSources = Map.of();
+
+        public void setAutoSyncPausedSources(Map<String, Boolean> paused) {
+            autoSyncPausedSources = Map.copyOf(paused);
+        }
+
+        public boolean isAutoSyncSourcePaused(String source) {
+            return Boolean.TRUE.equals(autoSyncPausedSources.get(source));
+        }
+
         private int autoSyncPage = 1;
+        private int autoSyncEndPage;
+        private Map<String, MetadataCrawlRange> autoSyncRanges = Map.of();
+
+        public MetadataCrawlRange rangeFor(String source) {
+            MetadataCrawlRange configured = autoSyncRanges.get(source);
+            if (configured != null) return configured;
+            if (java.util.Set.of("TIME_MOVIE", "TIME_TV", "TIME_ANIME").contains(source)) {
+                return new MetadataCrawlRange(1, 2);
+            }
+            return new MetadataCrawlRange(autoSyncPage, getAutoSyncEndPage());
+        }
+
+        // Missing range configuration preserves the legacy single-page scope.
+        public int getAutoSyncEndPage() {
+            return Math.max(autoSyncPage, autoSyncEndPage);
+        }
         private int autoSyncMaxItems = 10;
         private int autoSyncIntervalHours = 24;
+    }
+
+    @Data
+    public static class Tvmaze {
+        private String baseUrl = "https://api.tvmaze.com";
+        private boolean autoSyncEnabled = false;
+        private int autoSyncMaxItems = 10;
+        private int autoSyncIntervalHours = 24;
+        private long requestIntervalMs = 600;
+        private int maxRetries = 2;
     }
 
     @Data
@@ -52,6 +181,11 @@ public class ResourceHubProperties {
 
     @Data
     public static class Quark {
+        private boolean videoEnabled = true;
+        private boolean torrentEnabled = true;
+        private boolean discoveryEnabled = true;
+        private boolean transferEnabled = true;
+        private boolean gyingPublishEnabled = true;
         private String baseUrl = "http://localhost:5005";
         private String token;
         private String savePath = "/GYing Resource Hub";
@@ -64,10 +198,23 @@ public class ResourceHubProperties {
         private String sharePasscode = "";
         private int sharePollAttempts = 30;
         private long sharePollIntervalMs = 1000;
+        private DirectoryAi directoryAi = new DirectoryAi();
+    }
+
+    @Data
+    public static class DirectoryAi {
+        private boolean enabled = true;
+        private String baseUrl = "http://host.docker.internal:21434";
+        private String model = "qwen3:4b-instruct-2507-q4_K_M";
+        private int timeoutSeconds = 20;
     }
 
     @Data
     public static class Xunlei {
+        private boolean videoEnabled = true;
+        private boolean torrentEnabled = true;
+        private boolean discoveryEnabled = true;
+        private boolean gyingPublishEnabled = true;
         private boolean enabled = false;
         private String baseUrl = "https://api-pan.xunlei.com/drive/v1";
         private String authorization;
@@ -88,12 +235,30 @@ public class ResourceHubProperties {
     }
 
     @Data
+    public static class Baidu {
+        private boolean videoEnabled = false;
+        private boolean torrentEnabled = false;
+        // New provider defaults require explicit page configuration and account login.
+        private boolean discoveryEnabled = false;
+        private boolean enabled = false;
+        private boolean gyingPublishEnabled = false;
+        private boolean shareEnabled = false;
+        private String sessionStatePath = "/app/data/baidu/session.enc";
+        private String sessionKeyPath = "/app/data/baidu/session.key";
+        private String loginRequestPath = "/app/data/baidu/login-request.json";
+        private String savePath = "/GYing Resource Hub";
+        private int pollAttempts = 20;
+        private long pollIntervalMs = 1000;
+    }
+
+    @Data
     public static class Worker {
         private boolean enabled = false;
         private long fixedDelayMs = 60000;
         private int taskLimit = 5;
         private int quarkLimit = 5;
         private int xunleiLimit = 5;
+        private int baiduLimit = 5;
         private int publishLimit = 20;
         private boolean discoveredRetryEnabled = true;
         private int discoveredRetryLimit = 20;

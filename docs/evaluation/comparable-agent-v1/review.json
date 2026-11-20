@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "reportSha256": "4868100be27bbe721cf7948b7c17e84b60dec26b1d6173b92060a3f2e991ecd0",
+  "reviews": [
+    {
+      "caseId": "exact-title",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "b63ce36ee0bb67b83bbaf408f42531cba6c5ad264dc90c27f978cfcbf9cd4904",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      }
+    },
+    {
+      "caseId": "english-title",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "39ce9cad7a4e5941f0ec46259a81ebf338f259f539328c69d89066e116e9b57e",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      }
+    },
+    {
+      "caseId": "unknown-title",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "8043f5fdbaa019e232224764b7f4a8b3a3e296278e5d7c6401d2bc34d20a8547",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      }
+    },
+    {
+      "caseId": "details-followup",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "49122536a56355f6be5b138661ad90895a55a29d714a109d04dc008f5fe527c8",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      }
+    },
+    {
+      "caseId": "details-followup",
+      "repetition": 1,
+      "turn": 2,
+      "answerSha256": "4a30d935b3656d65f77f2612919c064f03b800ae2d8d3d8008c3663a863b2b84",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      }
+    },
+    {
+      "caseId": "web-excerpts",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "de93c1de9d53495061deb12534c0345b84bf6bcd05229d64f7917723a6c3e73f",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      }
+    },
+    {
+      "caseId": "title-year-category",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "f2f49a73e270a71a226e4abce2993a5fa13ce5a5cf942326f180e13cd88d15f0",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      }
+    },
+    {
+      "caseId": "title-wrong-year-empty",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "32b4e5868ccf0353fe09d64a42666033e6fcdd816e543b82129d91d7489f4478",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      }
+    },
+    {
+      "caseId": "exact-title",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "39c01cbc1aadee11a7578dafe367849d2a2c5d89d4a9993374886cdefae7e970",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      }
+    },
+    {
+      "caseId": "english-title",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "217cb67faf07f3521cd66f0dc5573268f3395db2b9f18164fd262256749efd30",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      }
+    },
+    {
+      "caseId": "unknown-title",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "8043f5fdbaa019e232224764b7f4a8b3a3e296278e5d7c6401d2bc34d20a8547",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      }
+    },
+    {
+      "caseId": "details-followup",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "cbd84e59d247bdcf2f4f04c51919b434ca97fef615363c1b29dc5a1830ab3fc6",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      }
+    },
+    {
+      "caseId": "details-followup",
+      "repetition": 2,
+      "turn": 2,
+      "answerSha256": "c1df4f8c358bbc155388e990d0d89453a076cbec057034150fefc895011119cd",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      }
+    },
+    {
+      "caseId": "web-excerpts",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "de93c1de9d53495061deb12534c0345b84bf6bcd05229d64f7917723a6c3e73f",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      }
+    },
+    {
+      "caseId": "title-year-category",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "a4f4116de8968220de6c97aa133f24d56c13495998f3514044ef598eae5eb9fb",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      }
+    },
+    {
+      "caseId": "title-wrong-year-empty",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "32b4e5868ccf0353fe09d64a42666033e6fcdd816e543b82129d91d7489f4478",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      }
+    }
+  ]
+}

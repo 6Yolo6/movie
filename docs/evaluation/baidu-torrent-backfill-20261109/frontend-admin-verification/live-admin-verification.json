@@ -1,0 +1,1398 @@
+{
+  "startedAt": "2026-11-09T05:55:53.838463+00:00",
+  "realApi": true,
+  "configurationWriteRequestsSent": 0,
+  "tokensKeysOrJtiWritten": false,
+  "usersOrDevicesCreated": 0,
+  "transfersMessagesPostsSent": 0,
+  "browserHelper": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\admin-verify\\VerifyBaiduAdminUi.cjs",
+  "browserHelperSha256": "be0dc853fac08ce7d9cc025361ccc39b9e3221f9390bddef207766c703d27ce4",
+  "parentCountBefore": 1,
+  "parentSnapshotBeforeSha256": "92ac0ecebad3b8ffe2ce314862c3055f1bf25ed71a3b7ef67cd66565131d3766",
+  "configPointerSnapshotBeforeSha256": "8ed19cb41726f9a2a3e7ce98225a7ecc4c9fbacdd5bf85cb00b9fe2aee172944",
+  "backfillAtStart": {
+    "taskId": null,
+    "legacyTaskId": 17580,
+    "enabled": false,
+    "status": "PAUSED",
+    "phase": "GYING_TORRENTS",
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "processed": 0,
+    "succeeded": 0,
+    "skipped": 0,
+    "failed": 0,
+    "nextRunAt": null,
+    "currentIdentityId": null,
+    "currentChildId": null,
+    "currentAction": "IDLE",
+    "currentSeedCount": 0,
+    "currentChildStatus": null,
+    "currentChildError": null,
+    "lastResult": null
+  },
+  "baiduSessionAtStart": {
+    "configured": true,
+    "state": "CONNECTED"
+  },
+  "providers": [
+    {
+      "provider": "QUARK",
+      "supported": true,
+      "status": "AVAILABLE",
+      "videoEnabled": true,
+      "torrentEnabled": true,
+      "discoveryEnabled": true,
+      "transferEnabled": true,
+      "shareEnabled": true,
+      "gyingPublishEnabled": true,
+      "credentialConfigured": true,
+      "batchLimit": 5
+    },
+    {
+      "provider": "XUNLEI",
+      "supported": true,
+      "status": "AVAILABLE",
+      "videoEnabled": true,
+      "torrentEnabled": true,
+      "discoveryEnabled": true,
+      "transferEnabled": true,
+      "shareEnabled": true,
+      "gyingPublishEnabled": true,
+      "credentialConfigured": true,
+      "batchLimit": 5
+    },
+    {
+      "provider": "BAIDU",
+      "supported": true,
+      "status": "AVAILABLE",
+      "videoEnabled": false,
+      "torrentEnabled": true,
+      "discoveryEnabled": true,
+      "transferEnabled": true,
+      "shareEnabled": true,
+      "gyingPublishEnabled": true,
+      "credentialConfigured": true,
+      "batchLimit": 5
+    }
+  ],
+  "browser": {
+    "status": "passed",
+    "actualDeployedFrontend": true,
+    "realAdministratorApi": true,
+    "newLoginOrDevice": false,
+    "credentialMaterialWritten": false,
+    "configurationWriteRequestsSent": 0,
+    "transfersOrPostsSent": 0,
+    "viewports": [
+      {
+        "width": 1280,
+        "lang": "zh",
+        "theme": "light",
+        "realConfigMatchesUi": true,
+        "realSessionHttp200": true,
+        "savedBaiduFileAndWorkflowSettingsMatch": true,
+        "baiduSessionMatchesActualApi": true,
+        "sessionStatesObserved": [
+          "CONNECTED"
+        ],
+        "initialSessionUi": {
+          "state": "CONNECTED",
+          "configured": true
+        },
+        "backfillSavedStatus": {
+          "enabled": false,
+          "intervalMinutes": 10,
+          "batchLimit": 1,
+          "parentTaskId": null,
+          "legacyTaskId": 17580,
+          "phase": "GYING_TORRENTS",
+          "currentAction": "IDLE",
+          "currentIdentityId": null,
+          "currentChildId": null,
+          "manualRunDisabled": false,
+          "legacyHistorySeparate": true
+        },
+        "backfillDraftsDiscardedOnReload": true,
+        "legacyAndV2ParentStateComparedReadOnly": true,
+        "videoAndTorrentControlsIndependent": true,
+        "draftSwitchesDiscardedOnReload": true,
+        "configurationWriteRequestsSent": 0,
+        "transfersOrPostsSent": 0,
+        "persistsOnReload": true,
+        "overflow": {
+          "viewport": 1280,
+          "document": 1280
+        },
+        "pageErrors": 0,
+        "screenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\admin-verify\\screenshots\\zh-1280-light.png"
+      },
+      {
+        "width": 1280,
+        "lang": "zh",
+        "theme": "dark",
+        "realConfigMatchesUi": true,
+        "realSessionHttp200": true,
+        "savedBaiduFileAndWorkflowSettingsMatch": true,
+        "baiduSessionMatchesActualApi": true,
+        "sessionStatesObserved": [
+          "CONNECTED"
+        ],
+        "initialSessionUi": {
+          "state": "CONNECTED",
+          "configured": true
+        },
+        "backfillSavedStatus": {
+          "enabled": false,
+          "intervalMinutes": 10,
+          "batchLimit": 1,
+          "parentTaskId": null,
+          "legacyTaskId": 17580,
+          "phase": "GYING_TORRENTS",
+          "currentAction": "IDLE",
+          "currentIdentityId": null,
+          "currentChildId": null,
+          "manualRunDisabled": false,
+          "legacyHistorySeparate": true
+        },
+        "backfillDraftsDiscardedOnReload": true,
+        "legacyAndV2ParentStateComparedReadOnly": true,
+        "videoAndTorrentControlsIndependent": true,
+        "draftSwitchesDiscardedOnReload": true,
+        "configurationWriteRequestsSent": 0,
+        "transfersOrPostsSent": 0,
+        "persistsOnReload": true,
+        "overflow": {
+          "viewport": 1280,
+          "document": 1280
+        },
+        "pageErrors": 0,
+        "screenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\admin-verify\\screenshots\\zh-1280-dark.png"
+      },
+      {
+        "width": 1280,
+        "lang": "en",
+        "theme": "light",
+        "realConfigMatchesUi": true,
+        "realSessionHttp200": true,
+        "savedBaiduFileAndWorkflowSettingsMatch": true,
+        "baiduSessionMatchesActualApi": true,
+        "sessionStatesObserved": [
+          "CONNECTED"
+        ],
+        "initialSessionUi": {
+          "state": "CONNECTED",
+          "configured": true
+        },
+        "backfillSavedStatus": {
+          "enabled": false,
+          "intervalMinutes": 10,
+          "batchLimit": 1,
+          "parentTaskId": null,
+          "legacyTaskId": 17580,
+          "phase": "GYING_TORRENTS",
+          "currentAction": "IDLE",
+          "currentIdentityId": null,
+          "currentChildId": null,
+          "manualRunDisabled": false,
+          "legacyHistorySeparate": true
+        },
+        "backfillDraftsDiscardedOnReload": true,
+        "legacyAndV2ParentStateComparedReadOnly": true,
+        "videoAndTorrentControlsIndependent": true,
+        "draftSwitchesDiscardedOnReload": true,
+        "configurationWriteRequestsSent": 0,
+        "transfersOrPostsSent": 0,
+        "persistsOnReload": true,
+        "overflow": {
+          "viewport": 1280,
+          "document": 1280
+        },
+        "pageErrors": 0,
+        "screenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\admin-verify\\screenshots\\en-1280-light.png"
+      },
+      {
+        "width": 1280,
+        "lang": "en",
+        "theme": "dark",
+        "realConfigMatchesUi": true,
+        "realSessionHttp200": true,
+        "savedBaiduFileAndWorkflowSettingsMatch": true,
+        "baiduSessionMatchesActualApi": true,
+        "sessionStatesObserved": [
+          "CONNECTED"
+        ],
+        "initialSessionUi": {
+          "state": "CONNECTED",
+          "configured": true
+        },
+        "backfillSavedStatus": {
+          "enabled": false,
+          "intervalMinutes": 10,
+          "batchLimit": 1,
+          "parentTaskId": null,
+          "legacyTaskId": 17580,
+          "phase": "GYING_TORRENTS",
+          "currentAction": "IDLE",
+          "currentIdentityId": null,
+          "currentChildId": null,
+          "manualRunDisabled": false,
+          "legacyHistorySeparate": true
+        },
+        "backfillDraftsDiscardedOnReload": true,
+        "legacyAndV2ParentStateComparedReadOnly": true,
+        "videoAndTorrentControlsIndependent": true,
+        "draftSwitchesDiscardedOnReload": true,
+        "configurationWriteRequestsSent": 0,
+        "transfersOrPostsSent": 0,
+        "persistsOnReload": true,
+        "overflow": {
+          "viewport": 1280,
+          "document": 1280
+        },
+        "pageErrors": 0,
+        "screenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\admin-verify\\screenshots\\en-1280-dark.png"
+      },
+      {
+        "width": 390,
+        "lang": "zh",
+        "theme": "light",
+        "realConfigMatchesUi": true,
+        "realSessionHttp200": true,
+        "savedBaiduFileAndWorkflowSettingsMatch": true,
+        "baiduSessionMatchesActualApi": true,
+        "sessionStatesObserved": [
+          "CONNECTED"
+        ],
+        "initialSessionUi": {
+          "state": "CONNECTED",
+          "configured": true
+        },
+        "backfillSavedStatus": {
+          "enabled": false,
+          "intervalMinutes": 10,
+          "batchLimit": 1,
+          "parentTaskId": null,
+          "legacyTaskId": 17580,
+          "phase": "GYING_TORRENTS",
+          "currentAction": "IDLE",
+          "currentIdentityId": null,
+          "currentChildId": null,
+          "manualRunDisabled": false,
+          "legacyHistorySeparate": true
+        },
+        "backfillDraftsDiscardedOnReload": true,
+        "legacyAndV2ParentStateComparedReadOnly": true,
+        "videoAndTorrentControlsIndependent": true,
+        "draftSwitchesDiscardedOnReload": true,
+        "configurationWriteRequestsSent": 0,
+        "transfersOrPostsSent": 0,
+        "persistsOnReload": true,
+        "overflow": {
+          "viewport": 390,
+          "document": 390
+        },
+        "pageErrors": 0,
+        "screenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\admin-verify\\screenshots\\zh-390-light.png"
+      },
+      {
+        "width": 390,
+        "lang": "zh",
+        "theme": "dark",
+        "realConfigMatchesUi": true,
+        "realSessionHttp200": true,
+        "savedBaiduFileAndWorkflowSettingsMatch": true,
+        "baiduSessionMatchesActualApi": true,
+        "sessionStatesObserved": [
+          "CONNECTED"
+        ],
+        "initialSessionUi": {
+          "state": "CONNECTED",
+          "configured": true
+        },
+        "backfillSavedStatus": {
+          "enabled": false,
+          "intervalMinutes": 10,
+          "batchLimit": 1,
+          "parentTaskId": null,
+          "legacyTaskId": 17580,
+          "phase": "GYING_TORRENTS",
+          "currentAction": "IDLE",
+          "currentIdentityId": null,
+          "currentChildId": null,
+          "manualRunDisabled": false,
+          "legacyHistorySeparate": true
+        },
+        "backfillDraftsDiscardedOnReload": true,
+        "legacyAndV2ParentStateComparedReadOnly": true,
+        "videoAndTorrentControlsIndependent": true,
+        "draftSwitchesDiscardedOnReload": true,
+        "configurationWriteRequestsSent": 0,
+        "transfersOrPostsSent": 0,
+        "persistsOnReload": true,
+        "overflow": {
+          "viewport": 390,
+          "document": 390
+        },
+        "pageErrors": 0,
+        "screenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\admin-verify\\screenshots\\zh-390-dark.png"
+      },
+      {
+        "width": 390,
+        "lang": "en",
+        "theme": "light",
+        "realConfigMatchesUi": true,
+        "realSessionHttp200": true,
+        "savedBaiduFileAndWorkflowSettingsMatch": true,
+        "baiduSessionMatchesActualApi": true,
+        "sessionStatesObserved": [
+          "CONNECTED"
+        ],
+        "initialSessionUi": {
+          "state": "CONNECTED",
+          "configured": true
+        },
+        "backfillSavedStatus": {
+          "enabled": false,
+          "intervalMinutes": 10,
+          "batchLimit": 1,
+          "parentTaskId": null,
+          "legacyTaskId": 17580,
+          "phase": "GYING_TORRENTS",
+          "currentAction": "IDLE",
+          "currentIdentityId": null,
+          "currentChildId": null,
+          "manualRunDisabled": false,
+          "legacyHistorySeparate": true
+        },
+        "backfillDraftsDiscardedOnReload": true,
+        "legacyAndV2ParentStateComparedReadOnly": true,
+        "videoAndTorrentControlsIndependent": true,
+        "draftSwitchesDiscardedOnReload": true,
+        "configurationWriteRequestsSent": 0,
+        "transfersOrPostsSent": 0,
+        "persistsOnReload": true,
+        "overflow": {
+          "viewport": 390,
+          "document": 390
+        },
+        "pageErrors": 0,
+        "screenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\admin-verify\\screenshots\\en-390-light.png"
+      },
+      {
+        "width": 390,
+        "lang": "en",
+        "theme": "dark",
+        "realConfigMatchesUi": true,
+        "realSessionHttp200": true,
+        "savedBaiduFileAndWorkflowSettingsMatch": true,
+        "baiduSessionMatchesActualApi": true,
+        "sessionStatesObserved": [
+          "CONNECTED"
+        ],
+        "initialSessionUi": {
+          "state": "CONNECTED",
+          "configured": true
+        },
+        "backfillSavedStatus": {
+          "enabled": false,
+          "intervalMinutes": 10,
+          "batchLimit": 1,
+          "parentTaskId": null,
+          "legacyTaskId": 17580,
+          "phase": "GYING_TORRENTS",
+          "currentAction": "IDLE",
+          "currentIdentityId": null,
+          "currentChildId": null,
+          "manualRunDisabled": false,
+          "legacyHistorySeparate": true
+        },
+        "backfillDraftsDiscardedOnReload": true,
+        "legacyAndV2ParentStateComparedReadOnly": true,
+        "videoAndTorrentControlsIndependent": true,
+        "draftSwitchesDiscardedOnReload": true,
+        "configurationWriteRequestsSent": 0,
+        "transfersOrPostsSent": 0,
+        "persistsOnReload": true,
+        "overflow": {
+          "viewport": 390,
+          "document": 390
+        },
+        "pageErrors": 0,
+        "screenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\admin-verify\\screenshots\\en-390-dark.png"
+      }
+    ],
+    "blockedNonReadRequests": [
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      }
+    ],
+    "unexpectedWriteAttempts": [],
+    "externalRequestsBlocked": [],
+    "readHttpStatuses": [
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "status": 200
+      }
+    ],
+    "pageErrors": 0,
+    "completedAt": "2026-11-09T06:00:22.723Z"
+  },
+  "status": "passed",
+  "expectedBackendImage": "sha256:adfd0dfad9dd63a8d0996848b7b13745f1af15669f45c800ae04ecde0cd2a4e6",
+  "expectedFrontendImage": "sha256:663b83853b72bbaff753a12c42e6a9a54718643c3cb3d10b95dda1e938f90c54",
+  "driveAndBackfillConfigRowsPreserved": true,
+  "backfillParentTasksCreated": 0,
+  "legacyAndV2ParentsPreserved": true,
+  "parentCountAfter": 1,
+  "parentSnapshotAfterSha256": "92ac0ecebad3b8ffe2ce314862c3055f1bf25ed71a3b7ef67cd66565131d3766",
+  "configPointerSnapshotAfterSha256": "8ed19cb41726f9a2a3e7ce98225a7ecc4c9fbacdd5bf85cb00b9fe2aee172944",
+  "reviewedCommit": "b55080d8c0449f6dc6852beff0356d7350cce570",
+  "configRowCount": 9,
+  "ephemeralAuth": {
+    "algorithm": "HS512",
+    "ttlSeconds": 480,
+    "existingActiveDeviceUsed": true,
+    "newDeviceCreated": false
+  },
+  "frontendSourceHashesMatch": true,
+  "sourceFileCount": 78,
+  "completedAt": "2026-11-09T06:00:23.313916+00:00"
+}

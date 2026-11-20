@@ -1,0 +1,26 @@
+{
+  "origin": "https://gyinghub.dpdns.org",
+  "method": "GET",
+  "credentialsSent": false,
+  "entries": [
+    {
+      "path": "/",
+      "status": 200,
+      "bytes": 68403,
+      "sha256": "67313d652bf75cbb9462f26c6e4633a4f1d50e0edef0d2aad90b4189ee7312ba"
+    },
+    {
+      "path": "/api/movies/list?page=1&size=1",
+      "status": 200,
+      "bytes": 1397,
+      "sha256": "823f80f02839efaa0b4dc9efb77f0ccbbecd4b5309ea926d8299b4346100711c"
+    },
+    {
+      "path": "/movie/gying_ac_E4P6",
+      "status": 200,
+      "bytes": 234294,
+      "sha256": "199a574d88df4065b7f300c86061b528123d082cf5dba89d26f36d5a1949b90b"
+    }
+  ],
+  "passed": true
+}

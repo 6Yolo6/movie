@@ -1,0 +1,2478 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-11-04T13:36:59.168102+00:00",
+  "datasetVersion": "gying-development-v3",
+  "datasetFileSha256": "1a75e3f9a1bfd38132c51d52099d7381af2f98af9017379e4a887c8204d8dee7",
+  "freezeFileSha256": "77d2a07d7d289f0400bc3287f260c01633e422e70f1112e947d078be921c1c7f",
+  "datasetCanonicalSha256": "70ee9ddab7ad2ad537cc98b0cec31fb92738c3a6a643d1ff0e3cd0aec34ebfeb",
+  "provenance": "observed-development-v3-identity-and-theme-candidate",
+  "transport": "isolated-agent-and-real-movie-catalogresearch-candidate-over-20261031-public-snapshot",
+  "selectedCaseIds": [
+    "dev-v3-04",
+    "dev-v3-06",
+    "dev-v3-10"
+  ],
+  "plannedCases": 3,
+  "plannedTurns": 7,
+  "repeat": 1,
+  "inferenceReplay": false,
+  "websiteUserSessionUsed": false,
+  "productionQueueClaimed": false,
+  "productionStateEnabled": false,
+  "historicalContextTransport": "fixture rounds from actual earlier candidate responses; not production owner/TTL queue verification",
+  "inferenceRequestsRetried": 0,
+  "forcedCleanupPerformed": false,
+  "reportPath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\final-candidate\\probes\\report.json",
+  "newHumanReviews": 0,
+  "independentHoldout": false,
+  "realMessagesPostsTransfers": 0,
+  "agentJarSha256": "1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64",
+  "preparedHarnessLaunchSha256": "32c19dfb8ff692d609f4f46c1834b3ac59483806d8abf3a75ecf07241c0ffb8f",
+  "runnerFileSha256": "75b2299dc7de7252ae109574cef34943049015643220666e953f14e49f594e1a",
+  "movieHarness": {
+    "schemaVersion": 1,
+    "candidateJarSha256": "2c1301be46e97f12da16167896cd1241efbb4abc20404d4e9c7c53672a3f5054",
+    "candidateSourceSha256": "35f97ec81590a7a7b8e91f0f9f0866b593b7c80f289daf9675685663677ba302",
+    "catalogClassSha256": "02198c53ff7acfcc93fa02bf5d8b4c6dd8c34db55331fbc3a25072c4fbe83807",
+    "harnessSourceSha256": "83f471b77c61eb728f36f535d85e724e083a393e795b0efc3f5ee3a06ac74f7f",
+    "datasetSelectSqlSha256": "92bf4bfbf11020e6eaac95917298c7a58c8dd33cee34b188270b8a00ede7cfee",
+    "compileExitCode": 0,
+    "command": [
+      "D:\\Java17\\jdk-17.0.1\\bin\\java.exe",
+      "-Xms128m",
+      "-Xmx512m",
+      "-Dfile.encoding=UTF-8",
+      "-cp",
+      "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\final-candidate\\catalog-harness-classes;E:\\gying-tools\\releases\\ai-identity-theme-20261104\\final-candidate\\catalog-harness-runtime\\BOOT-INF\\classes;E:\\gying-tools\\releases\\ai-identity-theme-20261104\\final-candidate\\catalog-harness-runtime\\BOOT-INF\\lib\\*",
+      "CatalogSnapshotHarness",
+      "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\catalog-public-documents.json",
+      "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\final-candidate\\catalog-harness-token.txt",
+      "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\final-candidate\\probes\\catalog-harness-ready.json",
+      "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\final-candidate\\probes\\catalog-harness-stopped.json",
+      "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\final-candidate\\catalog-harness-select.sql"
+    ],
+    "port": 18883,
+    "tokenFile": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\final-candidate\\catalog-harness-token.txt",
+    "springApplicationStarted": false,
+    "databaseConfigured": false,
+    "resourceLinksIncluded": false,
+    "contextFieldLimits": {
+      "contextUtf16Chars": 10000,
+      "candidateRows": 30,
+      "candidateUtf16Chars": 500,
+      "candidateFields": [
+        "id",
+        "titleCn",
+        "titleEn",
+        "year"
+      ]
+    },
+    "snapshotSha256": "0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a",
+    "mediaIdentityClassSha256": "87e6a140f2bd94c1004dd4418d63277d7d1be773d1891185bfaf7b9b695057ee",
+    "mediaIdentityProjection": "Actual candidate CatalogResearchService dataset postprocess, also used for snapshot GET details; missing source fields remain missing",
+    "snapshotPath": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\catalog-public-documents.json",
+    "receiptPath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\final-candidate\\probes\\catalog-harness-stopped.json"
+  },
+  "rows": [
+    {
+      "caseId": "dev-v3-04",
+      "sourceGroup": "dev-v3-same-title-edition",
+      "turn": 1,
+      "message": "片库里的《小妇人》是不是有多个电影版本？请用年份和导演区分，不要把几个版本的演员混在一起。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "联网找到了以下相关资料，仍不足以确认唯一影片，请核对来源或补充线索。\n搜索资料摘录：“Little Women is a romantic drama film directed and written by Greta Gerwig”。\n联网依据：Little Women（A 2019 romantic film directed by Greta ... - 百度百科。资料来源与查询时间列在下方。",
+      "answerSha256": "e1ebe68af4fee15060f681788faa615c7da572528254bac21973438e7b32a9a6",
+      "queryPlan": {
+        "intent": "search",
+        "inheritContext": false,
+        "titles": [
+          "小妇人"
+        ],
+        "limit": 10,
+        "category": "mv",
+        "filmIdentityRequired": true,
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-04T13:37:40.190589500Z",
+          "queryPlan": {
+            "intent": "search",
+            "inheritContext": false,
+            "titles": [
+              "小妇人"
+            ],
+            "limit": 10,
+            "category": "mv",
+            "filmIdentityRequired": true,
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "movies": [],
+          "total": 0,
+          "returned": 0,
+          "truncated": false,
+          "semanticStaleCandidates": 0,
+          "retrieval": "lexical",
+          "unverifiedConditions": [],
+          "answer": "片库暂没有电影身份依据充分的候选，继续联网核对。",
+          "identityChecked": true,
+          "identityRejected": 2,
+          "identityRecalledTotal": 2,
+          "identitySupportedTotal": 0,
+          "identityNotice": "\n另有 2 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。"
+        },
+        {
+          "tool": "searchMovieWeb",
+          "provider": "bing-html",
+          "source": "https://www.bing.com/search",
+          "query": "\"小妇人\" film plot",
+          "queriedAt": "2026-11-04T13:37:44.052185600Z",
+          "externalLinksVerifiedNow": false,
+          "webResults": [
+            {
+              "title": "Little Women（A 2019 romantic film directed by Greta ... - 百度百科",
+              "url": "https://baike.baidu.com/en/item/Little%20Women/1505654",
+              "snippet": "Little Women is a romantic drama film directed and written by Greta Gerwig , starring Saoirse Ronan , Emma Charlotte Duerre …",
+              "partial": true
+            }
+          ],
+          "returned": 1,
+          "truncated": true,
+          "rawReturned": 3,
+          "identityReturned": 3,
+          "relevanceChecked": true
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "b51e7f7a-902f-4a45-bcd3-be03a049fbfa",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-04T13:37:37.746205500Z",
+          "durationMs": 24783
+        },
+        {
+          "requestId": "b51e7f7a-902f-4a45-bcd3-be03a049fbfa",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-04T13:37:42.186542700Z",
+          "durationMs": 4438,
+          "arguments": {
+            "intent": "search",
+            "inheritContext": false,
+            "titles": [
+              "小妇人"
+            ],
+            "limit": 10,
+            "category": "mv"
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-04T13:37:40.190589500Z",
+              "queryPlan": {
+                "intent": "search",
+                "inheritContext": false,
+                "titles": [
+                  "小妇人"
+                ],
+                "limit": 10,
+                "category": "mv",
+                "filmIdentityRequired": true,
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "movies": [],
+              "total": 0,
+              "returned": 0,
+              "truncated": false,
+              "semanticStaleCandidates": 0,
+              "retrieval": "lexical",
+              "unverifiedConditions": [],
+              "answer": "片库暂没有电影身份依据充分的候选，继续联网核对。",
+              "identityChecked": true,
+              "identityRejected": 2,
+              "identityRecalledTotal": 2,
+              "identitySupportedTotal": 0,
+              "identityNotice": "\n另有 2 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。"
+            }
+          }
+        },
+        {
+          "requestId": "b51e7f7a-902f-4a45-bcd3-be03a049fbfa",
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "timestamp": "2026-11-04T13:37:44.214790Z",
+          "durationMs": 2021,
+          "result": {
+            "ok": true,
+            "data": {
+              "provider": "bing-html",
+              "source": "https://www.bing.com/search",
+              "query": "\"小妇人\" film plot",
+              "queriedAt": "2026-11-04T13:37:44.052185600Z",
+              "externalLinksVerifiedNow": false,
+              "webResults": [
+                {
+                  "title": "Little Women（A 2019 romantic film directed by Greta ... - 百度百科",
+                  "url": "https://baike.baidu.com/en/item/Little%20Women/1505654",
+                  "snippet": "Little Women is a romantic drama film directed and written by Greta Gerwig , starring Saoirse Ronan , Emma Charlotte Duerre …",
+                  "partial": true
+                }
+              ],
+              "returned": 1,
+              "truncated": true,
+              "rawReturned": 3,
+              "identityReturned": 3,
+              "relevanceChecked": true
+            }
+          }
+        }
+      ],
+      "submittedContext": {},
+      "submittedHistory": [],
+      "reviewRubric": {
+        "hardConditions": [
+          "只列本次有依据的《小妇人》电影版本",
+          "按年份和导演区分身份",
+          "不混用演员"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "从实际片库候选或公开来源核对版本",
+          "未查到某版本不等于断言它不存在"
+        ],
+        "usefulApproximationBoundary": "元数据缺失时明确缺失，不编导演或版本年份。"
+      },
+      "durationSeconds": 45.61,
+      "roundContext": {
+        "candidateIds": [],
+        "candidates": [],
+        "expiresAt": "2026-11-04T13:52:58.545130+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-04",
+      "sourceGroup": "dev-v3-same-title-edition",
+      "turn": 2,
+      "message": "只查2019年那个版本的主演，其他版本不要带进来。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "《小妇人》（2019）。本次片库返回主演：西尔莎·罗南、艾玛·沃森、弗洛伦丝·皮尤。\n马奇夫人（劳拉·邓恩 Laura Dern 饰）有着四个如花似玉的女儿，大女儿梅格（艾玛·沃森 Emma Watson 饰）拥有着美丽的外表，和对于爱情的天真憧憬。二女儿乔（西尔莎·罗南 Saoirse Ronan 饰）满脑子塞着古灵精怪的念头，整天拿着蘸水笔东写西写，她的故事在全家上下都受到了热烈的欢迎。三女儿贝斯（伊莱扎·斯坎伦 Eliza Scanlen 饰）虽然个性比起姐姐们要内向得多，却拥有杰出的音乐天赋。 最小的女儿艾米（佛罗伦斯·珀 Florence Pugh 饰）渴望成为一名画家。\n在马奇夫人的教导之下，四个姑娘渐渐成长为了拥有独立人格的杰出女性，她们热情、乐观、善良，每个人都在各自的道路上坚强而又坚定的前进着。\n作品身份：片库电影分类缺少充分的电影身份依据，仍待核验。",
+      "answerSha256": "510a2b392e5d821c3f272360f361324bea8b9f4c1d6c2b73f4db2f99de0e0150",
+      "queryPlan": {
+        "intent": "details",
+        "inheritContext": false,
+        "titles": [
+          "小妇人"
+        ],
+        "limit": 10,
+        "category": "mv",
+        "filmIdentityRequired": true,
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": [],
+        "yearFrom": 2019,
+        "yearTo": 2019
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-04T13:38:12.393571300Z",
+          "queryPlan": {
+            "intent": "details",
+            "inheritContext": false,
+            "titles": [
+              "小妇人"
+            ],
+            "limit": 10,
+            "category": "mv",
+            "filmIdentityRequired": true,
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": [],
+            "yearFrom": 2019,
+            "yearTo": 2019
+          },
+          "selectedId": "gying_mv_M4Lk",
+          "total": 1,
+          "answer": "已定位片库影片，继续查询本次详情。"
+        },
+        {
+          "tool": "getMovieDetails",
+          "source": "http://127.0.0.1:18883/api/movies/gying_mv_M4Lk",
+          "queriedAt": "2026-11-04T13:38:13.011100Z",
+          "externalLinksVerifiedNow": false,
+          "movie": {
+            "id": "gying_mv_M4Lk",
+            "titleCn": "小妇人",
+            "titleEn": " Little Women",
+            "category": "mv",
+            "year": 2019,
+            "doubanScore": 8.0,
+            "tmdbVoteAverage": 7.8,
+            "season": 1,
+            "summary": "马奇夫人（劳拉·邓恩 Laura Dern 饰）有着四个如花似玉的女儿，大女儿梅格（艾玛·沃森 Emma Watson 饰）拥有着美丽的外表，和对于爱情的天真憧憬。二女儿乔（西尔莎·罗南 Saoirse Ronan 饰）满脑子塞着古灵精怪的念头，整天拿着蘸水笔东写西写，她的故事在全家上下都受到了热烈的欢迎。三女儿贝斯（伊莱扎·斯坎伦 Eliza Scanlen 饰）虽然个性比起姐姐们要内向得多，却拥有杰出的音乐天赋。 最小的女儿艾米（佛罗伦斯·珀 Florence Pugh 饰）渴望成为一名画家。\n在马奇夫人的教导之下，四个姑娘渐渐成长为了拥有独立人格的杰出女性，她们热情、乐观、善良，每个人都在各自的道路上坚强而又坚定的前进着。",
+            "directors": [
+              "格蕾塔·葛韦格"
+            ],
+            "actors": [
+              "西尔莎·罗南",
+              "艾玛·沃森",
+              "弗洛伦丝·皮尤"
+            ],
+            "fieldsTruncated": true,
+            "genres": [
+              "剧情",
+              "爱情",
+              "女性"
+            ],
+            "mediaIdentity": {
+              "evidence": [
+                {
+                  "source": "season",
+                  "quote": "1"
+                }
+              ],
+              "status": "uncertain",
+              "kind": "unknown"
+            },
+            "resourceCount": 0
+          },
+          "resourceSummary": {
+            "approvedNormal": 0,
+            "returned": 0,
+            "excluded": 0
+          },
+          "truncated": true
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "3652314c-1a63-4bac-8772-a30f5c31ea27",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-04T13:38:10.610250800Z",
+          "durationMs": 12007
+        },
+        {
+          "requestId": "3652314c-1a63-4bac-8772-a30f5c31ea27",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-04T13:38:13.005099500Z",
+          "durationMs": 613,
+          "arguments": {
+            "intent": "details",
+            "inheritContext": false,
+            "titles": [
+              "小妇人"
+            ],
+            "limit": 10,
+            "category": "mv",
+            "filmIdentityRequired": true,
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": [],
+            "yearFrom": 2019,
+            "yearTo": 2019
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-04T13:38:12.393571300Z",
+              "queryPlan": {
+                "intent": "details",
+                "inheritContext": false,
+                "titles": [
+                  "小妇人"
+                ],
+                "limit": 10,
+                "category": "mv",
+                "filmIdentityRequired": true,
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": [],
+                "yearFrom": 2019,
+                "yearTo": 2019
+              },
+              "selectedId": "gying_mv_M4Lk",
+              "total": 1,
+              "answer": "已定位片库影片，继续查询本次详情。"
+            }
+          }
+        },
+        {
+          "requestId": "3652314c-1a63-4bac-8772-a30f5c31ea27",
+          "kind": "tool",
+          "name": "getMovieDetails",
+          "status": "success",
+          "timestamp": "2026-11-04T13:38:13.012094500Z",
+          "durationMs": 6,
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "http://127.0.0.1:18883/api/movies/gying_mv_M4Lk",
+              "queriedAt": "2026-11-04T13:38:13.011100Z",
+              "externalLinksVerifiedNow": false,
+              "movie": {
+                "id": "gying_mv_M4Lk",
+                "titleCn": "小妇人",
+                "titleEn": " Little Women",
+                "category": "mv",
+                "year": 2019,
+                "doubanScore": 8.0,
+                "tmdbVoteAverage": 7.8,
+                "season": 1,
+                "summary": "马奇夫人（劳拉·邓恩 Laura Dern 饰）有着四个如花似玉的女儿，大女儿梅格（艾玛·沃森 Emma Watson 饰）拥有着美丽的外表，和对于爱情的天真憧憬。二女儿乔（西尔莎·罗南 Saoirse Ronan 饰）满脑子塞着古灵精怪的念头，整天拿着蘸水笔东写西写，她的故事在全家上下都受到了热烈的欢迎。三女儿贝斯（伊莱扎·斯坎伦 Eliza Scanlen 饰）虽然个性比起姐姐们要内向得多，却拥有杰出的音乐天赋。 最小的女儿艾米（佛罗伦斯·珀 Florence Pugh 饰）渴望成为一名画家。\n在马奇夫人的教导之下，四个姑娘渐渐成长为了拥有独立人格的杰出女性，她们热情、乐观、善良，每个人都在各自的道路上坚强而又坚定的前进着。",
+                "directors": [
+                  "格蕾塔·葛韦格"
+                ],
+                "actors": [
+                  "西尔莎·罗南",
+                  "艾玛·沃森",
+                  "弗洛伦丝·皮尤"
+                ],
+                "fieldsTruncated": true,
+                "genres": [
+                  "剧情",
+                  "爱情",
+                  "女性"
+                ],
+                "mediaIdentity": {
+                  "evidence": [
+                    {
+                      "source": "season",
+                      "quote": "1"
+                    }
+                  ],
+                  "status": "uncertain",
+                  "kind": "unknown"
+                },
+                "resourceCount": 0
+              },
+              "resourceSummary": {
+                "approvedNormal": 0,
+                "returned": 0,
+                "excluded": 0
+              },
+              "truncated": true
+            }
+          }
+        }
+      ],
+      "submittedContext": {
+        "queryPlan": {
+          "intent": "search",
+          "inheritContext": false,
+          "titles": [
+            "小妇人"
+          ],
+          "limit": 10,
+          "category": "mv",
+          "filmIdentityRequired": true,
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "candidateIds": [],
+        "candidates": [],
+        "expiresAt": "2026-11-04T13:52:58.545130+00:00",
+        "candidateHistory": [],
+        "historyComplete": true
+      },
+      "submittedHistory": [
+        {
+          "role": "user",
+          "content": "片库里的《小妇人》是不是有多个电影版本？请用年份和导演区分，不要把几个版本的演员混在一起。"
+        },
+        {
+          "role": "assistant",
+          "content": "联网找到了以下相关资料，仍不足以确认唯一影片，请核对来源或补充线索。\n搜索资料摘录：“Little Women is a romantic drama film directed and written by Greta Gerwig”。\n联网依据：Little Women（A 2019 romantic film directed by Greta ... - 百度百科。资料来源与查询时间列在下方。"
+        }
+      ],
+      "reviewRubric": {
+        "hardConditions": [
+          "限定《小妇人》2019年电影版本",
+          "主演与该版本的真实身份绑定",
+          "排除其他版本"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "从前轮证据解析身份；前轮未找到该版本时可以再查或说明未找到",
+          "身份仍不能确认时先澄清"
+        ],
+        "usefulApproximationBoundary": "可以承认缺少演员资料，不能拿另一版同名电影补答。"
+      },
+      "durationSeconds": 14.44,
+      "roundContext": {
+        "candidateIds": [
+          "gying_mv_M4Lk"
+        ],
+        "candidates": [
+          {
+            "id": "gying_mv_M4Lk",
+            "titleCn": "小妇人",
+            "titleEn": " Little Women",
+            "year": 2019
+          }
+        ],
+        "expiresAt": "2026-11-04T13:53:13.016108+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-06",
+      "sourceGroup": "dev-v3-constraint-replacement-history",
+      "turn": 1,
+      "message": "先找2000至2010年上映、最多110分钟的音乐电影，给两部并列出年份。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "片库保留 1 部有电影身份资料支持的候选，资料依据列在下方。\n1. 《曾经》；年份：2007；片长：86分钟；豆瓣评分：8.3；IMDb评分：7.8；TMDB评分：7.4\n另有 16 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。",
+      "answerSha256": "100381981ac51fe8a19eecad04472113aeb393487ae65da3a6d6df3ac8c9c7e1",
+      "queryPlan": {
+        "intent": "search",
+        "inheritContext": false,
+        "genresAll": [
+          "音乐"
+        ],
+        "yearFrom": 2000,
+        "yearTo": 2010,
+        "maxRuntime": 110,
+        "limit": 2,
+        "category": "mv",
+        "filmIdentityRequired": true,
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-04T13:38:18.427632300Z",
+          "queryPlan": {
+            "intent": "search",
+            "inheritContext": false,
+            "genresAll": [
+              "音乐"
+            ],
+            "yearFrom": 2000,
+            "yearTo": 2010,
+            "maxRuntime": 110,
+            "limit": 2,
+            "category": "mv",
+            "filmIdentityRequired": true,
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "movies": [
+            {
+              "id": "gying_mv_4dO4",
+              "titleCn": "曾经",
+              "titleEn": " Once",
+              "category": "mv",
+              "seriesName": "曾经",
+              "summary": "这是一部由音乐开启的爱尔兰电影。卖花女（Marketa Irglova）被街头艺人（Glen Hansard饰）的音乐所吸引，开始了一段荡气回肠的浪漫故事。他们不是王子和公主，各自有着琐碎的生活，但是他们有个共同点，那就是对音乐的热爱。在一次合奏中，他们找到了彼此间惊人的默契。这个发现让他们兴奋，很快他们找到了另外的一个同伴，组成了一个乐队，并通过优秀的表现得到了专业人士的肯定。与此同时，爱情也在逐渐萌芽。音乐是这部电影最大的亮点之一，塑造了极其浪漫唯美的氛围。",
+              "aliases": "No Mesmo Tom / Once / 曾经",
+              "year": 2007,
+              "season": 1,
+              "genres": [
+                "剧情",
+                "爱情",
+                "音乐",
+                "文艺"
+              ],
+              "directors": [
+                "约翰·卡尼"
+              ],
+              "actors": [
+                "格伦·汉塞德",
+                "玛可塔·伊尔格洛娃",
+                "休·沃尔什",
+                "杰拉德·亨德里克",
+                "阿莱斯戴尔·福利",
+                "Geoff Minogue",
+                "Bill Hodnett",
+                "Danuse Ktrestova",
+                "达伦·西里",
+                "Mal Whyte",
+                "玛塞拉·普伦基特",
+                "Niall Cleary",
+                "Wiltold Owski",
+                "Krzysztos Tlotka",
+                "Tomek Glowacki"
+              ],
+              "regions": [
+                "爱尔兰",
+                "美国"
+              ],
+              "languages": [
+                "英语",
+                "捷克语"
+              ],
+              "doubanScore": 8.3,
+              "imdbScore": 7.8,
+              "tmdbVoteAverage": 7.4,
+              "runtimeMinutes": 86,
+              "resourceCount": 4,
+              "mediaIdentity": {
+                "evidence": [
+                  {
+                    "source": "summary",
+                    "quote": "这是一部由音乐开启的爱尔兰电影。卖花女（Marketa Irglova）被街头艺人（Glen Hansard饰）的音乐所吸引，开始了一段荡气回肠的浪漫故事。他们不是王子和公主，各自有着琐碎的生"
+                  },
+                  {
+                    "source": "season",
+                    "quote": "1"
+                  }
+                ],
+                "status": "supported",
+                "kind": "movie"
+              },
+              "rating": 8.3,
+              "ratingSource": "any",
+              "reasons": [
+                "符合本次可核验的片库筛选条件"
+              ]
+            }
+          ],
+          "total": 1,
+          "returned": 1,
+          "truncated": false,
+          "semanticStaleCandidates": 0,
+          "retrieval": "lexical",
+          "unverifiedConditions": [],
+          "answer": "片库保留 1 部有电影身份资料支持的候选，资料依据列在下方。",
+          "identityChecked": true,
+          "identityRejected": 16,
+          "identityRecalledTotal": 17,
+          "identitySupportedTotal": 1,
+          "identityNotice": "\n另有 16 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。"
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "aa2089ea-1b96-4687-8c17-032d3a449854",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-04T13:38:18.410218Z",
+          "durationMs": 5384
+        },
+        {
+          "requestId": "aa2089ea-1b96-4687-8c17-032d3a449854",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-04T13:38:18.475741500Z",
+          "durationMs": 65,
+          "arguments": {
+            "intent": "search",
+            "inheritContext": false,
+            "genresAll": [
+              "音乐"
+            ],
+            "yearFrom": 2000,
+            "yearTo": 2010,
+            "maxRuntime": 110,
+            "limit": 2,
+            "category": "mv"
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-04T13:38:18.427632300Z",
+              "queryPlan": {
+                "intent": "search",
+                "inheritContext": false,
+                "genresAll": [
+                  "音乐"
+                ],
+                "yearFrom": 2000,
+                "yearTo": 2010,
+                "maxRuntime": 110,
+                "limit": 2,
+                "category": "mv",
+                "filmIdentityRequired": true,
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "movies": [
+                {
+                  "id": "gying_mv_4dO4",
+                  "titleCn": "曾经",
+                  "titleEn": " Once",
+                  "category": "mv",
+                  "seriesName": "曾经",
+                  "summary": "这是一部由音乐开启的爱尔兰电影。卖花女（Marketa Irglova）被街头艺人（Glen Hansard饰）的音乐所吸引，开始了一段荡气回肠的浪漫故事。他们不是王子和公主，各自有着琐碎的生活，但是他们有个共同点，那就是对音乐的热爱。在一次合奏中，他们找到了彼此间惊人的默契。这个发现让他们兴奋，很快他们找到了另外的一个同伴，组成了一个乐队，并通过优秀的表现得到了专业人士的肯定。与此同时，爱情也在逐渐萌芽。音乐是这部电影最大的亮点之一，塑造了极其浪漫唯美的氛围。",
+                  "aliases": "No Mesmo Tom / Once / 曾经",
+                  "year": 2007,
+                  "season": 1,
+                  "genres": [
+                    "剧情",
+                    "爱情",
+                    "音乐",
+                    "文艺"
+                  ],
+                  "directors": [
+                    "约翰·卡尼"
+                  ],
+                  "actors": [
+                    "格伦·汉塞德",
+                    "玛可塔·伊尔格洛娃",
+                    "休·沃尔什",
+                    "杰拉德·亨德里克",
+                    "阿莱斯戴尔·福利",
+                    "Geoff Minogue",
+                    "Bill Hodnett",
+                    "Danuse Ktrestova",
+                    "达伦·西里",
+                    "Mal Whyte",
+                    "玛塞拉·普伦基特",
+                    "Niall Cleary",
+                    "Wiltold Owski",
+                    "Krzysztos Tlotka",
+                    "Tomek Glowacki"
+                  ],
+                  "regions": [
+                    "爱尔兰",
+                    "美国"
+                  ],
+                  "languages": [
+                    "英语",
+                    "捷克语"
+                  ],
+                  "doubanScore": 8.3,
+                  "imdbScore": 7.8,
+                  "tmdbVoteAverage": 7.4,
+                  "runtimeMinutes": 86,
+                  "resourceCount": 4,
+                  "mediaIdentity": {
+                    "evidence": [
+                      {
+                        "source": "summary",
+                        "quote": "这是一部由音乐开启的爱尔兰电影。卖花女（Marketa Irglova）被街头艺人（Glen Hansard饰）的音乐所吸引，开始了一段荡气回肠的浪漫故事。他们不是王子和公主，各自有着琐碎的生"
+                      },
+                      {
+                        "source": "season",
+                        "quote": "1"
+                      }
+                    ],
+                    "status": "supported",
+                    "kind": "movie"
+                  },
+                  "rating": 8.3,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "符合本次可核验的片库筛选条件"
+                  ]
+                }
+              ],
+              "total": 1,
+              "returned": 1,
+              "truncated": false,
+              "semanticStaleCandidates": 0,
+              "retrieval": "lexical",
+              "unverifiedConditions": [],
+              "answer": "片库保留 1 部有电影身份资料支持的候选，资料依据列在下方。",
+              "identityChecked": true,
+              "identityRejected": 16,
+              "identityRecalledTotal": 17,
+              "identitySupportedTotal": 1,
+              "identityNotice": "\n另有 16 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。"
+            }
+          }
+        }
+      ],
+      "submittedContext": {},
+      "submittedHistory": [],
+      "reviewRubric": {
+        "hardConditions": [
+          "音乐电影",
+          "上映年份2000至2010年，含端点",
+          "片长不超过110分钟",
+          "最多两部"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "按真实资料核对条件",
+          "不足两部不补不合条件的影片"
+        ],
+        "usefulApproximationBoundary": "可以少给或说明无结果，超时长或错年份不算满足。"
+      },
+      "durationSeconds": 5.45,
+      "roundContext": {
+        "candidateIds": [
+          "gying_mv_4dO4"
+        ],
+        "candidates": [
+          {
+            "id": "gying_mv_4dO4",
+            "titleCn": "曾经",
+            "titleEn": " Once",
+            "year": 2007
+          }
+        ],
+        "expiresAt": "2026-11-04T13:53:18.485700+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-06",
+      "sourceGroup": "dev-v3-constraint-replacement-history",
+      "turn": 2,
+      "message": "年份改成2015年及以后，其他条件不变，重新给两部。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "片库保留 2 部有电影身份资料支持的候选，资料依据列在下方。\n1. 《坂本龙一：杰作》；年份：2023；片长：103分钟；豆瓣评分：9.4；IMDb评分：8.0\n2. 《冷战》；年份：2018；片长：84分钟；TMDB评分：7.4\n另有 18 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。",
+      "answerSha256": "6ccce7bbe0ce32fd5d6ca749df6149bc620def67c5dd399609592a528fd9f0ea",
+      "queryPlan": {
+        "intent": "search",
+        "inheritContext": false,
+        "genresAll": [
+          "音乐"
+        ],
+        "maxRuntime": 110,
+        "limit": 2,
+        "category": "mv",
+        "filmIdentityRequired": true,
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": [],
+        "yearFrom": 2015,
+        "scope": "catalog"
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-04T13:38:25.530963800Z",
+          "queryPlan": {
+            "intent": "search",
+            "inheritContext": false,
+            "genresAll": [
+              "音乐"
+            ],
+            "maxRuntime": 110,
+            "limit": 2,
+            "category": "mv",
+            "filmIdentityRequired": true,
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": [],
+            "yearFrom": 2015,
+            "scope": "catalog"
+          },
+          "movies": [
+            {
+              "id": "3gLG",
+              "titleCn": "坂本龙一：杰作",
+              "titleEn": " Ryuichi Sakamoto | Opus",
+              "category": "mv",
+              "summary": "作为坂本龙一献给世界最后的礼物，影片记录了坂本龙一生前最后一场钢琴独奏音乐会，其中包括《圣诞快乐，劳伦斯先生》《末代皇帝》《水》等在内的二十首经典曲目。",
+              "year": 2023,
+              "genres": [
+                "音乐",
+                "纪录"
+              ],
+              "directors": [
+                "空音央"
+              ],
+              "actors": [
+                "坂本龙一"
+              ],
+              "regions": [
+                "日本"
+              ],
+              "languages": [
+                "日语"
+              ],
+              "doubanScore": 9.4,
+              "imdbScore": 8.0,
+              "runtimeMinutes": 103,
+              "resourceCount": 1,
+              "mediaIdentity": {
+                "evidence": [
+                  {
+                    "source": "summary",
+                    "quote": "作为坂本龙一献给世界最后的礼物，影片记录了坂本龙一生前最后一场钢琴独奏音乐会，其中包括《圣诞快乐，劳伦斯先生》《末代皇帝》《水》等在内的二十首经典曲目。"
+                  }
+                ],
+                "status": "supported",
+                "kind": "movie"
+              },
+              "rating": 9.4,
+              "ratingSource": "any",
+              "reasons": [
+                "符合本次可核验的片库筛选条件"
+              ]
+            },
+            {
+              "id": "tmdb_movie_440298",
+              "titleCn": "冷战",
+              "titleEn": "Zimna wojna",
+              "category": "mv",
+              "summary": "这部由保罗·帕夫利克夫斯基执导的宏大而迷狂的爱情故事，始于波兰乡间。音乐家维克托（托马斯·科特 饰）受国家委派搜集民歌，在那里发现了魅力非凡的年轻歌手祖拉（乔安娜·库里格 献上堪称永恒的表演）。在此后十五年里，他们动荡的关系在偷来的时光中展开——一边是他逃往的颓废波西米亚巴黎爵士俱乐部，另一边是她身处的腐败而压抑的共产主义阵营。音乐与对彼此的爱跨越了这两个截然不同的世界。影片以华美的黑白影像拍摄，那首为这对恋人宿命情缘提供主旋律的简单民谣，其哀愁贯穿始终。灵感源自帕夫利科夫斯基自己父母的故事，这部跨越时间的作品，以令人心颤的宏大视野，描绘了一段被历史洪流裹挟的错位爱情。[标准收藏]",
+              "aliases": "SCAN'18: Šaltasis karas / Зимняя война / Kylmä sota / 콜드 워 / La guerre froide / Soyuq Müharibə",
+              "year": 2018,
+              "genres": [
+                "爱情",
+                "音乐",
+                "剧情"
+              ],
+              "directors": [
+                "Paweł Pawlikowski"
+              ],
+              "actors": [
+                "乔安娜·库利格",
+                "托马斯·科特",
+                "Borys Szyc",
+                "阿伽塔·库莱沙",
+                "塞德里克·卡恩",
+                "让娜·巴利巴尔",
+                "亚当·沃诺维茨",
+                "Adam Ferency",
+                "Adam Szyszkowski",
+                "Dražen Šivak",
+                "Slavko Sobin",
+                "Aloïse Sauvage"
+              ],
+              "regions": [
+                "Poland",
+                "United Kingdom",
+                "France"
+              ],
+              "languages": [
+                "German",
+                "Croatian",
+                "French",
+                "Italian",
+                "Polish",
+                "Russian"
+              ],
+              "tmdbVoteAverage": 7.4,
+              "runtimeMinutes": 84,
+              "resourceCount": 0,
+              "mediaIdentity": {
+                "evidence": [
+                  {
+                    "source": "summary",
+                    "quote": "而压抑的共产主义阵营。音乐与对彼此的爱跨越了这两个截然不同的世界。影片以华美的黑白影像拍摄，那首为这对恋人宿命情缘提供主旋律的简单民谣，其哀愁贯穿始终。灵感源自帕夫利科夫斯基自己父母的故事，这部跨越时"
+                  }
+                ],
+                "status": "supported",
+                "kind": "movie"
+              },
+              "rating": 7.4,
+              "ratingSource": "any",
+              "reasons": [
+                "符合本次可核验的片库筛选条件"
+              ]
+            }
+          ],
+          "total": 2,
+          "returned": 2,
+          "truncated": true,
+          "semanticStaleCandidates": 0,
+          "retrieval": "lexical",
+          "unverifiedConditions": [],
+          "answer": "片库保留 2 部有电影身份资料支持的候选，资料依据列在下方。",
+          "identityChecked": true,
+          "identityRejected": 18,
+          "identityRecalledTotal": 41,
+          "identitySupportedTotal": 2,
+          "identityNotice": "\n另有 18 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。"
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "34220d65-5f58-4947-9d0d-fa29c5784a49",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-04T13:38:25.485964Z",
+          "durationMs": 6987
+        },
+        {
+          "requestId": "34220d65-5f58-4947-9d0d-fa29c5784a49",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-04T13:38:25.574149700Z",
+          "durationMs": 46,
+          "arguments": {
+            "intent": "search",
+            "inheritContext": false,
+            "genresAll": [
+              "音乐"
+            ],
+            "maxRuntime": 110,
+            "limit": 2,
+            "category": "mv",
+            "filmIdentityRequired": true,
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": [],
+            "yearFrom": 2015,
+            "scope": "catalog"
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-04T13:38:25.530963800Z",
+              "queryPlan": {
+                "intent": "search",
+                "inheritContext": false,
+                "genresAll": [
+                  "音乐"
+                ],
+                "maxRuntime": 110,
+                "limit": 2,
+                "category": "mv",
+                "filmIdentityRequired": true,
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": [],
+                "yearFrom": 2015,
+                "scope": "catalog"
+              },
+              "movies": [
+                {
+                  "id": "3gLG",
+                  "titleCn": "坂本龙一：杰作",
+                  "titleEn": " Ryuichi Sakamoto | Opus",
+                  "category": "mv",
+                  "summary": "作为坂本龙一献给世界最后的礼物，影片记录了坂本龙一生前最后一场钢琴独奏音乐会，其中包括《圣诞快乐，劳伦斯先生》《末代皇帝》《水》等在内的二十首经典曲目。",
+                  "year": 2023,
+                  "genres": [
+                    "音乐",
+                    "纪录"
+                  ],
+                  "directors": [
+                    "空音央"
+                  ],
+                  "actors": [
+                    "坂本龙一"
+                  ],
+                  "regions": [
+                    "日本"
+                  ],
+                  "languages": [
+                    "日语"
+                  ],
+                  "doubanScore": 9.4,
+                  "imdbScore": 8.0,
+                  "runtimeMinutes": 103,
+                  "resourceCount": 1,
+                  "mediaIdentity": {
+                    "evidence": [
+                      {
+                        "source": "summary",
+                        "quote": "作为坂本龙一献给世界最后的礼物，影片记录了坂本龙一生前最后一场钢琴独奏音乐会，其中包括《圣诞快乐，劳伦斯先生》《末代皇帝》《水》等在内的二十首经典曲目。"
+                      }
+                    ],
+                    "status": "supported",
+                    "kind": "movie"
+                  },
+                  "rating": 9.4,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "符合本次可核验的片库筛选条件"
+                  ]
+                },
+                {
+                  "id": "tmdb_movie_440298",
+                  "titleCn": "冷战",
+                  "titleEn": "Zimna wojna",
+                  "category": "mv",
+                  "summary": "这部由保罗·帕夫利克夫斯基执导的宏大而迷狂的爱情故事，始于波兰乡间。音乐家维克托（托马斯·科特 饰）受国家委派搜集民歌，在那里发现了魅力非凡的年轻歌手祖拉（乔安娜·库里格 献上堪称永恒的表演）。在此后十五年里，他们动荡的关系在偷来的时光中展开——一边是他逃往的颓废波西米亚巴黎爵士俱乐部，另一边是她身处的腐败而压抑的共产主义阵营。音乐与对彼此的爱跨越了这两个截然不同的世界。影片以华美的黑白影像拍摄，那首为这对恋人宿命情缘提供主旋律的简单民谣，其哀愁贯穿始终。灵感源自帕夫利科夫斯基自己父母的故事，这部跨越时间的作品，以令人心颤的宏大视野，描绘了一段被历史洪流裹挟的错位爱情。[标准收藏]",
+                  "aliases": "SCAN'18: Šaltasis karas / Зимняя война / Kylmä sota / 콜드 워 / La guerre froide / Soyuq Müharibə",
+                  "year": 2018,
+                  "genres": [
+                    "爱情",
+                    "音乐",
+                    "剧情"
+                  ],
+                  "directors": [
+                    "Paweł Pawlikowski"
+                  ],
+                  "actors": [
+                    "乔安娜·库利格",
+                    "托马斯·科特",
+                    "Borys Szyc",
+                    "阿伽塔·库莱沙",
+                    "塞德里克·卡恩",
+                    "让娜·巴利巴尔",
+                    "亚当·沃诺维茨",
+                    "Adam Ferency",
+                    "Adam Szyszkowski",
+                    "Dražen Šivak",
+                    "Slavko Sobin",
+                    "Aloïse Sauvage"
+                  ],
+                  "regions": [
+                    "Poland",
+                    "United Kingdom",
+                    "France"
+                  ],
+                  "languages": [
+                    "German",
+                    "Croatian",
+                    "French",
+                    "Italian",
+                    "Polish",
+                    "Russian"
+                  ],
+                  "tmdbVoteAverage": 7.4,
+                  "runtimeMinutes": 84,
+                  "resourceCount": 0,
+                  "mediaIdentity": {
+                    "evidence": [
+                      {
+                        "source": "summary",
+                        "quote": "而压抑的共产主义阵营。音乐与对彼此的爱跨越了这两个截然不同的世界。影片以华美的黑白影像拍摄，那首为这对恋人宿命情缘提供主旋律的简单民谣，其哀愁贯穿始终。灵感源自帕夫利科夫斯基自己父母的故事，这部跨越时"
+                      }
+                    ],
+                    "status": "supported",
+                    "kind": "movie"
+                  },
+                  "rating": 7.4,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "符合本次可核验的片库筛选条件"
+                  ]
+                }
+              ],
+              "total": 2,
+              "returned": 2,
+              "truncated": true,
+              "semanticStaleCandidates": 0,
+              "retrieval": "lexical",
+              "unverifiedConditions": [],
+              "answer": "片库保留 2 部有电影身份资料支持的候选，资料依据列在下方。",
+              "identityChecked": true,
+              "identityRejected": 18,
+              "identityRecalledTotal": 41,
+              "identitySupportedTotal": 2,
+              "identityNotice": "\n另有 18 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。"
+            }
+          }
+        }
+      ],
+      "submittedContext": {
+        "queryPlan": {
+          "intent": "search",
+          "inheritContext": false,
+          "genresAll": [
+            "音乐"
+          ],
+          "yearFrom": 2000,
+          "yearTo": 2010,
+          "maxRuntime": 110,
+          "limit": 2,
+          "category": "mv",
+          "filmIdentityRequired": true,
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "candidateIds": [
+          "gying_mv_4dO4"
+        ],
+        "candidates": [
+          {
+            "id": "gying_mv_4dO4",
+            "titleCn": "曾经",
+            "titleEn": " Once",
+            "year": 2007
+          }
+        ],
+        "expiresAt": "2026-11-04T13:53:18.485700+00:00",
+        "candidateHistory": [],
+        "historyComplete": true
+      },
+      "submittedHistory": [
+        {
+          "role": "user",
+          "content": "先找2000至2010年上映、最多110分钟的音乐电影，给两部并列出年份。"
+        },
+        {
+          "role": "assistant",
+          "content": "片库保留 1 部有电影身份资料支持的候选，资料依据列在下方。\n1. 《曾经》；年份：2007；片长：86分钟；豆瓣评分：8.3；IMDb评分：7.8；TMDB评分：7.4\n另有 16 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。\n1. 曾经 (2007) 片库 ID: gying_mv_4dO4"
+        }
+      ],
+      "reviewRubric": {
+        "hardConditions": [
+          "新年份 >= 2015，替换原年份区间",
+          "保留音乐电影及不超过110分钟",
+          "最多两部"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "替换而非叠加相互冲突的年份过滤",
+          "返回当前轮的新候选清单"
+        ],
+        "usefulApproximationBoundary": "结果不足可少给，不自动放宽片长。"
+      },
+      "durationSeconds": 7.09,
+      "roundContext": {
+        "candidateIds": [
+          "3gLG",
+          "tmdb_movie_440298"
+        ],
+        "candidates": [
+          {
+            "id": "3gLG",
+            "titleCn": "坂本龙一：杰作",
+            "titleEn": " Ryuichi Sakamoto | Opus",
+            "year": 2023
+          },
+          {
+            "id": "tmdb_movie_440298",
+            "titleCn": "冷战",
+            "titleEn": "Zimna wojna",
+            "year": 2018
+          }
+        ],
+        "expiresAt": "2026-11-04T13:53:25.580152+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-06",
+      "sourceGroup": "dev-v3-constraint-replacement-history",
+      "turn": 3,
+      "message": "我问的是最开始那份2000到2010年列表里的第一部，它的导演是谁？",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "《曾经》（2007）。本次片库返回导演：约翰·卡尼。\n这是一部由音乐开启的爱尔兰电影。卖花女（Marketa Irglova）被街头艺人（Glen Hansard饰）的音乐所吸引，开始了一段荡气回肠的浪漫故事。他们不是王子和公主，各自有着琐碎的生活，但是他们有个共同点，那就是对音乐的热爱。在一次合奏中，他们找到了彼此间惊人的默契。这个发现让他们兴奋，很快他们找到了另外的一个同伴，组成了一个乐队，并通过优秀的表现得到了专业人士的肯定。与此同时，爱情也在逐渐萌芽。音乐是这部电影最大的亮点之一，塑造了极其浪漫唯美的氛围。",
+      "answerSha256": "4862646ac8ea8c077be1d5f13682402f26a479f66d50548c4a262404f5f0b574",
+      "queryPlan": {
+        "intent": "details",
+        "scope": "catalog",
+        "inheritContext": false,
+        "yearFrom": 2000,
+        "yearTo": 2010,
+        "movieId": "gying_mv_4dO4",
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-04T13:38:29.906484600Z",
+          "queryPlan": {
+            "intent": "details",
+            "scope": "catalog",
+            "inheritContext": false,
+            "yearFrom": 2000,
+            "yearTo": 2010,
+            "movieId": "gying_mv_4dO4",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "selectedId": "gying_mv_4dO4",
+          "total": 1,
+          "answer": "已定位片库影片，继续查询本次详情。"
+        },
+        {
+          "tool": "getMovieDetails",
+          "source": "http://127.0.0.1:18883/api/movies/gying_mv_4dO4",
+          "queriedAt": "2026-11-04T13:38:29.912503700Z",
+          "externalLinksVerifiedNow": false,
+          "movie": {
+            "id": "gying_mv_4dO4",
+            "titleCn": "曾经",
+            "titleEn": " Once",
+            "category": "mv",
+            "year": 2007,
+            "doubanScore": 8.3,
+            "tmdbVoteAverage": 7.4,
+            "season": 1,
+            "summary": "这是一部由音乐开启的爱尔兰电影。卖花女（Marketa Irglova）被街头艺人（Glen Hansard饰）的音乐所吸引，开始了一段荡气回肠的浪漫故事。他们不是王子和公主，各自有着琐碎的生活，但是他们有个共同点，那就是对音乐的热爱。在一次合奏中，他们找到了彼此间惊人的默契。这个发现让他们兴奋，很快他们找到了另外的一个同伴，组成了一个乐队，并通过优秀的表现得到了专业人士的肯定。与此同时，爱情也在逐渐萌芽。音乐是这部电影最大的亮点之一，塑造了极其浪漫唯美的氛围。",
+            "directors": [
+              "约翰·卡尼"
+            ],
+            "actors": [
+              "格伦·汉塞德",
+              "玛可塔·伊尔格洛娃",
+              "休·沃尔什"
+            ],
+            "fieldsTruncated": true,
+            "genres": [
+              "剧情",
+              "爱情",
+              "音乐"
+            ],
+            "mediaIdentity": {
+              "evidence": [
+                {
+                  "source": "summary",
+                  "quote": "这是一部由音乐开启的爱尔兰电影。卖花女（Marketa Irglova）被街头艺人（Glen Hansard饰）的音乐所吸引，开始了一段荡气回肠的浪漫故事。他们不是王子和公主，各自有着琐碎的生"
+                },
+                {
+                  "source": "season",
+                  "quote": "1"
+                }
+              ],
+              "status": "supported",
+              "kind": "movie"
+            },
+            "resourceCount": 0
+          },
+          "resourceSummary": {
+            "approvedNormal": 0,
+            "returned": 0,
+            "excluded": 0
+          },
+          "truncated": true
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "7429b84b-334e-4b77-9071-25fae5abb9d1",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-04T13:38:29.893526900Z",
+          "durationMs": 4297
+        },
+        {
+          "requestId": "7429b84b-334e-4b77-9071-25fae5abb9d1",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-04T13:38:29.907507900Z",
+          "durationMs": 14,
+          "arguments": {
+            "intent": "details",
+            "scope": "catalog",
+            "inheritContext": false,
+            "yearFrom": 2000,
+            "yearTo": 2010,
+            "movieId": "gying_mv_4dO4"
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-04T13:38:29.906484600Z",
+              "queryPlan": {
+                "intent": "details",
+                "scope": "catalog",
+                "inheritContext": false,
+                "yearFrom": 2000,
+                "yearTo": 2010,
+                "movieId": "gying_mv_4dO4",
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "selectedId": "gying_mv_4dO4",
+              "total": 1,
+              "answer": "已定位片库影片，继续查询本次详情。"
+            }
+          }
+        },
+        {
+          "requestId": "7429b84b-334e-4b77-9071-25fae5abb9d1",
+          "kind": "tool",
+          "name": "getMovieDetails",
+          "status": "success",
+          "timestamp": "2026-11-04T13:38:29.913404900Z",
+          "durationMs": 4,
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "http://127.0.0.1:18883/api/movies/gying_mv_4dO4",
+              "queriedAt": "2026-11-04T13:38:29.912503700Z",
+              "externalLinksVerifiedNow": false,
+              "movie": {
+                "id": "gying_mv_4dO4",
+                "titleCn": "曾经",
+                "titleEn": " Once",
+                "category": "mv",
+                "year": 2007,
+                "doubanScore": 8.3,
+                "tmdbVoteAverage": 7.4,
+                "season": 1,
+                "summary": "这是一部由音乐开启的爱尔兰电影。卖花女（Marketa Irglova）被街头艺人（Glen Hansard饰）的音乐所吸引，开始了一段荡气回肠的浪漫故事。他们不是王子和公主，各自有着琐碎的生活，但是他们有个共同点，那就是对音乐的热爱。在一次合奏中，他们找到了彼此间惊人的默契。这个发现让他们兴奋，很快他们找到了另外的一个同伴，组成了一个乐队，并通过优秀的表现得到了专业人士的肯定。与此同时，爱情也在逐渐萌芽。音乐是这部电影最大的亮点之一，塑造了极其浪漫唯美的氛围。",
+                "directors": [
+                  "约翰·卡尼"
+                ],
+                "actors": [
+                  "格伦·汉塞德",
+                  "玛可塔·伊尔格洛娃",
+                  "休·沃尔什"
+                ],
+                "fieldsTruncated": true,
+                "genres": [
+                  "剧情",
+                  "爱情",
+                  "音乐"
+                ],
+                "mediaIdentity": {
+                  "evidence": [
+                    {
+                      "source": "summary",
+                      "quote": "这是一部由音乐开启的爱尔兰电影。卖花女（Marketa Irglova）被街头艺人（Glen Hansard饰）的音乐所吸引，开始了一段荡气回肠的浪漫故事。他们不是王子和公主，各自有着琐碎的生"
+                    },
+                    {
+                      "source": "season",
+                      "quote": "1"
+                    }
+                  ],
+                  "status": "supported",
+                  "kind": "movie"
+                },
+                "resourceCount": 0
+              },
+              "resourceSummary": {
+                "approvedNormal": 0,
+                "returned": 0,
+                "excluded": 0
+              },
+              "truncated": true
+            }
+          }
+        }
+      ],
+      "submittedContext": {
+        "queryPlan": {
+          "intent": "search",
+          "inheritContext": false,
+          "genresAll": [
+            "音乐"
+          ],
+          "maxRuntime": 110,
+          "limit": 2,
+          "category": "mv",
+          "filmIdentityRequired": true,
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": [],
+          "yearFrom": 2015,
+          "scope": "catalog"
+        },
+        "candidateIds": [
+          "3gLG",
+          "tmdb_movie_440298"
+        ],
+        "candidates": [
+          {
+            "id": "3gLG",
+            "titleCn": "坂本龙一：杰作",
+            "titleEn": " Ryuichi Sakamoto | Opus",
+            "year": 2023
+          },
+          {
+            "id": "tmdb_movie_440298",
+            "titleCn": "冷战",
+            "titleEn": "Zimna wojna",
+            "year": 2018
+          }
+        ],
+        "expiresAt": "2026-11-04T13:53:25.580152+00:00",
+        "candidateHistory": [
+          {
+            "candidateIds": [
+              "gying_mv_4dO4"
+            ],
+            "candidates": [
+              {
+                "id": "gying_mv_4dO4",
+                "titleCn": "曾经",
+                "titleEn": " Once",
+                "year": 2007
+              }
+            ],
+            "expiresAt": "2026-11-04T13:53:18.485700+00:00"
+          }
+        ],
+        "historyComplete": true
+      },
+      "submittedHistory": [
+        {
+          "role": "user",
+          "content": "先找2000至2010年上映、最多110分钟的音乐电影，给两部并列出年份。"
+        },
+        {
+          "role": "assistant",
+          "content": "片库保留 1 部有电影身份资料支持的候选，资料依据列在下方。\n1. 《曾经》；年份：2007；片长：86分钟；豆瓣评分：8.3；IMDb评分：7.8；TMDB评分：7.4\n另有 16 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。\n1. 曾经 (2007) 片库 ID: gying_mv_4dO4"
+        },
+        {
+          "role": "user",
+          "content": "年份改成2015年及以后，其他条件不变，重新给两部。"
+        },
+        {
+          "role": "assistant",
+          "content": "片库保留 2 部有电影身份资料支持的候选，资料依据列在下方。\n1. 《坂本龙一：杰作》；年份：2023；片长：103分钟；豆瓣评分：9.4；IMDb评分：8.0\n2. 《冷战》；年份：2018；片长：84分钟；TMDB评分：7.4\n另有 18 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。\n1. 坂本龙一：杰作 (2023) 片库 ID: 3gLG\n2. 冷战 (2018) 片库 ID: tmdb_movie_440298"
+        }
+      ],
+      "reviewRubric": {
+        "hardConditions": [
+          "指向第一轮实际列表首个候选",
+          "导演资料与该候选身份一致"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "依据第一轮观测解析身份，不能误用最新一轮首个候选",
+          "第一轮没有可用候选或历史缺失时说明无法定位并澄清"
+        ],
+        "usefulApproximationBoundary": "无法定位时有效澄清可以满足需求，猜测片名或导演不算。"
+      },
+      "durationSeconds": 4.33,
+      "roundContext": {
+        "candidateIds": [
+          "gying_mv_4dO4"
+        ],
+        "candidates": [
+          {
+            "id": "gying_mv_4dO4",
+            "titleCn": "曾经",
+            "titleEn": " Once",
+            "year": 2007
+          }
+        ],
+        "expiresAt": "2026-11-04T13:53:29.916176+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-10",
+      "sourceGroup": "dev-v3-soft-preference-relaxation",
+      "turn": 1,
+      "message": "想看以小镇电影院为故事重要场景的剧情电影，不要剧集。最好结尾温暖，但这只是偏好；先给最多三部，并说明剧情依据。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "片库召回的候选暂没有足够剧情依据，继续联网核对。\n另有 18 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。\n搜索资料摘录：“盘点12部以电影院为关键场景的经典电影，从《天堂电影院》到新作”；“事实上，导演在此不仅是在追忆童年的回忆，更是在回溯电影最初的公共价值。 多年以后，成名后的托托回到小镇，面 …”；“盘点电影史上10个经典电影院场景：从《天堂电影院》到悬疑惊悚，银幕内外的故事”。\n联网依据：盘点12部以电影院为关键场景的经典电影，从《天堂电影院》到新作；追忆我们的故园——以《天堂电影院》的空间叙事为视角；盘点电影史上10个经典电影院场景：从《天堂电影院》到悬疑惊悚，银 …。资料来源与查询时间列在下方。",
+      "answerSha256": "364d041759dcd950102cda38befe6cc61a68c406343efc38674cc454aae0ca2c",
+      "queryPlan": {
+        "intent": "search",
+        "semanticText": "以小镇电影院为故事重要场景",
+        "inheritContext": false,
+        "genresAll": [
+          "剧情"
+        ],
+        "limit": 3,
+        "category": "mv",
+        "filmIdentityRequired": true,
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-04T13:38:43.224029900Z",
+          "queryPlan": {
+            "intent": "search",
+            "semanticText": "以小镇电影院为故事重要场景",
+            "inheritContext": false,
+            "genresAll": [
+              "剧情"
+            ],
+            "limit": 3,
+            "category": "mv",
+            "filmIdentityRequired": true,
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "movies": [],
+          "total": 0,
+          "returned": 0,
+          "truncated": true,
+          "semanticStaleCandidates": 4,
+          "retrieval": "hybrid-rrf",
+          "unverifiedConditions": [],
+          "answer": "片库召回的候选暂没有足够剧情依据，继续联网核对。",
+          "identityChecked": true,
+          "identityRejected": 18,
+          "identityRecalledTotal": 146,
+          "identitySupportedTotal": 2,
+          "identityNotice": "\n另有 18 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。",
+          "entailmentModelCalls": 1,
+          "recalledTotal": 2,
+          "relevanceChecked": true,
+          "entailmentChecked": true
+        },
+        {
+          "tool": "searchMovieWeb",
+          "provider": "bing-html",
+          "source": "https://www.bing.com/search",
+          "query": "以小镇电影院为故事重要场景 电影",
+          "queriedAt": "2026-11-04T13:39:41.291086Z",
+          "externalLinksVerifiedNow": false,
+          "webResults": [
+            {
+              "title": "盘点12部以电影院为关键场景的经典电影，从《天堂电影院》到新作",
+              "url": "https://wenku.baidu.com/view/11a3bb117bd5360cba1aa8114431b90d6c858933.html",
+              "snippet": "如何欣赏与挑选：电影院场景的四大艺术作用 当观看这类电影时，可以从以下几个维度欣赏电影院场景的妙处： 1.空间叙事：观察电 …",
+              "partial": true
+            },
+            {
+              "title": "追忆我们的故园——以《天堂电影院》的空间叙事为视角",
+              "url": "https://movie.douban.com/review/13611205/",
+              "snippet": "Jun 14, 2021  · 事实上，导演在此不仅是在追忆童年的回忆，更是在回溯电影最初的公共价值。 多年以后，成名后的托托回到小镇，面 …",
+              "partial": true
+            },
+            {
+              "title": "盘点电影史上10个经典电影院场景：从《天堂电影院》到悬疑惊悚，银 …",
+              "url": "https://wenku.baidu.com/view/db244454bf68a98271fe910ef12d2af90342a866.html",
+              "snippet": "盘点电影史上10个经典电影院场景：从《天堂电影院》到悬疑惊悚，银幕内外的故事-盘点电影史上10个经典电影院场景：从《天堂电 …",
+              "partial": true
+            }
+          ],
+          "returned": 3,
+          "truncated": true,
+          "rawReturned": 6,
+          "identityReturned": 6,
+          "relevanceChecked": true
+        },
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-04T13:40:00.361542500Z",
+          "queryPlan": {
+            "intent": "search",
+            "semanticText": "以小镇电影院为故事重要场景",
+            "inheritContext": false,
+            "genresAll": [
+              "剧情"
+            ],
+            "limit": 3,
+            "category": "mv",
+            "filmIdentityRequired": true,
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": [],
+            "titles": [
+              "《天堂电影院》"
+            ]
+          },
+          "movies": [],
+          "total": 0,
+          "returned": 0,
+          "truncated": false,
+          "semanticStaleCandidates": 0,
+          "retrieval": "lexical",
+          "unverifiedConditions": [],
+          "answer": "片库暂没有电影身份依据充分的候选，继续联网核对。",
+          "identityChecked": true,
+          "identityRejected": 1,
+          "identityRecalledTotal": 1,
+          "identitySupportedTotal": 0,
+          "identityNotice": "\n另有 1 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。"
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "6bc58064-6f13-475e-8642-4d43b5957b2b",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-04T13:38:36.312937900Z",
+          "durationMs": 6386
+        },
+        {
+          "requestId": "6bc58064-6f13-475e-8642-4d43b5957b2b",
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-04T13:38:43.202093700Z",
+          "durationMs": 6888,
+          "returned": 100
+        },
+        {
+          "requestId": "6bc58064-6f13-475e-8642-4d43b5957b2b",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-04T13:38:48.960580600Z",
+          "durationMs": 5759,
+          "arguments": {
+            "intent": "search",
+            "semanticText": "以小镇电影院为故事重要场景",
+            "inheritContext": false,
+            "genresAll": [
+              "剧情"
+            ],
+            "limit": 3,
+            "category": "mv"
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-04T13:38:43.224029900Z",
+              "queryPlan": {
+                "intent": "search",
+                "semanticText": "以小镇电影院为故事重要场景",
+                "inheritContext": false,
+                "genresAll": [
+                  "剧情"
+                ],
+                "limit": 3,
+                "category": "mv",
+                "filmIdentityRequired": true,
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "movies": [],
+              "total": 0,
+              "returned": 0,
+              "truncated": true,
+              "semanticStaleCandidates": 4,
+              "retrieval": "hybrid-rrf",
+              "unverifiedConditions": [],
+              "answer": "片库召回的候选暂没有足够剧情依据，继续联网核对。",
+              "identityChecked": true,
+              "identityRejected": 18,
+              "identityRecalledTotal": 146,
+              "identitySupportedTotal": 2,
+              "identityNotice": "\n另有 18 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。",
+              "entailmentModelCalls": 1,
+              "recalledTotal": 2,
+              "relevanceChecked": true,
+              "entailmentChecked": true
+            }
+          }
+        },
+        {
+          "requestId": "6bc58064-6f13-475e-8642-4d43b5957b2b",
+          "kind": "planning",
+          "name": "candidate-relevance",
+          "status": "success",
+          "timestamp": "2026-11-04T13:39:40.160760800Z",
+          "durationMs": 51196
+        },
+        {
+          "requestId": "6bc58064-6f13-475e-8642-4d43b5957b2b",
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "timestamp": "2026-11-04T13:39:41.358342700Z",
+          "durationMs": 1196,
+          "result": {
+            "ok": true,
+            "data": {
+              "provider": "bing-html",
+              "source": "https://www.bing.com/search",
+              "query": "以小镇电影院为故事重要场景 电影",
+              "queriedAt": "2026-11-04T13:39:41.291086Z",
+              "externalLinksVerifiedNow": false,
+              "webResults": [
+                {
+                  "title": "盘点12部以电影院为关键场景的经典电影，从《天堂电影院》到新作",
+                  "url": "https://wenku.baidu.com/view/11a3bb117bd5360cba1aa8114431b90d6c858933.html",
+                  "snippet": "如何欣赏与挑选：电影院场景的四大艺术作用 当观看这类电影时，可以从以下几个维度欣赏电影院场景的妙处： 1.空间叙事：观察电 …",
+                  "partial": true
+                },
+                {
+                  "title": "追忆我们的故园——以《天堂电影院》的空间叙事为视角",
+                  "url": "https://movie.douban.com/review/13611205/",
+                  "snippet": "Jun 14, 2021  · 事实上，导演在此不仅是在追忆童年的回忆，更是在回溯电影最初的公共价值。 多年以后，成名后的托托回到小镇，面 …",
+                  "partial": true
+                },
+                {
+                  "title": "盘点电影史上10个经典电影院场景：从《天堂电影院》到悬疑惊悚，银 …",
+                  "url": "https://wenku.baidu.com/view/db244454bf68a98271fe910ef12d2af90342a866.html",
+                  "snippet": "盘点电影史上10个经典电影院场景：从《天堂电影院》到悬疑惊悚，银幕内外的故事-盘点电影史上10个经典电影院场景：从《天堂电 …",
+                  "partial": true
+                }
+              ],
+              "returned": 3,
+              "truncated": true,
+              "rawReturned": 6,
+              "identityReturned": 6,
+              "relevanceChecked": true
+            }
+          }
+        },
+        {
+          "requestId": "6bc58064-6f13-475e-8642-4d43b5957b2b",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-04T13:40:01.671327900Z",
+          "durationMs": 2148,
+          "arguments": {
+            "intent": "search",
+            "semanticText": "以小镇电影院为故事重要场景",
+            "inheritContext": false,
+            "genresAll": [
+              "剧情"
+            ],
+            "limit": 3,
+            "category": "mv",
+            "filmIdentityRequired": true,
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": [],
+            "titles": [
+              "《天堂电影院》"
+            ]
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-04T13:40:00.361542500Z",
+              "queryPlan": {
+                "intent": "search",
+                "semanticText": "以小镇电影院为故事重要场景",
+                "inheritContext": false,
+                "genresAll": [
+                  "剧情"
+                ],
+                "limit": 3,
+                "category": "mv",
+                "filmIdentityRequired": true,
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": [],
+                "titles": [
+                  "《天堂电影院》"
+                ]
+              },
+              "movies": [],
+              "total": 0,
+              "returned": 0,
+              "truncated": false,
+              "semanticStaleCandidates": 0,
+              "retrieval": "lexical",
+              "unverifiedConditions": [],
+              "answer": "片库暂没有电影身份依据充分的候选，继续联网核对。",
+              "identityChecked": true,
+              "identityRejected": 1,
+              "identityRecalledTotal": 1,
+              "identitySupportedTotal": 0,
+              "identityNotice": "\n另有 1 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。"
+            }
+          }
+        }
+      ],
+      "submittedContext": {},
+      "submittedHistory": [],
+      "reviewRubric": {
+        "hardConditions": [
+          "剧情电影，不要剧集",
+          "小镇电影院是故事重要场景",
+          "最多三部",
+          "提供支持主题的剧情依据"
+        ],
+        "softPreferences": [
+          "结尾温暖，非硬性排除"
+        ],
+        "expectedBehavior": [
+          "区分主题证据和主观感受，结尾未经核实则说明未知",
+          "与偏好不完全一致时解释差异"
+        ],
+        "usefulApproximationBoundary": "核心主题及电影类型满足时，不那么温暖的结尾可列为有用近似；仍需用户或人工复核确认实用性。"
+      },
+      "durationSeconds": 91.77,
+      "roundContext": {
+        "candidateIds": [],
+        "candidates": [],
+        "expiresAt": "2026-11-04T13:55:01.675329+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-10",
+      "sourceGroup": "dev-v3-soft-preference-relaxation",
+      "turn": 2,
+      "message": "结尾不用温暖也行，但电影院必须是核心场景，电影类型和最多三部都别改。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "片库召回的候选暂没有足够剧情依据，继续联网核对。\n另有 16 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。\n搜索资料摘录：“盘点12部以电影院为关键场景的经典电影，从《天堂电影院》到新作”；“若想系统地观赏与电影院相关的电影，可以遵循以下思路。首先明确需求：你是想寻找像《惊魂电影院》这样以影院为核心叙事舞台”；“于是，他以电影院为背景，在《蛋镇电影院》中讲述了17个彼此关联的小故事”。\n联网依据：盘点12部以电影院为关键场景的经典电影，从《天堂电影院》到新作；电影院里的光影故事：盘点10部以电影院为关键场景的经典电影；朱山坡《蛋镇电影院》：通过这些故事，小镇定义了它自身_百科TA说。资料来源与查询时间列在下方。",
+      "answerSha256": "9faeb19610b6ef189e9e0dbb01588b56806596e70d5e44719a889729f72c7184",
+      "queryPlan": {
+        "intent": "search",
+        "semanticText": "以小镇电影院为故事重要场景；电影院必须是核心场景",
+        "inheritContext": false,
+        "genresAll": [
+          "剧情"
+        ],
+        "limit": 3,
+        "category": "mv",
+        "filmIdentityRequired": true,
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-04T13:40:17.866561100Z",
+          "queryPlan": {
+            "intent": "search",
+            "semanticText": "以小镇电影院为故事重要场景；电影院必须是核心场景",
+            "inheritContext": false,
+            "genresAll": [
+              "剧情"
+            ],
+            "limit": 3,
+            "category": "mv",
+            "filmIdentityRequired": true,
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "movies": [],
+          "total": 0,
+          "returned": 0,
+          "truncated": true,
+          "semanticStaleCandidates": 3,
+          "retrieval": "hybrid-rrf",
+          "unverifiedConditions": [],
+          "answer": "片库召回的候选暂没有足够剧情依据，继续联网核对。",
+          "identityChecked": true,
+          "identityRejected": 16,
+          "identityRecalledTotal": 147,
+          "identitySupportedTotal": 4,
+          "identityNotice": "\n另有 16 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。",
+          "entailmentModelCalls": 1,
+          "recalledTotal": 4,
+          "relevanceChecked": true,
+          "entailmentChecked": true
+        },
+        {
+          "tool": "searchMovieWeb",
+          "provider": "bing-html",
+          "source": "https://www.bing.com/search",
+          "query": "以小镇电影院为故事重要场景；电影院必须是核心场景 电影",
+          "queriedAt": "2026-11-04T13:41:40.381893800Z",
+          "externalLinksVerifiedNow": false,
+          "webResults": [
+            {
+              "title": "盘点12部以电影院为关键场景的经典电影，从《天堂电影院》到新作",
+              "url": "https://wenku.baidu.com/view/11a3bb117bd5360cba1aa8114431b90d6c858933.html",
+              "snippet": "电影院，这个放映光影的场所，本身也常常成为电影故事发生的舞台。当银幕上的故事与银幕下的现实在同一个空间交织，便产生了 …",
+              "partial": true
+            },
+            {
+              "title": "电影院里的光影故事：盘点10部以电影院为关键场景的经典电影",
+              "url": "https://wenku.baidu.com/view/0b7032c455e79b89680203d8ce2f0066f5336432.html",
+              "snippet": "若想系统地观赏与电影院相关的电影，可以遵循以下思路。首先明确需求：你是想寻找像《惊魂电影院》这样以影院为核心叙事舞台 …",
+              "partial": true
+            },
+            {
+              "title": "朱山坡《蛋镇电影院》：通过这些故事，小镇定义了它自身_百科TA说",
+              "url": "https://baike.baidu.com/tashuo/browse/content?id=5c3a2427df44802dca712552",
+              "snippet": "” 于是，他以电影院为背景，在《蛋镇电影院》中讲述了17个彼此关联的小故事，展现了一个南方小镇的风土人情与千姿百态。 评论 …",
+              "partial": true
+            }
+          ],
+          "returned": 3,
+          "truncated": true,
+          "rawReturned": 6,
+          "identityReturned": 6,
+          "relevanceChecked": true
+        },
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-04T13:41:58.439661900Z",
+          "queryPlan": {
+            "intent": "search",
+            "semanticText": "以小镇电影院为故事重要场景；电影院必须是核心场景",
+            "inheritContext": false,
+            "genresAll": [
+              "剧情"
+            ],
+            "limit": 3,
+            "category": "mv",
+            "filmIdentityRequired": true,
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": [],
+            "titles": [
+              "《天堂电影院》"
+            ]
+          },
+          "movies": [],
+          "total": 0,
+          "returned": 0,
+          "truncated": false,
+          "semanticStaleCandidates": 0,
+          "retrieval": "lexical",
+          "unverifiedConditions": [],
+          "answer": "片库暂没有电影身份依据充分的候选，继续联网核对。",
+          "identityChecked": true,
+          "identityRejected": 1,
+          "identityRecalledTotal": 1,
+          "identitySupportedTotal": 0,
+          "identityNotice": "\n另有 1 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。"
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "d4192c8a-28b2-4dbb-ad1b-df8ab2f953f8",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-04T13:40:11.564173800Z",
+          "durationMs": 9875
+        },
+        {
+          "requestId": "d4192c8a-28b2-4dbb-ad1b-df8ab2f953f8",
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-04T13:40:17.862280800Z",
+          "durationMs": 6105,
+          "returned": 100
+        },
+        {
+          "requestId": "d4192c8a-28b2-4dbb-ad1b-df8ab2f953f8",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-04T13:40:18.029785Z",
+          "durationMs": 166,
+          "arguments": {
+            "intent": "search",
+            "semanticText": "以小镇电影院为故事重要场景；电影院必须是核心场景",
+            "inheritContext": false,
+            "genresAll": [
+              "剧情"
+            ],
+            "limit": 3,
+            "category": "mv",
+            "filmIdentityRequired": true,
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-04T13:40:17.866561100Z",
+              "queryPlan": {
+                "intent": "search",
+                "semanticText": "以小镇电影院为故事重要场景；电影院必须是核心场景",
+                "inheritContext": false,
+                "genresAll": [
+                  "剧情"
+                ],
+                "limit": 3,
+                "category": "mv",
+                "filmIdentityRequired": true,
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "movies": [],
+              "total": 0,
+              "returned": 0,
+              "truncated": true,
+              "semanticStaleCandidates": 3,
+              "retrieval": "hybrid-rrf",
+              "unverifiedConditions": [],
+              "answer": "片库召回的候选暂没有足够剧情依据，继续联网核对。",
+              "identityChecked": true,
+              "identityRejected": 16,
+              "identityRecalledTotal": 147,
+              "identitySupportedTotal": 4,
+              "identityNotice": "\n另有 16 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。",
+              "entailmentModelCalls": 1,
+              "recalledTotal": 4,
+              "relevanceChecked": true,
+              "entailmentChecked": true
+            }
+          }
+        },
+        {
+          "requestId": "d4192c8a-28b2-4dbb-ad1b-df8ab2f953f8",
+          "kind": "planning",
+          "name": "candidate-relevance",
+          "status": "success",
+          "timestamp": "2026-11-04T13:41:39.171824100Z",
+          "durationMs": 81139
+        },
+        {
+          "requestId": "d4192c8a-28b2-4dbb-ad1b-df8ab2f953f8",
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "timestamp": "2026-11-04T13:41:40.453636800Z",
+          "durationMs": 1280,
+          "result": {
+            "ok": true,
+            "data": {
+              "provider": "bing-html",
+              "source": "https://www.bing.com/search",
+              "query": "以小镇电影院为故事重要场景；电影院必须是核心场景 电影",
+              "queriedAt": "2026-11-04T13:41:40.381893800Z",
+              "externalLinksVerifiedNow": false,
+              "webResults": [
+                {
+                  "title": "盘点12部以电影院为关键场景的经典电影，从《天堂电影院》到新作",
+                  "url": "https://wenku.baidu.com/view/11a3bb117bd5360cba1aa8114431b90d6c858933.html",
+                  "snippet": "电影院，这个放映光影的场所，本身也常常成为电影故事发生的舞台。当银幕上的故事与银幕下的现实在同一个空间交织，便产生了 …",
+                  "partial": true
+                },
+                {
+                  "title": "电影院里的光影故事：盘点10部以电影院为关键场景的经典电影",
+                  "url": "https://wenku.baidu.com/view/0b7032c455e79b89680203d8ce2f0066f5336432.html",
+                  "snippet": "若想系统地观赏与电影院相关的电影，可以遵循以下思路。首先明确需求：你是想寻找像《惊魂电影院》这样以影院为核心叙事舞台 …",
+                  "partial": true
+                },
+                {
+                  "title": "朱山坡《蛋镇电影院》：通过这些故事，小镇定义了它自身_百科TA说",
+                  "url": "https://baike.baidu.com/tashuo/browse/content?id=5c3a2427df44802dca712552",
+                  "snippet": "” 于是，他以电影院为背景，在《蛋镇电影院》中讲述了17个彼此关联的小故事，展现了一个南方小镇的风土人情与千姿百态。 评论 …",
+                  "partial": true
+                }
+              ],
+              "returned": 3,
+              "truncated": true,
+              "rawReturned": 6,
+              "identityReturned": 6,
+              "relevanceChecked": true
+            }
+          }
+        },
+        {
+          "requestId": "d4192c8a-28b2-4dbb-ad1b-df8ab2f953f8",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-04T13:41:59.808452600Z",
+          "durationMs": 2052,
+          "arguments": {
+            "intent": "search",
+            "semanticText": "以小镇电影院为故事重要场景；电影院必须是核心场景",
+            "inheritContext": false,
+            "genresAll": [
+              "剧情"
+            ],
+            "limit": 3,
+            "category": "mv",
+            "filmIdentityRequired": true,
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": [],
+            "titles": [
+              "《天堂电影院》"
+            ]
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-04T13:41:58.439661900Z",
+              "queryPlan": {
+                "intent": "search",
+                "semanticText": "以小镇电影院为故事重要场景；电影院必须是核心场景",
+                "inheritContext": false,
+                "genresAll": [
+                  "剧情"
+                ],
+                "limit": 3,
+                "category": "mv",
+                "filmIdentityRequired": true,
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": [],
+                "titles": [
+                  "《天堂电影院》"
+                ]
+              },
+              "movies": [],
+              "total": 0,
+              "returned": 0,
+              "truncated": false,
+              "semanticStaleCandidates": 0,
+              "retrieval": "lexical",
+              "unverifiedConditions": [],
+              "answer": "片库暂没有电影身份依据充分的候选，继续联网核对。",
+              "identityChecked": true,
+              "identityRejected": 1,
+              "identityRecalledTotal": 1,
+              "identitySupportedTotal": 0,
+              "identityNotice": "\n另有 1 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。"
+            }
+          }
+        }
+      ],
+      "submittedContext": {
+        "queryPlan": {
+          "intent": "search",
+          "semanticText": "以小镇电影院为故事重要场景",
+          "inheritContext": false,
+          "genresAll": [
+            "剧情"
+          ],
+          "limit": 3,
+          "category": "mv",
+          "filmIdentityRequired": true,
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "candidateIds": [],
+        "candidates": [],
+        "expiresAt": "2026-11-04T13:55:01.675329+00:00",
+        "candidateHistory": [],
+        "historyComplete": true
+      },
+      "submittedHistory": [
+        {
+          "role": "user",
+          "content": "想看以小镇电影院为故事重要场景的剧情电影，不要剧集。最好结尾温暖，但这只是偏好；先给最多三部，并说明剧情依据。"
+        },
+        {
+          "role": "assistant",
+          "content": "片库召回的候选暂没有足够剧情依据，继续联网核对。\n另有 18 部召回作品因电影身份资料不足或与电视节目等资料冲突，未列入电影候选；片库的mv或ac分类不能单独核定电影身份，未保留候选不证明不存在符合条件的电影。\n搜索资料摘录：“盘点12部以电影院为关键场景的经典电影，从《天堂电影院》到新作”；“事实上，导演在此不仅是在追忆童年的回忆，更是在回溯电影最初的公共价值。 多年以后，成名后的托托回到小镇，面 …”；“盘点电影史上10个经典电影院场景：从《天堂电影院》到悬疑惊悚，银幕内外的故事”。\n联网依据：盘点12部以电影院为关键场景的经典电影，从《天堂电影院》到新作；追忆我们的故园——以《天堂电影院》的空间叙事为视角；盘点电影史上10个经典电影院场景：从《天堂电影院》到悬疑惊悚，银 …。资料来源与查询时间列在下方。"
+        }
+      ],
+      "reviewRubric": {
+        "hardConditions": [
+          "剧情电影，不要剧集",
+          "电影院是核心场景",
+          "最多三部"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "移除温暖结尾偏好，保留并加强明确主题与类型限制",
+          "不能把只短暂出现电影院的影片充作符合"
+        ],
+        "usefulApproximationBoundary": "允许的变化仅限结尾偏好；不得把剧集或仅一幕电影院的影片当成已获准近似。"
+      },
+      "durationSeconds": 118.12,
+      "roundContext": {
+        "candidateIds": [],
+        "candidates": [],
+        "expiresAt": "2026-11-04T13:56:59.813731+00:00"
+      }
+    }
+  ],
+  "launchEnvironment": "allowlist system environment plus explicit fixture settings; production env not loaded",
+  "harnessLaunchedProcessId": 44892,
+  "harnessHealth": {
+    "status": "ready",
+    "ready": true,
+    "port": 18883,
+    "pid": 44892,
+    "rows": 12822,
+    "snapshotSha256": "0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a",
+    "datasetSelectSqlSha256": "92bf4bfbf11020e6eaac95917298c7a58c8dd33cee34b188270b8a00ede7cfee",
+    "datasetSelectCalls": 1,
+    "queryCalls": 0,
+    "contextUpdates": 0,
+    "detailGets": 0,
+    "dataSourcePresent": false,
+    "databaseConnections": 0,
+    "databaseWrites": 0,
+    "queueClaims": 0,
+    "snapshotTmdbTypeRows": 0,
+    "projectedMediaIdentityRows": 12822,
+    "resourceLinksIncluded": false,
+    "springApplicationStarted": false,
+    "schedulersStarted": false,
+    "catalogClassLocation": "file:/E:/gying-tools/releases/ai-identity-theme-20261104/final-candidate/catalog-harness-runtime/BOOT-INF/classes/",
+    "observedAt": "2026-11-04T13:37:02.914089300Z"
+  },
+  "agentLaunchedProcessId": 2472,
+  "agentHealthAndIdentityPassed": true,
+  "executedTurns": 7,
+  "completedTurns": 7,
+  "agentGracefullyStopped": true,
+  "harnessGracefullyStopped": true,
+  "agentExitCode": 0,
+  "agentStopReceipt": {
+    "instanceId": "b870649a-4544-494f-8c38-b3245c0d3311",
+    "processId": 2472,
+    "startedAt": "2026-11-04T13:37:02.963086+00:00",
+    "status": "stopped",
+    "updatedAt": "2026-11-04T13:42:00.098688900Z"
+  },
+  "agentStillRunning": false,
+  "harnessFinalStats": {
+    "status": "stopping",
+    "ready": false,
+    "port": 18883,
+    "pid": 44892,
+    "rows": 12822,
+    "snapshotSha256": "0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a",
+    "datasetSelectSqlSha256": "92bf4bfbf11020e6eaac95917298c7a58c8dd33cee34b188270b8a00ede7cfee",
+    "datasetSelectCalls": 4,
+    "queryCalls": 12,
+    "contextUpdates": 7,
+    "detailGets": 2,
+    "dataSourcePresent": false,
+    "databaseConnections": 0,
+    "databaseWrites": 0,
+    "queueClaims": 0,
+    "snapshotTmdbTypeRows": 0,
+    "projectedMediaIdentityRows": 12822,
+    "resourceLinksIncluded": false,
+    "springApplicationStarted": false,
+    "schedulersStarted": false,
+    "catalogClassLocation": "file:/E:/gying-tools/releases/ai-identity-theme-20261104/final-candidate/catalog-harness-runtime/BOOT-INF/classes/",
+    "observedAt": "2026-11-04T13:42:00.227082800Z",
+    "stopping": true
+  },
+  "harnessExitCode": 0,
+  "harnessStopReceipt": {
+    "status": "stopped",
+    "ready": false,
+    "port": 18883,
+    "pid": 44892,
+    "rows": 12822,
+    "snapshotSha256": "0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a",
+    "datasetSelectSqlSha256": "92bf4bfbf11020e6eaac95917298c7a58c8dd33cee34b188270b8a00ede7cfee",
+    "datasetSelectCalls": 4,
+    "queryCalls": 12,
+    "contextUpdates": 7,
+    "detailGets": 2,
+    "dataSourcePresent": false,
+    "databaseConnections": 0,
+    "databaseWrites": 0,
+    "queueClaims": 0,
+    "snapshotTmdbTypeRows": 0,
+    "projectedMediaIdentityRows": 12822,
+    "resourceLinksIncluded": false,
+    "springApplicationStarted": false,
+    "schedulersStarted": false,
+    "catalogClassLocation": "file:/E:/gying-tools/releases/ai-identity-theme-20261104/final-candidate/catalog-harness-runtime/BOOT-INF/classes/",
+    "observedAt": "2026-11-04T13:42:02.371178200Z",
+    "gracefullyStopped": true
+  },
+  "harnessStillRunning": false,
+  "completedAt": "2026-11-04T13:42:02.477844+00:00"
+}

@@ -215,6 +215,15 @@ public class GyingSourceAdminController {
                 () -> workflowService.ensureRemainingSeasons(movieId, maxPages)));
     }
 
+    @PostMapping("/movies/{movieId}/metadata/sync")
+    public ResponseEntity<?> syncMovieMetadata(@PathVariable String movieId,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ResponseEntity.ok(startJob("SYNC_METADATA", () -> workflowService.syncMovieMetadata(movieId)));
+    }
+
+    public record PosterRepairRequest(List<String> movieIds, boolean refreshExisting) {}
+
     @PostMapping("/movies/{movieId}/poster/repair")
     public ResponseEntity<?> repairMoviePoster(
             @PathVariable String movieId,
@@ -226,11 +235,13 @@ public class GyingSourceAdminController {
     @PostMapping("/posters/repair")
     public ResponseEntity<?> repairMissingPosters(
             @RequestParam(defaultValue = "20") int limit,
+            @RequestBody(required = false) PosterRepairRequest request,
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
         return ResponseEntity.ok(startJob(
                 "REPAIR_POSTERS",
-                () -> workflowService.repairMissingPosters(Math.min(Math.max(limit, 1), 100))));
+                () -> workflowService.repairMissingPosters(Math.min(Math.max(limit, 1), 100),
+                        request == null ? null : request.movieIds(), request != null && request.refreshExisting())));
     }
     @GetMapping("/account")
     public ResponseEntity<?> account(

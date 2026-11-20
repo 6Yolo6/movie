@@ -1,0 +1,26 @@
+{
+  "status": "PREPARED_HOST_PIN_NO_WRITE",
+  "sourceCommit": "1adbc336cdadefa48be40ff37082a6de840fbd41",
+  "receipt": {
+    "path": "E:/gying-tools/releases/metadata-update-watch-20261115/update-receipt.json",
+    "sha256": "f4012609550995006bd90cfe976931b8c22b7440b36147e3c1306ba1deb058a7"
+  },
+  "oldSha256": "ddf99e97061da7d301a026ca11ff8a23edb06de8d6d8ae018b5d1febe44671f4",
+  "newSha256": "e22ebc2059b7d07dade8d33dae73a6374a0181ffbd9dc3ebfbc4dbc018c9d377",
+  "oldExpectedImage": "sha256:807798b99d0054bca76f98126b960a010333e672d1675a05abb2b252631f77c4",
+  "newExpectedImage": "sha256:3094a644b065d0546ee0d06fea5e8128abb14f79d42c829cb6d007674e893707",
+  "metadataSha256": "66c818e75ecb0a83ae0232a98e2e2be66b5a5fa94993833ccac7103bd8cb82ce",
+  "descriptorSha256": "3a449ad7738debcc193f16e4a7ddd8e47f3d2948c9fbee48cdb6ea618c2b0e4a",
+  "ownerGroupDaclSha256": "1f7c501081e6e1ccd3830ba3cb2b31f4b628a839151c64c52ac8777f5d37f749",
+  "checkpoint": {
+    "directory": "G:\\gying-backups\\metadata-updates-host-preimage-20261115-20261115T094311.301237Z",
+    "artifacts": 1,
+    "authenticated": true,
+    "manifestSha256": "4ca47e5510f2d2e5701a69f5ad07cd4962c347d103a50e662874615f40cb0469",
+    "archive": "G:\\gying-backups\\metadata-updates-host-preimage-20261115-20261115T094311.301237Z\\host-pin-preimage.tar.age",
+    "archiveSha256": "144a8c19b36a11383cbf2300b3ccc76a7a127abc8ae834937ddf73dccfd78c7f"
+  },
+  "configurationWritten": false,
+  "automaticRetry": false,
+  "preparedAt": "2026-11-15T09:43:27.549944+00:00"
+}

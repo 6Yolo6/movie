@@ -1,0 +1,168 @@
+{
+  "status": "OFFLINE_TESTS_PASS",
+  "createdAt": "2026-11-11T05:53:07.360297+00:00",
+  "script": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\Cycle.py",
+  "scriptSha256": "da752867e57b3c79c5ffa1b3ecc8e9a12da276de46a96720bf36a9e03caf7a47",
+  "testScriptSha256": "2d7855fdde05b701414d74f9c6e59d56e89c7141018734100a317f2d51201518",
+  "tests": 37,
+  "failures": 0,
+  "errors": 0,
+  "productionModulesImported": false,
+  "credentialsRead": false,
+  "runtimeDockerRequests": 0,
+  "sqlRequests": 0,
+  "sourceRequests": 0,
+  "cloudRequests": 0,
+  "productionMutations": 0,
+  "mockAuthorizationIsSyntheticAndNeverUsable": true,
+  "results": [
+    {
+      "test": "__main__.PureGateTests.test_authorization_missing_is_rejected_before_runtime",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_default_does_not_construct_runtime",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_deferred_unknown_cannot_fake_normal_skip",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_different_authorization_cannot_reset_consumed_ledger",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_failed_child_stops_as_actual_attempt",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_first_failed_attempt_prevents_next_manual_run",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_first_success_prevents_additional_manual_archive",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_four_skips_exhaust_new_film_budget",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_genuine_empty_source_skip_is_not_failed_archive",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_historical_budget_authorization_basis_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_initial_accepts_exact_exhausted_parent",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_initial_ledger_permits_only_identity47_ordinal1",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_initial_rejects_budget_counter_drift",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_initial_rejects_original_revision_drift",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_intent_without_receipt_prevents_unknown_replay",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_mock_post_unknown_is_reserved_and_never_replayed",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_mock_run_once_skip_has_one_post_and_one_consumed_receipt",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_no_change_cannot_fake_skip",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_one_normal_skip_permits_only_next_ordinal",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_other_movie_child_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_paused_rejects_enabled_schedule",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_paused_rejects_existing_lease",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_preflight_accepts_exact_empty_production_reasons",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_receipt_without_intent_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_send_unknown_receipt_prevents_next_run",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_stop_marker_prevents_further_run",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_succeeded_complete_child_counts_actual_attempt",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_synthetic_bound_authorization_shape",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_two_children_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_unbound_baseline_authorization_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_unknown_child_stops_as_actual_attempt",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_widened_manual_budget_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.PureGateTests.test_write_is_create_once",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.NaturalGateTests.test_natural_success_keeps_true10min1_and_only_one_enable",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.NaturalGateTests.test_unknown_enable_has_exact_one_protective_false_put",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.NaturalGateTests.test_unknown_natural_child_has_exact_one_protective_pause",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.NaturalGateTests.test_changed_next_before_enable_makes_no_mutating_request",
+      "status": "PASS"
+    }
+  ]
+}

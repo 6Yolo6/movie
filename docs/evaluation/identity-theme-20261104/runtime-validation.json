@@ -1,0 +1,29 @@
+{
+  "observedAt": "2026-11-04T13:43:11.833170+00:00",
+  "productionContainersUnchanged": 10,
+  "storedAgentUnchanged": true,
+  "storedReadyMatches": true,
+  "modelConfigurationUnchanged": true,
+  "indexSha256": "f74cb9c6afd7c5b029305a3c0a141a3d1348eb5116285fb7de43bcdbc9b43eb4",
+  "entryStatuses": {
+    "agent": {
+      "httpStatus": 200
+    },
+    "movie": {
+      "httpStatus": 200
+    },
+    "entry": {
+      "httpStatus": 200
+    },
+    "ollama": {
+      "httpStatus": 200
+    }
+  },
+  "temporaryListenPortsAbsent": [
+    15001,
+    18883
+  ],
+  "productionArgvVerified": false,
+  "loadedModelStateChangedDuringInference": true,
+  "deploymentPerformed": false
+}

@@ -1,0 +1,365 @@
+{
+  "version": 2,
+  "status": "PASS",
+  "createdAt": "2026-11-11T11:06:29.500049+00:00",
+  "sourceSha256": {
+    "ReconcileBaiduOwnerReadOnlyV2.java": "b165a31c13d51a9d87189a43cf87d969aa488957c3d2c8a23bb51f35655ded8c",
+    "CompileReconcilerOwnerV2.py": "13301696a2b3157f18b3e90ef8d066453518ef3e94c3dcf415f6959e023dcc51",
+    "PostReconcileOwnerV2.py": "a5e966c6564ffc4318808545d1ebca74bf8bd47e7261b77824544d49289df1df",
+    "OwnerV2Binding.py": "e451162cc55d9177b86733c4e581e143f7fe494fb1f0f2fa7eec9669a23ec459"
+  },
+  "testSourceSha256": {
+    "OwnerSchemaMocksV2.java": "d1b1d06fc7f6c67ccbae831f09d8c81e212e0cf639e353a67d0f0a68e5382bb3",
+    "test_owner_v2_pipeline.py": "eedb7b5abb1bc5d0065c8da27a91a23c8149440f6da3b451e4e1440122a9cc88"
+  },
+  "originalJavaDerivation": {
+    "status": "PASS",
+    "oldSource": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\ReconcileNewBaiduArchiveReadOnly.java",
+      "sha256": "6094c1dba7da05331e7c0e1d8ef90c007a2f3576b55a4dda63727e87cf7e76b6"
+    },
+    "newSource": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\ReconcileBaiduOwnerReadOnlyV2.java",
+      "sha256": "b165a31c13d51a9d87189a43cf87d969aa488957c3d2c8a23bb51f35655ded8c"
+    },
+    "restoredOriginalBytesSha256": "6094c1dba7da05331e7c0e1d8ef90c007a2f3576b55a4dda63727e87cf7e76b6",
+    "restoredBytesEqualOriginal": true,
+    "originalEncoding": "UTF-8 with CRLF",
+    "newEncoding": "UTF-8 with LF",
+    "removedOwnerHelperSha256": "38d0e10c62586641a427db611f52e2520e1355ef2c4ba94406defb27d065dfec",
+    "removedSafeStopBlockSha256": "9ec15d943934cc034a6dc5eac45f3a0e19a172fe29a49838aca735a69a8f0bf5",
+    "allowedReverseTransformations": [
+      "class name rename",
+      "remove the separate OwnerGate/ownerNeed/ownerField/ownerProof helper block",
+      "restore exactly the original owner gate line",
+      "remove only successful ownShare.ownerSchemaProof output",
+      "restore exactly the original sanitized exception output",
+      "restore original CRLF line endings"
+    ],
+    "sourceTransportAndSelectedGetPathsUnchanged": true,
+    "cloudTransportAndGetAllowlistUnchanged": true,
+    "sourceAndCloudWriteRejectionUnchanged": true,
+    "fileContentAndIdProofsUnchanged": true,
+    "shareDirectoryAndUrlGatesUnchanged": true,
+    "sessionVaultPairIntegrityGatesUnchanged": true,
+    "candidateJarAndChildSelectionGatesUnchanged": true
+  },
+  "compilerDerivation": {
+    "oldSource": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileReconciler.py",
+      "sha256": "e7f60f93a18a3d0eb97285e7af3bd9a2c590e195d91b2f3b9b3373ea23259598"
+    },
+    "newSource": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileReconcilerOwnerV2.py",
+      "sha256": "13301696a2b3157f18b3e90ef8d066453518ef3e94c3dcf415f6959e023dcc51"
+    },
+    "changes": [
+      {
+        "kind": "insert",
+        "oldStartLine": 4,
+        "oldLineCount": 0,
+        "newStartLine": 4,
+        "newLineCount": 1,
+        "oldTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "newTextSha256": "b3a1a0590a44861f4cd494e44647a07564d9852aafdfc8a0195cc2f229a5cc10"
+      },
+      {
+        "kind": "replace",
+        "oldStartLine": 6,
+        "oldLineCount": 1,
+        "newStartLine": 7,
+        "newLineCount": 1,
+        "oldTextSha256": "7daf46c0c0dc92681bdfad535e0c08df7476508ec7afef57cbca17c43b884f8c",
+        "newTextSha256": "b9851561ff6e093b7ba18cdac761c75e8f0720fee52f3783da15d4f5d528ab63"
+      },
+      {
+        "kind": "replace",
+        "oldStartLine": 8,
+        "oldLineCount": 1,
+        "newStartLine": 9,
+        "newLineCount": 1,
+        "oldTextSha256": "63f702772581485768953f2204b2a41d26a066c366de44c2e5afc410214b2e30",
+        "newTextSha256": "fb62bb7a8a41ef31a4c1bb4aad98304df4e9f00280955669fdbe63f40e55d393"
+      },
+      {
+        "kind": "replace",
+        "oldStartLine": 22,
+        "oldLineCount": 1,
+        "newStartLine": 23,
+        "newLineCount": 1,
+        "oldTextSha256": "9325a36116bdbb1a2a077f41567d71cb9c29a4b17ce4e9941be698ea538acdc0",
+        "newTextSha256": "91cffbb3b836bd7a267d2aeb6f595459a21264b71615f7aa4e3ffd86d787ae80"
+      },
+      {
+        "kind": "insert",
+        "oldStartLine": 26,
+        "oldLineCount": 0,
+        "newStartLine": 27,
+        "newLineCount": 2,
+        "oldTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "newTextSha256": "70f540b0c22e6894a43139a4b3ee45b8d589c77c616d9d5857433eddf0144548"
+      },
+      {
+        "kind": "replace",
+        "oldStartLine": 37,
+        "oldLineCount": 2,
+        "newStartLine": 40,
+        "newLineCount": 2,
+        "oldTextSha256": "2fa1aa8eeec4095c102c28016fa6ca0546ccf8e8793927203e0686fa3549b9d8",
+        "newTextSha256": "18ff742b445662724728b990bba81357aa868e76b17a815c1174c7d7ca83bc67"
+      },
+      {
+        "kind": "replace",
+        "oldStartLine": 40,
+        "oldLineCount": 1,
+        "newStartLine": 43,
+        "newLineCount": 1,
+        "oldTextSha256": "8bd0fb1f00c71396cb89669a262352f8c42250fdbb5ccdf1aa7cc6c104913c56",
+        "newTextSha256": "1e16590e29c0e41da7994809d73766ec3484e9d147fa926d35a49d82301b41ef"
+      },
+      {
+        "kind": "replace",
+        "oldStartLine": 63,
+        "oldLineCount": 1,
+        "newStartLine": 66,
+        "newLineCount": 1,
+        "oldTextSha256": "dc8ba6207e9d21219655a2674da3c9773d381ad94547d364d71fd5e590f2a741",
+        "newTextSha256": "e8e8f1f3feeb2720f5f0df25beba38c55eeea69e09289b6ff854885a1cf001f4"
+      },
+      {
+        "kind": "replace",
+        "oldStartLine": 74,
+        "oldLineCount": 1,
+        "newStartLine": 77,
+        "newLineCount": 1,
+        "oldTextSha256": "838e67cafd2e27ac341f0f53a90e5afd6eefc50cb40dac2dd59b72627e01dcbf",
+        "newTextSha256": "d677681b5e069945d9045c2fe209754c07b4942556a2b3413701365e1874a57e"
+      },
+      {
+        "kind": "insert",
+        "oldStartLine": 77,
+        "oldLineCount": 0,
+        "newStartLine": 80,
+        "newLineCount": 1,
+        "oldTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "newTextSha256": "633bf79a439a754fbf9ce7a2a131ec6236dcbd4074b73138d273e502a2d1abd2"
+      }
+    ],
+    "scope": [
+      "independent source class, container label, output directory",
+      "exact generation binding validation before and after offline compile",
+      "generation binding path and SHA in receipt"
+    ],
+    "pinnedImageAndJarExtractionGatesRetained": true,
+    "networkNoneAndCredentialFreeGatesRetained": true,
+    "ownedRunnerCleanupGatesRetained": true
+  },
+  "postDerivation": {
+    "oldSource": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostReconcile.py",
+      "sha256": "784354902c94d94efb60a5609b0f33768a919ce9335cf49d72dda09a9d03f94c"
+    },
+    "newSource": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostReconcileOwnerV2.py",
+      "sha256": "a5e966c6564ffc4318808545d1ebca74bf8bd47e7261b77824544d49289df1df"
+    },
+    "changes": [
+      {
+        "kind": "replace",
+        "oldStartLine": 5,
+        "oldLineCount": 1,
+        "newStartLine": 5,
+        "newLineCount": 2,
+        "oldTextSha256": "39f3982a5c5813e9ca15a3e8acfef7744e42693a18ccc67e0da8608962980a16",
+        "newTextSha256": "ea63214c4534b3c48a21ccda53cf007d9f1b74e3eb6ae0a18449e0e70ccf03d3"
+      },
+      {
+        "kind": "replace",
+        "oldStartLine": 7,
+        "oldLineCount": 1,
+        "newStartLine": 8,
+        "newLineCount": 1,
+        "oldTextSha256": "c07aa89af1254425f8ce773a3365f4030aff97f3813671432541e5d4338c75bd",
+        "newTextSha256": "70a5eeb66fb15328ec5f4f12ff6c4016203618e8e05cd24898610e91bd851783"
+      },
+      {
+        "kind": "insert",
+        "oldStartLine": 9,
+        "oldLineCount": 0,
+        "newStartLine": 10,
+        "newLineCount": 3,
+        "oldTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "newTextSha256": "791129c4f593c84eae14660423fcaf41758819ac91c2aa98c9d78bcbd204b45c"
+      },
+      {
+        "kind": "insert",
+        "oldStartLine": 49,
+        "oldLineCount": 0,
+        "newStartLine": 53,
+        "newLineCount": 2,
+        "oldTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "newTextSha256": "6cee5445530c84ade723230f59ac43ab074a757962ce6bd05e0175a76799a4d8"
+      },
+      {
+        "kind": "replace",
+        "oldStartLine": 53,
+        "oldLineCount": 1,
+        "newStartLine": 59,
+        "newLineCount": 1,
+        "oldTextSha256": "5bc8221e67aba010a53aac28efb7744cd73151d650cd4cbe67d80b0caa5003d6",
+        "newTextSha256": "86a9bfa790d1f828fd9e0b9f5760cfa5fc391f38954f5092f77b11e965036c6c"
+      },
+      {
+        "kind": "replace",
+        "oldStartLine": 57,
+        "oldLineCount": 1,
+        "newStartLine": 63,
+        "newLineCount": 1,
+        "oldTextSha256": "1c278a7f16d57f1f5100cb693b0d25bbab580789583cb89cd7a318ecfe759158",
+        "newTextSha256": "48cadb8101a12de7232b0fffe0e2ac828a58b57e9eafa97e3f4fff982a7583e5"
+      },
+      {
+        "kind": "replace",
+        "oldStartLine": 72,
+        "oldLineCount": 1,
+        "newStartLine": 78,
+        "newLineCount": 1,
+        "oldTextSha256": "7de25353c76cae0f74f4e0590bbfda2bf7fccd2ef14ef125327a08adb76cda4a",
+        "newTextSha256": "97098200e37ad8c0574a9a5a9ab8acc5d87c6e4c1fb748e042ecb2745addcbc6"
+      },
+      {
+        "kind": "insert",
+        "oldStartLine": 76,
+        "oldLineCount": 0,
+        "newStartLine": 82,
+        "newLineCount": 7,
+        "oldTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "newTextSha256": "f98b42c43bee92fe5490fac008605f5338b88752cc41a1ea72b23ba1c2af02f5"
+      },
+      {
+        "kind": "insert",
+        "oldStartLine": 81,
+        "oldLineCount": 0,
+        "newStartLine": 94,
+        "newLineCount": 2,
+        "oldTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "newTextSha256": "60cf8f7bae18c9868ac42cb63f606586ee484c6a033a9c1f4efc4f41eecccbb6"
+      },
+      {
+        "kind": "replace",
+        "oldStartLine": 88,
+        "oldLineCount": 1,
+        "newStartLine": 103,
+        "newLineCount": 1,
+        "oldTextSha256": "6d45dc6622e69a507111e7c197b15c49e2611bac57634eebb9e9937af6ff5b0e",
+        "newTextSha256": "2af83e4cec850e48db0f228b2afe6ba0cff1ce82a50e33a57f080080b9bbdcc5"
+      },
+      {
+        "kind": "replace",
+        "oldStartLine": 92,
+        "oldLineCount": 1,
+        "newStartLine": 107,
+        "newLineCount": 2,
+        "oldTextSha256": "9190e5ae1a10a226e94642c2d60e2012ec1d80cdd2eb7ae2af39b8f194d362b3",
+        "newTextSha256": "52aa822de08d5fdf25017b2b4bde18f77df9d8769f68ce4e4d788f7afef25a99"
+      },
+      {
+        "kind": "insert",
+        "oldStartLine": 100,
+        "oldLineCount": 0,
+        "newStartLine": 116,
+        "newLineCount": 1,
+        "oldTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "newTextSha256": "793699a2c513f5263709a2ccabd7ed0692b3db33c7d68288afefc76c20f0d1e1"
+      },
+      {
+        "kind": "replace",
+        "oldStartLine": 101,
+        "oldLineCount": 1,
+        "newStartLine": 118,
+        "newLineCount": 5,
+        "oldTextSha256": "f43012de572ff3c69a123a0b1aac02e66debfa6622f1cd2ad83d0aaf86bc4fc5",
+        "newTextSha256": "cbc2a5c88f2da15cf550f4821f509dcde03a6b1be89089aaadd237ca365692bc"
+      }
+    ],
+    "scope": [
+      "independent source class, container label, compiler and output directory",
+      "compiled generation binding and exact compiler argument lineage",
+      "strict successful owner proof validation",
+      "sanitized stopped owner diagnostics and output hashes",
+      "generation validation retained during and after official GETs",
+      "outer generation references"
+    ],
+    "currentBackendImageAndJarManifestGatesRetained": true,
+    "runnerReadonlyMountsAndOwnedCleanupRetained": true,
+    "successfulChildExactManifestAndProtectedRowsGatesRetained": true
+  },
+  "frozenInputs": {
+    "ReconcileNewBaiduArchiveReadOnly.java": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\ReconcileNewBaiduArchiveReadOnly.java",
+      "sha256": "6094c1dba7da05331e7c0e1d8ef90c007a2f3576b55a4dda63727e87cf7e76b6"
+    },
+    "CompileReconciler.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileReconciler.py",
+      "sha256": "e7f60f93a18a3d0eb97285e7af3bd9a2c590e195d91b2f3b9b3373ea23259598"
+    },
+    "PostReconcile.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostReconcile.py",
+      "sha256": "784354902c94d94efb60a5609b0f33768a919ce9335cf49d72dda09a9d03f94c"
+    },
+    "Cycle.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\Cycle.py",
+      "sha256": "da752867e57b3c79c5ffa1b3ecc8e9a12da276de46a96720bf36a9e03caf7a47"
+    },
+    "plan.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\plan.json",
+      "sha256": "666d2cf7ae8ddeed5fc77e5d280c74c413a7b0abadfdcfbaca788ad4e2ddfa22"
+    },
+    "sealed-plan.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\sealed-plan.json",
+      "sha256": "4842b6a0895d38f01071fc42c890cd98ea543d09e8a0b2a1e4890dc5fac5f15a"
+    },
+    "execution-ledger/baseline.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\baseline.json",
+      "sha256": "24717bfee5ccd446609e8578cefded672fe9a082700087ba77d67d0aa60afee1"
+    },
+    "execution-ledger/authorization-20261111T100657Z.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\authorization-20261111T100657Z.json",
+      "sha256": "cc97d3f5b9d48d20a3290b4e721ce6313b377f84633cfe9380c208d02c73adf3"
+    },
+    "execution-ledger/manual-2.intent.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2.intent.json",
+      "sha256": "e49cf8d6a04c32e688cb0475830ba70d1cef88a94ca756e7402e93767b7db1b9"
+    },
+    "execution-ledger/manual-2.receipt.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2.receipt.json",
+      "sha256": "24ebeb78f8cd1588d99be5ad4485f3388a9e6208c0768fcff23bff9a3285c601"
+    },
+    "execution-ledger/manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json",
+      "sha256": "6ca4fbe9cce6db86cec4ee07f2d1922ac94a1fb829b2bbf2a756a5cf028221cc"
+    },
+    "readonly-preparation-20261111T104607.333208Z.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\readonly-preparation-20261111T104607.333208Z.json",
+      "sha256": "48ba934b3e013aa14c20cafbeab02f8dac2f9722375f9063a232a7f41640d99a"
+    },
+    "official-reconcile-diagnostic-44d5291119cb40f2921a97dfbe2e8889.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\official-reconcile-diagnostic-44d5291119cb40f2921a97dfbe2e8889.json",
+      "sha256": "1cddac7f543a576793a83b58cff2bdcbe04bc8167524bcce02ce8f36b14fe47e"
+    }
+  },
+  "productionOwnerSource": {
+    "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\client\\BaiduWebClient.java",
+    "sha256": "8716bd852bf4b55c42a7d8cfac84663293ee0c57b6c95dc679ca39642b1a6dc3"
+  },
+  "originalFrozenArtifactBytesRetained": true,
+  "actualOwnerSchemaObserved": false,
+  "officialReconciliationVerified": false,
+  "productionDockerCommands": 0,
+  "productionApiRequests": 0,
+  "productionSqlQueries": 0,
+  "cloudWrites": 0,
+  "directSqlWrites": 0,
+  "manualPostRequests": 0,
+  "settingsPutRequests": 0
+}

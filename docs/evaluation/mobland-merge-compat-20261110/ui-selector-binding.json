@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "createdAt": "2026-11-10T12:55:02.269595+00:00",
+  "authorizationBasis": "User requested MobLand preview blocker repair and reiterated continue; bounded dry-run review/UI validation is reversible and within that task",
+  "supplementalBrowserAttemptLimit": 1,
+  "totalReleasePreviewLimit": 2,
+  "productionMergeAuthorized": false,
+  "cloudWrites": 0,
+  "additionalServiceActivations": 0,
+  "originalFailedAcceptance": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-20261110T125044.133792Z.json",
+    "sha256": "e54a2f80dfd4fb725306f87d50a1f01fb019c209ce3d9ae3bb345768158ac888"
+  },
+  "originalBrowserReceipt": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-browser-20261110T124914.013549Z\\browser-result.json",
+    "sha256": "a02259d46de59d32b9814a3d02633ad8477a690ea9a1039b2ebc39b7d0b78168"
+  },
+  "supplementalRuntimeBinding": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\verification-binding.json",
+    "sha256": "4aaba3fd76a99053fe498e3337184b9a75a27bf7c1ff66c34792c29336a44ac6"
+  },
+  "files": [
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\AcceptanceUiSupplement.py",
+      "sha256": "430b11408f7617df9d98a552885a39fb58eaa846a9334e73c1f1316cc8e6e746"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\AcceptanceSelectorSupplement.cjs",
+      "sha256": "d3e7f39773506b4196adc8cc15b1b3d71a3cfcbb49e7873f2d920c1c80e3a785"
+    }
+  ],
+  "selectorFix": "data-testid is on input itself; use input[type=checkbox][data-testid=...]",
+  "originalFailurePreserved": true,
+  "anonymousEntriesReused": true,
+  "automaticRetry": false
+}

@@ -1,0 +1,9 @@
+{
+  "account": "test",
+  "role": "USER",
+  "enabledBefore": 1,
+  "disabled": true,
+  "revokedDevices": 1,
+  "unrevokedDevicesRemaining": 0,
+  "otherAccountsModified": 0
+}

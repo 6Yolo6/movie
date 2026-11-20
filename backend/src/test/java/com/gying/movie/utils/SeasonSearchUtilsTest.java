@@ -73,4 +73,15 @@ class SeasonSearchUtilsTest {
         assertFalse(SeasonSearchUtils.matchesSeasonDirectory("问心12集", "问心", 2));
         assertFalse(SeasonSearchUtils.matchesSeasonDirectory("2", "问心", 2));
     }
+    @Test
+    void parsesExplicitCollectionRangesWithoutConfusingEpisodesOrResolution() {
+        assertEquals(java.util.Set.of(1, 2, 3, 4, 5, 6), SeasonSearchUtils.collectionSeasons("破产姐妹 全六季 1080P"));
+        assertEquals("第1-6季合集", SeasonSearchUtils.collectionLabel("2 Broke Girls S01-S06 1080P"));
+        assertEquals(java.util.Set.of(2, 3), SeasonSearchUtils.collectionSeasons("Season 2-3"));
+        assertTrue(SeasonSearchUtils.coversSeason("Show S01-S06", 4));
+        assertTrue(SeasonSearchUtils.collectionSeasons("全24集 1080P").isEmpty());
+        assertTrue(SeasonSearchUtils.collectionSeasons("6-1季").isEmpty());
+        assertTrue(SeasonSearchUtils.collectionSeasons("1-999季").isEmpty());
+        assertTrue(SeasonSearchUtils.collectionSeasons("全集").isEmpty());
+    }
 }

@@ -1,0 +1,11 @@
+{
+  "reportSha256": "4868100be27bbe721cf7948b7c17e84b60dec26b1d6173b92060a3f2e991ecd0",
+  "reviewedAnswers": 0,
+  "pendingAnswers": 16,
+  "meanScores": {
+    "factuality": null,
+    "grounding": null,
+    "usefulness": null
+  },
+  "scope": "Human review recorded separately from mechanical checks; scores are not production accuracy"
+}

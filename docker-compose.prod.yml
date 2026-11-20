@@ -45,7 +45,7 @@ services:
       QUARK_AUTO_SAVE_BASE_URL: ${QUARK_AUTO_SAVE_BASE_URL:-http://quark-auto-save:5005}
       RESOURCE_HUB_PANSOU_BASE_URL: ${RESOURCE_HUB_PANSOU_BASE_URL:-http://pansou:8888}
       SOCIAL_PUBLISHER_BASE_URL: ${SOCIAL_PUBLISHER_BASE_URL:-http://social-publisher:8093}
-      JAVA_OPTS: -Duser.timezone=Asia/Shanghai -Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200
+      JAVA_OPTS: -Duser.timezone=Asia/Shanghai -Xms256m -Xmx768m -XX:+UseG1GC -XX:MaxGCPauseMillis=200
       DB_USER: ${DB_USER:?Set a non-root application DB_USER}
       DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
@@ -53,6 +53,10 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:?Set a scoped MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:?Set MINIO_SECRET_KEY}
       APP_INTERNAL_TOKEN: ${APP_INTERNAL_TOKEN:?Set APP_INTERNAL_TOKEN}
+      APP_AI_BRIDGE_TOKEN: ${APP_AI_BRIDGE_TOKEN:-}
+      # Disabled unless an operator supplies both a private key mount and persistent queue path.
+      APP_AI_STATE_FILE: ${APP_AI_STATE_FILE:-}
+      APP_AI_STATE_KEY_FILE: ${APP_AI_STATE_KEY_FILE:-}
       GYING_SOURCE_API_TOKEN: ${GYING_SOURCE_API_TOKEN:?Set GYING_SOURCE_API_TOKEN}
     # Host-only diagnostics/Windows publishers. OpenClaw MUST use the shared Docker network.
     ports:
@@ -66,7 +70,8 @@ services:
       - backend-data:/app/data
     extra_hosts: ["host.docker.internal:host-gateway"]
     restart: unless-stopped
-    mem_limit: 768m
+    mem_limit: 1280m
+    memswap_limit: 2560m
     pids_limit: 256
     networks: [gying-net, cache-net]
 
@@ -119,6 +124,7 @@ services:
 
   social-publisher:
     <<: *security
+    init: true
     build: {context: ./social-publisher, dockerfile: Dockerfile}
     environment:
       SOCIAL_PUBLISHER_PORT: 8093
@@ -188,6 +194,8 @@ services:
 
   quark-auto-save:
     <<: *security
+    init: true
+    stop_signal: SIGINT
     profiles: [embedded-deps]
     image: cp0204/quark-auto-save:latest
     environment:

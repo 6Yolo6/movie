@@ -1,0 +1,96 @@
+{
+  "date": "2026-11-08",
+  "timeZone": "Asia/Shanghai",
+  "scope": "Unified cloud drive settings frontend, including the real planned-Baidu null path/batch response.",
+  "verification": {
+    "reactRegression": {
+      "command": "node --test frontend/tests/cloud-drive-workflows.test.mjs frontend/tests/gying-source-pause.test.mjs",
+      "passed": 28,
+      "failed": 0,
+      "newBehaviorScenarios": 12,
+      "existingPauseScenarios": 14,
+      "realReact": true,
+      "mockedComponentsAndApi": true
+    },
+    "typescript": {
+      "cwd": "frontend",
+      "command": "node node_modules/typescript/bin/tsc --noEmit --incremental false",
+      "exitCode": 0
+    },
+    "eslint": {
+      "cwd": "frontend",
+      "command": "node node_modules/eslint/bin/eslint.js src/components/admin/DriveWorkflowSettings.tsx src/lib/cloudDriveWorkflows.ts src/app/admin/resource-hub/page.tsx tests/cloud-drive-workflows.browser.mjs tests/cloud-drive-workflows.test.mjs tests/gying-source-pause.test.mjs tests/helpers/offline-react.mjs",
+      "exitCode": 0
+    },
+    "productionBuild": {
+      "command": "npm run build -- --webpack",
+      "exitCode": 0,
+      "isolatedSourceCopy": true,
+      "productionEnvLoaded": false,
+      "internalApi": "Read-only ephemeral loopback fixture",
+      "candidate": "D:/gying-cloud-drive-build-20261108-n911hcea/.next",
+      "runner": "C:/Users/ASUS/.codex/visualizations/2026/11/08/01a1bb5c-cb39-7832-9b3a-af6825e4686a/cloud-drive-workflows/build-isolated.cjs",
+      "rawResult": "C:/Users/ASUS/.codex/visualizations/2026/11/08/01a1bb5c-cb39-7832-9b3a-af6825e4686a/cloud-drive-workflows/build-result.json",
+      "rawLog": "C:/Users/ASUS/.codex/visualizations/2026/11/08/01a1bb5c-cb39-7832-9b3a-af6825e4686a/cloud-drive-workflows/build.log"
+    },
+    "browserQa": {
+      "command": "node frontend/tests/cloud-drive-workflows.browser.mjs",
+      "environment": {
+        "PLAYWRIGHT_MODULE": "E:/gying-tools/validation/monitoring-resource-counts-20261011/browser-tools/node_modules/playwright-core",
+        "CLOUD_DRIVE_BUILD_DIR": "D:/gying-cloud-drive-build-20261108-n911hcea/.next",
+        "CLOUD_DRIVE_OUTPUT_DIR": "C:/Users/ASUS/.codex/visualizations/2026/11/08/01a1bb5c-cb39-7832-9b3a-af6825e4686a/cloud-drive-workflows"
+      },
+      "browser": "Existing Microsoft Edge, headless",
+      "actualProductionNextReactAntdAssets": true,
+      "scenarioCount": 8,
+      "languages": [
+        "zh",
+        "en"
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "viewportWidths": [
+        390,
+        1280
+      ],
+      "viewportHeight": 1000,
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "documentOverflowFailures": 0,
+      "switchAriaLabelsChecked": true,
+      "actionButtonMinimumHeightPx": 44,
+      "rawResult": "C:/Users/ASUS/.codex/visualizations/2026/11/08/01a1bb5c-cb39-7832-9b3a-af6825e4686a/cloud-drive-workflows/browser-qa.json",
+      "screenshots": [
+        "C:/Users/ASUS/.codex/visualizations/2026/11/08/01a1bb5c-cb39-7832-9b3a-af6825e4686a/cloud-drive-workflows/zh-390-light.png",
+        "C:/Users/ASUS/.codex/visualizations/2026/11/08/01a1bb5c-cb39-7832-9b3a-af6825e4686a/cloud-drive-workflows/zh-390-dark.png",
+        "C:/Users/ASUS/.codex/visualizations/2026/11/08/01a1bb5c-cb39-7832-9b3a-af6825e4686a/cloud-drive-workflows/en-390-light.png",
+        "C:/Users/ASUS/.codex/visualizations/2026/11/08/01a1bb5c-cb39-7832-9b3a-af6825e4686a/cloud-drive-workflows/en-390-dark.png",
+        "C:/Users/ASUS/.codex/visualizations/2026/11/08/01a1bb5c-cb39-7832-9b3a-af6825e4686a/cloud-drive-workflows/zh-1280-light.png",
+        "C:/Users/ASUS/.codex/visualizations/2026/11/08/01a1bb5c-cb39-7832-9b3a-af6825e4686a/cloud-drive-workflows/zh-1280-dark.png",
+        "C:/Users/ASUS/.codex/visualizations/2026/11/08/01a1bb5c-cb39-7832-9b3a-af6825e4686a/cloud-drive-workflows/en-1280-light.png",
+        "C:/Users/ASUS/.codex/visualizations/2026/11/08/01a1bb5c-cb39-7832-9b3a-af6825e4686a/cloud-drive-workflows/en-1280-dark.png"
+      ]
+    }
+  },
+  "sourceSha256": {
+    "frontend/src/lib/cloudDriveWorkflows.ts": "246427600adb5d0fea4a1951f5f728066a2b2b868e1e3a188c2634b62746c6d9",
+    "frontend/src/components/admin/DriveWorkflowSettings.tsx": "938daecfe5d5a9685dae2f0d9851bb4b775c8c0a18f6265b89ee9c02ca898140",
+    "frontend/src/app/admin/resource-hub/page.tsx": "3f928a0477717d17057699766ddbd78bd20286193126abcd6e749aefcd224339",
+    "frontend/public/locales/zh/common.json": "716898771eade00574f6aea11285976dbcb63a9023ef8de6cc159bf6daa46550",
+    "frontend/public/locales/en/common.json": "0b049a4062a9b1b7c0e001f3b1bab7a641bb3d358361ee507e0b754d5f17a2bb"
+  },
+  "sourceHashesMatchCurrentRepository": true,
+  "originalSourceManifest": "C:/Users/ASUS/.codex/visualizations/2026/11/08/01a1bb5c-cb39-7832-9b3a-af6825e4686a/cloud-drive-workflows/source-manifest.json",
+  "boundaries": {
+    "allBrowserApiCallsMocked": true,
+    "realLoginPerformed": false,
+    "productionApiWrites": false,
+    "nextServerStarted": false,
+    "productionServiceChanged": false,
+    "realCloudTransferOrPublishingPerformed": false,
+    "mobilePhysicalDeviceTested": false,
+    "supersededBeforeNullFixEvidenceExcluded": true
+  }
+}

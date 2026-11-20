@@ -1,0 +1,8 @@
+{
+  "exitCode": 0,
+  "buildDir": "D:\\gying-baidu-build-20261108-i5ndx3_k",
+  "command": "npm run build -- --webpack",
+  "isolatedCopy": true,
+  "productionEnvLoaded": false,
+  "readOnlyLoopbackFixture": true
+}

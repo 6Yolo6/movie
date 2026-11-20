@@ -1,19 +1,30 @@
 package com.gying.movie.service.impl;
 
+import static com.gying.movie.service.impl.BaiduScopeTestAssertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.client.GyingSourceClient;
 import com.gying.movie.client.PanSouClient;
@@ -46,10 +57,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 class GyingSourceWorkflowServiceTest {
+    private com.gying.movie.config.ResourceHubProperties properties;
     private GyingSourceClient gyingSourceClient;
     private TmdbClient tmdbClient;
     private PosterStorageService posterStorageService;
@@ -63,6 +77,7 @@ class GyingSourceWorkflowServiceTest {
     private IResourceHubPublishService publishService;
     private IXunleiTransferTaskService xunleiTransferTaskService;
     private IXunleiTransferRunnerService xunleiTransferRunnerService;
+    private IQuarkShareService shareService;
     private GyingSourceWorkflowService service;
 
     @BeforeEach
@@ -73,12 +88,14 @@ class GyingSourceWorkflowServiceTest {
         panSouClient = mock(PanSouClient.class);
         movieService = mock(IMovieMetadataService.class);
         sourceIdentityService = mock(IMovieSourceIdentityService.class);
+        when(sourceIdentityService.save(any(MovieSourceIdentity.class))).thenReturn(true);
+        when(sourceIdentityService.updateById(any(MovieSourceIdentity.class))).thenReturn(true);
         resourceLinkService = mock(IResourceLinkService.class);
         discoveryService = mock(IResourceDiscoveryResultService.class);
         transferTaskService = mock(IQuarkTransferTaskService.class);
         transferRunnerService = mock(IQuarkTransferRunnerService.class);
         publishService = mock(IResourceHubPublishService.class);
-        IQuarkShareService shareService = mock(IQuarkShareService.class);
+        shareService = mock(IQuarkShareService.class);
         xunleiTransferTaskService = mock(IXunleiTransferTaskService.class);
         xunleiTransferRunnerService = mock(IXunleiTransferRunnerService.class);
         service = new GyingSourceWorkflowService(
@@ -96,6 +113,33 @@ class GyingSourceWorkflowServiceTest {
                 shareService,
                 xunleiTransferTaskService,
                 xunleiTransferRunnerService);
+        properties = new com.gying.movie.config.ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
+        properties.getXunlei().setShareEnabled(true);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "resourceHubProperties", properties);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"QUARK", "XUNLEI"})
+    void skipsPublishingWhenMovieDetailsAlreadyContainTheOwnedResource(String provider) {
+        ResourceLink resource = new ResourceLink();
+        resource.setId(42L);
+        resource.setMovieId("local-movie");
+        resource.setType("DISK");
+        resource.setProvider(provider);
+        resource.setUrl("QUARK".equals(provider)
+                ? "https://pan.quark.cn/s/owned" : "https://pan.xunlei.com/s/owned");
+        MovieSourceIdentity identity = new MovieSourceIdentity();
+        identity.setSourceType("mv");
+        identity.setExternalId("SITE1");
+        when(sourceIdentityService.getOne(any(Wrapper.class), eq(false))).thenReturn(identity);
+        when(gyingSourceClient.get("/movie/mv/SITE1")).thenReturn(Map.of(
+                "ownResources", List.of(Map.of("source_id", "OWNED1", "url", resource.getUrl()))));
+
+        assertTrue(service.publishResourceToGying(resource));
+
+        verify(gyingSourceClient).get("/movie/mv/SITE1");
+        verifyNoMoreInteractions(gyingSourceClient);
     }
 
     @Test
@@ -151,7 +195,14 @@ class GyingSourceWorkflowServiceTest {
                                 "url", local.getUrl()))));
         when(gyingSourceClient.post(eq("/ingest"), any())).thenReturn(Map.of("movieId", "EGER"));
         when(movieService.getById("EGER")).thenReturn(movie);
-        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(local);
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> {
+            var query = (com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<?>) call.getArgument(0);
+            query.getSqlSegment();
+            return query.getParamNameValuePairs().containsValue("XUNLEI") ? null : local;
+        });
+        when(resourceLinkService.updateById(local)).thenReturn(true);
+        when(panSouClient.checkLinksByProvider(Map.of(local.getUrl(), "QUARK"))).thenReturn(Map.of(
+                local.getUrl(), new LinkCheckResult(local.getUrl(), true, true, "valid")));
         when(gyingSourceClient.post(eq("/publish"), any())).thenReturn(Map.of(
                 "action", "published",
                 "sourceId", "NEW01",
@@ -159,7 +210,7 @@ class GyingSourceWorkflowServiceTest {
 
         Map<String, Object> result = service.ensureMovieResource("mv", "EGER");
 
-        assertEquals("PUBLISHED", result.get("status"));
+        assertEquals("PARTIAL", result.get("status"));
         assertEquals(42L, result.get("resourceId"));
         assertEquals(false, result.get("transferMode"));
         verify(transferRunnerService, never()).submitOne(any());
@@ -183,12 +234,6 @@ class GyingSourceWorkflowServiceTest {
                         "ownResources", List.of(Map.of("source_id", "OWN-Q1", "url", quarkUrl, "provider", "QUARK"))))
                 .thenReturn(Map.of(
                         "title", movie.getTitleCn(),
-                        "resources", List.of(
-                                Map.of("source_id", "Q1", "provider", "QUARK", "title", "夸克", "url", quarkUrl),
-                                Map.of("source_id", "X1", "provider", "XUNLEI", "title", "迅雷", "url", xunleiUrl)),
-                        "ownResources", List.of(Map.of("source_id", "OWN-Q1", "url", quarkUrl, "provider", "QUARK"))))
-                .thenReturn(Map.of(
-                        "title", movie.getTitleCn(),
                         "resources", List.of(),
                         "ownResources", List.of(
                                 Map.of("source_id", "OWN-Q1", "url", quarkUrl, "provider", "QUARK"),
@@ -203,7 +248,13 @@ class GyingSourceWorkflowServiceTest {
         when(resourceLinkService.getOne(any(Wrapper.class), eq(false)))
                 .thenReturn(localQuark)
                 .thenReturn((ResourceLink) null);
-        when(panSouClient.checkLinksByProvider(any())).thenReturn(Map.of());
+        when(resourceLinkService.updateById(any(ResourceLink.class))).thenReturn(true);
+        when(panSouClient.checkLinksByProvider(any())).thenAnswer(call -> {
+            Map<String, String> links = call.getArgument(0);
+            Map<String, LinkCheckResult> checks = new java.util.LinkedHashMap<>();
+            links.forEach((url, provider) -> checks.put(url, new LinkCheckResult(url, true, true, "valid")));
+            return checks;
+        });
 
         ResourceDiscoveryResult discovery = new ResourceDiscoveryResult();
         discovery.setId(101L);
@@ -242,7 +293,7 @@ class GyingSourceWorkflowServiceTest {
         Map<String, Object> result = service.ensureMovieResource("tv", "XL1");
 
         assertEquals("PUBLISHED", result.get("status"));
-        assertEquals(1, result.get("providersPublished"));
+        assertEquals(2, result.get("providersPublished"));
         verify(xunleiTransferRunnerService).submitOne(task.getId());
         verify(transferRunnerService, never()).submitOne(any());
         verify(gyingSourceClient, times(2)).post(eq("/publish"), any());
@@ -264,7 +315,7 @@ class GyingSourceWorkflowServiceTest {
         when(panSouClient.checkLinksByProvider(Map.of(url, "QUARK"))).thenReturn(Map.of(
                 url, new LinkCheckResult(url, true, false, "invalid")));
 
-        Map<String, Object> result = service.ensureMovieResource("tv", "dlvj");
+        Map<String, Object> result = service.ensureWeeklyMovieResource("tv", "dlvj");
 
         assertEquals("ALREADY_PUBLISHED_NEEDS_REPAIR", result.get("status"));
         assertEquals(true, result.get("repairRequired"));
@@ -291,6 +342,19 @@ class GyingSourceWorkflowServiceTest {
         assertEquals(List.of("with-link"), candidates.stream()
                 .map(MovieSearchCandidate::getSourceId)
                 .toList());
+    }
+
+    @Test
+    void suggestionsReadOnlyOneSearchWithoutFetchingEveryMovieResourceDirectory() {
+        when(gyingSourceClient.get(eq("/search"), any())).thenReturn(Map.of("items", List.of(
+                Map.of("typeCode", "mv", "mid", "avengers", "title", "复仇者联盟2：奥创纪元", "year", 2015),
+                Map.of("typeCode", "tv", "mid", "unrelated", "title", "东京复仇者", "year", 2023))));
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of());
+        List<MovieSearchCandidate> suggestions = service.suggestCandidates("复仇者联盟2", 10);
+        assertEquals(List.of("avengers"), suggestions.stream().map(MovieSearchCandidate::getSourceId).toList());
+        verify(gyingSourceClient).get(eq("/search"), any());
+        verifyNoMoreInteractions(gyingSourceClient);
+        verifyNoInteractions(resourceLinkService, discoveryService, transferTaskService, transferRunnerService, publishService);
     }
 
     @Test
@@ -323,14 +387,21 @@ class GyingSourceWorkflowServiceTest {
         when(movieService.getById("x01w")).thenReturn(null);
         when(movieService.getById(canonical.getId())).thenReturn(canonical);
         when(movieService.list(any(Wrapper.class))).thenReturn(List.of(canonical));
-        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(local);
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> {
+            var query = (com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<?>) call.getArgument(0);
+            query.getSqlSegment();
+            return query.getParamNameValuePairs().containsValue("XUNLEI") ? null : local;
+        });
+        when(resourceLinkService.updateById(local)).thenReturn(true);
+        when(panSouClient.checkLinksByProvider(Map.of(local.getUrl(), "QUARK"))).thenReturn(Map.of(
+                local.getUrl(), new LinkCheckResult(local.getUrl(), true, true, "valid")));
         when(gyingSourceClient.post(eq("/publish"), any())).thenReturn(Map.of(
                 "sourceId", "GHOST1",
                 "site", Map.of("code", 200)));
 
         Map<String, Object> result = service.ensureMovieResource("mv", "x01w");
 
-        assertEquals("PUBLISHED", result.get("status"));
+        assertEquals("PARTIAL", result.get("status"));
         assertEquals(canonical.getId(), result.get("localMovieId"));
         ArgumentCaptor<Map<String, Object>> ingestPayload = ArgumentCaptor.forClass(Map.class);
         verify(gyingSourceClient).post(eq("/ingest"), ingestPayload.capture());
@@ -363,7 +434,7 @@ class GyingSourceWorkflowServiceTest {
 
         Map<String, Object> result = service.ensureRemainingSeasons(movie.getId(), 2);
 
-        assertEquals(0, result.get("discovered"));
+        assertEquals(1, result.get("discovered"));
         ArgumentCaptor<MovieSourceIdentity> identityCaptor = ArgumentCaptor.forClass(MovieSourceIdentity.class);
         verify(sourceIdentityService, times(2)).save(identityCaptor.capture());
         MovieSourceIdentity gyingIdentity = identityCaptor.getAllValues().stream()
@@ -373,18 +444,20 @@ class GyingSourceWorkflowServiceTest {
         assertEquals(movie.getId(), gyingIdentity.getMovieId());
         assertEquals("GY100", gyingIdentity.getExternalId());
         assertEquals("AUTO", gyingIdentity.getMatchStatus());
-        verify(gyingSourceClient, never()).post(eq("/ingest"), any());
+        ArgumentCaptor<Map<String, Object>> payload = ArgumentCaptor.forClass(Map.class);
+        verify(gyingSourceClient).post(eq("/ingest"), payload.capture());
+        assertEquals(false, payload.getValue().get("includeResources"));
     }
 
     @Test
-    void repairMissingPostersPrefersTmdbWithoutGyingIdentity() throws Exception {
+    void repairMissingPostersFallsBackToTmdbWithoutGyingIdentity() throws Exception {
         MovieMetadata movie = movie("tmdb_movie_200", "海报测试", "mv", "AVAILABLE");
         movie.setTmdbId(200L);
         movie.setTmdbType("movie");
         when(movieService.list(any(Wrapper.class))).thenReturn(List.of(movie));
         when(movieService.getById(movie.getId())).thenReturn(movie);
         when(tmdbClient.fetchDetails("movie", 200L))
-                .thenReturn(new ObjectMapper().readTree("{\"poster_path\":\"/poster.jpg\"}"));
+                .thenReturn(new ObjectMapper().readTree("{\"id\":200,\"poster_path\":\"/poster.jpg\"}"));
         when(posterStorageService.storeTmdbPoster("movie", 200L, "/poster.jpg"))
                 .thenReturn("tmdb/movie/200/poster.jpg");
 
@@ -411,8 +484,8 @@ class GyingSourceWorkflowServiceTest {
 
         Map<String, Object> result = service.repairMoviePoster(movie.getId());
 
-        assertEquals("FAILED", result.get("status"));
-        assertEquals("image unavailable", result.get("reason"));
+        assertEquals("SKIPPED", result.get("status"));
+        assertTrue(String.valueOf(result.get("reason")).contains("保留原图"));
         verify(movieService, never()).updateById(any());
     }
 
@@ -470,7 +543,7 @@ class GyingSourceWorkflowServiceTest {
 
         Map<String, Object> result = service.ensureLocalMovieResource(movie.getId());
 
-        assertEquals("ALREADY_PUBLISHED", result.get("status"));
+        assertEquals("PARTIAL", result.get("status"));
         assertEquals("0pEK", result.get("mid"));
         ArgumentCaptor<MovieSourceIdentity> identities =
                 ArgumentCaptor.forClass(MovieSourceIdentity.class);
@@ -511,6 +584,313 @@ class GyingSourceWorkflowServiceTest {
     }
 
     @Test
+    void automaticCatalogBatchReadsFullPageButOnlyIngestsRemainingItems() {
+        MovieMetadata saved = movie("gying_mv_NEW2", "续采电影", "mv", "UNKNOWN");
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=hits&page=3&limit=100"))
+                .thenReturn(Map.of("items", List.of(
+                        Map.of("mid", "DONE1", "title", "已处理电影", "year", 2026),
+                        Map.of("mid", "NEW2", "title", "续采电影", "year", 2026))));
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of());
+        when(movieService.getById("gying_mv_NEW2")).thenReturn(saved);
+        MovieSourceIdentity identity = catalogIdentity(saved.getId(), "mv", "NEW2");
+        AtomicReference<MovieSourceIdentity> visibleIdentity = new AtomicReference<>();
+        when(sourceIdentityService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> visibleIdentity.get());
+        when(sourceIdentityService.update(any(Wrapper.class))).thenReturn(true);
+        when(gyingSourceClient.get("/resources/mv/NEW2")).thenReturn(Map.of("resources", List.of()));
+        when(gyingSourceClient.post(eq("/ingest"), any())).thenAnswer(call -> {
+            visibleIdentity.set(identity);
+            return Map.of("movieId", saved.getId());
+        });
+        Map<String, Object> result = service.syncCatalogMetadata("HITS_MOVIE", 3, 1, 1);
+        assertEquals(2, result.get("pageSize"));
+        assertEquals(1, result.get("processed"));
+        ArgumentCaptor<Map<String, Object>> payload = ArgumentCaptor.forClass(Map.class);
+        verify(gyingSourceClient).post(eq("/ingest"), payload.capture());
+        assertEquals("NEW2", payload.getValue().get("mid"));
+        assertEquals(false, payload.getValue().get("includeResources"));
+    }
+
+    @Test
+    void automaticCatalogImmediatelySkipsPreviouslyCollectedExactIdentity() {
+        MovieSourceIdentity identity = stubAutomaticCatalogMovie();
+        when(resourceLinkService.count(any(Wrapper.class))).thenReturn(1L);
+        var result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        assertEquals(1, result.get("processed"));
+        assertEquals(1, result.get("skipped"));
+        assertEquals(0, result.get("linked"));
+        assertEquals(0, result.get("directResourceLinks"));
+        assertEquals(List.of("canonical"), result.get("movieIds"));
+        verify(gyingSourceClient, never()).get("/resources/mv/DONE1");
+        verify(gyingSourceClient, never()).get("/movie/mv/DONE1");
+        verify(gyingSourceClient, never()).post(anyString(), anyMap());
+        verify(sourceIdentityService, never()).updateById(any(MovieSourceIdentity.class));
+        verify(sourceIdentityService, never()).update(any(Wrapper.class));
+        ArgumentCaptor<Wrapper<MovieSourceIdentity>> query = ArgumentCaptor.forClass(Wrapper.class);
+        verify(sourceIdentityService).getOne(query.capture(), eq(false));
+        assertTrue(query.getValue().getSqlSegment().contains("BINARY external_id"));
+        assertEquals("{\"score\":80,\"reasons\":\"EXACT_TITLE,TYPE,YEAR\"}", identity.getEvidenceJson());
+    }
+
+    @Test
+    void accountOnlyLegacyTorrentRowsCannotProveCompletedAutomaticCollection() {
+        stubAutomaticCatalogMovie();
+        when(resourceLinkService.count(any(Wrapper.class))).thenAnswer(call -> {
+            Wrapper<ResourceLink> query = call.getArgument(0);
+            String sql = query.getSqlSegment();
+            var values = ((com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<ResourceLink>) query).getParamNameValuePairs().values();
+            if (values.contains("DISK")) return 0L;
+            assertFalse(sql.contains("type IN"), "Legacy GYING torrents may contain account-only /dbt tickets");
+            assertFalse(values.contains("MAGNET"));
+            assertTrue(values.contains("GYING_P2P_ARCHIVE"));
+            assertTrue(values.contains("TORRENT"));
+            return 0L; // Only old account-only torrents exist; no qualifying magnet or owned archive.
+        });
+        var result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        assertEquals(0, result.get("skipped"));
+        verify(gyingSourceClient).get("/resources/mv/DONE1");
+    }
+
+    @Test
+    void partialMagnetPersistenceWithoutOwnedArchiveRetainsTheAutomaticRetry() {
+        MovieSourceIdentity identity = stubAutomaticCatalogMovie();
+        when(resourceLinkService.count(any(Wrapper.class))).thenAnswer(call -> legacyMagnetOnlyCount(call.getArgument(0)));
+        when(gyingSourceClient.get("/resources/mv/DONE1")).thenReturn(Map.of("resources", List.of(
+                catalogMagnet("a", "1080P"), catalogMagnet("b", "4K"))));
+        when(resourceLinkService.save(any(ResourceLink.class))).thenReturn(true, false, true, true);
+        var partial = service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        assertEquals(1, partial.get("directResourceFailures"));
+        assertFalse(identity.getEvidenceJson().contains("catalogCollection"));
+        var retry = service.syncCatalogMetadata("CSCORE_MOVIE", 2, 10, 0);
+        assertEquals(0, retry.get("skipped"));
+        assertEquals(0, retry.get("directResourceFailures"));
+        verify(gyingSourceClient, times(2)).get("/resources/mv/DONE1");
+        assertTrue(identity.getEvidenceJson().contains("catalogCollection"));
+    }
+
+    @Test
+    void failedArchiveEnqueueAfterMagnetPersistenceDoesNotSkipTheNextAutomaticAttempt() {
+        MovieSourceIdentity identity = stubAutomaticCatalogMovie();
+        when(resourceLinkService.count(any(Wrapper.class))).thenAnswer(call -> legacyMagnetOnlyCount(call.getArgument(0)));
+        when(gyingSourceClient.get("/resources/mv/DONE1")).thenReturn(Map.of("resources", List.of(catalogMagnet("a", "1080P"))));
+        when(resourceLinkService.save(any(ResourceLink.class))).thenReturn(true);
+        var archives = mock(P2pArchiveTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "p2pArchiveTaskService", archives);
+        org.mockito.Mockito.doThrow(new IllegalStateException("fixture enqueue unavailable")).doNothing()
+                .when(archives).enqueue(eq("canonical"), eq("mv"), eq("DONE1"), any());
+        var failed = service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        assertEquals(1, failed.get("directResourceFailures"));
+        assertFalse(identity.getEvidenceJson().contains("catalogCollection"));
+        var retry = service.syncCatalogMetadata("CSCORE_MOVIE", 2, 10, 0);
+        assertEquals(0, retry.get("skipped"));
+        assertEquals(0, retry.get("directResourceFailures"));
+        verify(archives, times(2)).enqueue(eq("canonical"), eq("mv"), eq("DONE1"), any());
+        verify(gyingSourceClient, times(2)).get("/resources/mv/DONE1");
+    }
+
+    @Test
+    void exactCatalogIdentityChoosesTheRequestedSeasonBeforeTheConfidenceLimit() {
+        MovieMetadata movie = movie("canonical3", "同一剧 第三季", "tv", "AVAILABLE");
+        movie.setYear(2026); movie.setSeason(3);
+        MovieSourceIdentity season2 = catalogIdentity("canonical2", "tv", "SERIES1"); season2.setSeason(2);
+        MovieSourceIdentity season3 = catalogIdentity("canonical3", "tv", "SERIES1"); season3.setSeason(3); season3.setId(813L);
+        when(sourceIdentityService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> {
+            var query = (com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<MovieSourceIdentity>) call.getArgument(0);
+            String sql = query.getSqlSegment();
+            return sql.contains("season =") && query.getParamNameValuePairs().containsValue(3) ? season3 : season2;
+        });
+        when(movieService.getById("canonical3")).thenReturn(movie);
+        when(resourceLinkService.count(any(Wrapper.class))).thenReturn(1L);
+        when(gyingSourceClient.get("/catalog?typeCode=tv&sort=hits&page=1&limit=100"))
+                .thenReturn(Map.of("items", List.of(Map.of("mid", "SERIES1", "title", "同一剧 第三季", "year", 2026, "season", 3))));
+        var result = service.syncCatalogMetadata("HITS_TV", 1, 10, 0);
+        assertEquals(1, result.get("skipped"));
+        assertEquals(0, result.get("failed"));
+        assertEquals(List.of("canonical3"), result.get("movieIds"));
+        verify(gyingSourceClient, never()).get("/resources/tv/SERIES1");
+    }
+
+    private long legacyMagnetOnlyCount(Wrapper<ResourceLink> wrapper) {
+        wrapper.getSqlSegment();
+        var parameters = ((com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<ResourceLink>) wrapper).getParamNameValuePairs();
+        return parameters.containsValue("GYING_P2P_ARCHIVE") ? 0L : 1L;
+    }
+
+    private Map<String, Object> catalogMagnet(String hashCharacter, String quality) {
+        return Map.of("type", "MAGNET", "provider", "P2P", "quality", quality,
+                "url", "magnet:?xt=urn:btih:" + hashCharacter.repeat(40), "source_ref", "BT" + quality);
+    }
+
+    @Test
+    void automaticEmptyResourceCollectionIsCheckpointedAndSkippedAcrossCatalogs() {
+        MovieSourceIdentity identity = stubAutomaticCatalogMovie();
+        var first = service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        assertEquals(0, first.get("skipped"));
+        assertEquals(0, first.get("directResourceFailures"));
+        assertTrue(identity.getEvidenceJson().contains("catalogCollection"));
+        var second = service.syncCatalogMetadata("CSCORE_MOVIE", 2, 10, 0);
+        assertEquals(1, second.get("skipped"));
+        assertEquals(1, second.get("processed"));
+        verify(gyingSourceClient, times(1)).get("/resources/mv/DONE1");
+        verify(sourceIdentityService, times(1)).update(any(Wrapper.class));
+        verifyNoInteractions(transferTaskService, transferRunnerService, xunleiTransferTaskService,
+                xunleiTransferRunnerService, publishService);
+    }
+
+    @Test
+    void catalogChangesInvalidateTheSuccessfulCollectionFingerprint() {
+        stubAutomaticCatalogMovie();
+        service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=cscore&page=2&limit=100"))
+                .thenReturn(Map.of("items", List.of(Map.of("mid", "DONE1", "title", "电影别名", "year", 2026))));
+        MovieMetadata movie = movie("canonical", "已采集电影", "mv", "AVAILABLE");
+        movie.setTitleEn("电影别名"); movie.setYear(2026);
+        when(movieService.getById("canonical")).thenReturn(movie);
+        var changed = service.syncCatalogMetadata("CSCORE_MOVIE", 2, 10, 0);
+        assertEquals(0, changed.get("skipped"));
+        assertEquals(0, changed.get("directResourceFailures"));
+        verify(gyingSourceClient, times(2)).get("/resources/mv/DONE1");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"upstream", "malformed", "identity", "checkpoint"})
+    void incompleteAutomaticResourceCollectionCannotBecomeACompletedDuplicate(String failure) {
+        MovieSourceIdentity identity = stubAutomaticCatalogMovie();
+        if ("upstream".equals(failure)) when(gyingSourceClient.get("/resources/mv/DONE1"))
+                .thenThrow(new IllegalStateException("fixture source unavailable")).thenReturn(Map.of("resources", List.of()));
+        if ("malformed".equals(failure)) when(gyingSourceClient.get("/resources/mv/DONE1"))
+                .thenReturn(Map.of()).thenReturn(Map.of("resources", List.of()));
+        if ("identity".equals(failure)) when(gyingSourceClient.get("/resources/mv/DONE1"))
+                .thenReturn(Map.of("mid", "OTHER", "resources", List.of())).thenReturn(Map.of("resources", List.of()));
+        if ("checkpoint".equals(failure)) org.mockito.Mockito.doReturn(false)
+                .doAnswer(call -> saveCatalogEvidence(call.getArgument(0), identity))
+                .when(sourceIdentityService).update(any(Wrapper.class));
+        var failed = service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        assertEquals(1, failed.get("directResourceFailures"));
+        assertFalse(identity.getEvidenceJson().contains("catalogCollection"));
+        var retry = service.syncCatalogMetadata("CSCORE_MOVIE", 2, 10, 0);
+        assertEquals(0, retry.get("skipped"));
+        assertEquals(0, retry.get("directResourceFailures"));
+        verify(gyingSourceClient, times(2)).get("/resources/mv/DONE1");
+    }
+
+    @Test
+    void repeatedCatalogIdentityConsumesItsOffsetWithoutRepeatingResourceRequests() {
+        stubAutomaticCatalogMovie();
+        Map<String, Object> candidate = Map.of("mid", "DONE1", "title", "已采集电影", "year", 2026);
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=hits&page=1&limit=100"))
+                .thenReturn(Map.of("items", List.of(candidate, candidate)));
+        var result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        assertEquals(2, result.get("processed"));
+        assertEquals(1, result.get("linked"));
+        assertEquals(1, result.get("skipped"));
+        assertEquals(2, result.get("pageSize"));
+        verify(gyingSourceClient, times(1)).get("/resources/mv/DONE1");
+    }
+
+    @Test
+    void manualCatalogCollectionStillRefreshesPreviouslyCollectedFilms() {
+        stubAutomaticCatalogMovie();
+        when(resourceLinkService.count(any(Wrapper.class))).thenReturn(1L);
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=hits&page=1&limit=10"))
+                .thenReturn(Map.of("items", List.of(Map.of("mid", "DONE1", "title", "已采集电影", "year", 2026))));
+        var result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10);
+        assertEquals(0, result.get("skipped"));
+        verify(gyingSourceClient).get("/resources/mv/DONE1");
+        verify(sourceIdentityService, never()).update(any(Wrapper.class));
+    }
+
+    @Test
+    void sourceIdentityCaseCollisionIsNeverTreatedAsACompletedDuplicate() {
+        MovieSourceIdentity identity = stubAutomaticCatalogMovie();
+        identity.setExternalId("done1");
+        when(resourceLinkService.count(any(Wrapper.class))).thenReturn(1L);
+        var result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        assertEquals(0, result.get("skipped"));
+        assertEquals(1, result.get("failed"));
+        verify(gyingSourceClient, never()).get("/resources/mv/DONE1");
+    }
+
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource({"TIME_MOVIE,mv,time", "TIME_TV,tv,time", "TIME_ANIME,ac,time",
+            "SCORE_MOVIE,mv,score", "SCORE_TV,tv,score", "SCORE_ANIME,ac,score"})
+    void newCatalogSourcesUseCorrectTypeAndNeverRequestBeyondPage50(String source, String type, String sort) {
+        when(gyingSourceClient.get("/catalog?typeCode=" + type + "&sort=" + sort + "&page=50&limit=100"))
+                .thenReturn(Map.of("items", List.of()));
+        var result = service.syncCatalogMetadata(source, 51, 10, 0);
+        assertEquals(50, result.get("page"));
+        assertEquals(0, result.get("processed"));
+        verify(gyingSourceClient).get("/catalog?typeCode=" + type + "&sort=" + sort + "&page=50&limit=100");
+    }
+
+    @Test void dailyUpdateSeedRequiresCompleteCollectionBeyondMetadataOrPartialP2p() {
+        MovieSourceIdentity identity = stubAutomaticCatalogMovie();
+        Map<String, Object> candidate = Map.of("typeCode", "mv", "mid", "DONE1", "title",
+                movieService.getById("canonical").getTitleCn(), "year", 2026);
+        assertFalse(service.catalogUpdateComplete(candidate));
+        verify(gyingSourceClient, never()).get("/resources/mv/DONE1");
+        assertFalse(service.collectCatalogUpdate(candidate));
+        assertTrue(identity.getEvidenceJson().contains("catalogCollection"));
+        assertTrue(service.catalogUpdateComplete(candidate));
+        verify(gyingSourceClient).get("/resources/mv/DONE1");
+    }
+
+    @Test void dailyUpdateP2pFailureNeverRecordsCompletionAndKeepsExactIdentityForRetry() {
+        MovieSourceIdentity identity = stubAutomaticCatalogMovie();
+        Map<String, Object> candidate = Map.of("typeCode", "mv", "mid", "DONE1", "title",
+                movieService.getById("canonical").getTitleCn(), "year", 2026);
+        when(gyingSourceClient.get("/resources/mv/DONE1")).thenReturn(Map.of("resources", List.of(catalogMagnet("a", "1080P"))));
+        when(resourceLinkService.save(any(ResourceLink.class))).thenReturn(false);
+        assertThrows(IllegalStateException.class, () -> service.collectCatalogUpdate(candidate));
+        assertFalse(identity.getEvidenceJson().contains("catalogCollection"));
+        assertFalse(service.catalogUpdateComplete(candidate));
+        verify(sourceIdentityService, never()).update(any(Wrapper.class));
+    }
+
+    @Test void dailyUpdateHeadFetchHasNoPerMovieEnrichmentAndRejectsMissingItems() {
+        Map<String,Object> candidate = Map.of("mid", "HEAD1", "title", "Head Film", "year", 2026);
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=time&page=1&limit=100")).thenReturn(Map.of("items", List.of(candidate)));
+        assertEquals(List.of(candidate), service.catalogUpdateHead("TIME_MOVIE", 1));
+        verifyNoInteractions(tmdbClient, movieService, sourceIdentityService, resourceLinkService, discoveryService,
+                transferTaskService, transferRunnerService, publishService);
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=time&page=2&limit=100")).thenReturn(Map.of());
+        assertThrows(IllegalStateException.class, () -> service.catalogUpdateHead("TIME_MOVIE", 2));
+        assertThrows(IllegalArgumentException.class, () -> service.catalogUpdateHead("TIME_MOVIE", 3));
+    }
+
+    private MovieSourceIdentity catalogIdentity(String movieId, String type, String mid) {
+        MovieSourceIdentity identity = new MovieSourceIdentity();
+        identity.setId(810L); identity.setMovieId(movieId); identity.setSource("GYING");
+        identity.setSourceType(type); identity.setExternalId(mid); identity.setSeason("mv".equals(type) ? 0 : 1);
+        identity.setMatchStatus("AUTO"); identity.setConfidence(java.math.BigDecimal.valueOf(80));
+        identity.setEvidenceJson("{\"score\":80,\"reasons\":\"EXACT_TITLE,TYPE,YEAR\"}");
+        return identity;
+    }
+
+    private MovieSourceIdentity stubAutomaticCatalogMovie() {
+        MovieMetadata movie = movie("canonical", "已采集电影", "mv", "AVAILABLE"); movie.setYear(2026);
+        MovieSourceIdentity identity = catalogIdentity("canonical", "mv", "DONE1");
+        when(movieService.getById("canonical")).thenReturn(movie);
+        when(sourceIdentityService.getOne(any(Wrapper.class), eq(false))).thenReturn(identity);
+        when(sourceIdentityService.update(any(Wrapper.class))).thenAnswer(call -> saveCatalogEvidence(call.getArgument(0), identity));
+        Map<String, Object> response = Map.of("items", List.of(Map.of("mid", "DONE1", "title", "已采集电影", "year", 2026)));
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=hits&page=1&limit=100")).thenReturn(response);
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=cscore&page=2&limit=100")).thenReturn(response);
+        when(gyingSourceClient.get("/resources/mv/DONE1")).thenReturn(Map.of("resources", List.of()));
+        return identity;
+    }
+
+    private boolean saveCatalogEvidence(Wrapper<MovieSourceIdentity> wrapper, MovieSourceIdentity identity) {
+        String where = wrapper.getSqlSegment();
+        assertTrue(where.contains("BINARY CAST(evidence_json AS CHAR) = BINARY"));
+        assertTrue(where.contains("BINARY movie_id = BINARY"));
+        var parameters = ((com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<MovieSourceIdentity>) wrapper).getParamNameValuePairs();
+        String evidence = parameters.values().stream().filter(value -> value instanceof String text && text.contains("catalogCollection"))
+                .map(String::valueOf).findFirst().orElseThrow();
+        identity.setEvidenceJson(evidence);
+        return true;
+    }
+
+    @Test
     void syncCatalogMetadataDoesNotImportThirdPartyResources() {
         MovieMetadata saved = movie("gying_mv_NEW1", "目录电影", "mv", "UNKNOWN");
         when(gyingSourceClient.get("/catalog?typeCode=mv&sort=hits&page=1&limit=10"))
@@ -523,14 +903,177 @@ class GyingSourceWorkflowServiceTest {
         when(movieService.getById("gying_mv_NEW1")).thenReturn(saved);
         when(gyingSourceClient.post(eq("/ingest"), any())).thenReturn(Map.of("movieId", saved.getId()));
 
+        when(gyingSourceClient.get("/resources/mv/NEW1")).thenReturn(Map.of("resources", List.of(
+                Map.of("type", "MAGNET", "provider", "P2P", "url", "magnet:?xt=urn:btih:fixture", "title", "磁力"),
+                Map.of("type", "TORRENT", "provider", "P2P", "url", "https://example.invalid/test.torrent", "title", "种子"),
+                Map.of("type", "DISK", "provider", "QUARK", "url", "https://pan.quark.cn/s/ignored"))));
+        when(resourceLinkService.save(any(ResourceLink.class))).thenReturn(true);
         Map<String, Object> result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10);
 
         assertEquals(1, result.get("inserted"));
+        assertEquals(2, result.get("directResourceLinks"));
+        ArgumentCaptor<ResourceLink> links = ArgumentCaptor.forClass(ResourceLink.class);
+        verify(resourceLinkService, times(2)).save(links.capture());
+        assertEquals(List.of("MAGNET", "TORRENT"), links.getAllValues().stream().map(ResourceLink::getType).toList());
+        verifyNoInteractions(transferTaskService, transferRunnerService, xunleiTransferTaskService, xunleiTransferRunnerService, publishService);
         assertEquals(List.of(saved.getId()), result.get("movieIds"));
         ArgumentCaptor<Map<String, Object>> payload = ArgumentCaptor.forClass(Map.class);
         verify(gyingSourceClient).post(eq("/ingest"), payload.capture());
         assertEquals(false, payload.getValue().get("includeResources"));
         assertEquals("gying_mv_NEW1", payload.getValue().get("targetMovieId"));
+    }
+
+
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {
+            "https://www.xn--wcv59z.com/dbt/naWV",
+            "https://mirror.example/dbt/BT1/rotating-ticket",
+            "https://mirror.example/DBT/BT1?ticket=fixture",
+            "https://mirror.example/%64bt/BT1/ticket"})
+    void accountOnlyTorrentIsNeverStoredOrUsedAsPublicResource(String url) {
+        stubP2pCatalog(List.of(Map.of("type", "TORRENT", "provider", "P2P", "url", url,
+                "source_ref", "BT1", "title", "目录电影 1080p 中字")));
+        var archives = mock(P2pArchiveTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "p2pArchiveTaskService", archives);
+        assertEquals(0, service.syncCatalogMetadata("HITS_MOVIE", 1, 10).get("directResourceLinks"));
+        verifyNoInteractions(resourceLinkService, archives, discoveryService, transferTaskService,
+                transferRunnerService, xunleiTransferTaskService, xunleiTransferRunnerService, publishService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void archiveReceivesPairedTorrentWithoutPersistingItsAccountUrl(boolean legacySource) {
+        Map<String, Object> magnet = new java.util.LinkedHashMap<>(Map.of("type", "MAGNET", "provider", "P2P",
+                "url", "magnet:?xt=urn:btih:" + "a".repeat(40), "source_ref", "BT1",
+                "quality", "1080P", "subtitle", "中文字幕（来源标注）"));
+        magnet.put("archive_torrent", !legacySource);
+        Map<String, Object> torrent = Map.of("type", "TORRENT", "provider", "P2P",
+                "url", "https://www.xn--wcv59z.com/dbt/BT1/ticket", "source_ref", "BT1");
+        stubP2pCatalog(legacySource ? List.of(torrent, magnet) : List.of(magnet));
+        when(resourceLinkService.save(any(ResourceLink.class))).thenAnswer(call -> {
+            ((ResourceLink) call.getArgument(0)).setId(91L); return true;
+        });
+        var archives = mock(P2pArchiveTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "p2pArchiveTaskService", archives);
+        assertEquals(1, service.syncCatalogMetadata("HITS_MOVIE", 1, 10).get("directResourceLinks"));
+        var saved = ArgumentCaptor.forClass(ResourceLink.class);
+        verify(resourceLinkService).save(saved.capture());
+        assertEquals("MAGNET", saved.getValue().getType());
+        var selection = ArgumentCaptor.forClass(List.class);
+        verify(archives).enqueue(eq("gying_mv_NEW1"), eq("mv"), eq("NEW1"), selection.capture());
+        List<ResourceLink> selected = selection.getValue();
+        assertEquals(2, selected.size());
+        ResourceLink internal = selected.get(1);
+        assertEquals("TORRENT", internal.getType()); assertEquals("BT1", internal.getSourceRef());
+        assertNull(internal.getId()); assertNull(internal.getUrl());
+        P2pArchiveTaskService.validateSelection("gying_mv_NEW1", selected);
+        verifyNoInteractions(discoveryService, transferTaskService, transferRunnerService,
+                xunleiTransferTaskService, xunleiTransferRunnerService, publishService);
+    }
+
+    @Test
+    void legacySourceTorrentSubtitleEvidenceIsPreservedOnThePairedMagnet() {
+        stubP2pCatalog(List.of(
+                Map.of("type", "MAGNET", "provider", "P2P", "source_ref", "BT1", "quality", "1080P",
+                        "url", "magnet:?xt=urn:btih:" + "a".repeat(40)),
+                Map.of("type", "TORRENT", "provider", "P2P", "source_ref", "BT1", "quality", "1080P",
+                        "url", "https://www.xn--wcv59z.com/dbt/BT1/ticket", "subtitle", "中文字幕（来源标注）")));
+        when(resourceLinkService.save(any(ResourceLink.class))).thenAnswer(call -> {
+            ((ResourceLink) call.getArgument(0)).setId(91L); return true;
+        });
+        var archives = mock(P2pArchiveTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "p2pArchiveTaskService", archives);
+        assertEquals(1, service.syncCatalogMetadata("HITS_MOVIE", 1, 10).get("directResourceLinks"));
+        var selection = ArgumentCaptor.forClass(List.class);
+        verify(archives).enqueue(eq("gying_mv_NEW1"), eq("mv"), eq("NEW1"), selection.capture());
+        List<ResourceLink> selected = selection.getValue();
+        assertTrue(selected.stream().allMatch(P2pArchiveTaskService::hasChinese));
+        P2pArchiveTaskService.validateSelection("gying_mv_NEW1", selected);
+    }
+
+    @Test
+    void repeatedMagnetIsUpdatedByUrlWithoutTorrentIdentityFallback() {
+        String url = "magnet:?xt=urn:btih:" + "a".repeat(40);
+        stubP2pCatalog(List.of(Map.of("type", "MAGNET", "provider", "P2P", "url", url, "source_id", "BT1")));
+        ResourceLink existing = new ResourceLink(); existing.setId(92L); existing.setMovieId("gying_mv_NEW1");
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(null, existing);
+        when(resourceLinkService.save(any(ResourceLink.class))).thenReturn(true);
+        when(resourceLinkService.updateById(existing)).thenReturn(true);
+        assertEquals(1, service.syncCatalogMetadata("HITS_MOVIE", 1, 10).get("directResourceLinks"));
+        assertEquals(1, service.syncCatalogMetadata("HITS_MOVIE", 1, 10).get("directResourceLinks"));
+        assertEquals(url, existing.getUrl());
+        assertEquals("BT1", existing.getSourceRef());
+        verify(resourceLinkService).save(any(ResourceLink.class));
+        verify(resourceLinkService).updateById(existing);
+        verify(resourceLinkService, times(2)).getOne(any(Wrapper.class), eq(false));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void unsuccessfulP2pPersistenceIsAuditedWithoutDiscardingMetadata(boolean update) {
+        stubP2pCatalog(List.of(Map.of("type", "MAGNET", "provider", "P2P",
+                "url", "magnet:?xt=urn:btih:" + "a".repeat(40))));
+        if (update) {
+            ResourceLink existing = new ResourceLink(); existing.setId(93L);
+            when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(existing);
+            when(resourceLinkService.updateById(existing)).thenReturn(false);
+        } else {
+            when(resourceLinkService.save(any(ResourceLink.class))).thenReturn(false);
+        }
+        var result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10);
+        assertEquals(1, result.get("inserted"));
+        assertEquals(0, result.get("failed"));
+        assertEquals(0, result.get("directResourceLinks"));
+        assertEquals(1, result.get("directResourceFailures"));
+        assertTrue(result.get("errors").toString().contains("IllegalStateException"));
+        assertTrue(result.get("failedItems").toString().contains("stage=P2P"));
+        verifyNoInteractions(discoveryService, transferTaskService, transferRunnerService,
+                xunleiTransferTaskService, xunleiTransferRunnerService, publishService);
+    }
+
+    @Test
+    void existingMetadataAlsoAuditsUpstreamP2pFailure() {
+        stubP2pCatalog(List.of());
+        MovieMetadata existing = movie("tmdb_mv_123", "目录电影", "mv", "UNKNOWN");
+        existing.setYear(2026);
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of(existing));
+        when(gyingSourceClient.get("/resources/mv/NEW1")).thenThrow(new IllegalStateException("fixture P2P unavailable"));
+        var result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10);
+        assertEquals(1, result.get("linked"));
+        assertEquals(0, result.get("inserted"));
+        assertEquals(1, result.get("directResourceFailures"));
+        verify(gyingSourceClient, never()).post(eq("/ingest"), any());
+        verify(resourceLinkService, never()).save(any(ResourceLink.class));
+    }
+
+
+    @Test
+    void newerSelectedReleaseReusesResolutionSlotAndQueuesOnlyMetadataFiles() {
+        String url = "magnet:?xt=urn:btih:" + "b".repeat(40);
+        stubP2pCatalog(List.of(Map.of("type", "MAGNET", "provider", "P2P", "url", url,
+                "source_ref", "BTNEW", "quality", "1080P", "collection_slot", "1080P", "subtitle", "中文字幕（来源标注）")));
+        ResourceLink existing = new ResourceLink(); existing.setId(95L); existing.setMovieId("gying_mv_NEW1");
+        existing.setUrl("magnet:?xt=urn:btih:" + "a".repeat(40));
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(null, existing);
+        when(resourceLinkService.updateById(existing)).thenReturn(true);
+        var archives = mock(P2pArchiveTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "p2pArchiveTaskService", archives);
+        assertEquals(1, service.syncCatalogMetadata("HITS_MOVIE", 1, 10).get("directResourceLinks"));
+        assertEquals(95L, existing.getId()); assertEquals(url, existing.getUrl());
+        assertEquals("1080P", existing.getQuality()); assertEquals("中文字幕（来源标注）", existing.getSubtitle());
+        verify(resourceLinkService, never()).save(any());
+        verify(archives).enqueue("gying_mv_NEW1", "mv", "NEW1", List.of(existing));
+        verifyNoInteractions(transferTaskService, transferRunnerService, xunleiTransferTaskService, xunleiTransferRunnerService, publishService);
+    }
+
+    private void stubP2pCatalog(List<Map<String, Object>> resources) {
+        MovieMetadata saved = movie("gying_mv_NEW1", "目录电影", "mv", "UNKNOWN");
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=hits&page=1&limit=10"))
+                .thenReturn(Map.of("items", List.of(Map.of("mid", "NEW1", "title", "目录电影", "year", 2026))));
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of());
+        when(movieService.getById(saved.getId())).thenReturn(saved);
+        when(gyingSourceClient.post(eq("/ingest"), any())).thenReturn(Map.of("movieId", saved.getId()));
+        when(gyingSourceClient.get("/resources/mv/NEW1")).thenReturn(Map.of("resources", resources));
     }
 
     @Test
@@ -646,71 +1189,26 @@ class GyingSourceWorkflowServiceTest {
                 Map.of("typeCode", "mv", "mid", "EGER")));
 
         assertEquals(1, result.get("checked"));
-        assertEquals(1, result.get("succeeded"));
+        assertEquals(0, result.get("succeeded"));
+        assertEquals(1, result.get("partial"));
         assertTrue(((List<?>) result.get("items")).size() == 1);
-        verify(gyingSourceClient, times(2)).get("/movie/mv/EGER");
+        verify(gyingSourceClient).get("/movie/mv/EGER");
     }
 
     @Test
-    void ensureRemainingSeasonsFallsBackToPansouWhenGyingUnavailable() {
+    void ensureRemainingSeasonsNeverTransfersFromPansouWhenGyingUnavailable() {
         MovieMetadata movie = movie("tmdb_tv_900", "示例剧 第二季", "tv", "TRAILER");
-        movie.setSeason(2);
-        movie.setSeriesName("示例剧");
+        movie.setSeason(2); movie.setSeriesName("示例剧");
         when(movieService.getById(movie.getId())).thenReturn(movie);
-        when(movieService.list(any(Wrapper.class))).thenReturn(List.of(movie));
         when(gyingSourceClient.get(anyString()))
                 .thenThrow(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "GYING unavailable"));
-
-        DiscoveredResource resource = new DiscoveredResource();
-        resource.setTitle("示例剧 第2季 4K 夸克网盘");
-        resource.setProvider("QUARK");
-        resource.setUrl("https://pan.quark.cn/s/example-season2");
-        resource.setCode("abcd");
-        resource.setSource("PANSOU");
-        when(panSouClient.searchQuark(anyString(), anyInt())).thenReturn(List.of(resource));
-        when(panSouClient.searchClouds(anyString(), any(), anyInt())).thenReturn(List.of());
-
-        AtomicReference<ResourceDiscoveryResult> discoveryRef = new AtomicReference<>();
-        when(discoveryService.getOne(any(Wrapper.class), eq(false))).thenReturn(null);
-        when(discoveryService.save(any())).thenAnswer(invocation -> {
-            ResourceDiscoveryResult saved = invocation.getArgument(0);
-            saved.setId(901L);
-            discoveryRef.set(saved);
-            return true;
-        });
-        AtomicReference<QuarkTransferTask> transferRef = new AtomicReference<>();
-        when(transferTaskService.getOne(any(Wrapper.class), eq(false))).thenReturn(null);
-        when(transferTaskService.save(any())).thenAnswer(invocation -> {
-            QuarkTransferTask saved = invocation.getArgument(0);
-            saved.setId(902L);
-            transferRef.set(saved);
-            return true;
-        });
-        when(transferTaskService.getById(902L)).thenAnswer(invocation -> transferRef.get());
-        when(transferRunnerService.submitOne(902L)).thenAnswer(invocation -> {
-            transferRef.get().setShareUrl("https://pan.quark.cn/s/own-share");
-            return new QuarkTransferRunResult();
-        });
-        ResourceHubPublishResult publish = new ResourceHubPublishResult();
-        publish.getResourceIds().add(903L);
-        when(publishService.publishDiscovery(901L)).thenReturn(publish);
-        ResourceLink published = new ResourceLink();
-        published.setId(903L);
-        published.setMovieId(movie.getId());
-        published.setProvider("QUARK");
-        published.setUrl("https://pan.quark.cn/s/own-share");
-        when(resourceLinkService.getById(903L)).thenReturn(published);
-
         Map<String, Object> result = service.ensureRemainingSeasons(movie.getId(), 2);
-
-        assertEquals("PANSOU_FALLBACK", result.get("mode"));
-        assertEquals(1, result.get("completed"));
-        assertEquals(0, result.get("failed"));
-        assertEquals(Boolean.TRUE, result.get("gyingUnavailable"));
-        assertEquals("PANSOU", discoveryRef.get().getSource());
-        assertEquals("AVAILABLE", movie.getResourceStatus());
-        verify(gyingSourceClient, never()).post(eq("/ingest"), any());
-        verify(gyingSourceClient, never()).post(eq("/publish"), any());
+        assertEquals("METADATA_AND_EXISTING_COLLECTION", result.get("mode"));
+        assertEquals(0, result.get("completed")); assertEquals(0, result.get("bound"));
+        verify(transferRunnerService, never()).submitOne(any());
+        verify(xunleiTransferRunnerService, never()).submitOne(any());
+        verify(publishService, never()).publishDiscovery(any());
+        verify(gyingSourceClient, never()).post(anyString(), any());
     }
 
     @Test
@@ -733,6 +1231,43 @@ class GyingSourceWorkflowServiceTest {
     }
 
     @Test
+    void repairMoviePosterSearchPrefersExactSequelOverSeriesTitle() throws Exception {
+        MovieMetadata movie = movie("local_mv_avengers2", "复仇者联盟2：奥创纪元", "mv", "AVAILABLE");
+        movie.setSeriesName("复仇者联盟");
+        movie.setSeason(2);
+        movie.setYear(2015);
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+
+        TmdbListItem series = new TmdbListItem();
+        series.setTmdbId(24428L);
+        series.setMediaType("movie");
+        series.setTitle("复仇者联盟");
+        series.setOriginalTitle("The Avengers");
+        series.setReleaseDate("2012-04-25");
+
+        TmdbListItem sequel = new TmdbListItem();
+        sequel.setTmdbId(99861L);
+        sequel.setMediaType("movie");
+        sequel.setTitle("复仇者联盟2：奥创纪元");
+        sequel.setOriginalTitle("Avengers: Age of Ultron");
+        sequel.setReleaseDate("2015-04-22");
+
+        when(tmdbClient.searchMulti("复仇者联盟2：奥创纪元", 5)).thenReturn(List.of(series, sequel));
+        when(tmdbClient.fetchDetails("movie", 99861L))
+                .thenReturn(new ObjectMapper().readTree("{\"id\":99861,\"poster_path\":\"/avengers2.jpg\"}"));
+        when(posterStorageService.storeTmdbPoster("movie", 99861L, "/avengers2.jpg"))
+                .thenReturn("tmdb/movie/99861/poster.jpg");
+
+        Map<String, Object> result = service.repairMoviePoster(movie.getId());
+
+        assertEquals("UPDATED", result.get("status"));
+        assertEquals(99861L, result.get("tmdbId"));
+        assertEquals(99861L, movie.getTmdbId());
+        assertEquals("movie", movie.getTmdbType());
+        assertEquals("tmdb/movie/99861/poster.jpg", movie.getPosterUrl());
+        verify(posterStorageService, never()).storeTmdbPoster(eq("movie"), eq(24428L), any());
+    }
+    @Test
     void repairMoviePosterFallsBackToTmdbSearch() throws Exception {
         MovieMetadata movie = movie("local_mv_777", "钢铁侠2", "mv", "AVAILABLE");
         when(movieService.getById(movie.getId())).thenReturn(movie);
@@ -743,7 +1278,7 @@ class GyingSourceWorkflowServiceTest {
         item.setOriginalTitle("Iron Man 2");
         when(tmdbClient.searchMulti("钢铁侠2", 5)).thenReturn(List.of(item));
         when(tmdbClient.fetchDetails("movie", 10138L))
-                .thenReturn(new ObjectMapper().readTree("{\"poster_path\":\"/iron2.jpg\"}"));
+                .thenReturn(new ObjectMapper().readTree("{\"id\":10138,\"poster_path\":\"/iron2.jpg\"}"));
         when(posterStorageService.storeTmdbPoster("movie", 10138L, "/iron2.jpg"))
                 .thenReturn("tmdb/movie/10138/poster.jpg");
 
@@ -753,7 +1288,7 @@ class GyingSourceWorkflowServiceTest {
         assertEquals("TMDB_SEARCH", result.get("source"));
         assertEquals("tmdb/movie/10138/poster.jpg", movie.getPosterUrl());
         verify(movieService).updateById(movie);
-        verify(gyingSourceClient, never()).get(anyString());
+        verify(gyingSourceClient).get(eq("/search"), anyMap());
     }
 
     @Test
@@ -766,9 +1301,74 @@ class GyingSourceWorkflowServiceTest {
         Map<String, Object> result = service.repairMoviePoster(movie.getId());
 
         assertEquals("SKIPPED", result.get("status"));
-        assertEquals(Boolean.TRUE, result.get("skipped"));
+        assertTrue(String.valueOf(result.get("reason")).contains("保留原图"));
         assertTrue(String.valueOf(result.get("reason")).contains("GYING"));
         verify(movieService, never()).updateById(any());
+    }
+
+    @Test
+    void gyingPosterHasPriorityForTmdbOriginWithoutReplacingIdentity() {
+        MovieMetadata movie = movie("tmdb_tv_103516_s2", "星际迷航：奇异新世界 第2季", "tv", "AVAILABLE");
+        movie.setTmdbId(103516L); movie.setTmdbType("tv"); movie.setSeason(2);
+        MovieSourceIdentity gying = new MovieSourceIdentity(); gying.setMovieId(movie.getId());
+        gying.setSource("GYING"); gying.setSourceType("tv"); gying.setExternalId("DDBy");
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        when(sourceIdentityService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> {
+            var query = (com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<?>) call.getArgument(0);
+            query.getSqlSegment();
+            return query.getParamNameValuePairs().containsValue("TMDB") ? null : gying;
+        });
+        when(gyingSourceClient.post(eq("/poster"), any())).thenReturn(Map.of("status", "UPDATED", "posterUrl", "tv/DDBy/384.avif"));
+        assertEquals("tv/DDBy/384.avif", service.repairMoviePoster(movie.getId()).get("posterUrl"));
+        assertEquals(103516L, movie.getTmdbId());
+        verifyNoInteractions(tmdbClient, posterStorageService);
+    }
+
+    @Test
+    void tmdbFallbackUsesSeasonSpecificArtworkAndNeverSeriesPoster() throws Exception {
+        MovieMetadata movie = movie("tmdb_tv_103516_s3", "星际迷航：奇异新世界 第3季", "tv", "AVAILABLE");
+        movie.setTmdbId(103516L); movie.setTmdbType("tv"); movie.setSeason(3);
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        when(gyingSourceClient.get(anyString(), anyMap())).thenThrow(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE));
+        when(tmdbClient.fetchSeasonDetails(103516L, 3)).thenReturn(new ObjectMapper().readTree("{\"season_number\":3,\"poster_path\":\"/season3.jpg\"}"));
+        when(posterStorageService.storeTmdbSeasonPoster(103516L, 3, "/season3.jpg")).thenReturn("tmdb/tv/103516/season-3/poster.jpg");
+        assertEquals("UPDATED", service.repairMoviePoster(movie.getId()).get("status"));
+        assertEquals("tmdb/tv/103516/season-3/poster.jpg", movie.getPosterUrl());
+        verify(posterStorageService, never()).storeTmdbPoster(any(), any(), any());
+    }
+
+    @Test
+    void selectedPosterBatchCannotBecomeUnboundedRefresh() {
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> service.repairMissingPosters(20, List.of(), true));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> service.repairMissingPosters(20, null, true));
+        service.repairMissingPosters(20, List.of("selected"), false);
+        ArgumentCaptor<Wrapper<MovieMetadata>> query = ArgumentCaptor.forClass(Wrapper.class);
+        verify(movieService).list(query.capture());
+        assertTrue(query.getValue().getSqlSegment().contains("id IN"));
+        assertTrue(query.getValue().getSqlSegment().contains("poster_url"));
+        assertTrue(query.getValue().getSqlSegment().contains("LIMIT 1"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void weeklyQuarkCandidateRequiresDurableOneShotPolicy(boolean persisted) {
+        MovieMetadata movie = movie("ONE", "周榜电影", "mv", "UNKNOWN");
+        when(gyingSourceClient.get("/movie/mv/ONE")).thenReturn(Map.of("title", "周榜电影", "ownResources", List.of(),
+                "resources", List.of(Map.of("provider", "QUARK", "url", "https://pan.quark.cn/s/fixture", "source_id", "SRC1", "title", "周榜电影"))));
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        var discovery = new ResourceDiscoveryResult(); discovery.setId(8L); discovery.setMovieId(movie.getId());
+        when(discoveryService.getOne(any(Wrapper.class), eq(false))).thenReturn(discovery);
+        var transfer = new QuarkTransferTask(); transfer.setId(9L); transfer.setDiscoveryResultId(8L); transfer.setStatus("PENDING");
+        when(transferTaskService.getOne(any(Wrapper.class), eq(false))).thenReturn(transfer);
+        when(transferTaskService.updateById(transfer)).thenReturn(persisted);
+        var failed = new QuarkTransferRunResult(); failed.setFailed(1); failed.getErrors().add("fixture stopped before cloud writes");
+        when(transferRunnerService.submitOne(9L)).thenReturn(failed);
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, () -> service.ensureWeeklyMovieResource("mv", "ONE"));
+        assertTrue(transfer.getRequestPayload().contains("GYING_WEEKLY_ONE_SHOT"));
+        if (persisted) verify(transferRunnerService).submitOne(9L);
+        else verify(transferRunnerService, never()).submitOne(any());
     }
 
     private MovieMetadata movie(String id, String title, String category, String resourceStatus) {
@@ -780,4 +1380,612 @@ class GyingSourceWorkflowServiceTest {
         movie.setStatus("ACTIVE");
         return movie;
     }
+    @Test
+    void caseInsensitivePrimaryIdHitNeverReusesAnotherMovie() {
+        MovieMetadata batman = movie("dwXo", "蝙蝠侠", "mv", "AVAILABLE"); batman.setYear(1989);
+        MovieMetadata casablanca = movie("tmdb_movie_289", "卡萨布兰卡", "mv", "AVAILABLE"); casablanca.setYear(1943);
+        casablanca.setActors(List.of("亨弗莱·鲍嘉"));
+        when(gyingSourceClient.get("/movie/mv/dWXo")).thenReturn(Map.of("mid", "dWXo", "title", "卡萨布兰卡",
+                "year", 1942, "actors", List.of("亨弗莱·鲍嘉")));
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=cscore&page=5&limit=20"))
+                .thenReturn(Map.of("items", List.of(Map.of("typeCode", "mv", "mid", "dWXo", "title", "卡萨布兰卡", "year", 1942))));
+        when(movieService.getById("dWXo")).thenReturn(batman); // production CI primary key comparison
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of(casablanca));
+        when(gyingSourceClient.get("/resources/mv/dWXo")).thenReturn(Map.of("resources", List.of()));
+        var result = service.syncCatalogMetadata("CSCORE_MOVIE", 5, 20);
+        assertEquals(1, result.get("linked")); assertEquals(0, result.get("failed"));
+        assertEquals(List.of("tmdb_movie_289"), result.get("movieIds"));
+        ArgumentCaptor<MovieSourceIdentity> identity = ArgumentCaptor.forClass(MovieSourceIdentity.class);
+        verify(sourceIdentityService).save(identity.capture());
+        assertEquals("dWXo", identity.getValue().getExternalId());
+        assertEquals("tmdb_movie_289", identity.getValue().getMovieId());
+        ArgumentCaptor<Wrapper<MovieSourceIdentity>> queries = ArgumentCaptor.forClass(Wrapper.class);
+        verify(sourceIdentityService, org.mockito.Mockito.atLeast(2)).getOne(queries.capture(), eq(false));
+        assertTrue(queries.getAllValues().stream().anyMatch(q -> q.getSqlSegment().contains("BINARY external_id")));
+        verify(gyingSourceClient, never()).post(anyString(), anyMap());
+    }
+
+    @Test
+    void impossibleLegacySeasonIsRepairedOnlyAfterStrictPrimaryTitleAndYearMatch() {
+        MovieMetadata movie = movie("jP3n", "大明王朝1566", "tv", "AVAILABLE");
+        movie.setYear(2007); movie.setSeason(1566);
+        when(gyingSourceClient.get("/catalog?typeCode=tv&sort=cscore&page=2&limit=20"))
+                .thenReturn(Map.of("items", List.of(Map.of("typeCode", "tv", "mid", "jP3n", "title", "大明王朝1566", "year", 2007, "season", 1))));
+        when(movieService.getById("jP3n")).thenReturn(movie);
+        when(movieService.updateById(any(MovieMetadata.class))).thenReturn(true);
+        when(gyingSourceClient.get("/resources/tv/jP3n")).thenReturn(Map.of("resources", List.of()));
+        var result = service.syncCatalogMetadata("CSCORE_TV", 2, 20);
+        assertEquals(1, result.get("linked")); assertEquals(0, result.get("failed"));
+        ArgumentCaptor<MovieMetadata> patch = ArgumentCaptor.forClass(MovieMetadata.class);
+        verify(movieService).updateById(patch.capture());
+        assertEquals("jP3n", patch.getValue().getId()); assertEquals(1, patch.getValue().getSeason());
+        org.junit.jupiter.api.Assertions.assertNull(patch.getValue().getTitleCn());
+    }
+
+    @Test
+    void realSeasonMismatchIsRetainedAsAnIsolatedReviewItemNotOverwritten() {
+        MovieMetadata movie = movie("SERIES1", "同一剧", "tv", "AVAILABLE"); movie.setYear(2020); movie.setSeason(3);
+        when(gyingSourceClient.get("/catalog?typeCode=tv&sort=cscore&page=1&limit=20"))
+                .thenReturn(Map.of("items", List.of(Map.of("typeCode", "tv", "mid", "SERIES1", "title", "同一剧", "year", 2020, "season", 2))));
+        when(movieService.getById("SERIES1")).thenReturn(movie);
+        var result = service.syncCatalogMetadata("CSCORE_TV", 1, 20);
+        assertEquals(1, result.get("failed"));
+        assertTrue(result.get("failedItems").toString().contains("mid=SERIES1"));
+        assertTrue(result.get("failedItems").toString().contains("stage=METADATA"));
+        verify(movieService, never()).updateById(any(MovieMetadata.class));
+        verify(sourceIdentityService, never()).save(any(MovieSourceIdentity.class));
+    }
+
+    @Test
+    void failedIdentityPersistenceCannotMasqueradeAsSuccessfulMetadataSync() {
+        MovieMetadata movie = movie("CASE1", "测试电影", "mv", "AVAILABLE"); movie.setYear(2020);
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=cscore&page=1&limit=20"))
+                .thenReturn(Map.of("items", List.of(Map.of("typeCode", "mv", "mid", "CASE1", "title", "测试电影", "year", 2020))));
+        when(movieService.getById("CASE1")).thenReturn(movie);
+        when(sourceIdentityService.save(any(MovieSourceIdentity.class))).thenReturn(false);
+        var result = service.syncCatalogMetadata("CSCORE_MOVIE", 1, 20);
+        assertEquals(1, result.get("failed")); assertEquals(0, result.get("linked"));
+        verify(gyingSourceClient, never()).get("/resources/mv/CASE1");
+    }
+    @Test
+    void nearYearSameTitleWithoutIndependentEvidenceRequiresReviewRatherThanDuplicateIngest() {
+        MovieMetadata movie = movie("canonical", "同名电影", "mv", "AVAILABLE"); movie.setYear(1943);
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of(movie));
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=cscore&page=1&limit=20"))
+                .thenReturn(Map.of("items", List.of(Map.of("typeCode", "mv", "mid", "SOURCE1", "title", "同名电影", "year", 1942))));
+        when(gyingSourceClient.get("/movie/mv/SOURCE1")).thenReturn(Map.of("mid", "SOURCE1", "title", "同名电影", "year", 1942));
+        var result = service.syncCatalogMetadata("CSCORE_MOVIE", 1, 20);
+        assertEquals(1, result.get("failed"));
+        verify(gyingSourceClient, never()).post(eq("/ingest"), anyMap());
+        verify(sourceIdentityService, never()).save(any(MovieSourceIdentity.class));
+    }
+
+    @Test
+    void isolatedRetryRefreshesStaleCandidateFromTheExactSource() {
+        MovieMetadata movie = movie("jP3n", "大明王朝1566", "tv", "AVAILABLE"); movie.setYear(2007); movie.setSeason(1);
+        when(movieService.getById("jP3n")).thenReturn(movie);
+        when(gyingSourceClient.get("/movie/tv/jP3n")).thenReturn(Map.of("mid", "jP3n", "title", "大明王朝1566", "year", 2007, "season", 1));
+        when(gyingSourceClient.get("/resources/tv/jP3n")).thenReturn(Map.of("resources", List.of()));
+        service.retryCatalogItem(Map.of("typeCode", "tv", "mid", "jP3n", "title", "old title", "year", 1900, "season", 99));
+        verify(gyingSourceClient).get("/resources/tv/jP3n");
+        verify(gyingSourceClient, never()).post(eq("/ingest"), anyMap());
+    }
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void bothManualActionsSkipConfirmedVideoSharesAndIdempotentlyCollectP2p(boolean repair) {
+        MovieMetadata movie = stubManualMovie("COMPLETE", ownedVideo("QUARK", "OWN-Q", "q"),
+                ownedVideo("XUNLEI", "OWN-X", "x"));
+        String magnet = "magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567";
+        ResourceLink p2p = new ResourceLink(); p2p.setId(90L); p2p.setMovieId(movie.getId());
+        when(gyingSourceClient.get("/resources/mv/COMPLETE")).thenReturn(Map.of("resources", List.of(
+                Map.of("type", "MAGNET", "provider", "P2P", "url", magnet, "source_ref", "BT1", "quality", "1080P"))));
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> {
+            var query = (com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<?>) call.getArgument(0);
+            query.getSqlSegment();
+            return query.getParamNameValuePairs().containsValue(magnet) ? p2p : null;
+        });
+        when(resourceLinkService.updateById(p2p)).thenReturn(true);
+        confirmShares();
+        for (int i = 0; i < 2; i++) {
+            Map<String, Object> result = manualAction("COMPLETE", repair);
+            assertEquals("ALREADY_PUBLISHED", result.get("status"));
+            assertEquals(2, result.get("skipped"));
+            assertEquals(1, result.get("directResourceLinks"));
+            assertEquals("SYNCED", result.get("p2pStatus"));
+            assertEquals(0, result.get("failed"));
+        }
+        assertEquals(movie.getId(), p2p.getMovieId());
+        assertEquals("P2P", p2p.getProvider()); assertEquals("NORMAL", p2p.getLinkStatus());
+        verify(resourceLinkService, times(2)).updateById(p2p);
+        verify(resourceLinkService, never()).save(any());
+        verifyNoInteractions(transferRunnerService, xunleiTransferRunnerService, publishService, shareService);
+        verify(gyingSourceClient, never()).post(eq("/publish"), any());
+        verify(gyingSourceClient, never()).post(eq("/update"), any());
+        ArgumentCaptor<Map<String, Object>> ingests = ArgumentCaptor.forClass(Map.class);
+        verify(gyingSourceClient, times(2)).post(eq("/ingest"), ingests.capture());
+        assertTrue(ingests.getAllValues().stream().allMatch(value -> Boolean.FALSE.equals(value.get("includeResources"))));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void unknownShareIsReportedWithoutRepublishingOrDuplicatingVideo(boolean repair) {
+        Map<String, Object> quark = ownedVideo("QUARK", "OWN-Q", "unknown");
+        Map<String, Object> xunlei = ownedVideo("XUNLEI", "OWN-X", "valid");
+        MovieMetadata movie = stubManualMovie("UNKNOWN", quark, xunlei);
+        ResourceLink local = new ResourceLink(); local.setId(20L); local.setMovieId(movie.getId());
+        local.setLinkStatus("INVALID"); local.setUrl(String.valueOf(quark.get("url")));
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> {
+            var query = (com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<?>) call.getArgument(0);
+            query.getSqlSegment();
+            return query.getParamNameValuePairs().containsValue("OWN-Q") ? local : null;
+        });
+        when(panSouClient.checkLinksByProvider(any())).thenAnswer(call -> {
+            Map<String, String> links = call.getArgument(0);
+            String url = links.keySet().iterator().next();
+            return Map.of(url, new LinkCheckResult(url, !url.contains("unknown"), !url.contains("unknown"), "fixture"));
+        });
+        Map<String, Object> result = manualAction("UNKNOWN", repair);
+        assertEquals("CHECK_REQUIRED", result.get("status")); assertEquals(1, result.get("unclear"));
+        assertEquals(1, result.get("skipped")); assertEquals(0, result.get("failed"));
+        assertEquals("INVALID", local.getLinkStatus());
+        verify(resourceLinkService, never()).updateById(local);
+        verifyNoInteractions(transferRunnerService, xunleiTransferRunnerService, publishService, shareService);
+        verify(gyingSourceClient, never()).post(eq("/publish"), any());
+        verify(gyingSourceClient, never()).post(eq("/update"), any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"QUARK", "XUNLEI"})
+    void invalidVideoShareIsResharedInPlaceAndTheOtherProviderIsSkipped(String provider) {
+        String other = "QUARK".equals(provider) ? "XUNLEI" : "QUARK";
+        Map<String, Object> dead = ownedVideo(provider, "DEAD", "dead");
+        Map<String, Object> good = ownedVideo(other, "GOOD", "good");
+        MovieMetadata movie = stubManualMovie("REPAIR", dead, good);
+        String oldUrl = String.valueOf(dead.get("url"));
+        String newUrl = String.valueOf(ownedVideo(provider, "DEAD", "new").get("url"));
+        ResourceLink local = new ResourceLink(); local.setId(21L); local.setMovieId(movie.getId());
+        local.setProvider(provider); local.setUrl(oldUrl); local.setLinkStatus("NORMAL");
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> {
+            var query = (com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<?>) call.getArgument(0);
+            query.getSqlSegment();
+            return query.getParamNameValuePairs().containsValue("DEAD") || query.getParamNameValuePairs().containsValue(oldUrl) ? local : null;
+        });
+        when(resourceLinkService.updateById(local)).thenReturn(true);
+        when(panSouClient.checkLinksByProvider(any())).thenAnswer(call -> {
+            Map<String, String> links = call.getArgument(0);
+            String url = links.keySet().iterator().next();
+            return Map.of(url, new LinkCheckResult(url, true, !oldUrl.equals(url), "fixture"));
+        });
+        if ("QUARK".equals(provider)) {
+            QuarkTransferTask task = new QuarkTransferTask(); task.setId(22L); task.setMovieId(movie.getId());
+            task.setSavedPath("/fixture/movie"); task.setShareUrl(oldUrl);
+            when(transferTaskService.getOne(any(Wrapper.class), eq(false))).thenReturn(task);
+            when(transferTaskService.updateById(task)).thenReturn(true);
+            when(shareService.ensureShareUrl(task)).thenReturn(newUrl);
+        } else {
+            XunleiTransferTask task = new XunleiTransferTask(); task.setId(23L); task.setMovieId(movie.getId());
+            task.setSavedPath("fixture-folder"); task.setShareUrl(oldUrl);
+            when(xunleiTransferTaskService.getOne(any(Wrapper.class), eq(false))).thenReturn(task);
+            when(xunleiTransferTaskService.updateById(task)).thenReturn(true);
+            when(xunleiTransferTaskService.getById(task.getId())).thenReturn(task);
+            when(xunleiTransferRunnerService.submitOne(task.getId())).thenAnswer(call -> {
+                assertNull(task.getShareUrl()); assertNull(task.getShareUrlHash());
+                task.setShareUrl(newUrl); return new QuarkTransferRunResult();
+            });
+        }
+        when(gyingSourceClient.get("/movie/mv/REPAIR")).thenReturn(
+                Map.of("title", movie.getTitleCn(), "ownResources", List.of(dead, good)),
+                Map.of("ownResources", List.of(ownedVideo(provider, "DEAD", "new"), good)));
+        Map<String, Object> result = service.ensureMovieResource("mv", "REPAIR");
+        assertEquals("PUBLISHED", result.get("status"), result.toString()); assertEquals(1, result.get("repaired"));
+        assertEquals(1, result.get("reshared")); assertEquals(1, result.get("skipped"));
+        assertEquals(0, result.get("failed")); assertEquals("NORMAL", local.getLinkStatus());
+        assertEquals(newUrl, local.getUrl()); assertEquals("DEAD", local.getSourceRef());
+        verify(resourceLinkService, never()).save(any());
+        verify(transferRunnerService, never()).submitOne(any());
+        verifyNoInteractions(publishService);
+        verify(gyingSourceClient).post(eq("/update"), any());
+        verify(gyingSourceClient, never()).post(eq("/publish"), any());
+    }
+
+    @Test
+    void repairKeysResolveResourceIdsAndDeduplicateTheOwningMovie() {
+        stubManualMovie("KEYS", ownedVideo("QUARK", "QID", "q"), ownedVideo("XUNLEI", "XID", "x"));
+        confirmShares();
+        when(gyingSourceClient.get(eq("/my-resources"), anyMap())).thenReturn(Map.of("items", List.of(
+                Map.of("source_id", "QID", "type_code", "mv", "mid", "KEYS"),
+                Map.of("source_id", "XID", "type_code", "mv", "mid", "KEYS"),
+                Map.of("source_id", "UNREQUESTED", "type_code", "mv", "mid", "OTHER"))));
+        Map<String, Object> result = service.repairPublishedResourcesByKeys(List.of("MV/KEYS", "QID", "XID", "MISSING", "QID"));
+        assertEquals(1, result.get("checked")); assertEquals(4, result.get("requested"));
+        assertEquals(List.of("MISSING"), result.get("notFound")); assertEquals(2, result.get("skipped"));
+        verify(gyingSourceClient).get("/movie/mv/KEYS");
+        verify(gyingSourceClient, never()).get("/movie/mv/OTHER");
+        verifyNoInteractions(transferRunnerService, xunleiTransferRunnerService, publishService);
+    }
+
+    @Test
+    void missingSourceIdsNeverTriggerUnboundedMovieCompletion() {
+        when(gyingSourceClient.get(eq("/my-resources"), anyMap())).thenReturn(Map.of("items", List.of()));
+        Map<String, Object> result = service.repairPublishedResourcesByKeys(List.of("MISSING"));
+        assertEquals(0, result.get("checked")); assertEquals(List.of("MISSING"), result.get("notFound"));
+        assertEquals(0, result.get("unclear")); verifyNoInteractions(movieService, transferRunnerService, xunleiTransferRunnerService);
+        verify(gyingSourceClient, never()).post(anyString(), any());
+    }
+
+    @Test
+    void failedP2pCollectionDoesNotPreventIndependentVideoHealthChecks() {
+        stubManualMovie("P2PFAIL", ownedVideo("QUARK", "Q", "q"), ownedVideo("XUNLEI", "X", "x"));
+        confirmShares();
+        when(gyingSourceClient.get("/resources/mv/P2PFAIL")).thenThrow(new IllegalStateException("fixture unavailable"));
+        Map<String, Object> result = service.ensureMovieResource("mv", "P2PFAIL");
+        assertEquals("PARTIAL", result.get("status")); assertEquals("FAILED", result.get("p2pStatus"));
+        assertEquals(1, result.get("failed")); assertEquals(0, result.get("providerFailures"));
+        assertEquals(2, result.get("skipped"));
+    }
+
+    @Test
+    void failedProviderIsCountedAsFailureInBatchCompletion() {
+        stubManualMovie("FAIL", ownedVideo("QUARK", "DEAD", "dead"));
+        when(panSouClient.checkLinksByProvider(any())).thenAnswer(call -> {
+            Map<String, String> links = call.getArgument(0);
+            String url = links.keySet().iterator().next();
+            return Map.of(url, new LinkCheckResult(url, true, false, "invalid"));
+        });
+        Map<String, Object> result = service.ensureMovieResources(List.of(Map.of("typeCode", "mv", "mid", "FAIL")));
+        assertEquals(0, result.get("succeeded")); assertEquals(1, result.get("failed"));
+        assertEquals("FAILED", ((List<Map<String, Object>>) result.get("items")).get(0).get("status"));
+    }
+
+    @Test void weeklyTorrentOnlyDoesNotPublishAnExistingVideoShareOrMarkMovieAvailable() {
+        MovieMetadata movie = stubManualMovie("SEEDS");
+        properties.getQuark().setVideoEnabled(false); properties.getXunlei().setVideoEnabled(false);
+        var video = new ResourceLink(); video.setId(42L); video.setMovieId(movie.getId());
+        video.setType("DISK"); video.setProvider("QUARK"); video.setUrl("https://pan.quark.cn/s/video");
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(video);
+        var result = service.ensureWeeklyMovieResource("mv", "SEEDS");
+        assertEquals("DISABLED", result.get("status")); assertEquals("UNKNOWN", movie.getResourceStatus());
+        verify(gyingSourceClient, never()).post(eq("/publish"), any());
+        verifyNoInteractions(transferRunnerService, xunleiTransferRunnerService, publishService, shareService);
+    }
+
+    @Test void weeklyTorrentOnlyDoesNotTreatAnExistingPublishedVideoAsAvailable() {
+        MovieMetadata movie = stubManualMovie("PUBLISHED-SEEDS", ownedVideo("QUARK", "OLD", "old"));
+        properties.getQuark().setVideoEnabled(false); properties.getXunlei().setVideoEnabled(false);
+        var result = service.ensureWeeklyMovieResource("mv", "PUBLISHED-SEEDS");
+        assertEquals("DISABLED", result.get("status")); assertEquals("UNKNOWN", movie.getResourceStatus());
+        verify(gyingSourceClient, never()).post(eq("/publish"), any());
+        verifyNoInteractions(transferRunnerService, xunleiTransferRunnerService, publishService, shareService);
+    }
+
+    @Test void missingProviderOnlyInfersExactKnownHostsAndCannotFallThroughToQuark() {
+        for (String url : List.of("https://pan.baidu.com.attacker.invalid/s/x", "https://example.invalid/?host=quark.cn")) {
+            var candidate = Map.<String, Object>of("url", url, "title", "测试电影");
+            assertThrows(IllegalStateException.class, () -> org.springframework.test.util.ReflectionTestUtils.invokeMethod(
+                    service, "transferCandidate", movie("movie", "测试电影", "mv", "TRAILER"), candidate));
+        }
+        assertEquals("BAIDU", org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                "resourceProvider", Map.of("url", "https://pan.baidu.com/s/1fixture")));
+        verifyNoInteractions(transferRunnerService, xunleiTransferRunnerService, transferTaskService, xunleiTransferTaskService, publishService);
+    }
+
+    private MovieMetadata stubManualMovie(String id, Map<String, Object>... own) {
+        MovieMetadata movie = movie(id, "测试电影", "mv", "UNKNOWN");
+        when(movieService.getById(id)).thenReturn(movie);
+        when(gyingSourceClient.get("/movie/mv/" + id)).thenReturn(Map.of(
+                "title", movie.getTitleCn(), "resources", List.of(), "ownResources", List.of(own)));
+        when(gyingSourceClient.get("/resources/mv/" + id)).thenReturn(Map.of("resources", List.of()));
+        return movie;
+    }
+
+    private Map<String, Object> ownedVideo(String provider, String id, String suffix) {
+        return Map.of("source_id", id, "provider", provider, "type", "DISK", "url",
+                "QUARK".equals(provider) ? "https://pan.quark.cn/s/" + suffix : "https://pan.xunlei.com/s/" + suffix);
+    }
+
+    private Map<String, Object> manualAction(String id, boolean repair) {
+        if (!repair) return service.ensureMovieResource("mv", id);
+        return ((List<Map<String, Object>>) service.repairPublishedResourcesByKeys(List.of("mv/" + id)).get("movieResults")).get(0);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"QUARK", "XUNLEI"})
+    void disabledGyingPublishingNeverReadsOrWritesExternalSite(String provider) {
+        if ("QUARK".equals(provider)) properties.getQuark().setGyingPublishEnabled(false);
+        else properties.getXunlei().setGyingPublishEnabled(false);
+        var resource = new ResourceLink(); resource.setId(42L); resource.setMovieId("movie");
+        resource.setType("DISK"); resource.setProvider(provider); resource.setUrl("https://example.invalid/own");
+        org.junit.jupiter.api.Assertions.assertFalse(service.publishResourceToGying(resource));
+        verifyNoInteractions(gyingSourceClient, sourceIdentityService, transferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"BAIDU", "UNKNOWN"})
+    void unsupportedTransferCandidateCannotFallThroughToQuarkAdapter(String provider) {
+        var candidate = Map.<String, Object>of("provider", provider, "url", "https://pan.baidu.com/s/source", "title", "测试电影");
+        assertThrows(IllegalStateException.class, () -> org.springframework.test.util.ReflectionTestUtils.invokeMethod(
+                service, "transferCandidate", movie("movie", "测试电影", "mv", "TRAILER"), candidate));
+        verifyNoInteractions(transferTaskService, xunleiTransferTaskService, transferRunnerService, xunleiTransferRunnerService,
+                discoveryService, resourceLinkService, gyingSourceClient);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"QUARK", "XUNLEI"})
+    void disabledTransferCandidateNeverCreatesOrExecutesCloudTask(String provider) {
+        if ("QUARK".equals(provider)) properties.getQuark().setTransferEnabled(false);
+        else properties.getXunlei().setEnabled(false);
+        var candidate = Map.<String, Object>of("provider", provider, "url", "https://example.invalid/source", "title", "测试电影");
+        assertThrows(IllegalStateException.class, () -> org.springframework.test.util.ReflectionTestUtils.invokeMethod(
+                service, "transferCandidate", movie("movie", "测试电影", "mv", "TRAILER"), candidate));
+        verifyNoInteractions(transferTaskService, xunleiTransferTaskService, transferRunnerService, xunleiTransferRunnerService,
+                discoveryService, resourceLinkService, gyingSourceClient);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"DISCOVERY", "TRANSFER", "SHARE", "GYING"})
+    void weeklyCandidateDisabledByAnyStageIsNotTransferredOrMarkedMissing(String disabledStage) {
+        var movie = movie("WEEK-OFF", "周榜电影", "mv", "UNKNOWN");
+        if ("DISCOVERY".equals(disabledStage)) properties.getQuark().setDiscoveryEnabled(false);
+        if ("TRANSFER".equals(disabledStage)) properties.getQuark().setTransferEnabled(false);
+        if ("SHARE".equals(disabledStage)) properties.getQuark().setShareEnabled(false);
+        if ("GYING".equals(disabledStage)) properties.getQuark().setGyingPublishEnabled(false);
+        when(gyingSourceClient.get("/movie/mv/WEEK-OFF")).thenReturn(Map.of("title", movie.getTitleCn(), "ownResources", List.of(),
+                "resources", List.of(Map.of("provider", "QUARK", "url", "https://pan.quark.cn/s/source", "source_id", "Q1", "title", movie.getTitleCn()))));
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        var result = service.ensureWeeklyMovieResource("mv", "WEEK-OFF");
+        assertEquals("DISABLED", result.get("status")); assertEquals("UNKNOWN", movie.getResourceStatus());
+        verifyNoInteractions(transferTaskService, xunleiTransferTaskService, transferRunnerService, xunleiTransferRunnerService, discoveryService);
+        verify(gyingSourceClient, never()).post(eq("/publish"), any());
+    }
+
+    @Test void weeklySelectionCanUseXunleiWhenHigherQualityQuarkCandidateIsDisabled() {
+        properties.getQuark().setTransferEnabled(false);
+        var movie = movie("WEEK-XL", "周榜电影", "mv", "UNKNOWN");
+        when(gyingSourceClient.get("/movie/mv/WEEK-XL")).thenReturn(Map.of("title", movie.getTitleCn(), "ownResources", List.of(),
+                "resources", List.of(
+                    Map.of("provider", "QUARK", "url", "https://pan.quark.cn/s/quark", "source_id", "Q1", "title", "周榜电影 4K"),
+                    Map.of("provider", "XUNLEI", "url", "https://pan.xunlei.com/s/xunlei", "source_id", "X1", "title", "周榜电影 720P"))));
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        var discovery = new ResourceDiscoveryResult(); discovery.setId(8L); discovery.setMovieId(movie.getId());
+        when(discoveryService.getOne(any(Wrapper.class), eq(false))).thenReturn(discovery);
+        var transfer = new XunleiTransferTask(); transfer.setId(9L); transfer.setDiscoveryResultId(8L); transfer.setStatus("PENDING");
+        when(xunleiTransferTaskService.getOne(any(Wrapper.class), eq(false))).thenReturn(transfer);
+        when(xunleiTransferTaskService.getById(9L)).thenReturn(transfer);
+        when(xunleiTransferRunnerService.submitOne(9L)).thenReturn(new QuarkTransferRunResult());
+        assertThrows(IllegalStateException.class, () -> service.ensureWeeklyMovieResource("mv", "WEEK-XL"));
+        assertEquals("XUNLEI", discovery.getProvider());
+        verify(xunleiTransferRunnerService).submitOne(9L);
+        verifyNoInteractions(transferTaskService, transferRunnerService);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"QUARK", "XUNLEI"})
+    void disabledSharingRepairNeverClearsExistingShareOrTouchesTransferTask(String provider) {
+        if ("QUARK".equals(provider)) properties.getQuark().setShareEnabled(false);
+        else properties.getXunlei().setShareEnabled(false);
+        var local = new ResourceLink(); local.setId(42L); local.setMovieId("movie"); local.setProvider(provider); local.setUrl("https://example.invalid/old-share");
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(local);
+        var item = new java.util.LinkedHashMap<String, Object>(Map.of("provider", provider, "url", local.getUrl(), "source_id", "OWN1", "checkStatus", "INVALID"));
+        Map<String, Object> result = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "repairCheckedPublishedResources", Map.of("items", List.of(item)));
+        assertEquals(1, result.get("skipped")); assertEquals("https://example.invalid/old-share", local.getUrl());
+        verifyNoInteractions(transferTaskService, xunleiTransferTaskService, transferRunnerService, xunleiTransferRunnerService, shareService);
+        verify(resourceLinkService, never()).updateById(any(ResourceLink.class));
+        verifyNoInteractions(gyingSourceClient);
+    }
+
+    private void confirmShares() {
+        when(panSouClient.checkLinksByProvider(any())).thenAnswer(call -> {
+            Map<String, String> links = call.getArgument(0);
+            Map<String, LinkCheckResult> checks = new java.util.LinkedHashMap<>();
+            links.forEach((url, provider) -> checks.put(url, new LinkCheckResult(url, true, true, "valid")));
+            return checks;
+        });
+    }
+
+    private MovieSourceIdentity linkedSeedIdentity() {
+        MovieSourceIdentity identity = new MovieSourceIdentity(); identity.setId(100L); identity.setMovieId("movie1");
+        identity.setSource("GYING"); identity.setSourceType("mv"); identity.setExternalId("CaSe1"); identity.setMatchStatus("CONFIRMED");
+        when(movieService.getById("movie1")).thenReturn(movie("movie1", "Known movie", "mv", "AVAILABLE"));
+        when(sourceIdentityService.getById(100L)).thenReturn(identity);
+        return identity;
+    }
+    private Map<String, Object> knownSeed() {
+        return Map.of("type", "MAGNET", "provider", "P2P", "url", "magnet:?xt=urn:btih:" + "a".repeat(40),
+                "source_ref", "BT1", "quality", "1080P", "subtitle", "中文字幕（来源标注）", "archive_torrent", true, "title", "Known seed");
+    }
+    @Test void exactLinkedIdentityCollectionDoesNotSearchIngestPublishOrEnqueueOtherProviders() {
+        linkedSeedIdentity(); when(gyingSourceClient.get("/resources/mv/CaSe1")).thenReturn(Map.of("resources", List.of(knownSeed())));
+        when(resourceLinkService.save(any(ResourceLink.class))).thenAnswer(call -> { ((ResourceLink)call.getArgument(0)).setId(31L); return true; });
+        var archives = mock(P2pArchiveTaskService.class); org.springframework.test.util.ReflectionTestUtils.setField(service, "p2pArchiveTaskService", archives);
+        var result = service.collectMovieP2pResources("movie1", 100L); assertEquals("CaSe1", result.mid()); assertEquals(100L, result.identityId());
+        assertEquals(List.of("MAGNET", "TORRENT"), result.selected().stream().map(ResourceLink::getType).toList()); assertNull(result.selected().get(1).getUrl());
+        verify(gyingSourceClient).get("/resources/mv/CaSe1"); verify(gyingSourceClient, never()).post(anyString(), any());
+        verify(sourceIdentityService, never()).getOne(any(Wrapper.class), anyBoolean());
+        verifyNoInteractions(archives, discoveryService, transferTaskService, transferRunnerService, xunleiTransferTaskService, xunleiTransferRunnerService, publishService);
+    }
+    @Test void exactSeedCollectionPreservesManualResourceEvenIfItHasTheSameUrl() {
+        linkedSeedIdentity(); var seed = knownSeed(); when(gyingSourceClient.get("/resources/mv/CaSe1")).thenReturn(Map.of("resources", List.of(seed)));
+        ResourceLink manual = new ResourceLink(); manual.setId(77L); manual.setMovieId("movie1"); manual.setName("User supplied release"); manual.setUrl((String)seed.get("url"));
+        manual.setSource("MANUAL"); manual.setProvider("P2P"); manual.setAutoCollected(false);
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(manual);
+        when(resourceLinkService.save(any(ResourceLink.class))).thenAnswer(call -> { ((ResourceLink)call.getArgument(0)).setId(78L); return true; });
+        var result = service.collectMovieP2pResources("movie1", 100L); assertEquals(78L, result.selected().get(0).getId());
+        assertEquals("User supplied release", manual.getName()); assertEquals("MANUAL", manual.getSource()); assertFalse(manual.getAutoCollected());
+        verify(resourceLinkService, never()).updateById(any(ResourceLink.class));
+        var scope = ArgumentCaptor.forClass(Wrapper.class); verify(resourceLinkService).getOne(scope.capture(), eq(false));
+        assertTrue(scope.getValue().getSqlSegment().contains("auto_collected")); assertTrue(scope.getValue().getSqlSegment().contains("source"));
+    }
+    @Test void mappingChangedDuringGyingReadRejectsLocalWrites() {
+        MovieSourceIdentity before = linkedSeedIdentity(); MovieSourceIdentity changed = new MovieSourceIdentity(); changed.setId(100L); changed.setMovieId("other-movie");
+        changed.setSource("GYING"); changed.setSourceType("mv"); changed.setExternalId("CaSe1"); changed.setMatchStatus("CONFIRMED");
+        when(sourceIdentityService.getById(100L)).thenReturn(before, changed);
+        when(gyingSourceClient.get("/resources/mv/CaSe1")).thenReturn(Map.of("resources", List.of(knownSeed())));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> service.collectMovieP2pResources("movie1", 100L));
+        verifyNoInteractions(resourceLinkService, discoveryService, transferTaskService, transferRunnerService, publishService);
+    }
+
+
+    @Test void temporaryBaiduResourcesCannotBePublishedToGyingThroughEitherEntry() {
+        properties.getBaidu().setGyingPublishEnabled(true);
+        var temporary = new ResourceLink(); temporary.setId(88L); temporary.setMovieId("movie1");
+        temporary.setSource("BAIDU_TEMP"); temporary.setSourceRef(TEMP_SCOPE); temporary.setType("DISK"); temporary.setProvider("BAIDU");
+        temporary.setUrl("https://pan.baidu.com/s/1temp");
+        assertFalse(service.publishResourceToGying(temporary));
+        assertThrows(IllegalStateException.class, () -> org.springframework.test.util.ReflectionTestUtils.invokeMethod(
+                service, "publishLocalResource", "mv", "MID1", new MovieMetadata(), temporary));
+        verifyNoInteractions(gyingSourceClient);
+        verify(sourceIdentityService, never()).getOne(any(), anyBoolean());
+        assertEquals(TEMP_SCOPE, temporary.getSourceRef());
+    }
+
+    @Test void gyingLocalPublicationFallbacksCannotSelectOrRepairTemporaryLinks() {
+        var temporary = new ResourceLink(); temporary.setId(88L); temporary.setSource("BAIDU_TEMP"); temporary.setSourceRef(TEMP_SCOPE);
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> {
+            permanentResourceQuery(call.getArgument(0)); return temporary;
+        });
+        Object local = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "findPublishableLocalResource", "movie1", "BAIDU");
+        Object bySource = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "findResourceBySourceIds", "movie1", List.of(TEMP_SCOPE));
+        Object published = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "findLocalPublishedResource",
+                Map.of("source_id", "SOURCE1", "url", "https://pan.baidu.com/s/1temp"));
+        assertNull(local); assertNull(bySource); assertNull(published);
+        verify(resourceLinkService, times(4)).getOne(any(Wrapper.class), eq(false));
+        verify(resourceLinkService, never()).updateById(any()); verifyNoInteractions(gyingSourceClient);
+    }
+
+    @ParameterizedTest @ValueSource(booleans = {false, true})
+    void gyingBaiduTransferKeepsCloneHistoryAndPersistsItsOwnPermanentScope(boolean insertRace) {
+        var tasks = mock(com.gying.movie.service.IBaiduTransferTaskService.class);
+        var runner = mock(com.gying.movie.service.IBaiduTransferRunnerService.class);
+        var client = mock(com.gying.movie.client.BaiduWebClient.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "baiduTransferTaskService", tasks);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "baiduTransferRunnerService", runner);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "baiduWebClient", client);
+        var movie = new MovieMetadata(); movie.setId("movie1"); movie.setTitleEn("Known movie"); movie.setCategory("mv");
+        var clone = new com.gying.movie.entity.ResourceDiscoveryResult(); clone.setId(990L); clone.setMovieId("movie1");
+        clone.setProvider("BAIDU"); clone.setSource("QQ_BOT"); clone.setSourceRef("BAIDU_TEMP:" + TEMP_SCOPE);
+        var persistedDiscovery = new java.util.concurrent.atomic.AtomicReference<com.gying.movie.entity.ResourceDiscoveryResult>();
+        var persistedTask = new java.util.concurrent.atomic.AtomicReference<com.gying.movie.entity.BaiduTransferTask>();
+        when(discoveryService.getOne(any(), eq(false))).thenAnswer(call -> { permanentDiscoveryQuery(call.getArgument(0)); return clone; });
+        when(discoveryService.save(any())).thenAnswer(call -> {
+            com.gying.movie.entity.ResourceDiscoveryResult row = call.getArgument(0); row.setId(991L); persistedDiscovery.set(row); return true;
+        });
+        when(discoveryService.getById(991L)).thenAnswer(call -> persistedDiscovery.get());
+        when(tasks.getOne(any(), eq(false))).thenAnswer(call -> { permanentTaskQuery(call.getArgument(0)); return persistedTask.get(); });
+        when(tasks.save(any())).thenAnswer(call -> {
+            com.gying.movie.entity.BaiduTransferTask task = call.getArgument(0); task.setId(992L); persistedTask.set(task);
+            if (insertRace) throw new org.springframework.dao.DuplicateKeyException("fixture race"); return true;
+        });
+        when(runner.submitOne(992L)).thenAnswer(call -> {
+            var task = persistedTask.get(); task.setStatus("SUCCEEDED"); task.setShareUrl("https://pan.baidu.com/s/1owned");
+            return new QuarkTransferRunResult();
+        });
+        when(client.validateOwnShare("https://pan.baidu.com/s/1owned")).thenReturn(true);
+        Object outcome = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "transferBaiduCandidate", movie,
+                Map.of("provider", "BAIDU", "title", "Known movie", "source_id", "SOURCE1"), "https://pan.baidu.com/s/1source");
+        assertNotNull(outcome); assertEquals("PERMANENT", persistedTask.get().getScopeKey());
+        assertEquals(991L, persistedTask.get().getDiscoveryResultId()); assertEquals("SOURCE1", persistedDiscovery.get().getSourceRef());
+        assertEquals("QQ_BOT", clone.getSource()); assertEquals("BAIDU_TEMP:" + TEMP_SCOPE, clone.getSourceRef());
+        verify(discoveryService, never()).updateById(any()); verify(runner).submitOne(992L);
+        verifyNoInteractions(gyingSourceClient, transferRunnerService, xunleiTransferRunnerService);
+    }
+
+    private MovieMetadata strictUpdateMovie(String type) {
+        MovieMetadata movie = new MovieMetadata(); movie.setId("tmdb-canonical"); movie.setStatus("ACTIVE");
+        movie.setCategory(type); movie.setTmdbId(9876L); movie.setTmdbType("mv".equals(type) ? "movie" : "tv");
+        movie.setYear(2026); movie.setSeason("mv".equals(type) ? 3 : 2); movie.setTitleCn("Strict Film");
+        movie.setTitleEn("Strict Original"); movie.setTmdbLastSyncAt(java.time.LocalDateTime.now());
+        when(movieService.getById(movie.getId())).thenReturn(movie); when(movieService.list(any(Wrapper.class))).thenReturn(List.of(movie));
+        return movie;
+    }
+    private Map<String, Object> strictSource(String type, String mid, int year, int season) {
+        return Map.of("typeCode", type, "mid", mid, "title", "Strict Film", "year", year, "season", season);
+    }
+    private void acknowledgeStrictIdentity() {
+        AtomicReference<MovieSourceIdentity> persisted = new AtomicReference<>();
+        when(sourceIdentityService.list(any(Wrapper.class))).thenAnswer(c -> persisted.get() == null ? List.of() : List.of(persisted.get()));
+        when(sourceIdentityService.save(any())).thenAnswer(c -> {
+            MovieSourceIdentity identity = c.getArgument(0); identity.setId(88L); persisted.set(identity); return true;
+        });
+        when(sourceIdentityService.getById(88L)).thenAnswer(c -> persisted.get());
+    }
+
+    @Test void automaticStrictMovieSearchAcceptsMoviePartAndRequiresPersistedUniqueCanonicalIdentity() {
+        var movie = strictUpdateMovie("mv"); acknowledgeStrictIdentity();
+        when(gyingSourceClient.get(eq("/search"), anyMap())).thenReturn(Map.of("items", List.of(strictSource("mv", "MiD1", 2026, 1))));
+        MovieSourceIdentity identity = service.resolveTmdbUpdateGyingIdentity(movie.getId());
+        assertEquals("MiD1", identity.getExternalId()); assertEquals(0, identity.getSeason());
+        assertEquals("TMDB_UPDATE_EXACT_SEARCH", identity.getMatchMethod());
+        verify(gyingSourceClient, times(2)).get(eq("/search"), anyMap());
+        verifyNoInteractions(resourceLinkService, transferTaskService, transferRunnerService, panSouClient);
+    }
+
+    @Test void automaticStrictSearchAggregatesAmbiguityAcrossChineseAndOriginalQueriesBeforeBinding() {
+        var movie = strictUpdateMovie("mv");
+        when(gyingSourceClient.get(eq("/search"), anyMap())).thenAnswer(c -> {
+            Map<String, Object> query = c.getArgument(1);
+            return Map.of("items", List.of(strictSource("mv", "Strict Film".equals(query.get("q")) ? "MID1" : "MID2", 2026, 1)));
+        });
+        assertEquals("GYING_AMBIGUOUS_STRICT_MATCH", assertThrows(IllegalStateException.class,
+                () -> service.resolveTmdbUpdateGyingIdentity(movie.getId())).getMessage());
+        verify(sourceIdentityService, never()).save(any()); verifyNoInteractions(resourceLinkService, panSouClient);
+    }
+
+    @Test void automaticStrictTvRejectsWrongYearMissingSeasonAndWrongReturnedTypeWithoutBinding() {
+        var movie = strictUpdateMovie("tv");
+        when(gyingSourceClient.get(eq("/search"), anyMap())).thenReturn(Map.of("items", List.of(
+                strictSource("tv", "WRONGYEAR", 2020, 2),
+                Map.of("typeCode", "tv", "mid", "NOSEASON", "title", "Strict Film", "year", 2026),
+                strictSource("mv", "WRONGTYPE", 2026, 2), strictSource("tv", "WRONGSEASON", 2026, 1),
+                Map.of("typeCode", "tv", "mid", "FLOAT", "title", "Strict Film", "year", 2026.0, "season", 2))));
+        assertEquals("GYING_NO_STRICT_MATCH", assertThrows(IllegalStateException.class,
+                () -> service.resolveTmdbUpdateGyingIdentity(movie.getId())).getMessage());
+        verify(sourceIdentityService, never()).save(any()); verifyNoInteractions(resourceLinkService, panSouClient);
+    }
+
+    @Test void automaticStrictSearchDistinguishesMalformedResponseFromEmptyResultAndNeverFallsBackToCatalog() {
+        var movie = strictUpdateMovie("mv");
+        when(gyingSourceClient.get(eq("/search"), anyMap())).thenReturn(Map.of("error", "upstream"));
+        assertEquals("GYING_SEARCH_RESPONSE_INVALID", assertThrows(IllegalStateException.class,
+                () -> service.resolveTmdbUpdateGyingIdentity(movie.getId())).getMessage());
+        verify(gyingSourceClient).get(eq("/search"), anyMap()); verifyNoMoreInteractions(gyingSourceClient);
+        verify(sourceIdentityService, never()).save(any());
+    }
+
+    @Test void automaticStrictSearchRejectsDuplicateLocalCanonicalOwnersBeforeWritingIdentity() {
+        var movie = strictUpdateMovie("mv"); var duplicate = strictUpdateMovie("mv"); duplicate.setId("another-canonical");
+        when(movieService.getById(movie.getId())).thenReturn(movie); when(movieService.list(any(Wrapper.class))).thenReturn(List.of(movie, duplicate));
+        when(gyingSourceClient.get(eq("/search"), anyMap())).thenReturn(Map.of("items", List.of(strictSource("mv", "MID1", 2026, 1))));
+        assertEquals("GYING_CANONICAL_REVIEW_REQUIRED", assertThrows(IllegalStateException.class,
+                () -> service.resolveTmdbUpdateGyingIdentity(movie.getId())).getMessage());
+        verify(sourceIdentityService, never()).save(any());
+    }
+
+    @Test void automaticStrictTrustedMidStillRequiresExactLiveYearBeforeAnyCollection() {
+        var movie = strictUpdateMovie("tv"); MovieSourceIdentity identity = new MovieSourceIdentity(); identity.setId(77L);
+        identity.setMovieId(movie.getId()); identity.setSource("GYING"); identity.setSourceType("tv"); identity.setExternalId("KNOWN");
+        identity.setSeason(2); identity.setMatchStatus("CONFIRMED"); when(sourceIdentityService.list(any(Wrapper.class))).thenReturn(List.of(identity));
+        when(gyingSourceClient.get("/movie/tv/KNOWN")).thenReturn(strictSource("tv", "KNOWN", 2020, 2));
+        assertEquals("GYING_STRICT_DETAIL_REVIEW_REQUIRED", assertThrows(IllegalStateException.class,
+                () -> service.resolveTmdbUpdateGyingIdentity(movie.getId())).getMessage());
+        verify(gyingSourceClient, never()).get(eq("/search"), anyMap()); verifyNoInteractions(resourceLinkService, panSouClient);
+    }
+
+    @Test void automaticStrictSearchTreatsOriginalGyingMovieWithoutTmdbBindingAsCanonicalConflict() {
+        var movie = strictUpdateMovie("mv"); MovieMetadata original = new MovieMetadata(); original.setId("gying_mv_MID1");
+        original.setStatus("ACTIVE"); original.setCategory("mv"); original.setTitleCn("Strict Film"); original.setYear(2026);
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of(movie, original));
+        when(gyingSourceClient.get(eq("/search"), anyMap())).thenReturn(Map.of("items", List.of(strictSource("mv", "MID1", 2026, 1))));
+        assertEquals("GYING_CANONICAL_REVIEW_REQUIRED", assertThrows(IllegalStateException.class,
+                () -> service.resolveTmdbUpdateGyingIdentity(movie.getId())).getMessage());
+        verify(sourceIdentityService, never()).save(any()); verifyNoInteractions(resourceLinkService, panSouClient);
+    }
+
+    @Test void automaticStrictCanonicalQueryIncludesNormalizedTitlesOfLegacyMovies() {
+        var movie = strictUpdateMovie("mv"); MovieMetadata original = new MovieMetadata(); original.setId("old-gying");
+        original.setStatus("ACTIVE"); original.setCategory("mv"); original.setTitleCn("Strict-Film"); original.setYear(2026);
+        when(movieService.list(any(Wrapper.class))).thenAnswer(c -> {
+            QueryWrapper<MovieMetadata> query = c.getArgument(0); assertTrue(query.getSqlSegment().contains("REGEXP_REPLACE"));
+            return List.of(movie, original);
+        });
+        when(gyingSourceClient.get(eq("/search"), anyMap())).thenReturn(Map.of("items", List.of(strictSource("mv", "MID1", 2026, 1))));
+        assertEquals("GYING_CANONICAL_REVIEW_REQUIRED", assertThrows(IllegalStateException.class,
+                () -> service.resolveTmdbUpdateGyingIdentity(movie.getId())).getMessage());
+        verify(sourceIdentityService, never()).save(any());
+    }
+
 }

@@ -1,0 +1,178 @@
+{
+  "version": 1,
+  "status": "POST_TRANSPORT_UNKNOWN_DATABASE_ARCHIVE_SUCCESS_OBSERVED_OFFICIAL_PENDING",
+  "sourceReadOnlyObservation": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\read-only-status-after-manual2-82f8be95e7ec43d1abda0dac08028501.json",
+    "sha256": "9c6688ae06c2948e5ea9e1d1e43265a4577a1b270b6cdc53263456c99240231c",
+    "bytes": 10002,
+    "status": "READ_ONLY_OBSERVED",
+    "cloudWrites": 0,
+    "directSqlWrites": 0
+  },
+  "originalManualReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2.receipt.json",
+    "sha256": "24ebeb78f8cd1588d99be5ad4485f3388a9e6208c0768fcff23bff9a3285c601",
+    "bytes": 12828,
+    "status": "SEND_OUTCOME_UNKNOWN",
+    "sendOutcomeUnknown": true,
+    "originalActualArchiveAttempts": 0,
+    "manualPostRequests": 1,
+    "afterSnapshotPresent": false
+  },
+  "expectedIdentity": {
+    "identityId": 48,
+    "movieId": "x3xX",
+    "sourceType": "mv",
+    "externalId": "x3xX",
+    "titleCn": "霸王别姬",
+    "year": "1993"
+  },
+  "expectedManifestSha256": "47499d24d35037d8204023e760104b789d93e0c2a04cafcf4289dd900d58b6e8",
+  "selectedFileCount": 4,
+  "selectedTotalBytes": 143163,
+  "newChild": {
+    "id": 17650,
+    "stage": "COMPLETE",
+    "status": "SUCCEEDED",
+    "movieId": "x3xX",
+    "attempts": 1,
+    "parentId": 17583,
+    "fileCount": 4,
+    "totalBytes": 143163,
+    "payloadSha256": "c73fef9b73e8f48aceec0cbec62df6a8275cecf0462b3b274aeea1a26d4cb839"
+  },
+  "newChildCount": 1,
+  "actualManualArchiveAttemptConsumed": 1,
+  "manualActualArchiveAttemptLimit": 1,
+  "remainingManualActualArchiveAttempts": 0,
+  "beforeParent": {
+    "taskId": 17583,
+    "revision": 67,
+    "settingsRevision": 5,
+    "status": "PAUSED",
+    "enabled": false,
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "identityCursor": 47,
+    "identityMaxId": 18820,
+    "processed": 6,
+    "skipped": 6,
+    "succeeded": 0,
+    "failed": 0,
+    "deferredCount": 3,
+    "currentIdentityId": null,
+    "currentChildId": null,
+    "lastResult": "NO_ELIGIBLE_GYING_TORRENTS",
+    "deferredItemsSha256": "b040e843171b6ead3c67c397d0b8b6acc9fa383095025192abf1f232728f71cc",
+    "payloadSha256": "347d5e3073d152574f6bc6b15dcf01ae21ba990259ac6d4d6961ae8a77026248"
+  },
+  "afterParent": {
+    "taskId": 17583,
+    "revision": 72,
+    "settingsRevision": 5,
+    "status": "PAUSED",
+    "enabled": false,
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "identityCursor": 48,
+    "identityMaxId": 18820,
+    "processed": 7,
+    "skipped": 6,
+    "succeeded": 1,
+    "failed": 0,
+    "deferredCount": 3,
+    "currentIdentityId": null,
+    "currentChildId": null,
+    "lastResult": "TORRENTS_ARCHIVED",
+    "deferredItemsSha256": "b040e843171b6ead3c67c397d0b8b6acc9fa383095025192abf1f232728f71cc",
+    "payloadSha256": "b09fcaae4cd5050ea68a4eca52eaa16690ca21bf33cb69b2c64c6d040d655e3b"
+  },
+  "unknownChildren": [
+    {
+      "id": 17584,
+      "status": "UNKNOWN",
+      "attempts": 1,
+      "payloadSha256": "62bfcad59b7c4f41c3fbd44c9e217628cd6e6873b627c343e39cecd5ac0339e5"
+    },
+    {
+      "id": 17606,
+      "status": "UNKNOWN",
+      "attempts": 1,
+      "payloadSha256": "3fd6ade6767a0184eabd9101328914067ad61ff44eae388cc0a748a564c512fa"
+    },
+    {
+      "id": 17622,
+      "status": "UNKNOWN",
+      "attempts": 1,
+      "payloadSha256": "2e6cf9e2990b321198a52c6f12f45c42dd3d78c357bf71a11b2c2f1cfd37b19e"
+    }
+  ],
+  "protectedCompleteRows": {
+    "resource_hub_task": {
+      "rows": 4,
+      "sha256": "013e57ccce190d2197180157a960b1914ad6d5047f82fa7eb70cdbecc4527ff4"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "candidateIdentityMetadataSha256": "9348b4f102b680ead0ab3b5e21a563e065414e48c4fd5e6c4cfc26532b8a99ab",
+  "candidateResourceScopeChanges": {
+    "x3xX": {
+      "before": {
+        "rows": 1,
+        "sha256": "2f020c05c53f2f62befa34cf2cd772526234e4875616c28bce4091196abcd661"
+      },
+      "after": {
+        "rows": 4,
+        "sha256": "b9cdae953e8c87a669eef48e1158a8c1fd22b7c4c02053af0f443948bc1df5e8"
+      }
+    }
+  },
+  "unselectedCandidateResourceScopesRetained": true,
+  "selectedCandidateResourceExactDeltaAndCauseVerified": false,
+  "runtime": {
+    "allContainerCount": 13,
+    "allContainerGenerationsSha256": "50d7443c175fdcfe6b4969528ca99efa66e857fe2fdaa472430ce181a898edff",
+    "completeRuntimeSnapshotSha256": "b5f1ac84c433d39c613f1d6afc268ec489ec7e39e2c3ebc4a8cd6761dd505f2e",
+    "completeBackendConfigSha256": "b754f7b22008dcda2f89daa2fc83cc48c8787cab0043cc8df0fa6cf83e22b98b",
+    "completeBackendHostConfigSha256": "1fb1a61ead76570c19fbc969eec160f028495909c202ec8e6982685e68229281",
+    "hostConfigSha256": "47401b8ec6960c5b180704adb33436b815a421dc106ad3f4e87f91d73f211a0e",
+    "dailyConfigSha256": "8d5b26578064af2de5fc42ed2c7f2e7a60ce855e09cfa7ea21ab14fdaa36ea0c"
+  },
+  "independentLocalReceiptChecks": {
+    "originalReceiptDigestExact": true,
+    "originalTransportUnknownPreserved": true,
+    "oneManualPostAndIdentity48": true,
+    "originalBeforeExactManual1After": true,
+    "oldUnknownChildrenExact": true,
+    "oneGenuineNewSuccessfulChildSummary": true,
+    "protectedRowsExactBaseline": true,
+    "candidateIdentityMetadataExactBaseline": true,
+    "completeRuntimeExactBaseline": true,
+    "onlySelectedCandidateResourceScopeChanged": true,
+    "expectedParentAdvanceWhilePaused": true,
+    "readOnlyObservationNoDirectSqlOrCloudWrites": true
+  },
+  "reviewMethod": "Local comparison of immutable manual receipts, existing read-only status observation and repository-safe baseline; no production re-query or old suite",
+  "originalTransportUnknownRetained": true,
+  "databaseTaskSuccessObserved": true,
+  "actualChildCheckpointAndLinkBindingSeparatelyPending": true,
+  "officialFileAndOwnShareReconciliationVerified": false,
+  "remainingManualSlotsStopped": true,
+  "naturalScheduleRestored": false,
+  "naturalRoundExecuted": false,
+  "oldUnknownNotReplayed": true,
+  "automaticManualRetryAllowed": false,
+  "reviewProductionApiRequests": 0,
+  "reviewProductionSqlQueries": 0,
+  "reviewDockerRequests": 0,
+  "rawReceiptsRuntimeAndFullBusinessRowsRemainOutsideRepository": true,
+  "fullBusinessRowsProviderUrlsAndCredentialValuesWritten": false,
+  "gitActions": 0
+}

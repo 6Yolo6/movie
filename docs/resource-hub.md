@@ -1,57 +1,92 @@
 # Resource Hub 架构
 
-Resource Hub 在现有片库模型上补充元数据采集、资源发现、转存和发布，不另建影视主模型。
+[导航](README.md) · [接口](api.md#resource-hub) · [数据库](database.md) · [现状](current-project-status.md)
 
 ## 数据规则
 
-- `movie_metadata` 保存影视元数据；`resource_link` 保存可用链接。
-- `popularity` 是站内收藏热度，TMDB 热度和评分使用 `tmdb_*` 字段。
-- TMDB 数据先按 TMDB ID、剧集名、标题、别名和年份匹配 canonical 影片。
-- 自动资源使用 `resource_discovery_result`、`quark_transfer_task` 和 `xunlei_transfer_task` 保留发现与转存轨迹。
-- 自动发布资源标记来源，核心记录只软删除。
+canonical 主模型为 movie_metadata/resource_link；外部身份独立保存在 movie_source_identity。站内 popularity 与 tmdb_* 分开；发现/双盘任务保留轨迹。自动视频资源先验证自有分享，核心记录软删除，不确定匹配进入人工候选。
 
 ## 流水线
 
-1. TMDB 自动同步按配置间隔轮询一个来源，使多个来源分散到全天执行；管理员也可手动选择来源。
-2. 跳过已有可用资源、可发布发现或近期重复任务。
-3. 合并本地 PanSou 与外部 Panso API 结果并按 URL 去重。
-4. 校验标题相关性和源链接状态，保存发现结果。
-5. 为夸克或迅雷结果创建对应转存任务；夸克运行 quark-auto-save，迅雷调用当前账号的 Drive API。
-6. 确认保存目录有内容并创建自有分享；迅雷公开分享接口未验证时停在 `WAITING_SHARE`。
-7. 仅将可用自有分享发布到 `resource_link`，不得回退发布第三方迅雷或夸克源链接。
-8. 无资源影片保持 `TRAILER`，可从缺资源页重新处理。
+| 触发 | 处理范围 |
+| --- | --- |
+| 高频 TMDB/GYING、手动元数据 | 元数据/海报/原始 P2P；独立小文件 P2P_ARCHIVE，不发现或转存视频 |
+| 普通 Worker | METADATA_SYNC；不消费旧发现/转存/发布，定时 discovered retry 不执行 |
+| 三个 GYING 周榜 | 独立 WEEKLY_TRANSFER 视频计划，默认各 7 天/前 5 部；不新增夸克每日追更 |
+| 手动发现/修复、QQ 按需 | 候选→确认→按 provider 转存→完整落位→自有分享→resource_link；外部源 URL 不直接入库 |
+| 历史夸克追更 | 独立上游任务继续，不能因新策略推断已停用 |
+
+[周榜/迅雷落位](metadata-weekly-transfer.md)、[P2P](p2p-cloud-archive.md)。分享未确认停在 WAITING_SHARE，排队/HTTP 200 不算完成。
+
+### 元数据页码范围与断点续采
+
+- `1 ≤ start ≤ end ≤ 500`；旧 auto_sync_page/*AutoSyncPage 为起始页，新 end_page/*AutoSyncEndPage 为结束页。缺 end 保持单页；旧客户端单页更新不扩大范围；非法配置 400。
+- provider+榜单独立页码/偏移；每间隔轮换一榜，单批 TMDB/GYING 各最多 20。完成页翻页，到有效末页回 start；GYING 空页回 start，TMDB 按下述实测分页处理。榜单变化不是一致性快照，写入仍幂等。
+- payload.crawl 保存批次/范围/下一位置并与最终状态一起落库。TMDB 失败留原位；GYING 仅在失败条目都持久化 METADATA_ITEM_RETRY 后推进，记录 itemRetryTaskIds、failed/deferred。全失败/缺身份/隔离保存失败不推进；手动单页不带 crawl，不改自动位置。
+- `tmdbAutoSyncRanges` / `gyingAutoSyncRanges` 按来源配置 `{startPage,endPage}`，对应 `resource.hub.*.auto_sync_ranges` JSON；局部更新只合并指定来源，缺配置沿用旧共用范围。改范围保留范围内的页码/偏移，越界才回新 start；延长已完成的旧 end 后在已知上游页数内继续下一页；缺上游证据时重新请求校验。旧在途按旧范围完成；停用/重启保留进度。单实例启动只恢复本进程前遗留的自动范围元数据 RUNNING 为 FAILED，不动旧手动/发现/转存。多实例先做分布式租约。
+- overview `config.metadataCrawlProgress` 展示范围/下页/偏移/任务状态，以及 TMDB `observedTotalPages`、`availability` 和 UTC ISO `nextCheckAt`（界面转换北京时间）；RETRY 为位置保留。无新增表；旧版本忽略 end，回滚须核对 Worker 行为，来源 utf8mb4_bin 不撤销。
+
+TMDB 自动范围请求严格验证分页和完整条目；所设 start 超过实测 `total_pages` 时持久记录 `EMPTY_RANGE` 并等待24小时后复查，等待期间不创建该榜空任务，其他榜继续按全局至少1小时间隔轮转。范围调整解除对应旧冷却，重启保留检查点；有效末页取配置 end 与实测末页的较小值，正常循环及失败位置保持。范围内异常空页/协议或请求错误是失败，不是榜单结束。旧游标超末但范围仍有效为 `RANGE_EXHAUSTED`，下一轮从所设 start 继续，无24小时冷却。任务仍保存 `SUCCEEDED` 表示校验请求完成，界面凭 TMDB + RANGE + availability 显示“范围无数据”，不把旧零处理记录猜为无数据。[本次证据](evaluation/tmdb-empty-range-20261102/README.md)。
+
+本站 TMDB 七来源继续保持现有 `1–500` 配置范围和游标。TMDB [Errors](https://developer.themoviedb.org/docs/errors) 通用错误码 22 写明整数页码 1–500；[官方论坛](https://www.themoviedb.org/talk/668b027390c809787099e77d) 的可见索引摘要区分普通列表/Discover 500 页与 Trending 1000 页。本轮不扩展 Trending；论坛仅核索引摘要，直接访问返回 403，未真实请求第 501/1000 页。`total_pages` 是响应分页信息，官方旧示例不代表当前目录规模，也不能单独作为可请求上限。
+
+2026-10-22 21:22 独立范围与进度保留已部署；21:34只读复核5条原自动任务及范围配置保持不变；[原验收摘要](evaluation/crawl-resource-links-20261022/validation-summary.json)、[发布与恢复](history/releases.md#earlier-releases)。
+
+### 暂停全量，仅检查更新
+
+- `tmdbAutoSyncUpdatesOnly` / `gyingAutoSyncUpdatesOnly` 对应 `resource.hub.{tmdb,gying}.auto_sync_updates_only`，默认 false。自动开关与更新模式同时开启后，每个平台聚合所选榜单前 2 页，每轮至少隔 24 小时，累计详情尝试最多 10 次。
+- 使用独立 `METADATA_SYNC` / `keyword=UPDATES` / `crawl.mode=UPDATES`；旧 RANGE 范围和游标保留且待执行 RANGE 在 SQL LIMIT 前被过滤。关闭自动开关同时暂停范围和更新检查；手动元数据任务保留原行为。
+- 首次仅可信 TMDB canonical 身份或精确 GYING 完成凭证可跳过详情；以后按身份与列表语义摘要去重，排名、热度、评分变化不重复采集。未处理或失败项跨日保留，即使已离开榜单前页也不丢失；单项最多 3 次尝试。详情前保存累计预算，重试不重置同轮额度，取消/并发修改通过大小写敏感 CAS 保留。
+- 列表标题/年份/日期/季未变时，单纯集数、清晰度或资源变化仍由原手动刷新/追更路径处理。更新模式不会断言全部上游片库已采完；TMDB 的 500 页请求上限与 GYING 的前 1–2 页扫描范围不同于全站库存。
+- 11月15日16:16先暂停全量，固定1adbc33两应用上线后17:40已启用两个UPDATES与Worker。TMDB选择每日电影/剧集趋势及即将上映，GYING选择时间顺序电影/剧集/动漫；首轮两平台各10次详情尝试/10成功/0失败，可信完成基线34/259，pending61/19跨日保留。GYING自然归档夸克3项成功含4个torrent；百度2项成功、1项明确API拒绝待原策略重试。任务/上传检查点已验，次日行为及逐项官方hash/分享目录未代验。[本轮上线与证据](evaluation/metadata-update-watch-20261115/README.md)。
+- TMDB UPDATES只更新元数据；GYING UPDATES沿可信mid读取resources、保存P2P并按配置归档，torrent下载在归档阶段。其他来源按用户选择只整理，推荐TVmaze剧集增量与Wikidata中文/跨库ID补全，未接入；未来资源优先GYING可信搜索匹配方案见[来源建议](evaluation/metadata-update-watch-20261115/sources/README.md)。
+
+### GYING 六目录独立暂停
+
+- `HITS_MOVIE/HITS_TV/HITS_ANIME/CSCORE_MOVIE/CSCORE_TV/CSCORE_ANIME` 各有独立暂停标记，缺配置默认为 false；保留现有范围、来源选择及页内偏移，不新增 50 页限制。
+- `PUT /api/admin/resource-hub/gying/sources/{source}/pause` 只接受布尔字段 `{ "paused": true|false }`，只持久化对应 `resource.hub.gying.auto_sync_paused.{source}`。暂停按钮单独提交，不重发整份配置；恢复仍须满足 Resource Hub/Worker/GYING 自动采集总开关。
+- Worker 跳过该目录的新自动排队，在队列 LIMIT 前排除其 `crawl.mode=RANGE` 的待执行元数据任务，并在执行前复检；不重写排队任务状态、attempts、scheduled_at 或 payload/crawl。已经开始的批次允许正常结束，恢复后沿保留位置续采。
+- `config.gyingAutoSyncPausedSources` 返回六个布尔标记；采集进度显示 `PAUSED` 并保留范围、nextPage/nextItem 与 taskId，该显示不修改数据库任务状态。手动单页元数据、TMDB、单条隔离重试及独立周榜沿用各自开关。
+
+### 电影目录 AI 辅助识别
+
+夸克电影转存先沿用确定性目录识别。完整目录树仍无法确认时，才把程序筛出的已有单片叶目录和视频名交给本机 Ollama 指令4B；来源全名/合集系列上下文、连续中文与完整拼音缩写、年份和续集号先校验。模型只选择已有候选 ID；全名、年份、续集和允许范围复核后，重读整个祖先路径与叶目录 inventory，变化或证据不足即拒绝。
+
+`QUARK_DIRECTORY_AI_ENABLED` 默认 true，端点默认 `host.docker.internal:21434`，模型默认 `qwen3:4b-instruct-2507-q4_K_M`；仅允许本机端点，不传分享 URL、fid 或 Cookie。单并发、一次请求、最多20秒，响应16KiB/上下文4096；超时或无法确认仍停止转存。上传者的缩写不写入全站元数据别名。[本次修复与验收](evaluation/qq-prada-transfer-20261103/README.md)。
 
 ### 剧集自动追更
 
-- `quark-auto-save` 的任务按 `savepath` 区分 GYing 剧集/动漫目录；正常任务配置 `runweek: [1]` 后，每周一由全局计划自动检查来源分享并转存新增剧集文件。
-- `runweek: []` 表示明确禁用，`shareurl_ban` 表示平台封禁；这两类任务不在批量周更迁移范围内。
-- `update_subdir`、`pattern: "$TV_MAGIC"` 等原任务字段继续保留，确保新增文件按剧集目录和集数规则命名。
-- `update_subdir: ".*"` 会匹配每一级已存在的源/目标同名目录并递归检查新增文件；若某一级目录名不匹配，递归在该级停止。新集直接位于当前目录时仍按文件 `pattern` 检查。
-- 候选标题明确标注多季合集、全季或全集时，夸克跳过当前季子目录收窄并递归保存整个来源到剧名根目录；迅雷沿用整份来源的视频遍历转存。普通单季候选仍只保存对应季。
-- Resource Hub 的首次转存/手动重试直接传递任务列表，不等待周计划；来源更新后才由 `runweek` 负责周期追更。
+历史 quark-auto-save 任务按 savepath，runweek=[1] 周一；[] 明确禁用，shareurl_ban 封禁，不批量改这些任务。保留 pattern/$TV_MAGIC/update_subdir；`.*` 递归只进入同名层级，目录不匹配则停止。明确全季合集可保存完整来源到剧名根，普通单季仅保存目标季；迅雷遍历整来源视频。首次转存/手动重试即时执行，来源后续新增才由历史周期处理。
 
 ## 恢复与去重
 
 ### 失效资源单条修复
 
-管理员可调用 `POST /api/resources/admin/{id}/repair-invalid` 修复单条 `INVALID` 或 `SUSPECTED_INVALID` 的云盘资源。后端按资源 `provider` 分流夸克和迅雷，优先复用已有转存目录/任务原位生成新分享，更新原 `resource_link`，并在存在明确 GYING 影片映射时继续同步发布。
+`POST /api/resources/admin/{id}/repair-invalid` 仅 ADMIN、INVALID/SUSPECTED_INVALID，分 QUARK/XUNLEI，优先复用保存目录原位重分享。验收新 URL 可访问、url_hash 更新、link_status=NORMAL、任务状态与 GYING 返回；无明确映射可修成功但 gyingUpdated=false。批量返回 jobId，轮询 `/api/resources/admin/repair-invalid/jobs/{jobId}`。
 
-修复验收至少检查：新 URL 可访问、`url_hash` 已更新、`link_status=NORMAL`、对应转存任务状态和 GYING 返回结果。没有 GYING 映射时允许资源修复成功但 `gyingUpdated=false`；不得把第三方原始链接直接写入正式资源。批量 `POST /api/resources/admin/repair-invalid` 仍返回 `jobId`，必须轮询 `/api/resources/admin/repair-invalid/jobs/{jobId}`。
-
-- 空目录或分享失败先重跑原转存，仍失败时重新搜索并创建替代发现。
-- 同一影片避免重复原始 URL、自有分享和并行转存任务。
-- 失效资源优先原位更新；替代资源成功后归并关系并软停用重复行。
-- 历史影片合并先 dry-run，优先保留非 `tmdb_*` 的片库记录。
+空目录/分享失败先查原任务与远端结果再重跑；替代资源成功后迁移关系/软停重复。按影片+URL/自有分享/在途任务去重。影片合并先 dry-run，优先保留非 tmdb_* canonical；禁止批量重置 UNKNOWN/历史失败。
 
 ## 管理界面
 
-`/admin/resource-hub` 提供：
+网盘发现、转存、自有分享及 GYING 发布的独立配置和百度待接入入口见[网盘工作流](cloud-drive-workflows.md)。该能力的代码、测试和上线状态按专项交付记录区分。
 
-- 服务和 Worker 状态、批量限制与运行配置。
-- 近 24 小时 TMDB 同步、任务失败、资源发现和入库统计，以及最近/下次采集时间。
-- TMDB 手动同步、单片搜索和任务列表。
-- 发现结果筛选、时间排序、可点击链接与批量发布/重试/发 QQ。
-- 缺网盘资源影片检查，以及 GYING/PanSou 补全。
-- 失效检测、重分享和重复数据 dry-run 清理。
+/admin/resource-hub：配置/采集进度、任务/发现筛选、批量发布/重跑/频道、缺资源补全、失效修复和 dry-run 清理。/admin/gying-source 独立；真实发帖/转存不是只读验收。
 
-GYING 站点工作流单独位于 `/admin/gying-source`，接口细节见 [API 文档](api.md)。
+搜索资源自有结果按网盘、磁力、种子和在线资源分组；网盘托管的种子归档标明不含视频。网页保留二维码并显示可点击链接，长地址仍可点击；历史地址经过协议校验。2026-10-22 21:22 已部署；公网页面/静态资源配合mock API验收通过，真实转存/下载未执行。
+
+### GYING 单条隔离重试
+
+- METADATA_ITEM_RETRY 仅元数据/P2P，每分钟最多一条到期项；30 分钟退避、最多 3 次，大小写身份 SHA-256 去重。耗尽保留，不重置次数；自然目录轮回仍会再检查影片。
+- 重试读取精确 ID 的最新主创/标题/年份/季，保留原失败阶段。Resource Hub/Worker/GYING 自动采集任一关闭不运行，启动恢复仅本类型。
+- SUCCEEDED 且 crawl.deferred>0 仅代表失败已隔离；通过 itemRetryTaskIds 追踪。严格匹配不降阈值；同名差一年须演员/导演独立证据；季冲突待审，四位片名数字不当季锚点。
+- 10 月 8 日已部署；自然失败隔离尚未实证，不制造生产失败。[历史](history/releases.md#earlier-releases)、[完整原文](history/README.md#git-history)。
+
+## 手动确保与按ID修复
+
+2026-10-23已部署ensure和按影片/资源id修复共用的双盘有效性判断：有效资源才跳过，失效优先在保存目录原位修分享，不确定待核验，P2P元数据同步沿用来源身份。按provider验证自有分享可访问、link_status与任务结果；排队/HTTP200不代真实资源恢复。测试/回退见[补齐验收](history/releases.md#manual-completion-20261023)；10月23仅完成模拟API与入口验收，没有真实转存/发布。
+
+## 全库重复审核
+
+管理界面提供“一键去重”：扫描全部候选分页，预选名称与人物共同支持且影片 ID 不与其他候选组重叠的记录，按每批最多 20 对调用后端预览并移除阻断项。确认窗口展示保留方向、双方正常资源数量、关联影响及跳过原因；管理员核对全部记录并确认后依次执行。仅名称匹配和重叠候选保留人工审核；原“扫描全库重复影片”仍支持自行选择保留项、预览和逐组确认，不默认全选。扫描不完整或分页结果变化时停止准备；审核过期或后续批次失败时停止执行，已完成影片数量保留，未知响应仅用原审核与原幂等键重试。
+
+详情、资源与收藏可解析永久旧 ID 别名；资源、来源、转存/发现任务与日志、评论和影片通知迁移，收藏冲突保留原历史。源影片软删除，历史网盘文件不清理。活跃或 UNKNOWN 任务、临时清理绑定、身份矛盾及唯一约束冲突阻断对应批次；安全检查通过仍需确认同片身份。完整契约见[重复影片合并](duplicate-movie-merge.md)，实际部署与验证见[当前状态](current-project-status.md)。

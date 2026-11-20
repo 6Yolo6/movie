@@ -1,0 +1,55 @@
+{
+  "collectedAt": "2026-11-08T15:40:44.053911+00:00",
+  "markdownLinksChecked": 180,
+  "brokenLinks": [],
+  "sourceFilesFrozen": true,
+  "review": {
+    "targetedIssues": 2,
+    "resolved": 2,
+    "blockingFindings": 0,
+    "scope": "Read-only code and regression review; not live provider validation"
+  },
+  "nodeHelper": {
+    "tests": 11,
+    "passed": 11,
+    "failed": 0,
+    "scope": "Offline browser/session fixtures"
+  },
+  "pythonFixtureSafety": {
+    "tests": 7,
+    "passed": 7,
+    "failed": 0
+  },
+  "apiInventoryCounts": {
+    "controllerCount": 26,
+    "mappingAnnotationCount": 184,
+    "routeCount": 184
+  },
+  "backend": {
+    "totals": {
+      "tests": 1141,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "passed": 1140
+    },
+    "realSqlVerified": true,
+    "separateJava17CompileVerified": true,
+    "sourceFiles": 379,
+    "sourceManifestSha256": "1e21835d76c92f1ee0ca1fc39b8f3a3a35d64968d1db9470f719c251dec1bd8d",
+    "sourceMismatches": 0,
+    "fixtureContainersRemoved": true,
+    "report": "../backend-tests.json"
+  },
+  "apiInventorySha256": "1de5c343108adcad354918adf7ed34c7ef2324ac08fadeff88e9449e27af370e",
+  "statusRequiredSectionsVerified": true,
+  "diffWhitespaceVerified": true,
+  "updatedAt": "2026-11-08T15:53:03.531328+00:00",
+  "backendCandidate": {
+    "imageId": "sha256:ef4cdaf146d4af070968ca058fe159aa3f1ddf397d60ea6e1c2789fc8c1c002f",
+    "jarSha256": "f140914a7bf2ee9971d5240706c96be8271de5041c9e1a60f0d70dfdd7c0fec5",
+    "sourceSha256": "de27c44963c121277b46f7a379ec0fa12f77747a5d761617e894aa29cc9db282",
+    "verifiedClassResources": 395,
+    "deployed": false
+  }
+}

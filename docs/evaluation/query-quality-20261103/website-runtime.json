@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 2,
+  "collectedAt": "2026-11-03T14:03:01.923003+00:00",
+  "observationWindow": {
+    "startedAt": "2026-11-03T13:53:54.960937+00:00",
+    "completedAt": "2026-11-03T13:55:10.868131+00:00"
+  },
+  "transport": "authenticated-website-api",
+  "origin": "http://127.0.0.1:80",
+  "candidateDeployed": true,
+  "plannedCases": 2,
+  "plannedTurns": 4,
+  "inferenceSubmissions": 4,
+  "inferenceRetries": 0,
+  "caseIds": [
+    "dev-v3-06",
+    "dev-v3-09"
+  ],
+  "repeat": 1,
+  "browserUiCovered": false,
+  "passwordLoginVerified": false,
+  "independentHoldout": false,
+  "newHumanReviews": 0,
+  "authenticationMethod": "operator-provisioned-short-lived-USER-device-session; password-login-not-tested",
+  "authorizedUser": {
+    "id": 2,
+    "username": "test",
+    "role": "USER"
+  },
+  "runtimeBefore": {
+    "at": "2026-11-03T13:53:55.168312+00:00",
+    "movieBackendImage": "sha256:f2b7361bc19b547611ed4e963105b9e1d38648de44a0cae4407e1e1bf30d4a44",
+    "frontendImage": "sha256:f16cb8f1440681ef2fd2f3e2d508f7745b8c509bb6e96ce36592e9221291c841",
+    "agentJarSha256": "055f1bdc4bc8d52b8e9c2330d8a3937085d6043f96323cc2461db16f71d75eda",
+    "storedAgentIdentity": {
+      "processId": 38460,
+      "instanceId": "7d5364c2-a479-4451-b632-68cbde0afffa",
+      "startedAt": "2026-11-03T13:11:57.8571364Z"
+    }
+  },
+  "runtimeAfter": {
+    "at": "2026-11-03T13:55:10.640611+00:00",
+    "movieBackendImage": "sha256:f2b7361bc19b547611ed4e963105b9e1d38648de44a0cae4407e1e1bf30d4a44",
+    "agentJarSha256": "055f1bdc4bc8d52b8e9c2330d8a3937085d6043f96323cc2461db16f71d75eda",
+    "storedAgentIdentity": {
+      "processId": 38460,
+      "instanceId": "7d5364c2-a479-4451-b632-68cbde0afffa",
+      "startedAt": "2026-11-03T13:11:57.8571364Z"
+    }
+  },
+  "backendAgentBindingsUnchanged": true,
+  "frontendImageIndependentlyRecheckedAfterWebsiteRun": false,
+  "liveProcessArgvIndependentlyVerifiedDuringWebsiteRun": false,
+  "backendArtifactBinding": {
+    "reviewedJarSha256": "1b8a09d55b13c21b00b4bc4cbad730576e249a6d8222554518b216cf6bd494cd",
+    "exactReviewedImageMatchedBeforeAfter": true,
+    "backendJarBytesIndependentlyReadDuringWebsiteRun": false,
+    "deploymentReceiptSeparatelyVerifiedByParent": true
+  },
+  "agentDeploymentEvidence": "agent-deployment.json",
+  "postRunReadOnlyHealth": {
+    "at": "2026-11-03T13:58:22.761767+00:00",
+    "readOnly": true,
+    "inferenceSubmissions": 0,
+    "probes": [
+      {
+        "url": "http://127.0.0.1:80/",
+        "httpStatus": 200,
+        "readBytes": 67978
+      },
+      {
+        "url": "http://127.0.0.1:80/api/movies/list?page=1&size=1",
+        "httpStatus": 200,
+        "readBytes": 1949
+      },
+      {
+        "url": "http://127.0.0.1:5000/api/health",
+        "httpStatus": 200,
+        "readBytes": 65
+      }
+    ],
+    "allHttp200": true
+  },
+  "accountBefore": {
+    "id": 2,
+    "role": "USER",
+    "enabled": 0,
+    "username": "test",
+    "activeDevices": 0
+  },
+  "accountCleanup": {
+    "rows": [
+      {
+        "revokedRows": 1
+      },
+      {
+        "disabledRows": 1
+      }
+    ],
+    "state": {
+      "id": 2,
+      "role": "USER",
+      "enabled": 0,
+      "username": "test",
+      "activeDevices": 0
+    },
+    "passwordUnchanged": true,
+    "originalDisabledStateRestored": true,
+    "oldDevicesNotReenabled": true,
+    "cleanupAt": "2026-11-03T13:55:10.839053+00:00",
+    "evaluationTokenHttpAfterCleanup": 401
+  },
+  "testAccountCleanupVerified": true,
+  "temporaryCredentialFileRemoved": true,
+  "newRestrictedRowBackup": {
+    "scope": "two tables restricted to test userId2; encrypted row backup, not full database snapshot",
+    "at": "2026-11-03T13:53:54.821981+00:00",
+    "files": [
+      {
+        "name": "sys_user.sql.age",
+        "size": 1803,
+        "sha256": "17f122ef5ba8942a517a99c3c26a96e2d42af3b1864268bf92aea799b2b85a74",
+        "authenticatedDecryption": true
+      },
+      {
+        "name": "login_device.sql.age",
+        "size": 4272,
+        "sha256": "46e797845829c573a71fe5eeab7ab9b570fe5ff604c15227dacb4f9ce0533702",
+        "authenticatedDecryption": true
+      }
+    ],
+    "sqlRestored": false,
+    "isFullApplicationRollbackCheckpoint": false
+  },
+  "hashProtocol": {
+    "reviewSchemaVersion": 2,
+    "runnerReportSchemaVersion": 1,
+    "canonicalJson": "json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(comma,colon)).encode(utf-8), then SHA-256",
+    "reportAndAnswerBindingsUseCanonicalJson": true,
+    "fileHashesUseActualBytes": true
+  },
+  "reportByteSha256": "da50298bff1fc6136862b35c418f5e2b056f91ce7666d63ede5ee06c630fc820",
+  "reportCanonicalSha256": "f027788aaf70e9968ec1830885554ab06cb2324dce7878480cec8249076273fc",
+  "privateObservationsByteSha256": "f220396c171959ac36da32d96e4aa8adae87ed36fc66137e6473641e4c107cc5",
+  "privateObservationsPath": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\post-deployment-website-targeted\\website-live\\observations.json",
+  "privateRequestLedgerByteSha256": "0b345eb5c838d756969fb7fe7f191cbcc2636fd4229090073df92aa0edb3e862",
+  "privateEvidenceDirectory": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\post-deployment-website-targeted",
+  "sourceFileByteSha256": {
+    "website-live/report.json": "da50298bff1fc6136862b35c418f5e2b056f91ce7666d63ede5ee06c630fc820",
+    "website-live/observations.json": "f220396c171959ac36da32d96e4aa8adae87ed36fc66137e6473641e4c107cc5",
+    "website-live/request-ledger.json": "0b345eb5c838d756969fb7fe7f191cbcc2636fd4229090073df92aa0edb3e862",
+    "website-live/runtime-before.json": "86baaab6e84586fab09c64d3efbd380388045e27aa8d125a6313dd132f4c315e",
+    "website-live/runtime-after.json": "13a3f2e26e2a7fbdf5a5a5ccddfc2a260fdc7bfc0b0a02b8ddc6938d7ac92d6d",
+    "website-live/runner.log": "79b36d94ed60ef24b1351bc97ec3f703a482106b1032fcbb9224e8f1f2189345",
+    "website-account-operation.json": "2149d231434fb8b905ba063487bc381a95fb6edbc6ad81d892af46c526c1f167",
+    "test-account-checkpoint/manifest.json": "881bbfdf05a0cda790d454cea7783204b38bb19571cc256708af672a1e967e7a",
+    "website-health-after.json": "db253389729600f0c0cc660976c74dbd24e93cde9dd88516026fc43db455e73a",
+    "WebsiteTestMaintenance.py": "a215cab3ad3b280d15c3cad8eccbb53ed39bb466335e774b0e70f374de87f987",
+    "RunTargetedWebsite.py": "8e232bea8a1363af6e14f06dbe7c71a9c344bbe6dcc77e4557e92f604a5122a7",
+    "config.json": "198193782ac48d46f5e4cd57518d6637a3ac9f170e4dee32f2bd4879ad7e7c42",
+    "cases.json": "1a75e3f9a1bfd38132c51d52099d7381af2f98af9017379e4a887c8204d8dee7",
+    "freeze.json": "77d2a07d7d289f0400bc3287f260c01633e422e70f1112e947d078be921c1c7f"
+  },
+  "limitations": [
+    "These four previously observed development questions are targeted post-deployment checks, not an independent improvement study.",
+    "Live catalog, preferences and model outputs are not frozen.",
+    "The same temporary USER session and fresh linked server jobs were observed; cross-owner rejection and natural 900-second expiry were not tested in this run.",
+    "Submitted history and server references agree; this run does not isolate server-stored context from forged client history.",
+    "Movie identity and outside factual claims are not inferred from mv/genre fields or mechanical passes.",
+    "The website helper checks stored Agent identity and immutable JAR; independent live argv verification belongs to separate deployment evidence.",
+    "No password login or browser UI was exercised.",
+    "Security gates G01-G11 remain unclosed; deployment authorization is a limited exception."
+  ],
+  "modelOrLatencyImprovementClaimed": false,
+  "applicationRollbackExecuted": false
+}

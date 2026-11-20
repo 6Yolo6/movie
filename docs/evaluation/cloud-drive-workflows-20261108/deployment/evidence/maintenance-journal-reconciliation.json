@@ -1,0 +1,25 @@
+{
+  "status": "verified-health-only-journal-reconciled",
+  "completedAt": "2026-11-08T14:28:37.778990+00:00",
+  "path": "G:\\gying-tools\\restart-20261018\\state\\20261108-093020\\state.json",
+  "phaseBefore": "recovery_failed",
+  "phaseAfter": "recovered",
+  "beforeSha256": "75d89474a8d2387ce9a9c3f2ee908e4e5868a920d6eae0e8bcb1e8062f88833e",
+  "afterSha256": "4e0a8c8732f7d1b254940f9ddb654d534a95d2765b7ac17f1e40edcaac3150a6",
+  "originalHealthErrorAndRecoveredAtRetained": true,
+  "freshConfiguredDirectHealth": {
+    "http://127.0.0.1/api/movies/list?page=1&size=1": true,
+    "http://127.0.0.1:20241/ready": true,
+    "https://gyinghub.dpdns.org/": true
+  },
+  "authenticatedOriginalCheckpoint": {
+    "directory": "G:\\gying-backups\\cloud-drive-maintenance-journal-before-20261108-20261108T142834.262157Z",
+    "artifacts": 1,
+    "authenticated": true,
+    "manifestSha256": "e6a57e6671f8f1e5afff868edf1cdd719aa6d9f98e2038687307a39718d241cd"
+  },
+  "servicesRestarted": false,
+  "queuesResetOrDeleted": false,
+  "pendingMaintenanceAfter": 0,
+  "applicationDeploymentPerformed": false
+}

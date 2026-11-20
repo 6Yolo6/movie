@@ -1,0 +1,412 @@
+{
+  "schemaVersion": "gying-backend-deployment-independent-v1",
+  "status": "deployed-and-independently-verified-local",
+  "reviewer": "review_candidate_quality",
+  "scope": "Read-only independent post-deployment verification. One evidence JSON written; no deployment, data restore, helper edit, staging or commit.",
+  "runtimeAndSource": {
+    "observedAt": "2026-11-03T13:54:37.487194+00:00",
+    "readOnly": true,
+    "expectedCommit": "13660c92735af71e01782e529a82051f92936e2d",
+    "sourceBindingIndependent": {
+      "sourceOrigin": {
+        "kind": "tested-immutable-snapshot-and-pinned-git-commit",
+        "candidateSourceRoot": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\reviewed-role-boundary\\movie-build-final\\backend",
+        "manifestPath": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\backend-deployment\\backend-source-manifest.json",
+        "manifestByteSha256": "1b61df539092b4e88d98360ac9e9e09db47f58ebfedf669240b5d5436b3f90a5",
+        "sourceCanonicalSha256": "90a1533dffaf5aa9221b57972d243ba53188298b670b276cedfe3fa84a45ec3a",
+        "pinnedCommit": "13660c92735af71e01782e529a82051f92936e2d",
+        "fileCount": 349,
+        "snapshotRawFileHashesVerified": true,
+        "completeSnapshotAndGitInventoryVerified": true,
+        "gitContentNormalization": "CRLF to LF only; all other bytes must match",
+        "gitNormalizedInventorySha256": "b4645ca066a927eab0523f348a8f59082f1bcb77ada03e7eab953e9401450e3a"
+      },
+      "workingTreeChangesExcluded": true,
+      "workingTreeCandidateSourceUsed": false,
+      "runtimeEnvAndComposeWorkspace": "D:\\gying-movie\\movie",
+      "expectedJarSha256": "1b8a09d55b13c21b00b4bc4cbad730576e249a6d8222554518b216cf6bd494cd",
+      "expectedImageId": "sha256:f2b7361bc19b547611ed4e963105b9e1d38648de44a0cae4407e1e1bf30d4a44"
+    },
+    "runtime": {
+      "containerId": "706cd7c607971f2a047012e4fc3d8cdfc0e5abc59ed0327f4ec9f72b48c5ee19",
+      "actualImageId": "sha256:f2b7361bc19b547611ed4e963105b9e1d38648de44a0cae4407e1e1bf30d4a44",
+      "actualJarSha256": "1b8a09d55b13c21b00b4bc4cbad730576e249a6d8222554518b216cf6bd494cd",
+      "running": true,
+      "oomKilled": false,
+      "restartCount": 0,
+      "startedAt": "2026-11-03T13:47:19.364061132Z",
+      "environmentSha256": "464bcc60616ec8194d789605553b54081bc4de36f36b32b5cf614b6369f4a700",
+      "user": "gying",
+      "preservedCompactConfiguration": true,
+      "modelMatchesActualRuntime": true,
+      "onlyEffectiveComposeImageChanged": true,
+      "candidateEffectiveSha256": "8a338f0a0ca1390e2238e0fef889f5230b976b6b5dbd219b141d9114ab2b99c5",
+      "composeFiles": [
+        {
+          "path": "D:\\gying-movie\\movie\\docker-compose.prod.yml",
+          "sha256": "c8d02d1aa8b9675058310630e50d42b98fcb0416f785bf2170cb97d4a4e7b665"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-query-plan-v2-20261025\\deploy.json",
+          "sha256": "4fb44b3eabfa48e0070490cc4e12661077554418fcc91546b18895d3acfff261"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-recovery-20261029-1750\\rescue.json",
+          "sha256": "0e08ea892277b78eaefafd21b2e8e4db226de2246dd2dc6a7bb2628f6e371ec2"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-recovery-20261029-1750\\backend-candidate.json",
+          "sha256": "6fbe9c4e3a33570833f0499fc13ff35e3c7c9ae827628e21f51006ee60d6f5fc"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\metadata-source-pause-20261029\\candidate.json",
+          "sha256": "9031ac16cf9bb856d509cacadfba38380784246531d3a7dd69831cda68b1e12f"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\backend-quality-final.json",
+          "sha256": "b031903311c4e12d875dc078a1ac3c071280a5361c01869bff9c815c592ccd14"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\publishing-recovery-20261101\\candidate.json",
+          "sha256": "e94f089f6b70fd697c420ca6507159914493796578826e81caf44915ad7406fc"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\tmdb-empty-range-20261102\\candidate.json",
+          "sha256": "cf113c14d6242fe9f3614296f260b107c55586b139d3d602bfa1662dbaac58c0"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\backend-candidate.json",
+          "sha256": "5d01fac0cf0371f6bcfb63d6c7a3f9c91fdf42ea629efd740396f9a5aef31f29"
+        }
+      ],
+      "originalComposeFilesCount": 8,
+      "currentComposeFilesCount": 9
+    },
+    "unaffectedContainers": {
+      "independentBaseline": "runtime-before.json 12-character ID prefixes",
+      "count": 9,
+      "allSameIdPrefixAndRunning": true,
+      "containers": [
+        {
+          "name": "gying-movie-frontend-1",
+          "baselineIdPrefix": "163716fe61d2",
+          "actualContainerId": "163716fe61d2d115f082ce553ed58c551ddbc75c6efebd1b9d9090b1d47fb30c",
+          "running": true,
+          "restartCount": 0,
+          "startedAt": "2026-11-02T11:08:03.837359624Z",
+          "sameIdPrefix": true
+        },
+        {
+          "name": "gying-movie-social-publisher-1",
+          "baselineIdPrefix": "7cc7f5b50c33",
+          "actualContainerId": "7cc7f5b50c33ad61a0661ee9a6510cedd08244341017ee679666f63ae9368cf7",
+          "running": true,
+          "restartCount": 0,
+          "startedAt": "2026-11-01T13:45:26.156706042Z",
+          "sameIdPrefix": true
+        },
+        {
+          "name": "gying-movie-quark-auto-save-1",
+          "baselineIdPrefix": "745766c57b46",
+          "actualContainerId": "745766c57b469fda5fa6f582f4b105c59e37f93606176917be8f4e1782e880a6",
+          "running": true,
+          "restartCount": 0,
+          "startedAt": "2026-11-01T01:35:51.366632892Z",
+          "sameIdPrefix": true
+        },
+        {
+          "name": "gying-movie-gying-source-1",
+          "baselineIdPrefix": "711354de91c2",
+          "actualContainerId": "711354de91c2996ae1234bc3c0495f75fd5b1eb13b3f0f02af332a3a22fe0980",
+          "running": true,
+          "restartCount": 0,
+          "startedAt": "2026-11-01T01:35:52.944975605Z",
+          "sameIdPrefix": true
+        },
+        {
+          "name": "gying-movie-nginx-1",
+          "baselineIdPrefix": "597ccdf92236",
+          "actualContainerId": "597ccdf922360332f4601df99f350ff31f584203797bd19c651bd3ee87bb3d53",
+          "running": true,
+          "restartCount": 0,
+          "startedAt": "2026-11-01T01:36:13.781991987Z",
+          "sameIdPrefix": true
+        },
+        {
+          "name": "openclaw-openclaw-gateway-1",
+          "baselineIdPrefix": "552c8ca45d60",
+          "actualContainerId": "552c8ca45d600dce1d9cc704c6eeb091723b43bf8764b14132d6263fefc4125a",
+          "running": true,
+          "restartCount": 0,
+          "startedAt": "2026-11-02T14:55:52.332257647Z",
+          "sameIdPrefix": true
+        },
+        {
+          "name": "gying-movie-redis-1",
+          "baselineIdPrefix": "d1f7476316b6",
+          "actualContainerId": "d1f7476316b67709e937593676f43eb89ea19bc5619e48141575b22bde2a7d2c",
+          "running": true,
+          "restartCount": 0,
+          "startedAt": "2026-11-01T01:35:43.909785998Z",
+          "sameIdPrefix": true
+        },
+        {
+          "name": "gying-movie-pansou-1",
+          "baselineIdPrefix": "c4a5526d4b27",
+          "actualContainerId": "c4a5526d4b272e37c634cbeb27053400998ff208be9a06f4383d2c63fced069d",
+          "running": true,
+          "restartCount": 0,
+          "startedAt": "2026-11-01T01:35:49.813516013Z",
+          "sameIdPrefix": true
+        },
+        {
+          "name": "minio-server",
+          "baselineIdPrefix": "3d8b79bbac44",
+          "actualContainerId": "3d8b79bbac44b8a9baa780fb0f84a8244d456968344bb12232be33b45dbb3262",
+          "running": true,
+          "restartCount": 0,
+          "startedAt": "2026-11-01T01:35:47.509532767Z",
+          "sameIdPrefix": true
+        }
+      ],
+      "limitation": "Independent baseline contains ID prefixes, not full start/restart projections. Deployment helper separately asserts full unrelated identity/start/restart projection equality."
+    },
+    "logObservation": {
+      "from": "2026-11-03T13:47:19.364061132Z",
+      "to": "2026-11-03T13:54:42.095128+00:00",
+      "containerId": "706cd7c607971f2a047012e4fc3d8cdfc0e5abc59ed0327f4ec9f72b48c5ee19",
+      "timestampedLines": 21,
+      "matchedLineCounts": {
+        "ERROR": 0,
+        "Exception": 0,
+        "OOM": 0
+      },
+      "exceptionClassLineCounts": {},
+      "restartCountAtStart": 0,
+      "restartCountAtEnd": 0,
+      "oomKilledAtEnd": false,
+      "rawLogsPrinted": false,
+      "claimScope": "Only this observed startup-to-now window; no claim about future logs or long-term stability."
+    },
+    "status": "independent-runtime-source-configuration-checks-passed"
+  },
+  "checkpointAndDailyBackup": {
+    "status": "independent-checkpoint-and-daily-config-checks-passed",
+    "verifiedAt": "2026-11-03T13:55:30.901184+00:00",
+    "readOnly": true,
+    "finalCheckpoint": {
+      "directory": "G:\\gying-backups\\ai-query-quality-backend-20261103-20261103T134656.321321Z",
+      "manifestSha256": "bbb963c7f272318bd348bbaaa43bcc254338d12a7974f7847c57bfa815a93cdd",
+      "manifest": {
+        "status": "complete",
+        "createdAt": "2026-11-03T13:46:56.322325+00:00",
+        "scope": "backend fixed old image and effective configuration; gying SQL; backend data and queue key; application rollback retains live data and is guarded against new version2 requests",
+        "consistency": "Backend remains normally stopped throughout final SQL/data/key checkpoint; unrelated writers retained; not a cross-service atomic snapshot",
+        "files": [
+          {
+            "name": "backend-image.tar.age",
+            "size": 286875208,
+            "sha256": "ac1493c4beade429af09c380a2a1318ee9534ef3fac9dc4ae73996370d31916e",
+            "authenticatedDecryption": true
+          },
+          {
+            "name": "effective-config.tar.age",
+            "size": 153832,
+            "sha256": "f61fa54bcaa22772728dec4e1c11fe4d7b4a69809465c835732f4dea3e9951c6",
+            "authenticatedDecryption": true
+          },
+          {
+            "name": "mysql.sql.age",
+            "size": 102471606,
+            "sha256": "78df99d5014333cbf982ba77047d185fff8ec34121493ed97700840feb717c17",
+            "authenticatedDecryption": true
+          },
+          {
+            "name": "backend-data.tar.age",
+            "size": 8904,
+            "sha256": "8ceb9ba4fa79151eda0c29e985b18fd7281d47aa0a2befb142188406dec5ecb8",
+            "authenticatedDecryption": true
+          },
+          {
+            "name": "ai-state-key.tar.age",
+            "size": 2760,
+            "sha256": "bb204e8aa9b7ec5d072cc03959731a306f109d0335ff754ebc53a835cd0f4d8f",
+            "authenticatedDecryption": true
+          }
+        ],
+        "backendStopped": true,
+        "deploymentCheckpointReady": true
+      },
+      "independentFullAuthenticatedVerification": {
+        "verifiedAt": "2026-11-03T13:55:27.296513+00:00",
+        "plaintextArchivesWritten": false,
+        "productionDataRestored": false,
+        "configuration": {
+          "uniqueMembers": 22,
+          "contentHashesMatched": true
+        },
+        "images": {
+          "backend": {
+            "fixedImageRootDigestMatched": true,
+            "layersPresent": 10,
+            "contentAddressedBlobsVerified": 16
+          }
+        },
+        "mysql": {
+          "dumpBytes": 102446398,
+          "tableObjects": 25,
+          "completionMarkerPresent": true,
+          "singleTransaction": true,
+          "databaseImportPerformed": false
+        },
+        "backend-data": {
+          "regularFiles": 4,
+          "persistedQueueMemberRecovered": true
+        },
+        "ai-state-key": {
+          "regularFiles": 1,
+          "persistedQueueMemberRecovered": true
+        },
+        "queueRestore": {
+          "authenticatedFromBothBackedUpMembers": true,
+          "moviePending": 0,
+          "movieRunning": 0,
+          "localAgentStateRead": false
+        }
+      },
+      "existingOfflineVerificationSha256": "9233d419e1910cd4011dd4528695be804e85baf65a9db87cb3d8359927b8f7f3",
+      "offlineReportWriteIntercepted": [
+        {
+          "path": "G:\\gying-backups\\ai-query-quality-backend-20261103-20261103T134656.321321Z\\offline-verification.json",
+          "prevented": true
+        }
+      ],
+      "existingOfflineReportRetained": true
+    },
+    "pinnedHelperSupplementalCheckpoint": {
+      "directory": "G:\\gying-backups\\ai-query-quality-pinned-helper-20261103-20261103T134458.791036Z",
+      "archiveSha256": "f18fdd5c8b588e16e9257b6a9edc283f63885cf33eb9607b2bacfe64c4837c0c",
+      "manifestSha256": "db0a30c5ef0a7d8654f0d90b36970c31d63d8980ce577864e8a3b635d8aca341",
+      "fullyAuthenticated": true,
+      "contentHashesMatched": true
+    },
+    "pinnedHelperFrozenFileSha256": {
+      "DeployBackend.py": "02ebc9faf91eda5435edce0f89a4bf10e76cbbcde0e678535acc0133e1082745",
+      "DeployBackend.original-pre-pinned.py": "02ebc9faf91eda5435edce0f89a4bf10e76cbbcde0e678535acc0133e1082745",
+      "DeployBackendPinned.py": "ee94ee4522c09f023ff9b30931e7e9fdcd526cf6d3b590e802c5e6d7d5c812ad",
+      "PreparePinnedHelperCheckpoint.py": "a954b73a5c65dde0f97c0a42c7dcc5dfe288a64b38eccd35cf257fc392bd9098",
+      "source-binding-proof.json": "ec71982ea853614851b626dd4db2b2225f9aeb2a8246f9801b467c8c81957946"
+    },
+    "dailyBackup": {
+      "status": "applied",
+      "appliedAt": "2026-11-03T13:47:46.980315+00:00",
+      "addition": {
+        "name": "ai-query-quality-backend-runtime-20261103",
+        "path": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\backend-candidate.json"
+      },
+      "originalSha256": "f0c9d82e8b257290f32f391a714e82435eb06c5798c6a8b4f91b574ceecb9477",
+      "actualConfigurationSha256": "992021c8945e86f53053ee4635a80dedcd2416a042d7efc710ba98289526ab6e",
+      "proposedSha256": "992021c8945e86f53053ee4635a80dedcd2416a042d7efc710ba98289526ab6e",
+      "independentOnlyOnePathDeltaVerified": true,
+      "oldConfigurationCheckpointAuthenticatedAndExact": true,
+      "dryRunReceipt": {
+        "exitCode": 0,
+        "newOverlayIncluded": true,
+        "artifactCount": 26,
+        "backupExecuted": false
+      },
+      "dryRunReexecutedByReviewer": false,
+      "backupExecutedByReviewer": false,
+      "privateConfigurationValuesPrinted": false
+    },
+    "plaintextArchivesWritten": false,
+    "productionDataRestored": false
+  },
+  "localRealEntries": {
+    "observedAt": "2026-11-03T13:56:10.224342+00:00",
+    "checks": [
+      {
+        "name": "backendCatalogue",
+        "url": "http://127.0.0.1:8880/api/movies/list?page=1&size=1",
+        "status": 200,
+        "expectedShape": "records",
+        "shapeMatches": true,
+        "responseSha256": "6a6ef6091649ebcc8e32fc291d34e542cc9d981286bfaa3913968e5e2ab8acbe",
+        "bodyBytes": 1949,
+        "records": 1
+      },
+      {
+        "name": "nginxCatalogue",
+        "url": "http://127.0.0.1/api/movies/list?page=1&size=1",
+        "status": 200,
+        "expectedShape": "records",
+        "shapeMatches": true,
+        "responseSha256": "6a6ef6091649ebcc8e32fc291d34e542cc9d981286bfaa3913968e5e2ab8acbe",
+        "bodyBytes": 1949,
+        "records": 1
+      },
+      {
+        "name": "nginxHomepage",
+        "url": "http://127.0.0.1/",
+        "status": 200,
+        "expectedShape": "html",
+        "shapeMatches": true,
+        "responseSha256": "dd3c447854958a9b462721735deefd36077dfc6666998a6e4a86b473b2e686cc",
+        "bodyBytes": 67978
+      },
+      {
+        "name": "localAgentHealth",
+        "url": "http://127.0.0.1:5000/api/health",
+        "status": 200,
+        "expectedShape": "json",
+        "shapeMatches": true,
+        "responseSha256": "91880f23c911c489daf2275566a61d48be977a783cf7cc948250dcc61040f245",
+        "bodyBytes": 65
+      }
+    ],
+    "allPassed": true,
+    "scope": "Local real HTTP entries, no login, AI job enqueue, queue read, transfer or external publishing"
+  },
+  "nginxReloadObservation": {
+    "from": "2026-11-03T13:46:22.918789+00:00",
+    "to": "2026-11-03T13:56:56.484358+00:00",
+    "container": "gying-movie-nginx-1",
+    "timestampedLines": 125,
+    "events": [],
+    "SIGHUPReceived": false,
+    "rawLogsPrinted": false,
+    "reloadCommandReceiptAttribution": "DeployBackendPinned main calls nginx -t and nginx -s reload before passing local entry verification; commands are protected by C.run exit-code checking."
+  },
+  "limitations": [
+    "This evidence independently covers local real HTTP entries; parent separately owns the public entry report and four live website AI turns.",
+    "Original unrelated-container baseline contains 12-character IDs; full start/restart projection preservation is attributed to the frozen deployment helper.",
+    "Nginx container logs did not contain a SIGHUP event in this window; the reload command success is attributed to the successful frozen helper execution.",
+    "Observed startup-to-now backend logs are a short window, not evidence of long-term stability.",
+    "Deployment and structural execution success do not establish that all recommendation requirements or factual claims are satisfied.",
+    "Rollback retains current SQL/state/key; newly persisted requestHashVersion2 identities can cause 409 on old backend requestKey retries, so forward fix is preferred.",
+    "Known G01-G11 security failures remain outside this limited application deployment authorization."
+  ],
+  "deploymentReceipt": {
+    "path": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\backend-deployment\\deployment\\deployment-result.json",
+    "sha256": "36e797d1063bd807e7c7697abf05693f6f5ae1e97bccdf1d1922230208a54980",
+    "status": "deployed-local-verification-passed",
+    "startedAt": "2026-11-03T13:46:22.918789+00:00",
+    "completedAt": "2026-11-03T13:47:47.006751+00:00",
+    "affected": [
+      "backend"
+    ],
+    "pinnedCommit": "13660c92735af71e01782e529a82051f92936e2d",
+    "TERMReceipts": {
+      "backend": {
+        "id": "dfa8e1ce023006184d3b97765ef9c4a1251c924d62c7cd018fcc6f27c36291d4",
+        "image": "sha256:d7014158bbcd577ebf855837a5a045bdc3aa32f030d7d39518667b35dc8af1cf",
+        "exitCode": 143,
+        "finishedAt": "2026-11-03T13:46:49.711904139Z"
+      }
+    },
+    "unaffectedContainersPreservedByHelper": true,
+    "schemaChanged": false,
+    "liveDataStateKeyRetained": true
+  },
+  "writtenAt": "2026-11-03T13:57:46.924993+00:00"
+}

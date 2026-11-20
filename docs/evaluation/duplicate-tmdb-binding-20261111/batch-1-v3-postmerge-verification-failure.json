@@ -1,0 +1,15 @@
+{
+  "status": "STOPPED_PRESERVE_STATE",
+  "at": "2026-11-11T06:14:12.890779+00:00",
+  "batch": 1,
+  "exceptionType": "VerificationError",
+  "gate": "UNEXPECTED_ROW_DELTA_resource_link",
+  "subsetPostReserved": true,
+  "mergePostReserved": true,
+  "automaticRetry": false,
+  "automaticRestore": false,
+  "originalPrimaryPreviewReissued": false,
+  "nextAction": "Read-only verify only; never repeat any attempted request",
+  "cloudActions": 0,
+  "operatorDirectSqlWrites": 0
+}

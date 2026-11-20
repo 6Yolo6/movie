@@ -1,0 +1,16 @@
+{
+  "status": "STOPPED_NO_RETRY_PRESERVE_CURRENT_STATE",
+  "at": "2026-11-15T14:11:47.250637+00:00",
+  "stage": "execute",
+  "errorType": "Gate",
+  "hostSnapshotFailureCode": null,
+  "gate": "EXACT_BACKEND_STATE_AND_KEY_MOUNTS",
+  "reservations": [
+    "backend-term-reservation.json",
+    "deployment-reservation.json",
+    "worker-pause-reservation.json"
+  ],
+  "automaticRetry": false,
+  "automaticSqlRestore": false,
+  "oldTasksReplayed": false
+}

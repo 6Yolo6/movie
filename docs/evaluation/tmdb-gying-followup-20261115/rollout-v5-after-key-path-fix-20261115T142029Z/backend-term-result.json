@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-15T14:27:33.354427+00:00",
+  "id": "8e057ae38fdc9af3454c59376af38900c242036696df6dd2ab62730c5620b346",
+  "signalProof": {
+    "signal": "SIGTERM",
+    "pid1": "java",
+    "receiver": "handler"
+  },
+  "waitExitCode": 143,
+  "inspectedExitCode": 143,
+  "exitObserved": true
+}

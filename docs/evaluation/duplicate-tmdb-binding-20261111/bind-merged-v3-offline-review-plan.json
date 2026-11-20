@@ -1,0 +1,352 @@
+{
+  "status": "OFFLINE_REVIEW_DESIGN_READY_V3_NOT_IMPLEMENTED_OR_EXECUTED",
+  "at": "2026-11-11T07:51:34.636801+00:00",
+  "reviewer": "review_data_helpers",
+  "boundary": {
+    "productionRuntimeIo": 0,
+    "credentialReads": 0,
+    "decryption": 0,
+    "childProcesses": 0,
+    "productionSqlReads": 0,
+    "productionSqlWrites": 0,
+    "productionPosts": 0,
+    "cloudActions": 0,
+    "gitActions": 0
+  },
+  "v2FrozenInputs": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BindMerged.py",
+      "bytes": 36313,
+      "sha256": "642c57dce96302d973010ec5e4b14860b6a4830aeed354faae72d062e268e599"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BindMergedV2.py",
+      "bytes": 37880,
+      "sha256": "647f4c1a09a96c630ac5674112f680ab20fffde6e9be8853076e9cf1830c5b2c"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BindMergedV2DiagnosticTests.py",
+      "bytes": 2707,
+      "sha256": "ba04e6be45bc3f551ca400f8fa5747185d17cb0af870db27fd64728669c451d9"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\bind-merged-v2-derivation.json",
+      "bytes": 1830,
+      "sha256": "74653e645ab86e0d65111670084278c4381f2ea1a6fa751271c6c376fadafafe"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\bind-merged-v2-offline-review.json",
+      "bytes": 2495,
+      "sha256": "4b75b567c7c72e3fdb9c86a79bccecb1130311c215188479611b5d3e070e061e"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\bind-merged-v2-readonly-schema-order.json",
+      "bytes": 1922,
+      "sha256": "81c9596e904199a524706d848b808671a78dc185cb90ab5839e77629a78887bd"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\mobland-binding-original-prepare-failure.json",
+      "bytes": 564,
+      "sha256": "7d44a7953ff0efcc71bd822431af5a5f1edc65f14619c91d9f25ba611e5e2b03"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\mobland-binding-prepared.json",
+      "bytes": 7304,
+      "sha256": "53e3d3631b1f08a988f0cafdf5b9dbc6a683420419747c6a9634024f715cb696"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\mobland-binding-rows-before.json.age",
+      "bytes": 74271,
+      "sha256": "8604c8448286daa120e456ba78e7e3fa446de91338e1f9e398de885ec767cc49"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\mobland-binding-apply-reservation.json",
+      "bytes": 320,
+      "sha256": "7c750d55a4682d6e69c4fdecd6f06d5cc5866d9275d2b0014624b984d1ef5cc3"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\mobland-binding-apply-result.json",
+      "bytes": 969,
+      "sha256": "df142f531c54a5be4f891f4313a8bd94833e67cb66b42abd9489b957069678db"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\mobland-binding-read-only-verification-3324ea6160094481899bde78ca42a7f9.json",
+      "bytes": 372,
+      "sha256": "743f4bfcd6e9409a9eb2fdbbf90ef379c3cd0f22bd04be81d94676d3a3b08041"
+    }
+  ],
+  "actualV2Outcome": {
+    "preparedSha256": "53e3d3631b1f08a988f0cafdf5b9dbc6a683420419747c6a9634024f715cb696",
+    "applySha256": "df142f531c54a5be4f891f4313a8bd94833e67cb66b42abd9489b957069678db",
+    "readOnlyVerificationSha256": "743f4bfcd6e9409a9eb2fdbbf90ef379c3cd0f22bd04be81d94676d3a3b08041",
+    "status": "NOT_APPLIED_EXACT_PREIMAGE_VERIFIED",
+    "updateAttempted": false,
+    "commitAttempted": false,
+    "outcomeUnknown": false,
+    "fullBeforeSha256": "f243970d6ea9a230fe5e8174ceae149ab9abc46a35a2e98f57f499b8ef95f752"
+  },
+  "officialDocumentation": [
+    {
+      "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.0-en/innodb-locking-reads.html",
+      "retrievedBodySha256": "d8479660b33f6bde07d9d605d9f1f578277b7f641dde15779e9c2156a31e1e93",
+      "summary": "MySQL 8.0.22 and later permits FOR SHARE with SELECT alone; locking reads require a transaction, and their locks persist until commit or rollback."
+    },
+    {
+      "url": "https://docs.oracle.com/cd/E17952_01/mysql-8.0-en/innodb-locks-set.html",
+      "retrievedBodySha256": "678a1e3abf761499e01a80ed4df53fdffa0d29fb0ad461d6e13ad85643158d2a",
+      "summary": "Locking scans normally protect index records and gaps with next-key locks; isolation and the chosen index determine the actual locked range."
+    }
+  ],
+  "proposedV3Policy": {
+    "isolation": "SERIALIZABLE",
+    "sameConnectionThroughBothSnapshotsUpdateAndCommit": true,
+    "updateScope": {
+      "canonical": "1YKW",
+      "fields": [
+        "tmdb_id",
+        "tmdb_type"
+      ],
+      "updatedAtPreserved": true,
+      "maxUpdateStatements": 1,
+      "maxCommits": 1
+    },
+    "lockProjectionCount": 25,
+    "exclusiveMetadataProjectionCount": 2,
+    "sharedProtectionProjectionCount": 23,
+    "joinedThirdOwnerProjection": "Entire joined query FOR SHARE without OF; source and canonical remain excluded and the canonical is already locked exclusively by the main metadata query.",
+    "staticInference": "The joined rows are protection only; their shared locks and the independent namespace and metadata owner locks retain the preimage constraints without requiring exclusive identity locks.",
+    "forbidden": [
+      "OF aliases",
+      "SKIP LOCKED",
+      "NOWAIT",
+      "READ COMMITTED",
+      "grants changes",
+      "credentials rotation",
+      "old V2 output reuse or overwrite",
+      "automatic retry",
+      "automatic restore",
+      "remerge",
+      "identity writes",
+      "cloud actions"
+    ],
+    "credentialRule": "Use only the existing application DB identity after an authenticated, separately retained read-only privilege proof establishes all required full-column SELECT and metadata UPDATE privileges, including updated_at. The maintenance identity has no metadata UPDATE and must not be granted it.",
+    "freshGeneration": "Independent V3 prepare/ciphertext/reservation/result/verification names; freeze every V2 input and actual failed result. Fresh V3 baseline must exactly equal the authenticated V2 before projection."
+  },
+  "syntheticProjectionInventory": [
+    {
+      "index": 1,
+      "table": "movie_metadata",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR UPDATE",
+      "syntheticUnlockedSqlSha256": "a70d5930482e9e1a8c9149956828a93b5dcbca39f6e182869933478f3f48e26a"
+    },
+    {
+      "index": 2,
+      "table": "movie_merge_alias",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "32e1f8c2d9dcfe133fce48911a1ae904ec0228405a0c5d0a1680de789cd67628"
+    },
+    {
+      "index": 3,
+      "table": "baidu_temporary_cleanup_job",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "ebd34a3f13dc6e5ddae67fba326501adeca3c95ef9bf48572c3561ba9fd84d2c"
+    },
+    {
+      "index": 4,
+      "table": "baidu_transfer_task",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "dbfd0ed9075601dd4639c5347f8c595af0e0277bf0b74e6da996ecc440f96005"
+    },
+    {
+      "index": 5,
+      "table": "movie_source_identity",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "e52b5cce564de22a0f90a6ce6303d21aa7e364a57863929d864f727904c21876"
+    },
+    {
+      "index": 6,
+      "table": "qq_bot_search_log",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "3fc15952b073c104ca2f86d9aa9b35c1a723cda07de0c3870e37591fe8575976"
+    },
+    {
+      "index": 7,
+      "table": "qq_channel_post_log",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "2dc6bd9b8528294d675da374a73696353929e05761975cf98cba98ba46a6e16a"
+    },
+    {
+      "index": 8,
+      "table": "qq_transfer_cleanup_job",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "ab2a615bcfddd8e61065b6f95a9f119418ce121f5cbb9565a8f54957804179bf"
+    },
+    {
+      "index": 9,
+      "table": "quark_transfer_task",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "661f3a92a2b37c4d9f72be4e19d7e6dd0b9f3f080932425d1b16583a10c0feff"
+    },
+    {
+      "index": 10,
+      "table": "resource_discovery_result",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "da6f4e011771c05b5371fb85bf727c642fe5d2a35163a96b6539ace7d6970e12"
+    },
+    {
+      "index": 11,
+      "table": "resource_hub_task",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "996e2a0421ec514289a52eac5a7212e9c159c092d2f872a17e480130610db6dc"
+    },
+    {
+      "index": 12,
+      "table": "resource_link",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "e62bb77a6953ec4bc9d275e05af5f4faf4672404f46d0c05023ddd3e470f090f"
+    },
+    {
+      "index": 13,
+      "table": "resource_operation_log",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "7ee994313f0df169a8265931194e9c4e99c7d0393fc65527a7e03d6b4b45a6bc"
+    },
+    {
+      "index": 14,
+      "table": "social_post_log",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "2db54c153c1b1c4bde916be9ebe7601ed7cc31921c2a70a07079ee33ecdf1ab2"
+    },
+    {
+      "index": 15,
+      "table": "user_favorite",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "0f9b0eb6b8ba9dc616af186223185fc3f903be281369205fa753ce90541cf3aa"
+    },
+    {
+      "index": 16,
+      "table": "xunlei_transfer_task",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "c22628bd58e61fb68058d12d58abec421ee5f51f963a065c923ceff79022bb94"
+    },
+    {
+      "index": 17,
+      "table": "comment",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "9e6149d0f1f6808ec32be5c24ea3b44cfe9f3610b0280e56da74a58b310999b0"
+    },
+    {
+      "index": 18,
+      "table": "user_notification",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "447176564db58ac69c44a461721cccd8004dfc523b5258f11d1987b9aea0a6e2"
+    },
+    {
+      "index": 19,
+      "table": "sys_config",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "711e8e9ca554f020119483ea0ad6f016af06955f65c59528278cbbf2d425fc21"
+    },
+    {
+      "index": 20,
+      "table": "movie_duplicate_review",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "fc34c34c6585c37efb3f99253da28542a0743e1de55c26246ea73c4327e6ad96"
+    },
+    {
+      "index": 21,
+      "table": "movie_merge_reference_history",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "ce7d203ae05e086d97483b4e0292dc0ea14e7c36c4fa402b7bf6d9a1e95ec7d9"
+    },
+    {
+      "index": 22,
+      "table": "movie_merge_favorite_history",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "463c9b3b8e2b479626b5161917415b43b95d61a6074b5fc34a3270854201fb31"
+    },
+    {
+      "index": 23,
+      "table": "movie_source_identity",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "2f6e558c0767cff66b31198cafbba59adf59b6e366cd064f466f0128c337a8cc"
+    },
+    {
+      "index": 24,
+      "table": "movie_metadata",
+      "joinedIdentityOwnerCheck": false,
+      "expectedV3Lock": "FOR UPDATE",
+      "syntheticUnlockedSqlSha256": "0d33b51516e122e54e76b16f6f6f6ba34fc0db90034c252d86497b5e71f84829"
+    },
+    {
+      "index": 25,
+      "table": "movie_metadata",
+      "joinedIdentityOwnerCheck": true,
+      "expectedV3Lock": "FOR SHARE",
+      "syntheticUnlockedSqlSha256": "f89eeab9cb940533bcae97739dfd95ace8abfe8de291b29faa5444e145514ebb"
+    }
+  ],
+  "syntheticInventoryWarning": "SQL fingerprints use an intentionally synthetic column inventory; they are not production SQL fingerprints or runtime lock evidence.",
+  "localV2ControlChecks": {
+    "passed": 12,
+    "checks": [
+      "pure_ast_no_import_no_runtime_no_subprocess",
+      "all_25_readonly_and_lock_projection_outputs_equal",
+      "exact_2_metadata_exclusive_23_protection_shared_oracle",
+      "empty_owner_projections_still_issue_all_queries",
+      "synthetic_original_21_history_fixture_accepted",
+      "already_bound_canonical_rejected",
+      "third_active_metadata_owner_rejected",
+      "third_active_joined_identity_owner_rejected",
+      "confirmed_identity_drift_rejected",
+      "original_history_loss_rejected",
+      "source_reactivation_rejected",
+      "only_two_canonical_fields_source_and_all_other_rows_exact"
+    ],
+    "noLiveModulesLoaded": true
+  },
+  "plannedIndependentV3Tests": [
+    "Frozen V2 SHA mismatch stops before runtime, credentials, reservation or UPDATE.",
+    "Exact V2 STOPPED/NOT_APPLIED proof and strict false attempt flags are mandatory.",
+    "Pinned existing application credential and actual >=8.0.22 target version gate; never fallback or grant maintenance privileges.",
+    "Prepare remains a complete authenticated READ ONLY snapshot and uses only new create-once V3 files.",
+    "Fresh V3 before must equal V2 before, including schema inventory, every related row and the 21 historical reference rows.",
+    "Locked snapshot emits all 25 projections, with exactly two standalone metadata FOR UPDATE and 23 FOR SHARE including the joined owner check.",
+    "Compare every unlocked V3 synthetic query to the original V2 query after removing locking clauses; predicates, complete columns, row bounds and composite history order remain exact.",
+    "Empty alias, owner, favorite and notification result sets must still issue their locking scans.",
+    "FOR SHARE JOIN continues to exclude source/canonical and covers both participating tables without OF.",
+    "One SERIALIZABLE connection retains locks through locked-before validation, one static two-field UPDATE, locked-after exact comparison and COMMIT.",
+    "Old or new reservation present stops a repeated apply before production connection.",
+    "Permission error, EOF, timeout, changed preimage, wrong row count or changed history prevents COMMIT.",
+    "COMMIT sent without ACK yields unknown outcome and forbids UPDATE/COMMIT replay; only exact read-only verify is allowed.",
+    "COMMIT ACK followed by runtime or final verification failure must retain the durable attempt/result and use read-only verification, never reapply.",
+    "Read-only verify accepts only exact original before or exact approved two-field after and rechecks physical runtime at both ends.",
+    "Default and self-tests load no production runtime; synthetic CLI tests allow only bounded Python subprocesses; no raw SQL, stderr, credentials or complete business rows are emitted."
+  ],
+  "v3ActualHelperReviewed": false,
+  "v3ActualPermissionEvidenceReviewed": false,
+  "v3ProductionResultVerified": false
+}

@@ -1,0 +1,2 @@
+# Preserve receipt bytes so the recorded SHA-256 also matches Git blobs.
+*.json -text

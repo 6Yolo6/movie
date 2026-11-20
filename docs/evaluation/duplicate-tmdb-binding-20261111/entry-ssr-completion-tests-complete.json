@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "allTestsPassed": true,
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntrySsrCompletion.py",
+      "sha256": "4561ba6cd314e2b3dfe39597649ee4b652b7d57d4a5998702f31bee86ef32f05"
+    }
+  ],
+  "productionPosts": 0,
+  "testsRun": 12,
+  "parserTests": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-ssr-completion-parser-tests-20261111T090416.199947Z-74db5265993b4add85fe6f9ad8ac42e2.json",
+    "sha256": "e6baccf4f9f191601d2dce486efcb41faa0358cc36d1dba2bc96c7b6de62a1f9"
+  },
+  "flowTests": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-ssr-completion-flow-tests.json",
+    "sha256": "00f4287d73d5f98317e82cb2dcb2feba5c02ad1c5d118b8e12442703ee3bcd21"
+  },
+  "testScripts": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\TestEntrySsrCompletion.py",
+      "sha256": "a7510fa3f8d5c705e6ae6e8f2cd8d877d5eec3b86278a9ed430bb99eb2d22c11"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\TestEntrySsrCompletionFlow.py",
+      "sha256": "41afc0fce543dc3320d435e34b5ff915b6e01bc798775d6ed7eb6160360c0a6b"
+    }
+  ],
+  "productionSqlQueries": 0,
+  "productionHttpRequests": 0,
+  "runtimeDockerRequests": 0,
+  "cloudActions": 0,
+  "originalPassedSuitesRepeated": false,
+  "mockFixturesNeverUsedAsProductionEvidence": true
+}

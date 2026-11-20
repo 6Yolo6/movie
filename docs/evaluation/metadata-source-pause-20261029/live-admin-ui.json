@@ -1,0 +1,184 @@
+{
+  "status": "passed",
+  "scope": "Live admin controls only; combined browser run later timed out on unrelated public page expectation, retained externally",
+  "synthetic": false,
+  "physicalPhoneTested": false,
+  "targetSource": "CSCORE_MOVIE",
+  "viewports": [
+    {
+      "width": 1280,
+      "theme": "light",
+      "actualOrigin": "http://127.0.0.1",
+      "selectedSources": [
+        "CSCORE_MOVIE",
+        "CSCORE_TV",
+        "CSCORE_ANIME"
+      ],
+      "sourceButtons": 3,
+      "horizontalLayout": {
+        "documentWidth": 1280,
+        "viewportWidth": 1280,
+        "controls": [
+          {
+            "x": 570,
+            "width": 58,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 634,
+            "width": 104,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 804,
+            "width": 66,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 1025,
+            "width": 66,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 570,
+            "width": 58,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 634,
+            "width": 104,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 804,
+            "width": 66,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 1025,
+            "width": 66,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 570,
+            "width": 58,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 634,
+            "width": 104,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 804,
+            "width": 66,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 1025,
+            "width": 66,
+            "withinHorizontalViewport": true
+          }
+        ]
+      },
+      "pausedScreenshot": "live-gying-pause-1280-paused.png",
+      "pausePersistsAcrossReload": true,
+      "resumeScreenshot": "live-gying-pause-1280-resumed.png",
+      "originalBooleanRestored": true,
+      "draftPreservedAcrossPauseAndResume": true
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "actualOrigin": "http://127.0.0.1",
+      "selectedSources": [
+        "CSCORE_MOVIE",
+        "CSCORE_TV",
+        "CSCORE_ANIME"
+      ],
+      "sourceButtons": 3,
+      "horizontalLayout": {
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "controls": [
+          {
+            "x": 41,
+            "width": 58,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 105,
+            "width": 104,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 53,
+            "width": 66,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 213,
+            "width": 66,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 41,
+            "width": 58,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 105,
+            "width": 104,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 53,
+            "width": 66,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 213,
+            "width": 66,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 41,
+            "width": 58,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 105,
+            "width": 104,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 53,
+            "width": 66,
+            "withinHorizontalViewport": true
+          },
+          {
+            "x": 213,
+            "width": 66,
+            "withinHorizontalViewport": true
+          }
+        ]
+      },
+      "pausedScreenshot": "live-gying-pause-390-paused.png",
+      "pausePersistsAcrossReload": true,
+      "resumeScreenshot": "live-gying-pause-390-resumed.png",
+      "originalBooleanRestored": true,
+      "draftPreservedAcrossPauseAndResume": true
+    }
+  ],
+  "pageErrors": 0,
+  "consoleErrors": 0,
+  "startedAt": "2026-10-29T16:00:15.309Z",
+  "combinedRunCompletedAt": "2026-10-29T16:01:24.715Z",
+  "restoration": {
+    "status": "confirmed",
+    "originalBooleanRestored": true,
+    "configurationAndFiveOtherFlagsPreserved": true,
+    "allComparedCursorsUnchanged": true,
+    "naturalWorkerCompatibleCursorChanges": []
+  }
+}

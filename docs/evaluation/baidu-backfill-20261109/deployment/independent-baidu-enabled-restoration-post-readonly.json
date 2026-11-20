@@ -1,0 +1,17 @@
+{
+  "verifiedAt": "2026-11-08T17:35:32.955222+00:00",
+  "status": "passed",
+  "taskEnabled": true,
+  "taskState": "Ready",
+  "actualLimitedInteractiveRunExit0Verified": true,
+  "enabledXmlAndInstallationHashesMatched": true,
+  "strictNoHandoffBeforeAfterVerified": true,
+  "idleStdoutCaptured": false,
+  "idleInferredFromStrictNoHandoffGates": true,
+  "initialFailureAndExactDisabledCasProofRetained": true,
+  "readOnlyVerification": true,
+  "credentialValuesPrinted": false,
+  "recordSha256": "1a99f20783cc32e1c5cc253bf388114963f2e23b531d9f4129114ea90158e3fd",
+  "taskXmlSha256": "a18d999cb2a1b2a3aceb14d1fb8cae4e1d843237b86a729239831fd1f9f9cd28",
+  "helperSha256": "1d56d16b699dbea6a21f64d89051cdb46dc28af3de115259686b094b12214f25"
+}

@@ -1,0 +1,9 @@
+{
+  "status": "LOCAL_DIAGNOSTIC_FAILURE_BEFORE_DATABASE_CONNECTION",
+  "exceptionType": "AttributeError",
+  "gate": "CONTEXT_LAST_MODULE_IS_FILE_SECURITY_NOT_REFERENCE_SCHEMA",
+  "initialHelper": "3bcc8b1647aaac1318193cbffeabe3d83d1a1faa452cef48622ed68b59f1a5d0",
+  "databaseConnections": 0,
+  "operatorDirectSqlWrites": 0,
+  "credentialsPrinted": false
+}

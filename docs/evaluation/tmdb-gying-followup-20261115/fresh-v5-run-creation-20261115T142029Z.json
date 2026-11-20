@@ -1,0 +1,20 @@
+{
+  "status": "EXACT_FOUR_REVIEWED_BYTES_FRESH_RUN_CREATED",
+  "directory": "E:/gying-tools/releases/tmdb-gying-followup-20261115/rollout-v5-after-key-path-fix-20261115T142029Z",
+  "files": {
+    "BackendRollout.py": "5e8b69858e0ac69eb9acc7aa35e3d67de17f606cb1fa6f7f6f47bdd108e86ee8",
+    "FollowUpDeclarations.py": "c9d6b1e7e4ba37a6e79ae57638eae4f241d596ab524ddec87a705430d18a4418",
+    "HostReadyAdapter.py": "7c799fa149eb80681a3aeda15739ca25d3601fbd19d58f76cb3d95b02d780625",
+    "deployment-binding.json": "afc15bccadfe4f8654b016086d4fd04ff8a9f6e0b5338ad88b52a3ac4f746921"
+  },
+  "entriesExact": [
+    "BackendRollout.py",
+    "FollowUpDeclarations.py",
+    "HostReadyAdapter.py",
+    "deployment-binding.json"
+  ],
+  "sourceDirectory": "E:/gying-tools/releases/tmdb-gying-followup-20261115/rollout-v5",
+  "productionOperations": 0,
+  "priorStoppedRunsPreserved": true,
+  "createdByScript": "E:/gying-tools/releases/tmdb-gying-followup-20261115/CreateFreshV5RolloutRun.py"
+}

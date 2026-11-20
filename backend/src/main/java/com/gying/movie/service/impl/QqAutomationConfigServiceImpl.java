@@ -122,8 +122,8 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
         putInt(request, "botRateLimitPerMinute", KEY_BOT_RATE_LIMIT_PER_MINUTE, 1, 100, "每个群成员每分钟最多可发起的搜索次数");
         putInt(request, "botMaxResults", KEY_BOT_MAX_RESULTS, 1, 5, "QQ群机器人单次回复展示的资源候选数量");
         putString(request, "botBlockedKeywords", KEY_BOT_BLOCKED_KEYWORDS, "QQ群机器人拒绝搜索的关键词");
-        putBoolean(request, "botTransferCleanupEnabled", KEY_BOT_TRANSFER_CLEANUP_ENABLED, "自动清理QQ群搜索产生的临时转存文件");
-        putInt(request, "botTransferCleanupDelayMinutes", KEY_BOT_TRANSFER_CLEANUP_DELAY_MINUTES, 1, 10080, "QQ群临时转存成功后的保留时间（分钟）");
+        putBoolean(request, "botTransferCleanupEnabled", KEY_BOT_TRANSFER_CLEANUP_ENABLED, "自动清理QQ群与网站搜索产生的临时转存文件");
+        putInt(request, "botTransferCleanupDelayMinutes", KEY_BOT_TRANSFER_CLEANUP_DELAY_MINUTES, 1, 10080, "QQ群与网站临时转存首次成功后的保留时间（分钟）");
         putBoolean(request, "botDailyRecommendationEnabled", KEY_BOT_DAILY_RECOMMENDATION_ENABLED, "是否开启QQ群每日影片推荐");
         putString(request, "botDailyRecommendationTime", KEY_BOT_DAILY_RECOMMENDATION_TIME, "QQ群每日推荐执行时间（HH:mm）");
         putInt(request, "botDailyRecommendationCount", KEY_BOT_DAILY_RECOMMENDATION_COUNT, 1, 10, "每个群每天推荐的影片数量");
@@ -148,8 +148,8 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
         upsertMissing(KEY_BOT_RATE_LIMIT_PER_MINUTE, Integer.toString(Math.max(1, qqBotProperties.getRateLimitPerMinute())), "每个群成员每分钟最多可发起的搜索次数");
         upsertMissing(KEY_BOT_MAX_RESULTS, Integer.toString(qqBotProperties.getMaxResults()), "QQ群机器人单次回复展示的资源候选数量");
         upsertMissing(KEY_BOT_BLOCKED_KEYWORDS, defaultText(qqBotProperties.getBlockedKeywords()), "QQ群机器人拒绝搜索的关键词");
-        upsertMissing(KEY_BOT_TRANSFER_CLEANUP_ENABLED, "true", "自动清理QQ群搜索产生的临时转存文件");
-        upsertMissing(KEY_BOT_TRANSFER_CLEANUP_DELAY_MINUTES, "10", "QQ群临时转存成功后的保留时间（分钟）");
+        upsertMissing(KEY_BOT_TRANSFER_CLEANUP_ENABLED, "true", "自动清理QQ群与网站搜索产生的临时转存文件");
+        upsertMissing(KEY_BOT_TRANSFER_CLEANUP_DELAY_MINUTES, "10", "QQ群与网站临时转存首次成功后的保留时间（分钟）");
         upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_ENABLED, "true", "是否开启QQ群每日影片推荐");
         upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_TIME, "09:00", "QQ群每日推荐执行时间（HH:mm）");
         upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_COUNT, "3", "每个群每天推荐的影片数量");

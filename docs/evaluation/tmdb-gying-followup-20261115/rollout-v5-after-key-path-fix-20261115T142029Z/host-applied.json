@@ -1,0 +1,25 @@
+{
+  "status": "HOST_PIN_APPLIED_VERIFIED",
+  "at": "2026-11-15T14:29:57.882275+00:00",
+  "helperSha256": "c9d6b1e7e4ba37a6e79ae57638eae4f241d596ab524ddec87a705430d18a4418",
+  "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "receipt": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\deployment-receipt.json",
+    "sha256": "5f95fec76266521a8af2d9185219108fe0ec286d84e89b1ec6dc43833594b787"
+  },
+  "prepared": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\host-prepared.json",
+    "sha256": "1d67ab04168ecf690a67bfae769e251aec338904269cdf79f9c1207142cae1b6"
+  },
+  "casAck": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\host-cas-ack.json",
+    "sha256": "2337e6f202cd0e50ebc124c3d9364c471846bfdb124d722d476ab5f86dc20078"
+  },
+  "configurationSha256": "6bdb07565acdc8acc1fb93bb5cce6e385456c29ee18a5ee20b14a0d19d39ca60",
+  "onlyExpectedBackendImageChanged": true,
+  "ownerGroupDaclRetained": true,
+  "taskXmlAndAclRetained": true,
+  "casAttempts": 1,
+  "configurationOutcomeUnknown": false,
+  "automaticRetry": false
+}

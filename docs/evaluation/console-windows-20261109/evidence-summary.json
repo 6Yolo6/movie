@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-09",
+  "readOnly": true,
+  "taskChanged": false,
+  "evidence": [
+    {
+      "path": "E:\\gying-tools\\diagnostics\\console-windows-20261109\\report-20261109T114823.827496Z.json",
+      "sha256": "babd632d313e9bb0e293ca261e548e1fa7d1969154a9938ac01aa8d836b92416"
+    },
+    {
+      "path": "E:\\gying-tools\\diagnostics\\console-windows-20261109\\report-20261109T115242.324702Z.json",
+      "sha256": "e000f77f181f499e2cce813baf0e8b9cec8507ff02e40d9672b4a7eeef0e765c"
+    },
+    {
+      "path": "E:\\gying-tools\\diagnostics\\console-windows-20261109\\baidu-task-process.json",
+      "sha256": "6efae5e2e031100190621a50594b2f1203ae9b2f616ef9f0a2ad3341bc068f60"
+    }
+  ]
+}

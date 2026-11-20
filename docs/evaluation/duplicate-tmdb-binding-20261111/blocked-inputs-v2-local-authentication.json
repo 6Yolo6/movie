@@ -1,0 +1,87 @@
+{
+  "batches": [
+    {
+      "batch": 1,
+      "blockedPairCount": 2,
+      "inputReferences": [
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-preimage.json",
+          "sha256": "992b2f525f2c9b92931f4360b33c5a7b9e13affa4440783a6e3258095ff07072"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\journal-primary-preview-response-recorded.json",
+          "sha256": "125ae100922582b898e10b94e8122a8ded0f7e9216205ae3e7930874f71c4b54"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-preview-response-proof.json",
+          "sha256": "ed11a5676c885105577d49a45355178f4d8ac2950d3a1ebcd021c98d3413977f"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-preview-request.json",
+          "sha256": "482e6af7ddaf94577bf1e22f80bd19e27b8e700bc39abf01362f08c4e642c2da"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-rows-before.json.age",
+          "sha256": "1f0cdb6f80f3304d33b79fb2a47d7226c53a42d3d1e592d4b72fd85a0975ed30"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-preview-response.json",
+          "sha256": "a866b8779d1eb5f042e74e3507b80c1b4ce817ac908b9aa5b72f67d078228466"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\journal-primary-preview-attempt-reserved.json",
+          "sha256": "5140423df2fbacc522e2bc0fec569b27ecc95029ecad72ebd4b390ab1827cd79"
+        }
+      ],
+      "primaryResponseDataSha256": "843fc91936579db082d6e4cdc81e7ad96a000c0141cad48640466d49896c06cb",
+      "status": "PASS",
+      "strictEligibilityValidated": true
+    },
+    {
+      "batch": 2,
+      "blockedPairCount": 1,
+      "inputReferences": [
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\primary-preimage.json",
+          "sha256": "b656fd5fe07f3692ae4bb33284e705c5993ddef1cb4bdf1607b38a0211099e37"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\journal-primary-preview-response-recorded.json",
+          "sha256": "9591db2e4ee3633440e61648aa97b10e5608c4f2affc5b89e999494c22315c74"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\primary-preview-response-proof.json",
+          "sha256": "450e8a9a1410787062dbbb6723c2712c772072312f0e48ab2146fcdd12da5441"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\primary-preview-request.json",
+          "sha256": "1f60fefe23e831e7baa2b5b4dfa6ca869cf69d6d51913c4fe136a57f2f66dc29"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\primary-rows-before.json.age",
+          "sha256": "fac9bde4cca99b0a868eb8b7a4bb4d0a147334590c83a7face397d8f9c5b77d4"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\primary-preview-response.json",
+          "sha256": "d198e4b7651b28d7537702066342c3597da35cfe54f41b3feb7769e16be6145b"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\journal-primary-preview-attempt-reserved.json",
+          "sha256": "fc431270595b8d83ad332e2b9cf0542bdf2d4373ea8761e7db27683fb840f707"
+        }
+      ],
+      "primaryResponseDataSha256": "faf326191726cbc00f521c7b76973373a42a9abd04e744b100ea555398e96e76",
+      "status": "PASS",
+      "strictEligibilityValidated": true
+    }
+  ],
+  "binding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\blocked-inputs-v2-binding.json",
+    "sha256": "a2d2dbf5281736a2f0fa0c64a36497ef515891c37f852dc167c675ced66963a9"
+  },
+  "encryptedRowsDecrypted": false,
+  "productionIoCalls": 0,
+  "runtimeVerified": false,
+  "scope": "LOCAL_FILE_AUTHENTICATION_ONLY",
+  "status": "PASS"
+}

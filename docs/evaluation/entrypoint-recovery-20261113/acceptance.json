@@ -1,0 +1,98 @@
+{
+  "status": "PASS",
+  "verified_at": "2026-11-13 13:31:46 +0800",
+  "checks": [
+    {
+      "check": "http://127.0.0.1 home",
+      "status": "PASS"
+    },
+    {
+      "check": "http://127.0.0.1 list/detail/SSR",
+      "status": "PASS",
+      "catalog_total": 16871,
+      "list_size": 2
+    },
+    {
+      "check": "http://127.0.0.1 poster",
+      "status": "PASS",
+      "bytes": 54758,
+      "sha256": "b07152d5fa848d8a8a15a2db0fe31f0802a675bf9497d5ecdd9a39e8a672672f"
+    },
+    {
+      "check": "http://127.0.0.1 internal path restrictions",
+      "status": "PASS"
+    },
+    {
+      "check": "https://gyinghub.dpdns.org home",
+      "status": "PASS"
+    },
+    {
+      "check": "https://gyinghub.dpdns.org list/detail/SSR",
+      "status": "PASS",
+      "catalog_total": 16871,
+      "list_size": 2
+    },
+    {
+      "check": "https://gyinghub.dpdns.org poster",
+      "status": "PASS",
+      "bytes": 54758,
+      "sha256": "b07152d5fa848d8a8a15a2db0fe31f0802a675bf9497d5ecdd9a39e8a672672f"
+    },
+    {
+      "check": "https://gyinghub.dpdns.org internal path restrictions",
+      "status": "PASS"
+    },
+    {
+      "check": "backend host endpoint",
+      "status": "PASS"
+    },
+    {
+      "check": "minio host endpoint",
+      "status": "PASS"
+    },
+    {
+      "check": "quark host endpoint",
+      "status": "PASS"
+    },
+    {
+      "check": "openclaw host endpoint",
+      "status": "PASS"
+    },
+    {
+      "check": "agent host endpoint",
+      "status": "PASS"
+    },
+    {
+      "check": "router host endpoint",
+      "status": "PASS"
+    },
+    {
+      "check": "ollama host endpoint",
+      "status": "PASS"
+    },
+    {
+      "check": "tunnel host endpoint",
+      "status": "PASS"
+    },
+    {
+      "check": "tunnel HA",
+      "status": "PASS",
+      "connections": 4.0
+    },
+    {
+      "check": "authenticated internal backend health",
+      "status": "PASS"
+    },
+    {
+      "check": "source internal health",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "check": "publisher internal health",
+      "status": "PASS",
+      "http": 200
+    }
+  ],
+  "check_count": 20
+}

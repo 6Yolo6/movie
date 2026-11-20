@@ -1,0 +1,1 @@
+deployment/evidence/*.json -text whitespace=cr-at-eol

@@ -1,0 +1,11 @@
+{
+  "privateDirectory": "E:\\gying-tools\\releases\\ai-query-quality-20261103",
+  "fileByteSha256": {
+    "BuildCandidate.py": "a0a8a42479e7cfa046db59456ec074ba7ad215310c49b7bd24e1aeeb149120c1",
+    "PrepareCatalogHarness.py": "71a590a0bd614015016915d9aff8d74ab2d3f14367f0572363e737fa07332cdd",
+    "RunCandidateProbes.py": "ad9026f189d3bd2978f52a75c4da096f4477b574dd1f2f4d24e75e51b29e40fd",
+    "CatalogSnapshotHarness.java": "a7d0b6aee4f9f440b3813f378ac7838ac69f55e502ca0e8600d1b9313f0870fd"
+  },
+  "mode": "one actual request per planned turn; no inference retry",
+  "datasetCanonicalSha256": "70ee9ddab7ad2ad537cc98b0cec31fb92738c3a6a643d1ff0e3cd0aec34ebfeb"
+}

@@ -1,0 +1,263 @@
+{
+  "schemaVersion": 2,
+  "reportSha256": "b55a091817e9a6ddec4a734ec27fbfc53611526d6ead51613cff7904388b5706",
+  "reviewer": {
+    "kind": "model",
+    "name": "Codex website_quality_review subagent"
+  },
+  "reviews": [
+    {
+      "caseId": "dev-v3-01",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "34463dd0e4943538ba176b9a3b628cb5f6f76efb21688d86a4298af85e9b33df",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "candidates"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "主题保留在semanticText，纪录电影/最多2部进入计划；片库召回101项后保留0，相关性核对后的联网依据也为0。正文如实报告本次没有足够依据，没有把电影史候选冒充修复过程；但未给出可用影片，泛化补线索不能解决已经明确的主题。仅核对这次空结果陈述，不据此证明全片库或世界上不存在对应纪录片。"
+    },
+    {
+      "caseId": "dev-v3-02",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "979d03d0a762bcdbbfea28f377a65f647ba9eec6e194004e18e2aa839d911894",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 1
+      },
+      "failureCategories": [
+        "facts"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "usefulApproximation",
+      "notes": "实际候选魁拔Ⅲ战神崛起/宝莲灯/麦兜·当当伴我心均category=mv并含动画，时长90/85/80分钟，符合70<=时长<95且数量3；languagesAny按中文或西班牙语并集处理。正文全局注明片库语言不能确认原始对白，未把配音当原声；原始对白仍未知，正文只写数量而未逐项列片名与待核验字段。候选元数据可作待核验线索，不能计全部硬条件满足；事实/依据2分只针对已断言的本次字段与诚实未知提示，不给未知原声事实打分。"
+    },
+    {
+      "caseId": "dev-v3-03",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "34463dd0e4943538ba176b9a3b628cb5f6f76efb21688d86a4298af85e9b33df",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "candidates"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "计划使用纪录片、火车旅行主题、最多4部、豆瓣降序；召回35项后保留0，联网相关依据0。正文诚实空结果，未补无关片，也未用IMDb冒充豆瓣。主题候选不足使评分排序/缺分分支未被实际命中；该轮未给可用影片，不能据无结果验证评分来源实现或推断没有火车旅行纪录片。"
+    },
+    {
+      "caseId": "dev-v3-03",
+      "repetition": 1,
+      "turn": 2,
+      "answerSha256": "b1e60a74ca9c72946b54a29167640f886599d740353cc52240b0fc2ff284e663",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "failureCategories": [],
+      "hardConstraints": "satisfied",
+      "outcome": "clarification",
+      "notes": "上一轮实际保留候选为空；本轮scope=previousResults、ratingSource=imdb，未增加候选。正文说明无上一轮列表可以排序并请求明确重新检索，符合实际上下文且未伪造IMDb分或排序结果。计有效澄清，不能计完成了一组真实影片的IMDb重排。"
+    },
+    {
+      "caseId": "dev-v3-04",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "4f621335de59715ab166904a614c18463127ec14fc85883e5ef0aae9e1db8d38",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "failureCategories": [],
+      "hardConstraints": "satisfied",
+      "outcome": "exact",
+      "notes": "正文区分本次两个ID：gying_mv_M4Lk对应2019/格蕾塔·葛韦格，tmdb_movie_9587对应1994/Gillian Armstrong；各自演员来自本次独立候选字段，未混用。只声称本次片库两个版本，不断言其他版本不存在；在实际元数据证据范围内满足。"
+    },
+    {
+      "caseId": "dev-v3-04",
+      "repetition": 1,
+      "turn": 2,
+      "answerSha256": "104a25570c494c4f7bed7469e76a9a34545d51ef8c191dd1253c5610d4ba0e18",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "failureCategories": [],
+      "hardConstraints": "satisfied",
+      "outcome": "exact",
+      "notes": "查询计划yearFrom=yearTo=2019，详情唯一ID仍为gying_mv_M4Lk；正文三位演员西尔莎·罗南/艾玛·沃森/弗洛伦丝·皮尤与该次详情actors一致，附带剧情来自同ID简介，没有加入1994版演员。仅证明这次有界返回的三项，不证明完整演员表。"
+    },
+    {
+      "caseId": "dev-v3-05",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "fd1afa86117caa83819d4a9ecc39d2ac200aca923f32944dbb2db8166518508a",
+      "scores": {
+        "factuality": 2,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "candidates"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "正文诚实注明动物受伤镜头未核验，没有作不存在伤害的保证；但计划只保留纪录片，野外徒步主题从semanticText丢失。实际10候选包括拯救生命演唱会、久石让演唱会、人生七年等，缺野外徒步依据且部分明显是演唱会/人物访谈。全局未知警告不能补回核心主题，不能把通用纪录片清单计有用近似。事实2仅评准确的本次数量及未知警告，非给动物伤害排除打2分。"
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "003b6e2512c20373bc2f84cd34d34d8bed4d6f819460720ff7fb7263551bb88f",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "failureCategories": [],
+      "hardConstraints": "satisfied",
+      "outcome": "exact",
+      "notes": "正文列电台司令:彩虹里2008/放牛班的春天2004；实际时长43/97分钟、category=mv、genres含音乐，均符合2000至2010含端点/不超过110分钟/最多2部。第一项简介是音乐现场录像，用户未限定剧情长片，按本次片库音乐电影字段核对，不额外发明剧情片限制，也不称独立来源全面核验。"
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 2,
+      "answerSha256": "593da98f71fc939fe279c9cf3a4dc67836f248212d82379ea5e20fad87456bb1",
+      "scores": {
+        "factuality": 2,
+        "grounding": 1,
+        "usefulness": 1
+      },
+      "failureCategories": [
+        "candidates"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "新计划正确以yearFrom=2015替换旧2000至2010区间，音乐/110分钟/limit2保留；实际候选RAYE at the Royal Albert Hall2024/80分钟、坂本龙一:杰作2023/103分钟。正文仍只写数量，未给新清单；RAYE简介明确写电视特辑节目，与category=mv电影口径存在冲突，当前证据不能核定其电影类型。坂本龙一候选有用，但整轮不能计完整满足或证实全部为音乐电影。"
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 3,
+      "answerSha256": "ca2c4a8008b8318b21ca28814564fdb8e014006bd4d8f8371799c101932528b9",
+      "scores": {
+        "factuality": 0,
+        "grounding": 0,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "实际submittedHistory含第一轮明确首片电台司令:彩虹里(2008)、ID1MeM，第二轮列表也分开保留；正文却称只能核对最新一轮、无法确定更早列表，未查询第一轮首片导演。第一轮实际候选directors为David Barnard，根本缺口是没有利用已提交旧列表身份；这次历史并未缺失，不能把技术限制的回退当有效澄清或满足原请求。0分针对与可见上下文冲突及未交付，非猜测未知导演。"
+    },
+    {
+      "caseId": "dev-v3-07",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "34463dd0e4943538ba176b9a3b628cb5f6f76efb21688d86a4298af85e9b33df",
+      "scores": {
+        "factuality": 2,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "candidates"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "用户明确原作者不是演员/导演；实际计划却加入actors=[明基·村上]，召回1项后保留0且联网相关依据0。正文没有编改编片目或原作关系，空结果陈述有本次证据；但错误演员过滤违反核心条件，未给任何对应原作及依据，不能按诚实空结果升级为满足。"
+    },
+    {
+      "caseId": "dev-v3-08",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "d0045082e7d8574b36ece0f1955037f975dde7951eda32d201a4de93c58a3dd6",
+      "scores": {
+        "factuality": 2,
+        "grounding": 1,
+        "usefulness": 1
+      },
+      "failureCategories": [
+        "facts"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "正文记录实际查询日期2026-11-03，正确区别影片年份与官方新公告日期，明确是否公布仍未知；本次联网相关结果0，片库花样年华2000的元数据不能核实中国大陆4K新重映。没有公告来源/发布日期，且正文仍说摘要与链接列在下方，与实际空webResults不符，证据呈现不完整。没有外部写入，未据搜索未找到断言没有公告；未知公告不计完全满足。"
+    },
+    {
+      "caseId": "dev-v3-09",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "f3b3f9dedebc00ba16357d162995bc728357f6cf514997f58d046fcbd51dfadd",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "failureCategories": [
+        "conditions"
+      ],
+      "hardConstraints": "notApplicable",
+      "outcome": "clarification",
+      "notes": "正文明确>=150与<=100不能同时满足并询问修改哪项，无虚构候选或擅自放宽。无可行影片硬条件以notApplicable记录，用户要求的可行性判断在算术上已核对。queryPlan额外出现actors=[50分]是无关数字人物识别瑕疵，保留conditions诊断；本轮clarify路径没有用它作候选过滤，不能据该澄清宣称人物解析全部正确。"
+    },
+    {
+      "caseId": "dev-v3-10",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "49b94f3ddb6aaa9b1db4af56be1cde6dbc7946610de570f8e12a24deaa80ecbe",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 1
+      },
+      "failureCategories": [
+        "candidates",
+        "facts"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "天堂电影院简介和摘录支持小镇放映/电影院核心场景；第二候选存身的实际摘录只涉及俄亥俄小镇、梦境和风暴避难所，未提供电影院场景依据，却与前者一起列为已核对可能符合描述。违反必须提供核心主题依据这一硬条件；一个有效候选不让整份清单满足。未知其全片是否偶有电影院镜头，factuality保留null，不凭简介未提及猜影片完整事实；grounding/usefulness1表示有一项可用部分。温暖结尾也未单独注明核验状态。"
+    },
+    {
+      "caseId": "dev-v3-10",
+      "repetition": 1,
+      "turn": 2,
+      "answerSha256": "49b94f3ddb6aaa9b1db4af56be1cde6dbc7946610de570f8e12a24deaa80ecbe",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 1
+      },
+      "failureCategories": [
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "用户只撤回温暖结尾偏好并加强电影院核心场景；计划却仍保留最好结尾温暖的semanticText，丢失genresAll=[剧情]。候选天堂电影院有主题依据，遇见你之前的摘录只说意外收获/人生归属，无电影院核心场景证据；未落实此次条件替换。违反核心场景依据要求，不能以用户放宽软偏好授权无关主题。factuality=null表示不能据当前摘要判断整片场景全部事实，不能补猜；一项相关候选仅部分有用。"
+    }
+  ]
+}

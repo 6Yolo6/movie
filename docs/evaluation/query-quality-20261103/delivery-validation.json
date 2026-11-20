@@ -1,0 +1,77 @@
+{
+  "validatedAt": "2026-11-03T14:22:38.954438+00:00",
+  "status": "passed",
+  "scope": "Delivery documentation/evidence checks; no application tests or deployment repeated",
+  "protectedOriginalFifteenTurnFiles": 8,
+  "originalByteHashesUnchanged": true,
+  "manifestContentHashesMatched": true,
+  "jsonAndUtf8Readable": true,
+  "relativeLinksChecked": 276,
+  "missingLinks": [],
+  "diffCheckPassed": true,
+  "secretScans": {
+    "movie": {
+      "scope": "working tree (tracked + non-ignored new files)",
+      "findings": 0,
+      "exitCode": 0
+    },
+    "agent": {
+      "scope": "working tree (tracked + non-ignored new files)",
+      "findings": 0,
+      "exitCode": 0
+    }
+  },
+  "entryVerification": {
+    "entries": 14,
+    "verifiedAcrossRetainedAttempts": true,
+    "publicProxy": "127.0.0.1:7897"
+  },
+  "websiteMechanicalPasses": 4,
+  "qualityImprovementEstablished": false,
+  "firstStageComplete": false,
+  "commitAllowlist": {
+    "movie": [
+      "docs/current-project-status.md",
+      "docs/ai-career-roadmap.md",
+      "docs/ai-architecture.md",
+      "docs/project-guide.md",
+      "docs/ai-answer-quality-guide.md",
+      "docs/history/releases.md",
+      "docs/evaluation/query-quality-20261103/README.md",
+      "docs/evaluation/query-quality-20261103/agent-deployment.json",
+      "docs/evaluation/query-quality-20261103/backend-checkpoint.json",
+      "docs/evaluation/query-quality-20261103/backend-deployment-dry-run.json",
+      "docs/evaluation/query-quality-20261103/backend-deployment-receipt.json",
+      "docs/evaluation/query-quality-20261103/backend-deployment.json",
+      "docs/evaluation/query-quality-20261103/daily-backup-overlay.json",
+      "docs/evaluation/query-quality-20261103/deployment-evidence-manifest.json",
+      "docs/evaluation/query-quality-20261103/deployment-result.json",
+      "docs/evaluation/query-quality-20261103/deployment.md",
+      "docs/evaluation/query-quality-20261103/entry-verification-browser-ua.json",
+      "docs/evaluation/query-quality-20261103/entry-verification-initial.json",
+      "docs/evaluation/query-quality-20261103/entry-verification-transport-retry.json",
+      "docs/evaluation/query-quality-20261103/entry-verification.json",
+      "docs/evaluation/query-quality-20261103/pinned-helper-checkpoint.json",
+      "docs/evaluation/query-quality-20261103/pinned-helper-hashes.json",
+      "docs/evaluation/query-quality-20261103/pinned-source-guard-validation.json",
+      "docs/evaluation/query-quality-20261103/runtime-after-deployment.md",
+      "docs/evaluation/query-quality-20261103/source-binding-initial-failure.json",
+      "docs/evaluation/query-quality-20261103/source-binding-proof.json",
+      "docs/evaluation/query-quality-20261103/website-answers.md",
+      "docs/evaluation/query-quality-20261103/website-contract-validation.json",
+      "docs/evaluation/query-quality-20261103/website-report.json",
+      "docs/evaluation/query-quality-20261103/website-review-validation.json",
+      "docs/evaluation/query-quality-20261103/website-review.json",
+      "docs/evaluation/query-quality-20261103/website-review.md",
+      "docs/evaluation/query-quality-20261103/website-runtime.json",
+      "docs/evaluation/query-quality-20261103/delivery-validation.json"
+    ],
+    "agent": [
+      "README.md",
+      "docs/local-setup.md",
+      "docs/gying-integration.md",
+      "docs/gying-query-plan-v2.md"
+    ]
+  },
+  "unrelatedChangesExcludedFromCommit": true
+}

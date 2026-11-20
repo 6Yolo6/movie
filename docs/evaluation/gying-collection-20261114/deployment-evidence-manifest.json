@@ -1,0 +1,85 @@
+{
+  "sourceCommit": "0ce354e89664c4e3b768753c5b7452f721a8109c",
+  "sourceRoot": "E:/gying-tools/releases/gying-collection-20261114/deployment",
+  "scope": "Exact copies of independently reviewed safe deployment evidence; private configuration, SQL, raw logs and authentication materials remain outside the repository.",
+  "files": [
+    {
+      "file": "deployment-receipt.json",
+      "source": "receipt.json",
+      "bytes": 29322,
+      "sha256": "040779b610bec223e91df451add63997d647dcaee4b49cb3a22dd0a16827c1ee"
+    },
+    {
+      "file": "scheduler-delta-proof.json",
+      "source": "scheduler-delta-proof.json",
+      "bytes": 6662,
+      "sha256": "8ba5b9f52b9acad2d56831a1db8cc875b7f276404959f8dc3d2f29f0ee8daf84"
+    },
+    {
+      "file": "collection-postdeploy-watch.json",
+      "source": "collection-postdeploy-watch.json",
+      "bytes": 6730,
+      "sha256": "2a2b8b83d7b92d4b313df560a3ac2b714cb858c32b3834e244ae9f76f9aa1106"
+    },
+    {
+      "file": "frontend-live-readonly.json",
+      "source": "acceptance/frontend/frontend-live-readonly.json",
+      "bytes": 43636,
+      "sha256": "5d18efdffa653e3b4bf30f13a81167655b0b0f91301e8f41dce73fe170c0cea7"
+    },
+    {
+      "file": "host-pin-applied.json",
+      "source": "host-apply-20261114T131634.003215Z.json",
+      "bytes": 2164,
+      "sha256": "e154df56fe1a69acd4261b6ad5880426fc11926a9a40fd917ba76c40ef1cb829"
+    },
+    {
+      "file": "daily-coverage-applied.json",
+      "source": "daily-apply-20261114T131930.914362Z.json",
+      "bytes": 8281,
+      "sha256": "16425f9663fb312935bf0406c462d50c4ecea152c287fc2a9dd9dad875d61b91"
+    },
+    {
+      "file": "post-deploy-bounded-logs.json",
+      "source": "post-deploy-bounded-logs.json",
+      "bytes": 1966,
+      "sha256": "b0c4bde6e08180cc461ae40a9805decdf81694dcc117bcd393af61497f0f57df"
+    },
+    {
+      "file": "final-independent-initial-failure.json",
+      "source": "final-independent.json",
+      "bytes": 1584,
+      "sha256": "5505caab550c1fe24c32d5ee8c7035d10c3d99ab67d798ea7e2f1bc11c3102da"
+    },
+    {
+      "file": "final-independent-verified.json",
+      "source": "final-independent-verified.json",
+      "bytes": 5381,
+      "sha256": "be02fe38841bbdfc03c22b7eea3e03f0fe96139ae7b327f13e5d17313998aa70"
+    },
+    {
+      "file": "deployment-initial-failure.json",
+      "source": "failure.json",
+      "bytes": 223,
+      "sha256": "9320cb1d2f3cefec6082ed7bb437e2a051af7b07e1e0cb9d777c49948edcd887"
+    },
+    {
+      "file": "backend-host-config-diagnosis.json",
+      "source": "backend-host-config-failure-diagnosis.json",
+      "bytes": 2239,
+      "sha256": "02d9b7314bc57a28b71cf436a83520d306195e4d3ed3a28e58fe286060fe3b57"
+    },
+    {
+      "file": "worker-post-restore-failure.json",
+      "source": "continuation-failure-1794661275922239700.json",
+      "bytes": 181,
+      "sha256": "9b725de9f68aedff98a0af55f4d3b8d40139f814135dbeabe2122f4618982ab6"
+    },
+    {
+      "file": "post-declaration.json",
+      "source": "post-declaration.json",
+      "bytes": 3017,
+      "sha256": "76114cef06f7f1198754494687560ceabfcc22d68e312de739d2cfa884ee81f5"
+    }
+  ]
+}

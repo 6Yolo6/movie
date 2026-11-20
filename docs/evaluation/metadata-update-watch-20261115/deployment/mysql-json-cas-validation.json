@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "sourceCommit": "1adbc336cdadefa48be40ff37082a6de840fbd41",
+  "databaseColumnType": "JSON",
+  "productionSchemaVerified": true,
+  "productionSchemaQuery": "information_schema.COLUMNS:resource_hub_task.payload.DATA_TYPE",
+  "verifiedAt": "2026-11-15T08:50:13.720183+00:00",
+  "sourceManifest": {
+    "path": "D:\\gying-movie\\movie\\tmp\\metadata-updates-87d4524eefce\\sources.json",
+    "sha256": "3efc2da7982c85ec4093476f425ebf8c898cbf1f50997c9b49222d0bcc9d752c"
+  },
+  "testResult": {
+    "path": "D:\\gying-movie\\movie\\tmp\\metadata-updates-87d4524eefce\\result.json",
+    "sha256": "dc1985e2d3d6bf1689eb937e44bde08397d594ceb1b7796bb56d0084062e91ac"
+  },
+  "tests": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "targetedTotals": {
+    "tests": 232,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "fixture": "network-none disposable MySQL8.0 JSON column",
+  "productionWrites": 0,
+  "fixtureCleanupComplete": true,
+  "caseSensitiveCanonicalJsonComparisonVerified": true
+}

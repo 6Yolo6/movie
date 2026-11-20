@@ -147,7 +147,8 @@ if (Test-Path -LiteralPath $dbDir) {
         ForEach-Object {
             $lineCount = @(Get-Content -Encoding UTF8 -LiteralPath $_.FullName).Count
             $relative = "backend/src/main/resources/db/$($_.Name)"
-            $lastChange = (& git -C $root log -1 --format="%cs %h" -- $relative 2>$null).Trim()
+            $lastChange = & git -C $root log -1 --format="%cs %h" -- $relative 2>$null
+            $lastChange = if ($null -eq $lastChange) { "" } else { ([string]$lastChange).Trim() }
             Add-Line "| ``$($_.Name)`` | $lineCount | $(Escape-MarkdownCell $lastChange) |"
         }
 }

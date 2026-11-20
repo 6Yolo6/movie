@@ -1,0 +1,15 @@
+# Preserve exact deployment receipt bytes and their SHA256 across Windows checkouts.
+deployment-receipt.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+scheduler-delta-proof.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+collection-postdeploy-watch.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+frontend-live-readonly.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+host-pin-applied.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+daily-coverage-applied.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+post-deploy-bounded-logs.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+final-independent-initial-failure.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+final-independent-verified.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+deployment-initial-failure.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+backend-host-config-diagnosis.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+worker-post-restore-failure.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+post-declaration.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+deployment-evidence-manifest.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

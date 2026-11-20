@@ -1,0 +1,29 @@
+{
+  "status": "PASS_READONLY_REPORTED_IDLE_WINDOW",
+  "atUtc": "2026-11-15T12:42:47.047070+00:00",
+  "evidence": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-idle-diagnostic-20261115\\fixed-info-projected-20261115T124016Z.json",
+    "sha256": "e33d0facc72ef0393d2b5209bb683c0f2d9d690a2df4fd2e8796c6b23b98ade6"
+  },
+  "checks": {
+    "reportedConfigHashMatchesCurrentBytes": true,
+    "fixedNamesExactlyCurrentConfiguredSet": true,
+    "fixedRowsExactlyOriginalSet": true,
+    "originalTaskGateObservedPass": true,
+    "bothFixedBusinessReadyEnabledLastResultZero": true,
+    "qrNotInFixedAllowlist": true,
+    "readonlyCompleteErrorFreeSourceReport": true,
+    "reportedNextBusinessRunAtLeastFiveMinutesAfterObservation": true
+  },
+  "observedFinishedAtUtc": "2026-11-15T12:40:16.388955+00:00",
+  "nearestFixedBusinessNextRunAtUtc": "2026-11-15T14:33:33+00:00",
+  "secondsFromObservationToNextBusinessRun": 6796.611045,
+  "historicalFailedTaskIdentityConfirmed": false,
+  "historicalQrRunningConfirmed": false,
+  "qrLastRunFieldExcludedFromHistoricalReasoning": true,
+  "currentStateBeyondObservationNotVerifiedByReviewer": true,
+  "allOriginalRuntimeIdleGatesStillRequired": true,
+  "newWaitLogicOrAllowlistRequired": false,
+  "realTaskQueriesRepeatedByReviewer": false,
+  "productionMutationPerformed": false
+}

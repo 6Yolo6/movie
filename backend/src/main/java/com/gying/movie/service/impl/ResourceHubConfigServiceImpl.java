@@ -2,12 +2,25 @@ package com.gying.movie.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.gying.movie.client.XunleiClient;
+import com.gying.movie.client.BaiduSessionVault;
 import com.gying.movie.config.ResourceHubProperties;
+import com.gying.movie.config.CloudDriveProvider;
+import com.gying.movie.dto.CloudDriveWorkflowConfig;
+import java.util.List;
+import java.util.HashSet;
+import java.util.Locale;
 import com.gying.movie.dto.ResourceHubConfigRequest;
 import com.gying.movie.dto.ResourceHubConfigResponse;
 import com.gying.movie.entity.SysConfig;
 import com.gying.movie.service.IResourceHubConfigService;
 import com.gying.movie.service.ISysConfigService;
+import com.gying.movie.service.IResourceHubTaskService;
+import java.util.ArrayList;
+import java.util.Arrays;
+import com.gying.movie.dto.MetadataCrawlProgress;
+import com.gying.movie.dto.MetadataCrawlRange;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import jakarta.annotation.PostConstruct;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,8 +43,11 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     private static final String KEY_ENABLED = "resource.hub.enabled";
     private static final String KEY_AUTO_APPROVE = "resource.hub.auto_approve";
     private static final String KEY_TMDB_AUTO_SYNC_ENABLED = "resource.hub.tmdb.auto_sync_enabled";
+    private static final String KEY_TMDB_AUTO_SYNC_UPDATES_ONLY = "resource.hub.tmdb.auto_sync_updates_only";
     private static final String KEY_TMDB_AUTO_SYNC_SOURCES = "resource.hub.tmdb.auto_sync_sources";
+    private static final String KEY_TMDB_AUTO_SYNC_RANGES = "resource.hub.tmdb.auto_sync_ranges";
     private static final String KEY_TMDB_AUTO_SYNC_PAGE = "resource.hub.tmdb.auto_sync_page";
+    private static final String KEY_TMDB_AUTO_SYNC_END_PAGE = "resource.hub.tmdb.auto_sync_end_page";
     private static final String KEY_TMDB_AUTO_SYNC_MAX_ITEMS = "resource.hub.tmdb.auto_sync_max_items";
     private static final String KEY_TMDB_AUTO_SYNC_INTERVAL_HOURS = "resource.hub.tmdb.auto_sync_interval_hours";
     private static final String KEY_TMDB_AUTO_DISCOVERY_ENABLED = "resource.hub.tmdb.auto_discovery_enabled";
@@ -39,10 +55,17 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     private static final String KEY_TMDB_DISCOVERY_COOLDOWN_HOURS = "resource.hub.tmdb.discovery_cooldown_hours";
     private static final String KEY_GYING_DISCOVERY_ENABLED = "resource.hub.gying.discovery_enabled";
     private static final String KEY_GYING_AUTO_SYNC_ENABLED = "resource.hub.gying.auto_sync_enabled";
+    private static final String KEY_GYING_AUTO_SYNC_UPDATES_ONLY = "resource.hub.gying.auto_sync_updates_only";
     private static final String KEY_GYING_AUTO_SYNC_SOURCES = "resource.hub.gying.auto_sync_sources";
+    private static final String KEY_GYING_SOURCE_PAUSED_PREFIX = "resource.hub.gying.auto_sync_paused.";
+    private static final String KEY_GYING_AUTO_SYNC_RANGES = "resource.hub.gying.auto_sync_ranges";
     private static final String KEY_GYING_AUTO_SYNC_PAGE = "resource.hub.gying.auto_sync_page";
+    private static final String KEY_GYING_AUTO_SYNC_END_PAGE = "resource.hub.gying.auto_sync_end_page";
     private static final String KEY_GYING_AUTO_SYNC_MAX_ITEMS = "resource.hub.gying.auto_sync_max_items";
     private static final String KEY_GYING_AUTO_SYNC_INTERVAL_HOURS = "resource.hub.gying.auto_sync_interval_hours";
+    private static final String KEY_TVMAZE_ENABLED = "resource.hub.tvmaze.auto_sync_enabled";
+    private static final String KEY_TVMAZE_MAX_ITEMS = "resource.hub.tvmaze.auto_sync_max_items";
+    private static final String KEY_TVMAZE_INTERVAL = "resource.hub.tvmaze.auto_sync_interval_hours";
     private static final String KEY_WORKER_ENABLED = "resource.hub.worker.enabled";
     private static final String KEY_WORKER_TASK_LIMIT = "resource.hub.worker.task_limit";
     private static final String KEY_WORKER_QUARK_LIMIT = "resource.hub.worker.quark_limit";
@@ -58,6 +81,14 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
 
     @Autowired(required = false)
     private XunleiClient xunleiClient;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private BaiduSessionVault baiduSessionVault;
+
+    @Autowired(required = false)
+    private IResourceHubTaskService taskService;
+
+    @Autowired(required = false)
+    private GyingWeeklyTransferSettings weeklyTransferSettings;
 
     public ResourceHubConfigServiceImpl(ResourceHubProperties properties, ISysConfigService sysConfigService) {
         this(properties, sysConfigService, new ObjectMapper());
@@ -89,8 +120,12 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         properties.setEnabled(readBoolean(KEY_ENABLED, properties.isEnabled()));
         properties.setAutoApprove(readBoolean(KEY_AUTO_APPROVE, properties.isAutoApprove()));
         tmdb.setAutoSyncEnabled(readBoolean(KEY_TMDB_AUTO_SYNC_ENABLED, tmdb.isAutoSyncEnabled()));
+        tmdb.setAutoSyncUpdatesOnly(readBoolean(KEY_TMDB_AUTO_SYNC_UPDATES_ONLY, tmdb.isAutoSyncUpdatesOnly()));
         tmdb.setAutoSyncSources(readString(KEY_TMDB_AUTO_SYNC_SOURCES, tmdb.getAutoSyncSources()));
-        tmdb.setAutoSyncPage(readInt(KEY_TMDB_AUTO_SYNC_PAGE, tmdb.getAutoSyncPage(), 1, 20));
+        tmdb.setAutoSyncPage(readInt(KEY_TMDB_AUTO_SYNC_PAGE, tmdb.getAutoSyncPage(), 1, 500));
+        tmdb.setAutoSyncEndPage(Math.max(tmdb.getAutoSyncPage(),
+                readInt(KEY_TMDB_AUTO_SYNC_END_PAGE, tmdb.getAutoSyncEndPage(), 1, 500)));
+        tmdb.setAutoSyncRanges(readRanges(KEY_TMDB_AUTO_SYNC_RANGES, "TMDB", tmdb.getAutoSyncRanges()));
         tmdb.setAutoSyncMaxItems(readInt(KEY_TMDB_AUTO_SYNC_MAX_ITEMS, tmdb.getAutoSyncMaxItems(), 1, 100));
         tmdb.setAutoSyncIntervalHours(readInt(KEY_TMDB_AUTO_SYNC_INTERVAL_HOURS, tmdb.getAutoSyncIntervalHours(), 1, 720));
         tmdb.setAutoDiscoveryEnabled(readBoolean(KEY_TMDB_AUTO_DISCOVERY_ENABLED, tmdb.isAutoDiscoveryEnabled()));
@@ -98,11 +133,20 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         tmdb.setDiscoveryCooldownHours(readInt(KEY_TMDB_DISCOVERY_COOLDOWN_HOURS, tmdb.getDiscoveryCooldownHours(), 1, 720));
         gying.setDiscoveryEnabled(readBoolean(KEY_GYING_DISCOVERY_ENABLED, gying.isDiscoveryEnabled()));
         gying.setAutoSyncEnabled(readBoolean(KEY_GYING_AUTO_SYNC_ENABLED, gying.isAutoSyncEnabled()));
+        gying.setAutoSyncUpdatesOnly(readBoolean(KEY_GYING_AUTO_SYNC_UPDATES_ONLY, gying.isAutoSyncUpdatesOnly()));
         gying.setAutoSyncSources(readString(KEY_GYING_AUTO_SYNC_SOURCES, gying.getAutoSyncSources()));
-        gying.setAutoSyncPage(readInt(KEY_GYING_AUTO_SYNC_PAGE, gying.getAutoSyncPage(), 1, 500));
+        gying.setAutoSyncPausedSources(readGyingPausedSources());
+        gying.setAutoSyncPage(readInt(KEY_GYING_AUTO_SYNC_PAGE, gying.getAutoSyncPage(), 1, MetadataCrawlRange.maxPages("GYING")));
+        gying.setAutoSyncEndPage(Math.max(gying.getAutoSyncPage(),
+                readInt(KEY_GYING_AUTO_SYNC_END_PAGE, gying.getAutoSyncEndPage(), 1, MetadataCrawlRange.maxPages("GYING"))));
+        gying.setAutoSyncRanges(readRanges(KEY_GYING_AUTO_SYNC_RANGES, "GYING", gying.getAutoSyncRanges()));
         gying.setAutoSyncMaxItems(readInt(KEY_GYING_AUTO_SYNC_MAX_ITEMS, gying.getAutoSyncMaxItems(), 1, 20));
         gying.setAutoSyncIntervalHours(readInt(
                 KEY_GYING_AUTO_SYNC_INTERVAL_HOURS, gying.getAutoSyncIntervalHours(), 1, 720));
+        var tvmaze = properties.getTvmaze();
+        tvmaze.setAutoSyncEnabled(readBoolean(KEY_TVMAZE_ENABLED, tvmaze.isAutoSyncEnabled()));
+        tvmaze.setAutoSyncMaxItems(readInt(KEY_TVMAZE_MAX_ITEMS, tvmaze.getAutoSyncMaxItems(), 1, 10));
+        tvmaze.setAutoSyncIntervalHours(readInt(KEY_TVMAZE_INTERVAL, tvmaze.getAutoSyncIntervalHours(), 1, 720));
         worker.setEnabled(readBoolean(KEY_WORKER_ENABLED, worker.isEnabled()));
         worker.setTaskLimit(readInt(KEY_WORKER_TASK_LIMIT, worker.getTaskLimit(), 1, 20));
         worker.setQuarkLimit(readInt(KEY_WORKER_QUARK_LIMIT, worker.getQuarkLimit(), 1, 20));
@@ -112,8 +156,36 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         worker.setDiscoveredRetryDelayMs(readLong(KEY_DISCOVERED_RETRY_DELAY_MS, worker.getDiscoveredRetryDelayMs(), 0, 3600000));
         worker.setDiscoveredRetryCron(readString(KEY_DISCOVERED_RETRY_CRON, worker.getDiscoveredRetryCron()));
 
+        reloadDriveWorkflows();
         ensureDefaults();
         return fromProperties();
+    }
+
+    private Map<String, Boolean> readGyingPausedSources() {
+        var paused = new LinkedHashMap<String, Boolean>();
+        // Missing pause keys default to false without creating rows during a read.
+        MetadataCrawlRange.sources("GYING").forEach(source ->
+                paused.put(source, readBoolean(KEY_GYING_SOURCE_PAUSED_PREFIX + source, false)));
+        return Map.copyOf(paused);
+    }
+
+    @Override
+    public synchronized void setGyingSourcePaused(String source, boolean paused) {
+        if (source == null || !MetadataCrawlRange.sources("GYING").contains(source)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid GYING catalog source");
+        }
+        String key = KEY_GYING_SOURCE_PAUSED_PREFIX + source;
+        SysConfig config = sysConfigService.getOne(new QueryWrapper<SysConfig>().eq("config_key", key));
+        boolean create = config == null;
+        if (create) {
+            config = new SysConfig();
+            config.setConfigKey(key);
+        }
+        config.setConfigValue(Boolean.toString(paused));
+        config.setDescription("GYING " + source + " 目录自动采集独立暂停");
+        boolean saved = create ? sysConfigService.save(config) : sysConfigService.updateById(config);
+        if (!saved) throw new IllegalStateException("GYING catalog pause was not persisted");
+        properties.getGying().setAutoSyncPausedSources(readGyingPausedSources());
     }
 
     @Override
@@ -122,6 +194,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public synchronized ResourceHubConfigResponse updateConfig(ResourceHubConfigRequest request) {
         if (request == null) {
             return getConfig();
@@ -131,6 +204,24 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         ResourceHubProperties.Gying gying = properties.getGying();
         ResourceHubProperties.Worker worker = properties.getWorker();
         ResourceHubProperties.Xunlei xunlei = properties.getXunlei();
+
+        if (request.getTvmazeAutoSyncMaxItems() != null && (request.getTvmazeAutoSyncMaxItems() < 1 || request.getTvmazeAutoSyncMaxItems() > 10)
+                || request.getTvmazeAutoSyncIntervalHours() != null && (request.getTvmazeAutoSyncIntervalHours() < 1 || request.getTvmazeAutoSyncIntervalHours() > 720)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "TVmaze 每轮详情为1–10条，间隔为1–720小时");
+        }
+        validateDriveWorkflows(request.getDriveWorkflows());
+        if (request.getWeeklyTransferSchedules() != null && weeklyTransferSettings != null) {
+            weeklyTransferSettings.validate(request.getWeeklyTransferSchedules());
+        }
+        int[] tmdbRange = resolveRange("TMDB", request.getTmdbAutoSyncPage(), request.getTmdbAutoSyncEndPage(),
+                tmdb.getAutoSyncPage(), tmdb.getAutoSyncEndPage());
+        int[] gyingRange = resolveRange("GYING", request.getGyingAutoSyncPage(), request.getGyingAutoSyncEndPage(),
+                gying.getAutoSyncPage(), gying.getAutoSyncEndPage());
+
+        var tmdbRanges = mergeRanges("TMDB", tmdb.getAutoSyncRanges(), request.getTmdbAutoSyncRanges());
+        var gyingRanges = mergeRanges("GYING", gying.getAutoSyncRanges(), request.getGyingAutoSyncRanges());
+
+        persistDriveWorkflows(request.getDriveWorkflows());
 
         // Credentials are intentionally runtime-only. They are never written to sys_config.
         if (xunlei != null) {
@@ -154,15 +245,24 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             tmdb.setAutoSyncEnabled(request.getTmdbAutoSyncEnabled());
             upsert(KEY_TMDB_AUTO_SYNC_ENABLED, Boolean.toString(request.getTmdbAutoSyncEnabled()), "是否按计划从 TMDB 自动同步影片元数据");
         }
+        if (request.getTmdbAutoSyncUpdatesOnly() != null) {
+            tmdb.setAutoSyncUpdatesOnly(request.getTmdbAutoSyncUpdatesOnly());
+            upsert(KEY_TMDB_AUTO_SYNC_UPDATES_ONLY, Boolean.toString(request.getTmdbAutoSyncUpdatesOnly()), "是否暂停全量采集并仅检查每日更新");
+        }
         if (request.getTmdbAutoSyncSources() != null) {
             String value = normalizeSources(request.getTmdbAutoSyncSources());
             tmdb.setAutoSyncSources(value);
             upsert(KEY_TMDB_AUTO_SYNC_SOURCES, value, "TMDB 自动同步的数据源类型列表");
         }
-        if (request.getTmdbAutoSyncPage() != null) {
-            int value = clamp(request.getTmdbAutoSyncPage(), 1, 20);
-            tmdb.setAutoSyncPage(value);
-            upsert(KEY_TMDB_AUTO_SYNC_PAGE, Integer.toString(value), "TMDB 自动同步读取的目录页码");
+        if (request.getTmdbAutoSyncPage() != null || request.getTmdbAutoSyncEndPage() != null) {
+            tmdb.setAutoSyncPage(tmdbRange[0]);
+            tmdb.setAutoSyncEndPage(tmdbRange[1]);
+            upsert(KEY_TMDB_AUTO_SYNC_PAGE, Integer.toString(tmdbRange[0]), "TMDB 自动采集起始页码");
+            upsert(KEY_TMDB_AUTO_SYNC_END_PAGE, Integer.toString(tmdbRange[1]), "TMDB 自动采集结束页码（含）");
+        }
+        if (request.getTmdbAutoSyncRanges() != null) {
+            upsert(KEY_TMDB_AUTO_SYNC_RANGES, writeRanges(tmdbRanges), "TMDB 各来源独立采集页码范围");
+            tmdb.setAutoSyncRanges(tmdbRanges);
         }
         if (request.getTmdbAutoSyncMaxItems() != null) {
             int value = clamp(request.getTmdbAutoSyncMaxItems(), 1, 100);
@@ -198,15 +298,24 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             upsert(KEY_GYING_AUTO_SYNC_ENABLED, Boolean.toString(request.getGyingAutoSyncEnabled()),
                     "是否按计划从 GYING 自动同步影片元数据");
         }
+        if (request.getGyingAutoSyncUpdatesOnly() != null) {
+            gying.setAutoSyncUpdatesOnly(request.getGyingAutoSyncUpdatesOnly());
+            upsert(KEY_GYING_AUTO_SYNC_UPDATES_ONLY, Boolean.toString(request.getGyingAutoSyncUpdatesOnly()), "是否暂停全量采集并仅检查每日更新");
+        }
         if (request.getGyingAutoSyncSources() != null) {
             String value = normalizeGyingSources(request.getGyingAutoSyncSources());
             gying.setAutoSyncSources(value);
             upsert(KEY_GYING_AUTO_SYNC_SOURCES, value, "GYING 自动同步的数据源类型列表");
         }
-        if (request.getGyingAutoSyncPage() != null) {
-            int value = clamp(request.getGyingAutoSyncPage(), 1, 500);
-            gying.setAutoSyncPage(value);
-            upsert(KEY_GYING_AUTO_SYNC_PAGE, Integer.toString(value), "GYING 自动同步读取的目录页码");
+        if (request.getGyingAutoSyncPage() != null || request.getGyingAutoSyncEndPage() != null) {
+            gying.setAutoSyncPage(gyingRange[0]);
+            gying.setAutoSyncEndPage(gyingRange[1]);
+            upsert(KEY_GYING_AUTO_SYNC_PAGE, Integer.toString(gyingRange[0]), "GYING 自动采集起始页码");
+            upsert(KEY_GYING_AUTO_SYNC_END_PAGE, Integer.toString(gyingRange[1]), "GYING 自动采集结束页码（含）");
+        }
+        if (request.getGyingAutoSyncRanges() != null) {
+            upsert(KEY_GYING_AUTO_SYNC_RANGES, writeRanges(gyingRanges), "GYING 各来源独立采集页码范围");
+            gying.setAutoSyncRanges(gyingRanges);
         }
         if (request.getGyingAutoSyncMaxItems() != null) {
             int value = clamp(request.getGyingAutoSyncMaxItems(), 1, 20);
@@ -218,6 +327,19 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             gying.setAutoSyncIntervalHours(value);
             upsert(KEY_GYING_AUTO_SYNC_INTERVAL_HOURS, Integer.toString(value),
                     "GYING 自动同步任务之间的最小间隔（小时）");
+        }
+        var tvmaze = properties.getTvmaze();
+        if (request.getTvmazeAutoSyncEnabled() != null) {
+            upsert(KEY_TVMAZE_ENABLED, Boolean.toString(request.getTvmazeAutoSyncEnabled()), "TVmaze 剧集增量同步开关");
+            tvmaze.setAutoSyncEnabled(request.getTvmazeAutoSyncEnabled());
+        }
+        if (request.getTvmazeAutoSyncMaxItems() != null) {
+            upsert(KEY_TVMAZE_MAX_ITEMS, request.getTvmazeAutoSyncMaxItems().toString(), "TVmaze 每轮剧集详情尝试上限");
+            tvmaze.setAutoSyncMaxItems(request.getTvmazeAutoSyncMaxItems());
+        }
+        if (request.getTvmazeAutoSyncIntervalHours() != null) {
+            upsert(KEY_TVMAZE_INTERVAL, request.getTvmazeAutoSyncIntervalHours().toString(), "TVmaze 增量检查最小间隔（小时）");
+            tvmaze.setAutoSyncIntervalHours(request.getTvmazeAutoSyncIntervalHours());
         }
         if (request.getWorkerEnabled() != null) {
             worker.setEnabled(request.getWorkerEnabled());
@@ -232,6 +354,11 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             int value = clamp(request.getWorkerQuarkLimit(), 1, 20);
             worker.setQuarkLimit(value);
             upsert(KEY_WORKER_QUARK_LIMIT, Integer.toString(value), "Worker 每轮最多提交的夸克转存任务数");
+            // A legacy client must still edit the effective limit after the new page has saved it.
+            String driveLimitKey = driveKey(CloudDriveProvider.QUARK, "batch_limit");
+            if (sysConfigService.count(new QueryWrapper<SysConfig>().eq("config_key", driveLimitKey)) > 0) {
+                upsertDrive(driveLimitKey, Integer.toString(value), "夸克网盘每批转存上限");
+            }
         }
         if (request.getWorkerPublishLimit() != null) {
             int value = clamp(request.getWorkerPublishLimit(), 1, 100);
@@ -258,6 +385,10 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             upsert(KEY_DISCOVERED_RETRY_CRON, value, "已发现资源定时重试的 Cron 表达式");
         }
 
+        if (request.getWeeklyTransferSchedules() != null && weeklyTransferSettings != null) {
+            weeklyTransferSettings.update(request.getWeeklyTransferSchedules());
+        }
+        applyDriveWorkflows(request.getDriveWorkflows());
         return fromProperties();
     }
 
@@ -282,12 +413,18 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         response.setXunleiAuthorizationExpiresAt(expiresAt);
         response.setXunleiAuthorizationExpired(expired);
         response.setXunleiCaptchaConfigured(xunlei != null && hasText(xunlei.getCaptchaToken()));
+        response.setDriveWorkflows(driveWorkflowResponse(configured));
         response.setEnabled(properties.isEnabled());
         response.setAutoApprove(properties.isAutoApprove());
         response.setTmdbConfigured(hasText(tmdb.getApiKey()));
         response.setTmdbAutoSyncEnabled(tmdb.isAutoSyncEnabled());
+        response.setTmdbAutoSyncUpdatesOnly(tmdb.isAutoSyncUpdatesOnly());
         response.setTmdbAutoSyncSources(tmdb.getAutoSyncSources());
+        var tmdbRanges = new LinkedHashMap<String, MetadataCrawlRange>();
+        MetadataCrawlRange.sources("TMDB").forEach(source -> tmdbRanges.put(source, tmdb.rangeFor(source)));
+        response.setTmdbAutoSyncRanges(tmdbRanges);
         response.setTmdbAutoSyncPage(tmdb.getAutoSyncPage());
+        response.setTmdbAutoSyncEndPage(tmdb.getAutoSyncEndPage());
         response.setTmdbAutoSyncMaxItems(tmdb.getAutoSyncMaxItems());
         response.setTmdbAutoSyncIntervalHours(tmdb.getAutoSyncIntervalHours());
         response.setTmdbAutoDiscoveryEnabled(tmdb.isAutoDiscoveryEnabled());
@@ -295,10 +432,22 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         response.setTmdbDiscoveryCooldownHours(tmdb.getDiscoveryCooldownHours());
         response.setGyingDiscoveryEnabled(gying.isDiscoveryEnabled());
         response.setGyingAutoSyncEnabled(gying.isAutoSyncEnabled());
+        response.setGyingAutoSyncUpdatesOnly(gying.isAutoSyncUpdatesOnly());
         response.setGyingAutoSyncSources(gying.getAutoSyncSources());
+        var paused = new LinkedHashMap<String, Boolean>();
+        MetadataCrawlRange.sources("GYING").forEach(source -> paused.put(source, gying.isAutoSyncSourcePaused(source)));
+        response.setGyingAutoSyncPausedSources(Map.copyOf(paused));
+        var gyingRanges = new LinkedHashMap<String, MetadataCrawlRange>();
+        MetadataCrawlRange.sources("GYING").forEach(source -> gyingRanges.put(source, gying.rangeFor(source)));
+        response.setGyingAutoSyncRanges(gyingRanges);
         response.setGyingAutoSyncPage(gying.getAutoSyncPage());
+        response.setGyingAutoSyncEndPage(gying.getAutoSyncEndPage());
         response.setGyingAutoSyncMaxItems(gying.getAutoSyncMaxItems());
         response.setGyingAutoSyncIntervalHours(gying.getAutoSyncIntervalHours());
+        response.setTvmazeAutoSyncEnabled(properties.getTvmaze().isAutoSyncEnabled());
+        response.setTvmazeAutoSyncMaxItems(properties.getTvmaze().getAutoSyncMaxItems());
+        response.setTvmazeAutoSyncIntervalHours(properties.getTvmaze().getAutoSyncIntervalHours());
+        if (taskService != null) response.setTvmazeSyncProgress(new TvmazeUpdatesCheckpoint(taskService, objectMapper).progress());
         response.setWorkerEnabled(worker.isEnabled());
         response.setWorkerFixedDelayMs(worker.getFixedDelayMs());
         response.setWorkerTaskLimit(worker.getTaskLimit());
@@ -308,7 +457,193 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         response.setDiscoveredRetryLimit(worker.getDiscoveredRetryLimit());
         response.setDiscoveredRetryDelayMs(worker.getDiscoveredRetryDelayMs());
         response.setDiscoveredRetryCron(worker.getDiscoveredRetryCron());
+        if (taskService != null) {
+            var planner = new MetadataCrawlPlanner(taskService, objectMapper);
+            var progress = new ArrayList<MetadataCrawlProgress>();
+            addProgress(progress, planner, "TMDB", tmdb.getAutoSyncSources(),
+                    tmdb::rangeFor);
+            addProgress(progress, planner, "GYING", gying.getAutoSyncSources(),
+                    gying::rangeFor);
+            response.setMetadataCrawlProgress(progress);
+        }
+        if (weeklyTransferSettings != null) response.setWeeklyTransferSchedules(weeklyTransferSettings.get());
         return response;
+    }
+
+    private String driveKey(CloudDriveProvider provider, String field) {
+        return "resource.hub.drive." + provider.name().toLowerCase(Locale.ROOT) + "." + field;
+    }
+
+    private void reloadDriveWorkflows() {
+        var quark = properties.getQuark();
+        var xunlei = properties.getXunlei();
+        var worker = properties.getWorker();
+        quark.setDiscoveryEnabled(readBoolean(driveKey(CloudDriveProvider.QUARK, "discovery_enabled"), quark.isDiscoveryEnabled()));
+        quark.setTransferEnabled(readBoolean(driveKey(CloudDriveProvider.QUARK, "transfer_enabled"), quark.isTransferEnabled()));
+        quark.setGyingPublishEnabled(readBoolean(driveKey(CloudDriveProvider.QUARK, "gying_publish_enabled"), quark.isGyingPublishEnabled()));
+        quark.setShareEnabled(readBoolean(driveKey(CloudDriveProvider.QUARK, "share_enabled"), quark.isShareEnabled()));
+        quark.setVideoEnabled(readBoolean(driveKey(CloudDriveProvider.QUARK, "video_enabled"), quark.isVideoEnabled()));
+        quark.setTorrentEnabled(readBoolean(driveKey(CloudDriveProvider.QUARK, "torrent_enabled"), quark.isTorrentEnabled()));
+        quark.setSavePath(readString(driveKey(CloudDriveProvider.QUARK, "save_path"), quark.getSavePath()));
+        worker.setQuarkLimit(readInt(driveKey(CloudDriveProvider.QUARK, "batch_limit"), worker.getQuarkLimit(), 1, 20));
+        xunlei.setDiscoveryEnabled(readBoolean(driveKey(CloudDriveProvider.XUNLEI, "discovery_enabled"), xunlei.isDiscoveryEnabled()));
+        xunlei.setEnabled(readBoolean(driveKey(CloudDriveProvider.XUNLEI, "transfer_enabled"), xunlei.isEnabled()));
+        xunlei.setGyingPublishEnabled(readBoolean(driveKey(CloudDriveProvider.XUNLEI, "gying_publish_enabled"), xunlei.isGyingPublishEnabled()));
+        xunlei.setShareEnabled(readBoolean(driveKey(CloudDriveProvider.XUNLEI, "share_enabled"), xunlei.isShareEnabled()));
+        xunlei.setVideoEnabled(readBoolean(driveKey(CloudDriveProvider.XUNLEI, "video_enabled"), xunlei.isVideoEnabled()));
+        xunlei.setTorrentEnabled(readBoolean(driveKey(CloudDriveProvider.XUNLEI, "torrent_enabled"), xunlei.isTorrentEnabled()));
+        xunlei.setSavePath(readString(driveKey(CloudDriveProvider.XUNLEI, "save_path"), xunlei.getSavePath()));
+        worker.setXunleiLimit(readInt(driveKey(CloudDriveProvider.XUNLEI, "batch_limit"), worker.getXunleiLimit(), 1, 20));
+        var baidu = properties.getBaidu();
+        baidu.setDiscoveryEnabled(readBoolean(driveKey(CloudDriveProvider.BAIDU, "discovery_enabled"), baidu.isDiscoveryEnabled()));
+        baidu.setEnabled(readBoolean(driveKey(CloudDriveProvider.BAIDU, "transfer_enabled"), baidu.isEnabled()));
+        baidu.setGyingPublishEnabled(readBoolean(driveKey(CloudDriveProvider.BAIDU, "gying_publish_enabled"), baidu.isGyingPublishEnabled()));
+        baidu.setShareEnabled(readBoolean(driveKey(CloudDriveProvider.BAIDU, "share_enabled"), baidu.isShareEnabled()));
+        baidu.setVideoEnabled(readBoolean(driveKey(CloudDriveProvider.BAIDU, "video_enabled"), baidu.isVideoEnabled()));
+        baidu.setTorrentEnabled(readBoolean(driveKey(CloudDriveProvider.BAIDU, "torrent_enabled"), baidu.isTorrentEnabled()));
+        baidu.setSavePath(readString(driveKey(CloudDriveProvider.BAIDU, "save_path"), baidu.getSavePath()));
+        worker.setBaiduLimit(readInt(driveKey(CloudDriveProvider.BAIDU, "batch_limit"), worker.getBaiduLimit(), 1, 20));
+    }
+
+    private List<CloudDriveWorkflowConfig> driveWorkflowResponse(boolean xunleiCredentialConfigured) {
+        var workflows = new ArrayList<CloudDriveWorkflowConfig>();
+        for (var provider : CloudDriveProvider.values()) {
+            var workflow = new CloudDriveWorkflowConfig();
+            workflow.setProvider(provider.name());
+            workflow.setSupported(provider.isSupported());
+            workflow.setStatus(provider.status());
+            if (provider == CloudDriveProvider.QUARK) {
+                var config = properties.getQuark();
+                workflow.setDiscoveryEnabled(config.isDiscoveryEnabled());
+                workflow.setTransferEnabled(config.isTransferEnabled());
+                workflow.setGyingPublishEnabled(config.isGyingPublishEnabled());
+                workflow.setShareEnabled(config.isShareEnabled());
+                workflow.setVideoEnabled(config.isVideoEnabled());
+                workflow.setTorrentEnabled(config.isTorrentEnabled());
+                workflow.setSavePath(config.getSavePath());
+                workflow.setBatchLimit(properties.getWorker().getQuarkLimit());
+                workflow.setCredentialConfigured(hasText(config.getToken()));
+            } else if (provider == CloudDriveProvider.XUNLEI) {
+                var config = properties.getXunlei();
+                workflow.setDiscoveryEnabled(config.isDiscoveryEnabled());
+                workflow.setTransferEnabled(config.isEnabled());
+                workflow.setGyingPublishEnabled(config.isGyingPublishEnabled());
+                workflow.setShareEnabled(config.isShareEnabled());
+                workflow.setVideoEnabled(config.isVideoEnabled());
+                workflow.setTorrentEnabled(config.isTorrentEnabled());
+                workflow.setSavePath(config.getSavePath());
+                workflow.setBatchLimit(properties.getWorker().getXunleiLimit());
+                workflow.setCredentialConfigured(xunleiCredentialConfigured);
+            } else if (provider == CloudDriveProvider.BAIDU) {
+                var config = properties.getBaidu();
+                workflow.setDiscoveryEnabled(config.isDiscoveryEnabled());
+                workflow.setTransferEnabled(config.isEnabled());
+                workflow.setGyingPublishEnabled(config.isGyingPublishEnabled());
+                workflow.setShareEnabled(config.isShareEnabled());
+                workflow.setVideoEnabled(config.isVideoEnabled());
+                workflow.setTorrentEnabled(config.isTorrentEnabled());
+                workflow.setSavePath(config.getSavePath());
+                workflow.setBatchLimit(properties.getWorker().getBaiduLimit());
+                // Local metadata only: reading configuration never logs in or probes the account.
+                workflow.setCredentialConfigured(baiduSessionVault != null && baiduSessionVault.metadata().configured());
+            }
+            workflows.add(workflow);
+        }
+        return List.copyOf(workflows);
+    }
+
+    private void validateDriveWorkflows(List<CloudDriveWorkflowConfig> workflows) {
+        if (workflows == null) return;
+        var seen = new HashSet<CloudDriveProvider>();
+        for (var workflow : workflows) {
+            var provider = workflow == null ? null : CloudDriveProvider.from(workflow.getProvider());
+            if (provider == null || !provider.isSupported() || !seen.add(provider)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "网盘类型无效、重复或尚未接入");
+            }
+            if (workflow.getBatchLimit() != null && (workflow.getBatchLimit() < 1 || workflow.getBatchLimit() > 20)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "每批转存上限须为 1–20");
+            }
+            if (workflow.getSavePath() != null) {
+                String path = workflow.getSavePath();
+                if (path.isBlank() || path.length() > 300 || !path.startsWith("/") || path.contains("\\")
+                        || path.chars().anyMatch(Character::isISOControl)
+                        || Arrays.stream(path.split("/", -1)).anyMatch(segment -> "..".equals(segment))) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "保存路径须为 1–300 字符的绝对网盘路径，不能包含 .. 或反斜杠");
+                }
+            }
+        }
+    }
+
+    private void persistDriveWorkflows(List<CloudDriveWorkflowConfig> workflows) {
+        if (workflows == null) return;
+        // Validate the complete request before this method. Persist before changing live workflow policy.
+        for (var workflow : workflows) {
+            var provider = CloudDriveProvider.from(workflow.getProvider());
+            var fields = new LinkedHashMap<String, Object>();
+            fields.put("discovery_enabled", workflow.getDiscoveryEnabled());
+            fields.put("transfer_enabled", workflow.getTransferEnabled());
+            fields.put("gying_publish_enabled", workflow.getGyingPublishEnabled());
+            fields.put("share_enabled", workflow.getShareEnabled());
+            fields.put("video_enabled", workflow.getVideoEnabled());
+            fields.put("torrent_enabled", workflow.getTorrentEnabled());
+            fields.put("save_path", workflow.getSavePath());
+            fields.put("batch_limit", workflow.getBatchLimit());
+            for (var field : fields.entrySet()) {
+                if (field.getValue() != null) upsertDrive(driveKey(provider, field.getKey()),
+                        field.getValue().toString(), "网盘工作流配置 " + provider.name() + " " + field.getKey());
+            }
+        }
+    }
+
+    private void applyDriveWorkflows(List<CloudDriveWorkflowConfig> workflows) {
+        if (workflows == null) return;
+        for (var workflow : workflows) {
+            if (CloudDriveProvider.from(workflow.getProvider()) == CloudDriveProvider.QUARK) {
+                var config = properties.getQuark();
+                if (workflow.getDiscoveryEnabled() != null) config.setDiscoveryEnabled(workflow.getDiscoveryEnabled());
+                if (workflow.getTransferEnabled() != null) config.setTransferEnabled(workflow.getTransferEnabled());
+                if (workflow.getGyingPublishEnabled() != null) config.setGyingPublishEnabled(workflow.getGyingPublishEnabled());
+                if (workflow.getShareEnabled() != null) config.setShareEnabled(workflow.getShareEnabled());
+                if (workflow.getVideoEnabled() != null) config.setVideoEnabled(workflow.getVideoEnabled());
+                if (workflow.getTorrentEnabled() != null) config.setTorrentEnabled(workflow.getTorrentEnabled());
+                if (workflow.getSavePath() != null) config.setSavePath(workflow.getSavePath());
+                if (workflow.getBatchLimit() != null) properties.getWorker().setQuarkLimit(workflow.getBatchLimit());
+            } else if (CloudDriveProvider.from(workflow.getProvider()) == CloudDriveProvider.XUNLEI) {
+                var config = properties.getXunlei();
+                if (workflow.getDiscoveryEnabled() != null) config.setDiscoveryEnabled(workflow.getDiscoveryEnabled());
+                if (workflow.getTransferEnabled() != null) config.setEnabled(workflow.getTransferEnabled());
+                if (workflow.getGyingPublishEnabled() != null) config.setGyingPublishEnabled(workflow.getGyingPublishEnabled());
+                if (workflow.getShareEnabled() != null) config.setShareEnabled(workflow.getShareEnabled());
+                if (workflow.getVideoEnabled() != null) config.setVideoEnabled(workflow.getVideoEnabled());
+                if (workflow.getTorrentEnabled() != null) config.setTorrentEnabled(workflow.getTorrentEnabled());
+                if (workflow.getSavePath() != null) config.setSavePath(workflow.getSavePath());
+                if (workflow.getBatchLimit() != null) properties.getWorker().setXunleiLimit(workflow.getBatchLimit());
+            } else if (CloudDriveProvider.from(workflow.getProvider()) == CloudDriveProvider.BAIDU) {
+                var config = properties.getBaidu();
+                if (workflow.getDiscoveryEnabled() != null) config.setDiscoveryEnabled(workflow.getDiscoveryEnabled());
+                if (workflow.getTransferEnabled() != null) config.setEnabled(workflow.getTransferEnabled());
+                if (workflow.getGyingPublishEnabled() != null) config.setGyingPublishEnabled(workflow.getGyingPublishEnabled());
+                if (workflow.getShareEnabled() != null) config.setShareEnabled(workflow.getShareEnabled());
+                if (workflow.getVideoEnabled() != null) config.setVideoEnabled(workflow.getVideoEnabled());
+                if (workflow.getTorrentEnabled() != null) config.setTorrentEnabled(workflow.getTorrentEnabled());
+                if (workflow.getSavePath() != null) config.setSavePath(workflow.getSavePath());
+                if (workflow.getBatchLimit() != null) properties.getWorker().setBaiduLimit(workflow.getBatchLimit());
+            }
+        }
+    }
+
+    private void upsertDrive(String key, String value, String description) {
+        SysConfig config = sysConfigService.getOne(new QueryWrapper<SysConfig>().eq("config_key", key));
+        boolean create = config == null;
+        if (create) {
+            config = new SysConfig();
+            config.setConfigKey(key);
+        }
+        config.setConfigValue(value);
+        config.setDescription(description);
+        if (!(create ? sysConfigService.save(config) : sysConfigService.updateById(config))) {
+            throw new IllegalStateException("Cloud drive workflow configuration was not persisted");
+        }
     }
 
     private String xunleiAuthorizationExpiresAt(String authorization) {
@@ -335,8 +670,11 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         defaults.put(KEY_ENABLED, values(Boolean.toString(properties.isEnabled()), "影视资源中心总开关"));
         defaults.put(KEY_AUTO_APPROVE, values(Boolean.toString(properties.isAutoApprove()), "影视资源中心自动入库资源是否直接通过审核"));
         defaults.put(KEY_TMDB_AUTO_SYNC_ENABLED, values(Boolean.toString(properties.getTmdb().isAutoSyncEnabled()), "是否按计划从 TMDB 自动同步影片元数据"));
+        defaults.put(KEY_TMDB_AUTO_SYNC_UPDATES_ONLY, values(Boolean.toString(properties.getTmdb().isAutoSyncUpdatesOnly()), "是否暂停全量采集并仅检查每日更新"));
         defaults.put(KEY_TMDB_AUTO_SYNC_SOURCES, values(properties.getTmdb().getAutoSyncSources(), "TMDB 自动同步的数据源类型列表"));
         defaults.put(KEY_TMDB_AUTO_SYNC_PAGE, values(Integer.toString(properties.getTmdb().getAutoSyncPage()), "TMDB 自动同步读取的目录页码"));
+        defaults.put(KEY_TMDB_AUTO_SYNC_END_PAGE, values(
+                Integer.toString(properties.getTmdb().getAutoSyncEndPage()), "TMDB 自动采集结束页码（含）"));
         defaults.put(KEY_TMDB_AUTO_SYNC_MAX_ITEMS, values(Integer.toString(properties.getTmdb().getAutoSyncMaxItems()), "每轮 TMDB 自动同步最多处理的影片数"));
         defaults.put(KEY_TMDB_AUTO_SYNC_INTERVAL_HOURS, values(Integer.toString(properties.getTmdb().getAutoSyncIntervalHours()), "TMDB 自动同步任务之间的最小间隔（小时）"));
         defaults.put(KEY_TMDB_AUTO_DISCOVERY_ENABLED, values(Boolean.toString(properties.getTmdb().isAutoDiscoveryEnabled()), "TMDB 同步完成后是否自动创建资源发现任务"));
@@ -348,15 +686,21 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         defaults.put(KEY_GYING_AUTO_SYNC_ENABLED, values(
                 Boolean.toString(properties.getGying().isAutoSyncEnabled()),
                 "是否按计划从 GYING 自动同步影片元数据"));
+        defaults.put(KEY_GYING_AUTO_SYNC_UPDATES_ONLY, values(Boolean.toString(properties.getGying().isAutoSyncUpdatesOnly()), "是否暂停全量采集并仅检查每日更新"));
         defaults.put(KEY_GYING_AUTO_SYNC_SOURCES, values(
                 properties.getGying().getAutoSyncSources(), "GYING 自动同步的数据源类型列表"));
         defaults.put(KEY_GYING_AUTO_SYNC_PAGE, values(
                 Integer.toString(properties.getGying().getAutoSyncPage()), "GYING 自动同步读取的目录页码"));
+        defaults.put(KEY_GYING_AUTO_SYNC_END_PAGE, values(
+                Integer.toString(properties.getGying().getAutoSyncEndPage()), "GYING 自动采集结束页码（含）"));
         defaults.put(KEY_GYING_AUTO_SYNC_MAX_ITEMS, values(
                 Integer.toString(properties.getGying().getAutoSyncMaxItems()), "每轮 GYING 自动同步最多处理的影片数"));
         defaults.put(KEY_GYING_AUTO_SYNC_INTERVAL_HOURS, values(
                 Integer.toString(properties.getGying().getAutoSyncIntervalHours()),
                 "GYING 自动同步任务之间的最小间隔（小时）"));
+        defaults.put(KEY_TVMAZE_ENABLED, values(Boolean.toString(properties.getTvmaze().isAutoSyncEnabled()), "TVmaze 剧集增量同步开关"));
+        defaults.put(KEY_TVMAZE_MAX_ITEMS, values(Integer.toString(properties.getTvmaze().getAutoSyncMaxItems()), "TVmaze 每轮剧集详情尝试上限"));
+        defaults.put(KEY_TVMAZE_INTERVAL, values(Integer.toString(properties.getTvmaze().getAutoSyncIntervalHours()), "TVmaze 增量检查最小间隔（小时）"));
         defaults.put(KEY_WORKER_ENABLED, values(Boolean.toString(properties.getWorker().isEnabled()), "是否启用影视资源中心后台 Worker"));
         defaults.put(KEY_WORKER_TASK_LIMIT, values(Integer.toString(properties.getWorker().getTaskLimit()), "Worker 每轮最多执行的资源发现任务数"));
         defaults.put(KEY_WORKER_QUARK_LIMIT, values(Integer.toString(properties.getWorker().getQuarkLimit()), "Worker 每轮最多提交的夸克转存任务数"));
@@ -366,6 +710,84 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         defaults.put(KEY_DISCOVERED_RETRY_DELAY_MS, values(Long.toString(properties.getWorker().getDiscoveredRetryDelayMs()), "批量重试每条资源之间的等待时间（毫秒）"));
         defaults.put(KEY_DISCOVERED_RETRY_CRON, values(properties.getWorker().getDiscoveredRetryCron(), "已发现资源定时重试的 Cron 表达式"));
         defaults.forEach((key, value) -> upsertMissing(key, value[0], value[1]));
+    }
+
+    private void addProgress(java.util.List<MetadataCrawlProgress> progress, MetadataCrawlPlanner planner,
+            String provider, String sources, java.util.function.Function<String, MetadataCrawlRange> rangeFor) {
+        if (sources != null) {
+            Arrays.stream(sources.split(",")).map(String::trim).filter(value -> !value.isEmpty()).distinct()
+                    .forEach(source -> {
+                        var range = rangeFor.apply(source);
+                        var position = planner.progress(provider, source, range.startPage(), range.endPage());
+                        if ("GYING".equals(provider) && properties.getGying().isAutoSyncSourcePaused(source)) {
+                            position = new MetadataCrawlProgress(position.provider(), position.source(),
+                                    position.startPage(), position.endPage(), position.nextPage(), position.nextItem(),
+                                    "PAUSED", position.taskId());
+                        }
+                        progress.add(position);
+                    });
+        }
+    }
+
+    private Map<String, MetadataCrawlRange> readRanges(String key, String provider,
+            Map<String, MetadataCrawlRange> defaults) {
+        String json = sysConfigService.getConfigValue(key, "");
+        if (json == null || json.isBlank()) return normalizeSavedRanges(provider, defaults);
+        try {
+            var type = objectMapper.getTypeFactory().constructMapType(LinkedHashMap.class, String.class, MetadataCrawlRange.class);
+            Map<String, MetadataCrawlRange> stored = objectMapper.readValue(json, type);
+            if (stored == null) throw new IllegalArgumentException("Missing ranges");
+            return normalizeSavedRanges(provider, stored);
+        } catch (Exception e) {
+            throw new IllegalStateException("Invalid saved metadata ranges: " + key, e);
+        }
+    }
+
+    private Map<String, MetadataCrawlRange> normalizeSavedRanges(String provider, Map<String, MetadataCrawlRange> stored) {
+        var bounded = new LinkedHashMap<String, MetadataCrawlRange>();
+        stored.forEach((source, range) -> {
+            if (range == null) throw new IllegalArgumentException("Missing saved metadata range");
+            // Old GYING ranges allowed 500; retain their saved bytes and limit runtime reads to the site's 50 pages.
+            resolveRange("TMDB", range.startPage(), range.endPage(), 1, 1);
+            int maxPage = MetadataCrawlRange.maxPages(provider);
+            bounded.put(source, new MetadataCrawlRange(Math.min(range.startPage(), maxPage), Math.min(range.endPage(), maxPage)));
+        });
+        return mergeRanges(provider, Map.of(), bounded);
+    }
+
+    private Map<String, MetadataCrawlRange> mergeRanges(String provider, Map<String, MetadataCrawlRange> current,
+            Map<String, MetadataCrawlRange> requested) {
+        if (requested == null) return current;
+        var ranges = new LinkedHashMap<>(current);
+        requested.forEach((source, range) -> {
+            if (!MetadataCrawlRange.sources(provider).contains(source) || range == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "采集来源或页码范围无效");
+            }
+            resolveRange(provider, range.startPage(), range.endPage(), 1, 1);
+            ranges.put(source, range);
+        });
+        return Map.copyOf(ranges);
+    }
+
+    private String writeRanges(Map<String, MetadataCrawlRange> ranges) {
+        try {
+            return objectMapper.writeValueAsString(ranges);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid metadata ranges", e);
+        }
+    }
+
+    private int[] resolveRange(String provider, Integer requestedStart, Integer requestedEnd, int currentStart, int currentEnd) {
+        int start = requestedStart == null ? currentStart : requestedStart;
+        // Old clients editing a single page keep single-page behavior.
+        int end = requestedEnd == null
+                ? (currentStart == currentEnd && requestedStart != null ? start : currentEnd) : requestedEnd;
+        int maxPage = MetadataCrawlRange.maxPages(provider);
+        if (start < 1 || end > maxPage || end < start) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "采集页码范围无效：须满足 1 ≤ 起始页 ≤ 结束页 ≤ " + maxPage);
+        }
+        return new int[] {start, end};
     }
 
     private String[] values(String value, String description) {
@@ -381,7 +803,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         try {
             return clamp(Integer.parseInt(value), min, max);
         } catch (NumberFormatException e) {
-            return defaultValue;
+            return clamp(defaultValue, min, max);
         }
     }
 
@@ -441,7 +863,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         if (!hasText(raw)) {
             return "HITS_MOVIE,HITS_TV,HITS_ANIME,CSCORE_MOVIE,CSCORE_TV,CSCORE_ANIME";
         }
-        java.util.Set<String> supported = java.util.Set.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME", "CSCORE_MOVIE", "CSCORE_TV", "CSCORE_ANIME");
+        java.util.Set<String> supported = java.util.Set.copyOf(MetadataCrawlRange.sources("GYING"));
         String normalized = String.join(",", java.util.Arrays.stream(raw.split(","))
                 .map(String::trim)
                 .filter(this::hasText)

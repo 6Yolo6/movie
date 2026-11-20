@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "helperSha256": "647f4c1a09a96c630ac5674112f680ab20fffde6e9be8853076e9cf1830c5b2c",
+  "readOnlySchemaSortProbes": [
+    {
+      "table": "movie_merge_reference_history",
+      "orderColumns": "id",
+      "whereFalseNoRowsRead": true,
+      "readOnlyTransaction": true,
+      "exit": 1,
+      "stdoutBytes": 0,
+      "stderrBytes": 69,
+      "stderrSha256": "2c036cc4b6375be25ef39535bb762d65d768b4e47aca4acbbbd013f9b46e1b05",
+      "mysqlErrors": [
+        {
+          "errno": 1054,
+          "sqlstate": "42S22"
+        }
+      ]
+    },
+    {
+      "table": "movie_merge_reference_history",
+      "orderColumns": "review_id,reference_table,reference_row_id",
+      "whereFalseNoRowsRead": true,
+      "readOnlyTransaction": true,
+      "exit": 0,
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mysqlErrors": []
+    },
+    {
+      "table": "movie_merge_favorite_history",
+      "orderColumns": "id",
+      "whereFalseNoRowsRead": true,
+      "readOnlyTransaction": true,
+      "exit": 1,
+      "stdoutBytes": 0,
+      "stderrBytes": 69,
+      "stderrSha256": "2c036cc4b6375be25ef39535bb762d65d768b4e47aca4acbbbd013f9b46e1b05",
+      "mysqlErrors": [
+        {
+          "errno": 1054,
+          "sqlstate": "42S22"
+        }
+      ]
+    },
+    {
+      "table": "movie_merge_favorite_history",
+      "orderColumns": "review_id,original_favorite_id",
+      "whereFalseNoRowsRead": true,
+      "readOnlyTransaction": true,
+      "exit": 0,
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mysqlErrors": []
+    }
+  ],
+  "sqlWrites": 0,
+  "rawStderrWritten": false,
+  "credentialsPrinted": false,
+  "cloudActions": 0,
+  "containerCreates": 0
+}

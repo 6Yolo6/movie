@@ -1,0 +1,76 @@
+{
+  "status": "PASS",
+  "scope": "LOCAL_FINAL_HELPER_DIFF_AND_INDEPENDENT_OFFLINE_TESTS_ONLY",
+  "atUtc": "2026-11-15T12:03:28.814848+00:00",
+  "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "helpers": {
+    "BackendRollout.py": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v3\\BackendRollout.py",
+      "sha256": "8a0c46672e73e51b482113ddc5ee1225a260693c688b5dd92671b38c8a3119b1"
+    },
+    "FollowUpDeclarations.py": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v3\\FollowUpDeclarations.py",
+      "sha256": "1740b1e526568a72d34d996c5d6dbca913bc109c47e4fb2507ded74058234ba1"
+    },
+    "HostReadyAdapter.py": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v3\\HostReadyAdapter.py",
+      "sha256": "30f4575299742f3e0ef684870c324e0b9017704768ddd7b63454f9d8805e7610"
+    }
+  },
+  "binding": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v3\\deployment-binding.json",
+    "sha256": "afc15bccadfe4f8654b016086d4fd04ff8a9f6e0b5338ad88b52a3ac4f746921"
+  },
+  "priorHostMetadataBaseline": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\prepared.json",
+    "sha256": "b7d627e72ed87910c2c160c266bba285db926f3572decdbfde1b0bfd55970c3c"
+  },
+  "tests": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v3\\independent-offline-tests.json",
+    "sha256": "150039aa846be378b6a28deef69947cdc362713c810b52a5e1cb0aeaf38eaf65"
+  },
+  "designReview": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\deployment-v3-hready-design-independent-review.json",
+    "sha256": "f4e0c02244676dbec70a78c9f0591782daeb1b7ccbfa6d8a7253937b6e510806"
+  },
+  "checks": {
+    "v1BackendPreserved": true,
+    "v1DeclarationsPreserved": true,
+    "v2BackendPreserved": true,
+    "v2DeclarationsPreserved": true,
+    "priorReferenceExactV2PreparedPathAndBytes": true,
+    "priorSourceCommitMatchesNewBinding": true,
+    "rawByteArchiveGateFunctionUnchanged": true,
+    "workerMutationFunctionUnchanged": true,
+    "backendExecuteMutationSequenceUnchangedAfterNewPriorGate": true,
+    "idlePreserveSaveModelEntryFunctionsUnchanged": true,
+    "hostDailyProposalCasAckAndApplyFunctionsUnchanged": true,
+    "independent69TestsPassed": true,
+    "frozenInputsUnchangedAcrossIndependentTests": true
+  },
+  "adapterSafetyVerifiedBySourceReviewAndOfflineTests": {
+    "originalHostAndPsShaPinned": true,
+    "exactNativeRuntimeErrorTwoFixedMessagesOnly": true,
+    "firstMessageRequiresIndependentRunningProof": true,
+    "secondMessageRequiresActualAndIndependentRunningProof": true,
+    "psCloneOnlyRemovesRunningRejection": true,
+    "completeXmlAclMetadataNormalizedOnlyForWaiting": true,
+    "onlyActualOriginalReadySnapshotReturned": true,
+    "originalSnapshotCodeCopiedGlobalsPrivateProxyOnly": true,
+    "noGlobalSubprocessOrOriginalModulePatch": true,
+    "allCommandsReadonlyAndTimeoutBoundByRemaining": true,
+    "monotonic45SecondDeadlineIncludesSourceVerificationStrictProbeSleep": true,
+    "preparedReadyDigestDurablyEqualsV2BeforeExecute": true,
+    "safeErrorOnlyPinnedExactClassEnumNoRawArgs": true
+  },
+  "historicalQrRunningConfirmed": false,
+  "historicalFailureCauseStatus": "HOST_SNAPSHOT_PHASE_CONFIRMED_SPECIFIC_CONDITION_UNKNOWN_TASK_LOG_DISABLED",
+  "productionPrepareInvokedByReviewer": false,
+  "executeInvokedByReviewer": false,
+  "sourceGetRepeated": false,
+  "mavenInvoked": false,
+  "productionMutationPerformed": false,
+  "liveCheckpointOrDeploymentGateValidated": false,
+  "v1OrV2ExecuteRetryPermitted": false,
+  "newV3PreparedPlanAndAuthenticatedCheckpointRequired": true
+}

@@ -11,6 +11,13 @@ SENSITIVE = r"(?:[A-Za-z0-9_]*(?:PASSWORD|SECRET|COOKIE|TOKEN|API_KEY|ACCESS_KEY
 ASSIGNMENT = re.compile(r"(?i)(?P<key>" + SENSITIVE + r")[\"']?\s*[:=]\s*([\"'])(?P<value>[^\r\n]*?)\2")
 PLACEHOLDER = re.compile(r"(?i)^(?:|<[^>]+>|\$\{.*\}|(?:your|replace|change|example|test|dummy|fixture)[-_ ].*|true|false|auto|ENV)$")
 ENV_DEFAULT = re.compile(r"\$\{(?P<key>" + SENSITIVE + r"):(?P<value>[^{}]+)\}", re.I)
+# Exact reviewed enum declaration, not a credential. Do not allowlist by suffix:
+# changing its value/path/declaration must still produce a finding.
+NON_SECRET_LINES = {
+    ("backend/src/main/java/com/gying/movie/service/impl/EmailVerificationService.java",
+     'public static final String PURPOSE_RESET_PASSWORD = '
+     '"reset-password";'),
+}
 HASH = re.compile(r"\$2[aby]\$[0-9]{2}\$[./A-Za-z0-9]{53}")
 
 
@@ -21,6 +28,7 @@ def findings(text, path):
     result=[]
     for number,line in enumerate(text.splitlines(),1):
         if line.lstrip().startswith(("#", "//", "--")): continue
+        if (path.replace("\\", "/"), line.strip()) in NON_SECRET_LINES: continue
         if HASH.search(line) and path.endswith(".sql"):
             result.append({"path":path,"line":number,"rule":"seeded-password-hash"})
         for pattern in (ASSIGNMENT, ENV_DEFAULT):

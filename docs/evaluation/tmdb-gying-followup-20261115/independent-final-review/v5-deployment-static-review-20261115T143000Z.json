@@ -1,0 +1,96 @@
+{
+  "status": "PASS",
+  "scope": "INDEPENDENT_STATIC_DEPLOYMENT_RECEIPT_AND_SIX_CIPHERTEXT_HASH_SIZE_REVIEW",
+  "at": "2026-11-15T14:30:00.899Z",
+  "deploymentReceipt": {
+    "path": "E:/gying-tools/releases/tmdb-gying-followup-20261115/rollout-v5-after-key-path-fix-20261115T142029Z/deployment-receipt.json",
+    "sha256": "5f95fec76266521a8af2d9185219108fe0ec286d84e89b1ec6dc43833594b787"
+  },
+  "prepared": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\prepared.json",
+    "sha256": "f90d9d62bb438578cba7a7404e9f1832479741c126dc9eb1105631b7ed16dfeb"
+  },
+  "backend": {
+    "id": "bd827f2dbbac2bf30c285f7f95976f910e784c39f9f84e43c29adc44d18b6eeb",
+    "image": "sha256:8931619fd119eb9154ff498adace98d6f688bdff409e1e4db816969cce4fdc95",
+    "startedAt": "2026-11-15T14:27:42.010101121Z"
+  },
+  "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "jarSha256": "5b4492cd4047161c030b6c53254d7a7d8682d8ec220bef465d7b392e434b4c8e",
+  "normalTermExitCode": 143,
+  "workerPauseAndRestoreSingleAcknowledged": true,
+  "checkpoints": [
+    {
+      "kind": "preCheckpoint",
+      "directory": "G:\\gying-backups\\tmdb-gying-predeploy-20261115-20261115T142612.040527Z",
+      "manifest": {
+        "path": "G:\\gying-backups\\tmdb-gying-predeploy-20261115-20261115T142612.040527Z\\manifest.json",
+        "sha256": "0c3be1c81db2a9559e2c758f5ced6bb4d24e2b983e65e0d5b8674ad6da8cfbe0"
+      },
+      "status": "complete",
+      "files": [
+        {
+          "name": "backend-image.tar.age",
+          "size": 725529720,
+          "sha256": "2dfbe7ade35df885f72abf118a59d852dea8a4f034f263c1acc3be52e3b712a5",
+          "authenticatedDecryptionMetadata": true
+        },
+        {
+          "name": "runtime-preimage.tar.age",
+          "size": 1208808,
+          "sha256": "27091d91ffd9aeca5c27e0bafaf8dfec3915f0bbb18bebab65305ef759cc93f3",
+          "authenticatedDecryptionMetadata": true
+        },
+        {
+          "name": "mysql.sql.age",
+          "size": 113922642,
+          "sha256": "c5bc731bd846af56fbf7ee09105b56aaad4bdd1a2fdec3818319584bd703dcaf",
+          "authenticatedDecryptionMetadata": true
+        }
+      ],
+      "ciphertextHashAndSizeVerified": true,
+      "primaryAuthenticationFlag": true
+    },
+    {
+      "kind": "stoppedCheckpoint",
+      "directory": "G:\\gying-backups\\tmdb-gying-stopped-backend-20261115-20261115T142733.365466Z",
+      "manifest": {
+        "path": "G:\\gying-backups\\tmdb-gying-stopped-backend-20261115-20261115T142733.365466Z\\manifest.json",
+        "sha256": "17ea3592de45498ea0128bddfbac79b254c54f225a1ada43832956edc53d745b"
+      },
+      "status": "complete",
+      "files": [
+        {
+          "name": "mysql.sql.age",
+          "size": 113923953,
+          "sha256": "212b4463a0c5a0ca8c0b9607d3cfc0b3a916d99d2ee3676fc9294ce9ef0c4502",
+          "authenticatedDecryptionMetadata": true
+        },
+        {
+          "name": "backend-data.tar.age",
+          "size": 19144,
+          "sha256": "a72206748d55e781ca2446035305f755ded5123c5091d3681fc02c7d862bb585",
+          "authenticatedDecryptionMetadata": true
+        },
+        {
+          "name": "ai-state-key.tar.age",
+          "size": 2760,
+          "sha256": "5a957c2496246e2ba94a467b45e8434fa36a565549ff5a008487a2c06a2d2996",
+          "authenticatedDecryptionMetadata": true
+        }
+      ],
+      "ciphertextHashAndSizeVerified": true,
+      "primaryAuthenticationFlag": true
+    }
+  ],
+  "candidateActivations": 1,
+  "nginxReloadAttempts": 1,
+  "manualCloudActions": 0,
+  "naturalAcceptancePending": true,
+  "actualRuntimeRecheckedHere": false,
+  "hostDailyCasRecheckedHere": false,
+  "largeCiphertextsDecryptedHere": false,
+  "primaryFullAuthenticationRecorded": true,
+  "productionMutations": 0,
+  "providerRequests": 0
+}

@@ -1,0 +1,289 @@
+{
+  "recordedAt": "2026-11-04T14:55:08.512477+00:00",
+  "timezone": "Asia/Shanghai",
+  "status": "deployed-and-readonly-verified-with-limitations",
+  "deploymentPerformed": true,
+  "firstStageComplete": false,
+  "scope": [
+    "Movie backend",
+    "Agent backend"
+  ],
+  "order": [
+    "Movie backend",
+    "Agent backend"
+  ],
+  "limitedCurrentAuthorization": "可上线; this deployment only",
+  "sourceReceipts": {
+    "movieBuild": {
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\backend-build.json",
+      "sha256": "2f0f7ab23d0cd333132f21ee6d05faf092bd6cb46115241ff0ffc87f0abd69a5",
+      "status": null
+    },
+    "movie": {
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\deployment\\deployment-result.json",
+      "sha256": "b5cabee8324e5111ad7f2579706e1cd4bc7154727b6c397e715b8636ba00e7e0",
+      "status": "deployed-entrypoints-verification-passed"
+    },
+    "movieElevated": {
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\deployment\\backend-elevated-result.json",
+      "sha256": "fc1d71f3701f0bdeb4a4ad873e74472e5073bf4f0c27ac870120b9e18f74a2ee",
+      "status": "deployed"
+    },
+    "movieCheckpoint": {
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\backup-audit\\checkpoint-result.json",
+      "sha256": "829ae9f9c800ad33104375b66772ae310eb7bfb059fc85ee9219b6b9d97277c8",
+      "status": null
+    },
+    "plan": {
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\backup-audit\\checkpoint-plan.json",
+      "sha256": "7bc4972be41a747340ca3186992e189bb6868c816c8b70db60fc163e8495b878",
+      "status": null
+    },
+    "dailyBackup": {
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\backup-audit\\daily-backup-plan.json",
+      "sha256": "523a7308a9906b11254bc407e5c2fdf2208782be4841405ccbf7fd6b8e1522c7",
+      "status": "applied"
+    },
+    "agent": {
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-agent\\agent-deployment-result.json",
+      "sha256": "2485020d1c6786f496f115a4a068eb8f24a3229cb62a145beb1270e052e5f93d",
+      "status": "deployed"
+    },
+    "agentElevated": {
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-agent\\agent-elevated-result.json",
+      "sha256": "5cd72a16146251753b0c2b268da092d58b1ac73a6614dbc77a18d1255825e39c",
+      "status": "deployed"
+    },
+    "agentPreflight": {
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-agent\\agent-wrapper-preflight.json",
+      "sha256": "84cc1215f55843d727a8940f6307c76e462110f16f09cb30c3d5a61a5c9cefc7",
+      "status": "passed"
+    },
+    "post": {
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\post-deployment-readonly-v2.json",
+      "sha256": "8b002f1e241dff5999ba6c50e3bc783760975f82e1557fbb0c197756e7a2e930",
+      "status": "verified-with-limitations"
+    },
+    "postInitial": {
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\post-deployment-readonly.json",
+      "sha256": "ea813a3d48dd742ee76b5631ad58acee1bc3064862e62d9d99a4887504eb4498",
+      "status": "failed"
+    }
+  },
+  "rawEvidenceBindings": {
+    "movie-deployment-raw.json": {
+      "sourcePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\deployment\\deployment-result.json",
+      "sha256": "b5cabee8324e5111ad7f2579706e1cd4bc7154727b6c397e715b8636ba00e7e0"
+    },
+    "movie-admin-raw.json": {
+      "sourcePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\deployment\\backend-elevated-result.json",
+      "sha256": "fc1d71f3701f0bdeb4a4ad873e74472e5073bf4f0c27ac870120b9e18f74a2ee"
+    },
+    "agent-deployment-raw.json": {
+      "sourcePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-agent\\agent-deployment-result.json",
+      "sha256": "2485020d1c6786f496f115a4a068eb8f24a3229cb62a145beb1270e052e5f93d"
+    },
+    "agent-admin-raw.json": {
+      "sourcePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-agent\\agent-elevated-result.json",
+      "sha256": "5cd72a16146251753b0c2b268da092d58b1ac73a6614dbc77a18d1255825e39c"
+    },
+    "agent-preflight-raw.json": {
+      "sourcePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-agent\\agent-wrapper-preflight.json",
+      "sha256": "84cc1215f55843d727a8940f6307c76e462110f16f09cb30c3d5a61a5c9cefc7"
+    },
+    "post-deployment-readonly.json": {
+      "sourcePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\post-deployment-readonly-v2.json",
+      "sha256": "8b002f1e241dff5999ba6c50e3bc783760975f82e1557fbb0c197756e7a2e930"
+    },
+    "post-deployment-readonly-initial-failed.json": {
+      "sourcePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\post-deployment-readonly.json",
+      "sha256": "ea813a3d48dd742ee76b5631ad58acee1bc3064862e62d9d99a4887504eb4498"
+    },
+    "backend-core-validation.json": {
+      "sourcePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\deployment\\helper-validation.json",
+      "sha256": "2617e77e71e7c083ed451e06d8a10036dfe29a719494c163e4e61a11e95cb267"
+    },
+    "backend-wrapper-validation.json": {
+      "sourcePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\deployment\\wrapper-validation.json",
+      "sha256": "261c18f926c3f1b9f6aeadea94ef1ea1cc1f65dc9631f2500273d9d97596579d"
+    },
+    "initial-permission-preflight-failure.json": {
+      "sourcePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\deployment\\initial-permission-preflight-failure.json",
+      "sha256": "9f17a658342b59ddf3517b8a4fe2f4d1fa57af4b2cf26a310cb38f98131a3482"
+    },
+    "agent-helper-offline-checks.json": {
+      "sourcePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-agent\\agent-helper-offline-checks.json",
+      "sha256": "4202fcc3374544abda253999d118c4aacd2448a3950225def7a178ac65cefaa8"
+    },
+    "agent-preparation-review.json": {
+      "sourcePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-agent\\agent-preparation-review.json",
+      "sha256": "41ebff376210dae7fa52fce08ded5e8281ceb86068777a4081beebc1e6daa299"
+    },
+    "daily-backup-plan.json": {
+      "sourcePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\backup-audit\\daily-backup-plan.json",
+      "sha256": "523a7308a9906b11254bc407e5c2fdf2208782be4841405ccbf7fd6b8e1522c7"
+    },
+    "movie-entrypoints-final.json": {
+      "sourcePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\deployment\\entrypoints-143917.json",
+      "sha256": "bd81a9de8a1c46e737d1c42564e428ff8f519f7f6448c8971ce0a176a4631d72"
+    }
+  },
+  "movie": {
+    "codeCommit": "d6641e749a5d36d4823589a5202d7d5f9856fd26",
+    "imageId": "sha256:91dc95395cc5d30d589a3c5bf6c4e6053bb972e91ceb138f45cf78dd81d9f521",
+    "actualJarSha256": "2c1301be46e97f12da16167896cd1241efbb4abc20404d4e9c7c53672a3f5054",
+    "completedAt": "2026-11-04T14:39:17.278199+00:00",
+    "checkpoint": {
+      "directory": "G:\\gying-backups\\ai-identity-theme-backend-20261104-20261104T143825.278661Z",
+      "status": "complete",
+      "artifacts": 5,
+      "authenticated": true,
+      "manifestSha256": "0f6fbb68ef7c39544968664575afd39d8b9031d2eb215cae6238ececa6dcd855",
+      "files": [
+        {
+          "name": "backend-image.tar.age",
+          "sha256": "c8321b59a0cd6fbb68cd16bcae6f25ffd6997045e62ddc70b1c450eb7fb7a2a2",
+          "size": 432800616,
+          "authenticatedDecryption": true
+        },
+        {
+          "name": "effective-config.tar.age",
+          "sha256": "dc185ee5e2f6693503808144f260f92296b46829dc168222e35fe39e6d46e989",
+          "size": 225528,
+          "authenticatedDecryption": true
+        },
+        {
+          "name": "mysql.sql.age",
+          "sha256": "5d2330f9b8e2afdded94679760c62ee24b1e9f7e51dd2a266a043de32447e252",
+          "size": 103258170,
+          "authenticatedDecryption": true
+        },
+        {
+          "name": "backend-data.tar.age",
+          "sha256": "0bd901418a2e20d5e46447731de8f5a971d520729d9b1a486c04c7cbe9bdf8b9",
+          "size": 8904,
+          "authenticatedDecryption": true
+        },
+        {
+          "name": "ai-state-key.tar.age",
+          "sha256": "5b5a061be1551a7bb6386f3d49f1a2a9c51bc53bcc184b56d22441f56567fb2c",
+          "size": 2760,
+          "authenticatedDecryption": true
+        }
+      ]
+    }
+  },
+  "agent": {
+    "codeCommit": "6c277a4161b4840a89f8ecdca020818192f9eb3c",
+    "runtimeJarSha256": "1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64",
+    "completedAt": "2026-11-04T14:42:34.318990+00:00",
+    "newBackendRecord": {
+      "instanceId": "ff9b164c-ee6f-4620-a1d1-e972d07a634f",
+      "processId": 21260,
+      "startedAt": "2026-11-04T14:42:17.9795764Z"
+    },
+    "checkpoint": {
+      "directory": "G:\\gying-backups\\ai-agent-identity-theme-20261104-20261104T144159.678847Z",
+      "status": "complete",
+      "artifacts": 3,
+      "authenticated": true,
+      "manifestSha256": "40675bc57d27a403c42af573bcddb063fa30da1c9e3637057a90d9b4fdbd916d",
+      "files": [
+        {
+          "name": "agent-rollback.tar.age",
+          "sha256": "0a7bb0fa490b6b8735124194afb5e83ddde63bd0ac6585f00abd7b1a88a0464e",
+          "size": 35521176,
+          "authenticatedDecryption": true
+        },
+        {
+          "name": "private-ai-state-config.tar.age",
+          "sha256": "3f8749308183445c8e55bb5b71fafec741b83b4c7e0bc6b5f3fb404f65c1688c",
+          "size": 10440,
+          "authenticatedDecryption": true
+        },
+        {
+          "name": "startup-rollback.tar.age",
+          "sha256": "abe09cc34bed711a418d34f8af5ee31ff4f82fa071e3a33be44a784eed269ff5",
+          "size": 164072,
+          "authenticatedDecryption": true
+        }
+      ]
+    }
+  },
+  "dailyBackup": {
+    "status": "applied",
+    "appliedAt": "2026-11-04T14:42:54.876990+00:00",
+    "additions": [
+      {
+        "name": "ai-identity-theme-runtime-20261104",
+        "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\candidate.json"
+      },
+      {
+        "name": "ai-identity-theme-runtime-20261104-rollback",
+        "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\backup-audit\\rollback.json"
+      }
+    ],
+    "originalSha256": "4321a0e86fc3850e6ac5c5601313b7ce95a62f0cce6d886eddf63ea2f30f42d7",
+    "proposedSha256": "f7d4affcc944b4e89a7cb2c91dd8ae38d86cf99f7fd7ba151e92df518b3cb1cb",
+    "productionConfigurationWritten": true,
+    "dryRun": {
+      "exitCode": 0,
+      "newOverlayIncluded": true,
+      "rollbackOverlayIncluded": true,
+      "artifactCount": 30,
+      "backupExecuted": false
+    }
+  },
+  "security": {
+    "PASS": 58,
+    "FAIL": 11,
+    "UNKNOWN": 1,
+    "G01-G11Closed": false
+  },
+  "independentVerificationAttempts": {
+    "initial": {
+      "status": "failed",
+      "rawSha256": "ea813a3d48dd742ee76b5631ad58acee1bc3064862e62d9d99a4887504eb4498",
+      "reason": "Verifier used size200; actual internal non-admin ApiSecurityFilter maximum100 caused 400",
+      "productionChangeOrRollbackTriggered": false
+    },
+    "final": {
+      "status": "verified-with-limitations",
+      "sourcePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\post-deployment-readonly-v2.json",
+      "rawSha256": "8b002f1e241dff5999ba6c50e3bc783760975f82e1557fbb0c197756e7a2e930",
+      "projectionPageSize": 100
+    }
+  },
+  "frozenModelObservation": {
+    "deploymentPerformed": false,
+    "scenes": 3,
+    "turns": 7,
+    "completed": 7,
+    "satisfied": 3,
+    "partiallyUseful": 1,
+    "insufficientEvidence": 2,
+    "unmet": 1,
+    "factualityNull": 4,
+    "humanReviews": 0,
+    "finalReportRawSha256": "1881325d57f00ce00bf8752358f922aaaf1069218d770eb347fbc92bf978b17c"
+  },
+  "evidencePolicy": "Reviewed receipt schemas copied as raw bytes; no environment/key/token/archive or raw log/inspect/argv material",
+  "limitations": [
+    "No new USER inference or seven-turn model rerun",
+    "Owner, natural TTL and browser UI not reverified",
+    "Theme-answer and human quality remain unverified",
+    "No cross-service atomic snapshot",
+    "Daily dry-run is not a natural full backup",
+    "No production race injection, old dump restore or real external publishing"
+  ],
+  "documentationHashes": {
+    "D:\\gying-movie\\movie\\docs\\current-project-status.md": "7921997f3d6d110504fefe38b3de13c799d58d5228530bc463d666fec4ea924e",
+    "D:\\gying-movie\\movie\\docs\\ai-answer-quality-guide.md": "81e275f3b9b2dfc84f9093d1da8c305522203dfd7f138fbcd9704d06f307fb1d",
+    "D:\\gying-movie\\movie\\docs\\ai-architecture.md": "b3ff7375488a9e75338cab1fbcf3f38d91a3c07b1cfcdaf3e44bed742ad2d50c",
+    "D:\\gying-movie\\movie\\docs\\ai-career-roadmap.md": "7d493ea674e61b28e6feeb7a8aef9c2de82c6b1bc34c260ad6e47cd0b4078256",
+    "D:\\gying-movie\\movie\\docs\\ai-evaluation.md": "0e4ba65a7f356040d0afb85a3c5dae819abf8badd2d1d3f34fc835774075260a",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\identity-theme-20261104\\README.md": "9c97168f36b335c7c07afc320c7dc9a1758cec584b9b2f5846a61ea65124bf5c",
+    "D:\\ai\\local-ai-agent\\docs\\gying-query-plan-v2.md": "3fad02c6bd17593ea8d19dfea6ddd65de90d0be5176f463cb3315f3f8744d0e3",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\identity-theme-20261104\\deployment.md": "83060e02f393d929033c3626e49923512fb8fffa11471c6cd715021f748e4a70"
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "status": "FINAL_V4_PASS_WITH_PRIOR_FAILURES_RETAINED",
+  "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "finalSourceManifestSha256": "4ba8a13372b15d513fc76cf7e8cb3c95126823df39505bd5968fd3698d5bfa98",
+  "causeDescriptionsScope": "Failure causes reported by implementation agent; counts and exit-code capture verified against referenced safe result/reconciliation JSON. Raw logs are not copied.",
+  "stages": [
+    {
+      "stage": "V1",
+      "runId": "871b1a49291c",
+      "status": "TEST_COMPILE_FAILED",
+      "businessSuitesExecuted": 0,
+      "originalExitCodeCaptured": true,
+      "exitCode": 1,
+      "businessTestsPassed": false,
+      "reportedCauseCode": "TEST_COMPILE_TYPED_WRAPPER_INFERENCE",
+      "productionChanged": false,
+      "evidence": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-871b1a49291c\\result.json",
+        "sha256": "edb08491d270029501389fd1ebef0d55de988899262ad76f3ba398c56764872a"
+      },
+      "originalRecordPreserved": true
+    },
+    {
+      "stage": "V2",
+      "runId": "9aa0d2a9662b",
+      "status": "BUSINESS_TESTS_FAILED",
+      "totals": {
+        "tests": 334,
+        "failures": 2,
+        "errors": 1,
+        "skipped": 0
+      },
+      "mysqlTotals": {
+        "tests": 18,
+        "failures": 2,
+        "errors": 1,
+        "skipped": 0
+      },
+      "originalExitCodeCaptured": false,
+      "exitCode": null,
+      "businessTestsPassed": false,
+      "reportedCauseCodes": [
+        "MYSQL_FIXTURE_TASK_NOT_DUE",
+        "GBK_RESULT_OUTPUT_FAILED"
+      ],
+      "productionChanged": false,
+      "evidence": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\v2-readonly-test-reconciliation.json",
+        "sha256": "7062382bee2d24d38883ded478b02c93eb08622d21312f835cb3c435740e0367"
+      },
+      "originalRecordPreserved": true,
+      "reconciliationExecutedNewTests": false
+    },
+    {
+      "stage": "V3",
+      "runId": "ea18bf0e51fd",
+      "status": "MAVEN_RESOURCE_STAGE_PERMISSION_FAILED",
+      "businessSuitesExecuted": 0,
+      "originalExitCodeCaptured": true,
+      "exitCode": 1,
+      "businessTestsPassed": false,
+      "reportedCauseCode": "READ_ONLY_COMPILE_CACHE_ARTIFACT_PERMISSION",
+      "productionChanged": false,
+      "evidence": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ea18bf0e51fd\\result.json",
+        "sha256": "d84a5cf65611d86e8e8054bf00869b135369d2d96d0efb7ae71362c824e1ea0c"
+      },
+      "originalRecordPreserved": true
+    },
+    {
+      "stage": "V4",
+      "runId": "ec23c218fba5",
+      "status": "PASS",
+      "totals": {
+        "tests": 334,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "businessSuitesExecuted": 13,
+      "mysqlTests": 18,
+      "originalExitCodeCaptured": true,
+      "exitCode": 0,
+      "businessTestsPassed": true,
+      "freshStage": true,
+      "compileCacheReused": false,
+      "fixtureContainersCleaned": 2,
+      "productionChanged": false,
+      "evidence": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\business-tests-pass-v4.json",
+        "sha256": "80f1c793dadd4201a680b4c0f8e9cd5a357d5ba0f64a899e233b9bc29dd330bc"
+      }
+    }
+  ],
+  "productionOperationsByEvidencePack": 0,
+  "previousFailedRecordsOverwritten": false,
+  "rawLogsOrXmlCopied": false,
+  "deploymentVerified": false
+}

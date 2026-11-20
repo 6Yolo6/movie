@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "observedAt": "2026-11-15T09:27:23.051053+00:00",
+  "entries": [
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/movie/DDJv",
+      "status": 200,
+      "bytes": 187070,
+      "sha256": "58b13ff32d7caf2723583a337a688f0ba646242f9a208f22e4ed41ba418ee031",
+      "actualMovieTitleInH1": true,
+      "movieId": "DDJv"
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "path": "/movie/DDJv",
+      "status": 200,
+      "bytes": 187437,
+      "sha256": "2aa9d871366d436b403cb21a96e0484823c042fb90031302565e524291bd0fa7",
+      "actualMovieTitleInH1": true,
+      "movieId": "DDJv"
+    }
+  ],
+  "productionWrites": 0,
+  "rawResponsesWritten": false,
+  "metadataViewLogsMayChange": true
+}

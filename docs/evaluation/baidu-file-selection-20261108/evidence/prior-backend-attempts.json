@@ -1,0 +1,102 @@
+[
+  {
+    "stage": "tmp/query-boundaries-mysql-69f7d1760e80",
+    "productionChanged": false,
+    "tests": {
+      "tests": 0,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 0
+    },
+    "requiredSqlVerified": false,
+    "compileVerified": false,
+    "exit": 1,
+    "error": "No Surefire reports were generated",
+    "failureCases": [],
+    "cleanup": [
+      {
+        "id": "7436307c35bf10843023b7a98d5d0ca7dc7704062c008ea693e58dda1cd0e502",
+        "removed": true
+      },
+      {
+        "id": "4a4f232768d16a0a9f2d86d18057ff38dbc3359bdf81f04a0aeace9368dfa4e3",
+        "removed": true
+      }
+    ],
+    "resultSha256": "892636f21e7185d45eaca10897b42db39071b3138354864b7838a5784973d128",
+    "superseded": true
+  },
+  {
+    "stage": "tmp/query-boundaries-mysql-29840e919a35",
+    "productionChanged": false,
+    "tests": {
+      "tests": 1124,
+      "failures": 2,
+      "errors": 1,
+      "skipped": 1,
+      "passed": 1120
+    },
+    "requiredSqlVerified": true,
+    "compileVerified": false,
+    "exit": 1,
+    "error": "MySQL regression failed; see fixture reports",
+    "failureCases": [
+      {
+        "class": "com.gying.movie.controller.ResourceHubAdminControllerTransfersTest",
+        "case": "rejectsInvalidBodiesAndUnsupportedProvidersWithoutRunningOrReloading(String)[7]",
+        "kind": "failure"
+      },
+      {
+        "class": "com.gying.movie.service.impl.BaiduTransferRunnerServiceImplTest",
+        "case": "definiteTransferRejectionCanReturnToPreparedButAmbiguousCannot",
+        "kind": "error"
+      },
+      {
+        "class": "com.gying.movie.service.impl.BaiduTransferRunnerServiceImplTest",
+        "case": "accountMismatchAndDisabledFilePolicyNeverWrite",
+        "kind": "failure"
+      }
+    ],
+    "cleanup": [
+      {
+        "id": "38ec1865814e716fb74bf4eaba262e9dafb3a2504eccb945ad1736dd4ea0fcf4",
+        "removed": true
+      },
+      {
+        "id": "7216e619a82c8246a0691ed9644af1385b025844a44810e67e30cfa5baf9698b",
+        "removed": true
+      }
+    ],
+    "resultSha256": "3703ca4d513e3f112a824c34041aa88d931709be9ab8337cf2b234381dafd000",
+    "superseded": true
+  },
+  {
+    "stage": "tmp/query-boundaries-mysql-1c355b9e58bc",
+    "productionChanged": false,
+    "tests": {
+      "tests": 1138,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "passed": 1137
+    },
+    "requiredSqlVerified": true,
+    "compileVerified": true,
+    "exit": 0,
+    "error": null,
+    "failureCases": [],
+    "cleanup": [
+      {
+        "id": "8b062c41a56d599f879057eea51e312a51b077d0e88e03c3489605f38f273997",
+        "removed": true
+      },
+      {
+        "id": "0f11961ea9e44bd44fa9fd5e3af84cca61d2f9fa7492a4c68d0a848bda34f16e",
+        "removed": true
+      }
+    ],
+    "resultSha256": "31c4985bb052f5fdcabaff272957855bb60e197b1f7d6e7c009cd57b91c3237a",
+    "superseded": true
+  }
+]

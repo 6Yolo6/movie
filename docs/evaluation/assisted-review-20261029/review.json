@@ -1,0 +1,1616 @@
+{
+  "schemaVersion": 2,
+  "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+  "reviewer": {
+    "kind": "model",
+    "name": "Codex"
+  },
+  "reviews": [
+    {
+      "caseId": "h01",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：演员过滤值是“小罗伯特人唐尼最近”，把错字和时间词并入姓名；yearFrom/yearTo 均为空。回答仅要求减少条件，未纠正或澄清人物，也未界定“最近”。total=0 只能说明这组实际查询为空，不能证明用户原条件无解。"
+    },
+    {
+      "caseId": "h02",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": null,
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      },
+      "failureCategories": [],
+      "hardConstraints": "pending",
+      "outcome": "pending",
+      "notes": "第1次第1轮：报告 jobStatus=FAILED、failure=WEBSITE_JOB_FAILED；没有 answerSha256 或可观察回答。该轮为场景首轮。仅能确认程序任务失败，现存报告没有更细错误码/原始失败trace，不能推断为分流、条件或多轮语义原因；三维、硬条件与结论保持待评。"
+    },
+    {
+      "caseId": "h03",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "candidates",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：动画类别检索 total=0、无候选，回答只有“请减少条件或换个描述”。没有处理童年记忆可能混合版本的情况，也没有询问观看年代或画风；现有空检索不足以证明此类线索没有对应作品。"
+    },
+    {
+      "caseId": "h04",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "e931bbe5135f08abcfa3e6d9b9a26375eea4418afb4f0846b313cdd39ae7d3b9",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "candidates",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：title/searchMovies 将“类似《漫长的季节》…东北小城、旧案、时间交错…剧”整句当 keyword，total=0。回答如实复述这次文字搜索为空，却没有相似作品、氛围依据或对“不太压抑”的说明。事实/依据高分仅限该次空搜索陈述，不代表需求被理解。"
+    },
+    {
+      "caseId": "h05",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "01c8c1c5233963f19243c7b2549a834d47a019ef3f955e2b24c892499dad2f82",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：title/searchMovies 的 keyword 是“周星驰电影里不是纯搞笑、有点悲剧底色的”，total=0。未形成演员作品集或解释悲剧底色；让用户换原名/别名无法回答风格筛选问题。事实/依据仅核对字面空搜索。"
+    },
+    {
+      "caseId": "h06",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "c7530fc6adc7b6a8f525585003c4ab19309dc33253b0d4b593b40d6d9517923a",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：将“一集《黑镜》讲社交评分把人逼疯的,是哪集”整句用于 title/searchMovies，total=0。回答没有季、集、集名，也没有说明需查单集资料；空搜索陈述本身与记录一致。"
+    },
+    {
+      "caseId": "h07",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "c65b042f76eb47889fc4d78dcb4b975a3ab52df53ea0ca1dd11dcc3b6047e3e6",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "candidates",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：title/searchMovies 使用“有没有讲普通上班族突然获得超能力但很怂的喜剧片”整句作 keyword，total=0；没有带简介依据的候选或针对线索的追问。两项证据分仅确认记录中的这次文字搜索为空。"
+    },
+    {
+      "caseId": "h08",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "b1e297b7325b2f3d3f0e05c304a702b255a91af3930b7ba7642b39390681ec79",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：title/searchMovies 把“宫崎骏里适合和7岁小孩一起看、没有太吓人镜头的”当片名，total=0。回答未给作者作品候选、年龄/内容依据或家长需确认的边界；也没有实际推荐，故不能判定某片违反儿童内容限制。"
+    },
+    {
+      "caseId": "h09",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：实际过滤保留 yearFrom=2021、maxRuntime=120、悬疑/mv，但 minRating=0、languages=[]，没有承载豆瓣>8和中文对白。空结果答复未说明这些条件未核验或评分来源限制；不能由该查询推出原始组合无解。"
+    },
+    {
+      "caseId": "h10",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：过滤有英语、minRating=7.5 和 maxRuntime=100，未记录90分钟下界，也未说明评分来源。回答仅称无结果，没有说明 Netflix 需要地区/日期核查。genres 两项的关系不在观测中明确，未据此推断 OR 被错误执行。"
+    },
+    {
+      "caseId": "h11",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": null,
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      },
+      "failureCategories": [],
+      "hardConstraints": "pending",
+      "outcome": "pending",
+      "notes": "第1次第1轮：报告 jobStatus=FAILED、failure=WEBSITE_JOB_FAILED；没有 answerSha256 或可观察回答。该轮为场景首轮。仅能确认程序任务失败，现存报告没有更细错误码/原始失败trace，不能推断为分流、条件或多轮语义原因；三维、硬条件与结论保持待评。"
+    },
+    {
+      "caseId": "h12",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：观测 filters 把“2000年后”变为 year=2000，把“日本导演”变为 directors=[日本]，把“非日语”变为 languages=[日语]，与题意冲突；未给具体电影节奖项证据。回答仍笼统称没有符合条件的片，事实结论待核；没有返回候选，硬条件不按猜测判违规。"
+    },
+    {
+      "caseId": "h13",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：过滤仅清晰保留 yearTo=2014，genres/regions 均为空；没有港片、双男主警匪或结尾情绪依据。total=0 后只要求换描述，未说明未识别条件，不能据此判断本库没有满足原意的作品。"
+    },
+    {
+      "caseId": "h14",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：实际 regions 只有法国，没有爱尔兰；“80分钟左右”被表示为 maxRuntime=80，未给近似容差；没有制作方排除的核查记录。total=0 不足以支持原始法国或爱尔兰、排除两制作方的完整结论。"
+    },
+    {
+      "caseId": "h15",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：实际过滤为韩国/mv/minRating=7，未给评分来源、女主复仇或性暴力镜头排除的依据。回答只建议减少条件，没有说明内容排除无法核实。无返回候选，不能把缺证据自动算作某部影片违反排除。"
+    },
+    {
+      "caseId": "h16",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：过滤有纪录片和 maxRuntime=60，但没有40分钟下界、单集时长口径或非探店证据。total=0 后的通用改描述提示未处理用户对系列/单集内容的要求；完整无解结论待核。"
+    },
+    {
+      "caseId": "h17",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：即使本题姓名无错字，actors 仍为“小罗伯特·唐尼最近”，yearFrom/yearTo 为空。没有纠正实际人物值、界定近期范围或给候选；total=0 不能支持原人物与时间要求下无解。"
+    },
+    {
+      "caseId": "h17",
+      "repetition": 1,
+      "turn": 2,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第2轮：已传入2条历史，但 query 仅为“不要钢铁侠,要近五年配角”，actors、年份边界和其他过滤均空。没有保留唐尼主体、时间窗或核查配角身份；前轮无候选也未说明需先建立可比较集合。"
+    },
+    {
+      "caseId": "h17",
+      "repetition": 1,
+      "turn": 3,
+      "answerSha256": "a2f946b8cb2aa12313a98711fea17139355f13a8c0760994a96866e330e8f610",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第3轮：已传入4条历史，仍将“这里面评分最高的是哪部”当 title/searchMovies 的 keyword；前两轮均无候选。答复如实复述空文字搜索，却未解释没有可排序集合或询问评分来源。"
+    },
+    {
+      "caseId": "h18",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "0462c499f4584316b2c03dc697f556c127b915f3041ee9e34eee583a8f2c9780",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：将整句幻视背景作品问题用于 title/searchMovies，total=0；没有剧/影列表或人物背景关联依据。回答只要求换原名/别名，字面空搜索属实但没有回答世界观补看问题。"
+    },
+    {
+      "caseId": "h18",
+      "repetition": 1,
+      "turn": 2,
+      "answerSha256": "be259a06b3a75761d43dc91f5e10c71a471ca9dc145724472c14f89753c64ee7",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第2轮：2条历史存在，但“按观看顺序排”成为新的片名 keyword；未继承幻视主题，也未说明发行顺序/剧情顺序及前轮无候选的限制。事实与依据分仅覆盖这次空文字搜索。"
+    },
+    {
+      "caseId": "h18",
+      "repetition": 1,
+      "turn": 3,
+      "answerSha256": "ba366fdb4597345dfde5d31122dd88dbc902bd68e9a5feebac9d444453260319",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第3轮：4条历史存在，但“其中哪些是剧集”被当片名搜索；未从前述主题/集合筛选剧集，也未对前两轮无结果有效澄清。total=0 的字面答复不能完成格式追问。"
+    },
+    {
+      "caseId": "h19",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "48c31a8ac2432cf46e11f2603a70d384e5c1980d4fa14cc93fa48c976b13c901",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "conditions",
+        "candidates"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：相似《盗梦空间》的请求走 recommendation/recommendMovies，给12项基于历史犯罪偏好的推荐，含电视剧；理由未解释与指定参照片的相似处。个性化标记和理由存在，但不能证明本次相似性要求满足；收藏/浏览全量快照未独立核验。"
+    },
+    {
+      "caseId": "h19",
+      "repetition": 1,
+      "turn": 2,
+      "answerSha256": "05a652f942589ee4df253f918f9afb626b5babae85f998e8da05388a6029eb26",
+      "scores": {
+        "factuality": 1,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "第1次第2轮：2条历史存在，query 却只剩“不要诺兰的”，所有人物过滤为空；562项结果按“不要、兰、诺”等正向字词命中。实际候选含 tmdb_movie_11660《追随》、tmdb_movie_1368337《奥德赛》；10月23元数据快照两者 directors 均含克里斯托弗·诺兰，直接违反排除要求。计数有依据，候选符合需求的结论没有。"
+    },
+    {
+      "caseId": "h19",
+      "repetition": 1,
+      "turn": 3,
+      "answerSha256": null,
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      },
+      "failureCategories": [],
+      "hardConstraints": "pending",
+      "outcome": "pending",
+      "notes": "第1次第3轮：报告 jobStatus=FAILED、failure=WEBSITE_JOB_FAILED；没有 answerSha256 或可观察回答。该轮带4条历史。仅能确认程序任务失败，现存报告没有更细错误码/原始失败trace，不能推断为分流、条件或多轮语义原因；三维、硬条件与结论保持待评。"
+    },
+    {
+      "caseId": "h20",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "54bccaf31a4bbe482ccbe83c2c01d959b83c01dd48e0523c6da980275fa3a2b6",
+      "scores": {
+        "factuality": 1,
+        "grounding": 1,
+        "usefulness": 1
+      },
+      "failureCategories": [
+        "candidates",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "usefulApproximation",
+      "notes": "第1次第1轮：返回《闪灵》《鬼驱人》《生人勿进》3项。《闪灵》摘录有一家搬进酒店并遇诡异情况，《鬼驱人》有一家遭遇异常的线索，能作为部分找片线索；《生人勿进》的现有摘录不足以核实一家搬凶宅。未逐项说明差异或主动缩小范围，不能确认唯一命中；此处仅给模型辅助的部分有用判断。"
+    },
+    {
+      "caseId": "h20",
+      "repetition": 1,
+      "turn": 2,
+      "answerSha256": "6bc83a9d208101c6b2d703c366a9628e9aadbe857af9c20d5720bfcfc020b23c",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "conditions",
+        "multiTurn"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第2轮：已有2条历史和上一轮3个候选，但“不是《招魂”被作为新的 title/searchMovies keyword，total=0；没有把排除作用于现有候选或延续找片。字面空搜索可核对，不能当作排除需求完成。"
+    },
+    {
+      "caseId": "h20",
+      "repetition": 1,
+      "turn": 3,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第3轮：已传4条历史，query 仅含“女主是金发那个,片名是什么?”，filters 全空。没有回到一家搬凶宅及排除招魂的线索，也没有说明金发不足以唯一识别或追问年代/演员。total=0 不支持原会话主题无解。"
+    },
+    {
+      "caseId": "h21",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "f7bc251ad862958a2f7635a3802bc868d8b6a46672fa45fc7f301193130ffb10",
+      "scores": {
+        "factuality": 1,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "candidates"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：明确要三部，却只给《和我老公结婚吧》《魔术学姐》2项，两者 category=tv；命中理由是“我、给”等普通字词。maxRuntime=90 没有解释按单集还是整部，10月23快照为63/15 min的剧集字段。计数2有据，但三部要求未达到且未解释不足；单集与整部时长口径未澄清。"
+    },
+    {
+      "caseId": "h21",
+      "repetition": 1,
+      "turn": 2,
+      "answerSha256": "ed9ec79462157b297000b51378659b376a6a3ad649230fa0a735182f986d56e5",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第2轮：传入2条历史，仍把“要其中适合情侣看的”整句当 title/searchMovies keyword，total=0。未在前轮2项中核对偏好，也未解释情侣适宜性的主观边界；只复述了文字搜索失败。"
+    },
+    {
+      "caseId": "h21",
+      "repetition": 1,
+      "turn": 3,
+      "answerSha256": "8949501e97822817c3b78033a6cd2ff519c4fe2ab493fbc20562ef09f5b2d5e3",
+      "scores": {
+        "factuality": 0,
+        "grounding": 0,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "facts",
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "第1次第3轮：要求把第一部换成更冷门的，却仍给原第一项 tmdb_tv_221851《和我老公结婚吧》，未保留另一项或给冷门依据；本轮剧情写成“一对年轻情侣…寻找真爱与幸福”，与同一ID第一轮“癌症、闺蜜丈夫偷情、被害后回到十年前”的实际简介冲突。来源链接已省略，不能独立检验链接，但同会话内容矛盾和未替换可直接核对。"
+    },
+    {
+      "caseId": "h22",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "1d1fe4d2293184ab3ba3d57832083fc12ab13a097c5f56edc18c530a0d82b6c4",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：演员作品请求被 title/searchMovies 处理为 keyword“梁朝伟的片”，total=0。没有按演员查作品或澄清实体；答复的字面空搜索有据，不能推出梁朝伟无片库作品。"
+    },
+    {
+      "caseId": "h22",
+      "repetition": 1,
+      "turn": 2,
+      "answerSha256": "2754c4f44743177393d05f66cebbe4ea9d95021bd16d66ccfbf994f232c49309",
+      "scores": {
+        "factuality": 1,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "第1次第2轮：2条历史存在但 actors/directors 皆空，query 只有“不要王家卫的”，结果按“卫、王家”正向匹配。候选《旺角卡门》《2046》《重庆森林》在10月23快照 directors 均为王家卫；《旺角卡门》演员列表亦未含梁朝伟。数量12属实，导演排除与演员主体均未落实。"
+    },
+    {
+      "caseId": "h22",
+      "repetition": 1,
+      "turn": 3,
+      "answerSha256": "40fe3ca48f897f705b389f174445593f34a50e78498cc26b1335bbf5dcf8c007",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第3轮：传入4条历史后，“再按豆瓣评分从高到低排前三”仍成为 title/searchMovies keyword；未在前述演员/导演约束内按豆瓣排序。total=0 只证明这条文字搜索没有结果。"
+    },
+    {
+      "caseId": "h23",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "2052bcd6c614ae3fad4466df5640627194e36c77800f62e50d90cf0c9335560c",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：title/searchMovies 的 keyword 为“有没有《三体》相关的影视”，total=0。未提取作品实体、区分改编版本或给说明，只要求换原名/别名；事实分仅核对该次字面查询结果。"
+    },
+    {
+      "caseId": "h23",
+      "repetition": 1,
+      "turn": 2,
+      "answerSha256": "123c565770302d5c32ba8bdc0c11b58e2ba1dda179aeded6cceae610868a66bc",
+      "scores": {
+        "factuality": 1,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "第1次第2轮：保留了 category=tv 和 excludedGenres=[动画]，但 query 仅为“只要剧集不要动画”，丢失三体主体。16项含《毛骨悚然的恋爱》（摘录明确翻拍《我的见鬼女友》）、《喜人奇妙夜》（摘录为喜剧节目）等，以“只要”命中；这些候选不支持三体改编关系。局部格式过滤不能补偿主体错配。"
+    },
+    {
+      "caseId": "h23",
+      "repetition": 1,
+      "turn": 3,
+      "answerSha256": "1b44b70eeed7f6ba9f27ba9a75a5ab6e33d9e38abe587dc31d923d019eafceba",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第3轮：已有4条历史，却把“按上线时间从早到晚”当片名 keyword，total=0。未继承三体/剧集/排动画约束，也未提供上线日期依据或排序；字面空查询答复不等于时间排序。"
+    },
+    {
+      "caseId": "h24",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "033d57906acc5559bcaa206ebe5f01b71b33087e5905d056921a05771d940c85",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：答案只有“未找到《复仇者联盟5》相关的资源”。未核查运行日上映状态、幻视复活的前提或给合法可看指引。观测 catalog=null、无原始工具结果，只知道 searchMovies 执行成功；不能据此判定实际资源是否存在，也未观察到任何资源链接交付。"
+    },
+    {
+      "caseId": "h25",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：过滤只有 year=2024、maxRuntime=40；没有精确40分钟、黑白、歌舞或豆瓣9.5的完整核对。虽未虚构影片且返回 total=0，却仅笼统建议减少条件，没有指出哪些条件未验证或提供具体放宽项，不能证明原组合确无解。"
+    },
+    {
+      "caseId": "h26",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "311133e8945c5bdfb6995cd06215517093f88f729f9058c7764988ebef952002",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：将“那个光头演的、最后跳楼的黑帮片叫什么”整体当 title/searchMovies keyword，total=0。没有询问年代、地区、演员等可辨识信息；让用户提供原名/别名无法帮助正在找片名的人。字面空搜索陈述有记录支持。"
+    },
+    {
+      "caseId": "h27",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "48c31a8ac2432cf46e11f2603a70d384e5c1980d4fa14cc93fa48c976b13c901",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "conditions",
+        "candidates",
+        "clarification"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：要求选一部并比较同源评分及奥斯卡条件，实际走个性化 recommendation 给12项，未选择单部、澄清评分来源或核查奖项。只提供片库混合评分和历史偏好理由，无法证明高于参照片；“未获最佳影片”本身不是逻辑矛盾，未按旧错误标签推定无解。"
+    },
+    {
+      "caseId": "h28",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "b746d82c2a6b70d7a240c424a1a6d80f23f6d265a915b44e4fdb2ff05cf86c42",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：把“汤姆·克鲁斯演的《蜘蛛侠”作为 title/searchMovies keyword，total=0。未核实演员作品关系或询问是否想找其他蜘蛛侠演员/克鲁斯电影。字面空搜索有据；没有直接杜撰参演，故不凭常识补一项事实错误。"
+    },
+    {
+      "caseId": "h29",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "d2112a7be666cb0a24dfa1a8f8852821a9524e4a2f400df0714654c94f4963cb",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：title/searchMovies 将“最近最火…十部…每个平台独家版权”整句作为 keyword，total=0。没有界定热度时间窗、地区/版权时效或说明实时信息局限；空查询陈述属实，但没有完成或有效降级版权查询。"
+    },
+    {
+      "caseId": "h30",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第1次第1轮：仅识别恐怖/mv，未处理5岁、全家适宜与“越吓人越好”的冲突。回答只有通用减少条件提示，未询问年龄适宜优先级或给温和替代；没有实际推荐，故内容伤害/硬条件违规不能从空结果推定。"
+    },
+    {
+      "caseId": "h01",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：演员过滤值是“小罗伯特人唐尼最近”，把错字和时间词并入姓名；yearFrom/yearTo 均为空。回答仅要求减少条件，未纠正或澄清人物，也未界定“最近”。total=0 只能说明这组实际查询为空，不能证明用户原条件无解。"
+    },
+    {
+      "caseId": "h02",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "09a2875630838e126b3789c1bc6c0864032426ee45f8b44c4e9d68d329e7d952",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：回答只说未找到“被困别墅，互相猜忌，悬疑”，建议更具体关键词或稍后再试；未提出年代、地区等可回答的澄清问题。报告记录一次 searchMovies 成功，但观测 catalog=null、无候选且没有原始工具参数/结果，事实与依据维度保持待核。"
+    },
+    {
+      "caseId": "h03",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "candidates",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：动画类别检索 total=0、无候选，回答只有“请减少条件或换个描述”。没有处理童年记忆可能混合版本的情况，也没有询问观看年代或画风；现有空检索不足以证明此类线索没有对应作品。"
+    },
+    {
+      "caseId": "h04",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "e931bbe5135f08abcfa3e6d9b9a26375eea4418afb4f0846b313cdd39ae7d3b9",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "candidates",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：title/searchMovies 将“类似《漫长的季节》…东北小城、旧案、时间交错…剧”整句当 keyword，total=0。回答如实复述这次文字搜索为空，却没有相似作品、氛围依据或对“不太压抑”的说明。事实/依据高分仅限该次空搜索陈述，不代表需求被理解。"
+    },
+    {
+      "caseId": "h05",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "01c8c1c5233963f19243c7b2549a834d47a019ef3f955e2b24c892499dad2f82",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：title/searchMovies 的 keyword 是“周星驰电影里不是纯搞笑、有点悲剧底色的”，total=0。未形成演员作品集或解释悲剧底色；让用户换原名/别名无法回答风格筛选问题。事实/依据仅核对字面空搜索。"
+    },
+    {
+      "caseId": "h06",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "c7530fc6adc7b6a8f525585003c4ab19309dc33253b0d4b593b40d6d9517923a",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：将“一集《黑镜》讲社交评分把人逼疯的,是哪集”整句用于 title/searchMovies，total=0。回答没有季、集、集名，也没有说明需查单集资料；空搜索陈述本身与记录一致。"
+    },
+    {
+      "caseId": "h07",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "c65b042f76eb47889fc4d78dcb4b975a3ab52df53ea0ca1dd11dcc3b6047e3e6",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "candidates",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：title/searchMovies 使用“有没有讲普通上班族突然获得超能力但很怂的喜剧片”整句作 keyword，total=0；没有带简介依据的候选或针对线索的追问。两项证据分仅确认记录中的这次文字搜索为空。"
+    },
+    {
+      "caseId": "h08",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "b1e297b7325b2f3d3f0e05c304a702b255a91af3930b7ba7642b39390681ec79",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：title/searchMovies 把“宫崎骏里适合和7岁小孩一起看、没有太吓人镜头的”当片名，total=0。回答未给作者作品候选、年龄/内容依据或家长需确认的边界；也没有实际推荐，故不能判定某片违反儿童内容限制。"
+    },
+    {
+      "caseId": "h09",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：实际过滤保留 yearFrom=2021、maxRuntime=120、悬疑/mv，但 minRating=0、languages=[]，没有承载豆瓣>8和中文对白。空结果答复未说明这些条件未核验或评分来源限制；不能由该查询推出原始组合无解。"
+    },
+    {
+      "caseId": "h10",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：过滤有英语、minRating=7.5 和 maxRuntime=100，未记录90分钟下界，也未说明评分来源。回答仅称无结果，没有说明 Netflix 需要地区/日期核查。genres 两项的关系不在观测中明确，未据此推断 OR 被错误执行。"
+    },
+    {
+      "caseId": "h11",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "cbdaa13541d735a914510e8246ffcfaf4b81f30946e1b8a7173699a284cc2a75",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：回答仅重复“排除恐怖和血腥…近十年…”并称未找到；没有界定十年窗口、内容排除依据或近似方案。报告有 searchMovies 调用，但观测 catalog=null、无原始工具结果，无法确认实际过滤或空结果覆盖范围。"
+    },
+    {
+      "caseId": "h12",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：观测 filters 把“2000年后”变为 year=2000，把“日本导演”变为 directors=[日本]，把“非日语”变为 languages=[日语]，与题意冲突；未给具体电影节奖项证据。回答仍笼统称没有符合条件的片，事实结论待核；没有返回候选，硬条件不按猜测判违规。"
+    },
+    {
+      "caseId": "h13",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：过滤仅清晰保留 yearTo=2014，genres/regions 均为空；没有港片、双男主警匪或结尾情绪依据。total=0 后只要求换描述，未说明未识别条件，不能据此判断本库没有满足原意的作品。"
+    },
+    {
+      "caseId": "h14",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：实际 regions 只有法国，没有爱尔兰；“80分钟左右”被表示为 maxRuntime=80，未给近似容差；没有制作方排除的核查记录。total=0 不足以支持原始法国或爱尔兰、排除两制作方的完整结论。"
+    },
+    {
+      "caseId": "h15",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：实际过滤为韩国/mv/minRating=7，未给评分来源、女主复仇或性暴力镜头排除的依据。回答只建议减少条件，没有说明内容排除无法核实。无返回候选，不能把缺证据自动算作某部影片违反排除。"
+    },
+    {
+      "caseId": "h16",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：过滤有纪录片和 maxRuntime=60，但没有40分钟下界、单集时长口径或非探店证据。total=0 后的通用改描述提示未处理用户对系列/单集内容的要求；完整无解结论待核。"
+    },
+    {
+      "caseId": "h17",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：即使本题姓名无错字，actors 仍为“小罗伯特·唐尼最近”，yearFrom/yearTo 为空。没有纠正实际人物值、界定近期范围或给候选；total=0 不能支持原人物与时间要求下无解。"
+    },
+    {
+      "caseId": "h17",
+      "repetition": 2,
+      "turn": 2,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第2轮：已传入2条历史，但 query 仅为“不要钢铁侠,要近五年配角”，actors、年份边界和其他过滤均空。没有保留唐尼主体、时间窗或核查配角身份；前轮无候选也未说明需先建立可比较集合。"
+    },
+    {
+      "caseId": "h17",
+      "repetition": 2,
+      "turn": 3,
+      "answerSha256": "a2f946b8cb2aa12313a98711fea17139355f13a8c0760994a96866e330e8f610",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第3轮：已传入4条历史，仍将“这里面评分最高的是哪部”当 title/searchMovies 的 keyword；前两轮均无候选。答复如实复述空文字搜索，却未解释没有可排序集合或询问评分来源。"
+    },
+    {
+      "caseId": "h18",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "0462c499f4584316b2c03dc697f556c127b915f3041ee9e34eee583a8f2c9780",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：将整句幻视背景作品问题用于 title/searchMovies，total=0；没有剧/影列表或人物背景关联依据。回答只要求换原名/别名，字面空搜索属实但没有回答世界观补看问题。"
+    },
+    {
+      "caseId": "h18",
+      "repetition": 2,
+      "turn": 2,
+      "answerSha256": "be259a06b3a75761d43dc91f5e10c71a471ca9dc145724472c14f89753c64ee7",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第2轮：2条历史存在，但“按观看顺序排”成为新的片名 keyword；未继承幻视主题，也未说明发行顺序/剧情顺序及前轮无候选的限制。事实与依据分仅覆盖这次空文字搜索。"
+    },
+    {
+      "caseId": "h18",
+      "repetition": 2,
+      "turn": 3,
+      "answerSha256": "ba366fdb4597345dfde5d31122dd88dbc902bd68e9a5feebac9d444453260319",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第3轮：4条历史存在，但“其中哪些是剧集”被当片名搜索；未从前述主题/集合筛选剧集，也未对前两轮无结果有效澄清。total=0 的字面答复不能完成格式追问。"
+    },
+    {
+      "caseId": "h19",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "48c31a8ac2432cf46e11f2603a70d384e5c1980d4fa14cc93fa48c976b13c901",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "conditions",
+        "candidates"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：相似《盗梦空间》的请求走 recommendation/recommendMovies，给12项基于历史犯罪偏好的推荐，含电视剧；理由未解释与指定参照片的相似处。个性化标记和理由存在，但不能证明本次相似性要求满足；收藏/浏览全量快照未独立核验。"
+    },
+    {
+      "caseId": "h19",
+      "repetition": 2,
+      "turn": 2,
+      "answerSha256": "05a652f942589ee4df253f918f9afb626b5babae85f998e8da05388a6029eb26",
+      "scores": {
+        "factuality": 1,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "第2次第2轮：2条历史存在，query 却只剩“不要诺兰的”，所有人物过滤为空；562项结果按“不要、兰、诺”等正向字词命中。实际候选含 tmdb_movie_11660《追随》、tmdb_movie_1368337《奥德赛》；10月23元数据快照两者 directors 均含克里斯托弗·诺兰，直接违反排除要求。计数有依据，候选符合需求的结论没有。"
+    },
+    {
+      "caseId": "h19",
+      "repetition": 2,
+      "turn": 3,
+      "answerSha256": null,
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      },
+      "failureCategories": [],
+      "hardConstraints": "pending",
+      "outcome": "pending",
+      "notes": "第2次第3轮：报告 jobStatus=FAILED、failure=WEBSITE_JOB_FAILED；没有 answerSha256 或可观察回答。该轮带4条历史。仅能确认程序任务失败，现存报告没有更细错误码/原始失败trace，不能推断为分流、条件或多轮语义原因；三维、硬条件与结论保持待评。"
+    },
+    {
+      "caseId": "h20",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "54bccaf31a4bbe482ccbe83c2c01d959b83c01dd48e0523c6da980275fa3a2b6",
+      "scores": {
+        "factuality": 1,
+        "grounding": 1,
+        "usefulness": 1
+      },
+      "failureCategories": [
+        "candidates",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "usefulApproximation",
+      "notes": "第2次第1轮：返回《闪灵》《鬼驱人》《生人勿进》3项。《闪灵》摘录有一家搬进酒店并遇诡异情况，《鬼驱人》有一家遭遇异常的线索，能作为部分找片线索；《生人勿进》的现有摘录不足以核实一家搬凶宅。未逐项说明差异或主动缩小范围，不能确认唯一命中；此处仅给模型辅助的部分有用判断。"
+    },
+    {
+      "caseId": "h20",
+      "repetition": 2,
+      "turn": 2,
+      "answerSha256": "6bc83a9d208101c6b2d703c366a9628e9aadbe857af9c20d5720bfcfc020b23c",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "conditions",
+        "multiTurn"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第2轮：已有2条历史和上一轮3个候选，但“不是《招魂”被作为新的 title/searchMovies keyword，total=0；没有把排除作用于现有候选或延续找片。字面空搜索可核对，不能当作排除需求完成。"
+    },
+    {
+      "caseId": "h20",
+      "repetition": 2,
+      "turn": 3,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第3轮：已传4条历史，query 仅含“女主是金发那个,片名是什么?”，filters 全空。没有回到一家搬凶宅及排除招魂的线索，也没有说明金发不足以唯一识别或追问年代/演员。total=0 不支持原会话主题无解。"
+    },
+    {
+      "caseId": "h21",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "f7bc251ad862958a2f7635a3802bc868d8b6a46672fa45fc7f301193130ffb10",
+      "scores": {
+        "factuality": 1,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "candidates"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：明确要三部，却只给《和我老公结婚吧》《魔术学姐》2项，两者 category=tv；命中理由是“我、给”等普通字词。maxRuntime=90 没有解释按单集还是整部，10月23快照为63/15 min的剧集字段。计数2有据，但三部要求未达到且未解释不足；单集与整部时长口径未澄清。"
+    },
+    {
+      "caseId": "h21",
+      "repetition": 2,
+      "turn": 2,
+      "answerSha256": "ed9ec79462157b297000b51378659b376a6a3ad649230fa0a735182f986d56e5",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第2轮：传入2条历史，仍把“要其中适合情侣看的”整句当 title/searchMovies keyword，total=0。未在前轮2项中核对偏好，也未解释情侣适宜性的主观边界；只复述了文字搜索失败。"
+    },
+    {
+      "caseId": "h21",
+      "repetition": 2,
+      "turn": 3,
+      "answerSha256": "b10bb80fa1316b0e718e20286b95f5019e10876e84682566bb483cc4cd77ef94",
+      "scores": {
+        "factuality": 0,
+        "grounding": 0,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "facts",
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "第2次第3轮：要求把第一部换成更冷门的，却仍给原第一项 tmdb_tv_221851《和我老公结婚吧》，未保留另一项或给冷门依据；本轮剧情写成“一对年轻情侣…通过幽默的方式展现爱情与责任的平衡”，与同一ID第一轮“癌症、闺蜜丈夫偷情、被害后回到十年前”的实际简介冲突。来源链接已省略，不能独立检验链接，但同会话内容矛盾和未替换可直接核对。"
+    },
+    {
+      "caseId": "h22",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "1d1fe4d2293184ab3ba3d57832083fc12ab13a097c5f56edc18c530a0d82b6c4",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：演员作品请求被 title/searchMovies 处理为 keyword“梁朝伟的片”，total=0。没有按演员查作品或澄清实体；答复的字面空搜索有据，不能推出梁朝伟无片库作品。"
+    },
+    {
+      "caseId": "h22",
+      "repetition": 2,
+      "turn": 2,
+      "answerSha256": "2754c4f44743177393d05f66cebbe4ea9d95021bd16d66ccfbf994f232c49309",
+      "scores": {
+        "factuality": 1,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "第2次第2轮：2条历史存在但 actors/directors 皆空，query 只有“不要王家卫的”，结果按“卫、王家”正向匹配。候选《旺角卡门》《2046》《重庆森林》在10月23快照 directors 均为王家卫；《旺角卡门》演员列表亦未含梁朝伟。数量12属实，导演排除与演员主体均未落实。"
+    },
+    {
+      "caseId": "h22",
+      "repetition": 2,
+      "turn": 3,
+      "answerSha256": "40fe3ca48f897f705b389f174445593f34a50e78498cc26b1335bbf5dcf8c007",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第3轮：传入4条历史后，“再按豆瓣评分从高到低排前三”仍成为 title/searchMovies keyword；未在前述演员/导演约束内按豆瓣排序。total=0 只证明这条文字搜索没有结果。"
+    },
+    {
+      "caseId": "h23",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "2052bcd6c614ae3fad4466df5640627194e36c77800f62e50d90cf0c9335560c",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：title/searchMovies 的 keyword 为“有没有《三体》相关的影视”，total=0。未提取作品实体、区分改编版本或给说明，只要求换原名/别名；事实分仅核对该次字面查询结果。"
+    },
+    {
+      "caseId": "h23",
+      "repetition": 2,
+      "turn": 2,
+      "answerSha256": "123c565770302d5c32ba8bdc0c11b58e2ba1dda179aeded6cceae610868a66bc",
+      "scores": {
+        "factuality": 1,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "第2次第2轮：保留了 category=tv 和 excludedGenres=[动画]，但 query 仅为“只要剧集不要动画”，丢失三体主体。16项含《毛骨悚然的恋爱》（摘录明确翻拍《我的见鬼女友》）、《喜人奇妙夜》（摘录为喜剧节目）等，以“只要”命中；这些候选不支持三体改编关系。局部格式过滤不能补偿主体错配。"
+    },
+    {
+      "caseId": "h23",
+      "repetition": 2,
+      "turn": 3,
+      "answerSha256": "1b44b70eeed7f6ba9f27ba9a75a5ab6e33d9e38abe587dc31d923d019eafceba",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第3轮：已有4条历史，却把“按上线时间从早到晚”当片名 keyword，total=0。未继承三体/剧集/排动画约束，也未提供上线日期依据或排序；字面空查询答复不等于时间排序。"
+    },
+    {
+      "caseId": "h24",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "033d57906acc5559bcaa206ebe5f01b71b33087e5905d056921a05771d940c85",
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：答案只有“未找到《复仇者联盟5》相关的资源”。未核查运行日上映状态、幻视复活的前提或给合法可看指引。观测 catalog=null、无原始工具结果，只知道 searchMovies 执行成功；不能据此判定实际资源是否存在，也未观察到任何资源链接交付。"
+    },
+    {
+      "caseId": "h25",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：过滤只有 year=2024、maxRuntime=40；没有精确40分钟、黑白、歌舞或豆瓣9.5的完整核对。虽未虚构影片且返回 total=0，却仅笼统建议减少条件，没有指出哪些条件未验证或提供具体放宽项，不能证明原组合确无解。"
+    },
+    {
+      "caseId": "h26",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "311133e8945c5bdfb6995cd06215517093f88f729f9058c7764988ebef952002",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：将“那个光头演的、最后跳楼的黑帮片叫什么”整体当 title/searchMovies keyword，total=0。没有询问年代、地区、演员等可辨识信息；让用户提供原名/别名无法帮助正在找片名的人。字面空搜索陈述有记录支持。"
+    },
+    {
+      "caseId": "h27",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "48c31a8ac2432cf46e11f2603a70d384e5c1980d4fa14cc93fa48c976b13c901",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "conditions",
+        "candidates",
+        "clarification"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：要求选一部并比较同源评分及奥斯卡条件，实际走个性化 recommendation 给12项，未选择单部、澄清评分来源或核查奖项。只提供片库混合评分和历史偏好理由，无法证明高于参照片；“未获最佳影片”本身不是逻辑矛盾，未按旧错误标签推定无解。"
+    },
+    {
+      "caseId": "h28",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "b746d82c2a6b70d7a240c424a1a6d80f23f6d265a915b44e4fdb2ff05cf86c42",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：把“汤姆·克鲁斯演的《蜘蛛侠”作为 title/searchMovies keyword，total=0。未核实演员作品关系或询问是否想找其他蜘蛛侠演员/克鲁斯电影。字面空搜索有据；没有直接杜撰参演，故不凭常识补一项事实错误。"
+    },
+    {
+      "caseId": "h29",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "d2112a7be666cb0a24dfa1a8f8852821a9524e4a2f400df0714654c94f4963cb",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "routing",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：title/searchMovies 将“最近最火…十部…每个平台独家版权”整句作为 keyword，total=0。没有界定热度时间窗、地区/版权时效或说明实时信息局限；空查询陈述属实，但没有完成或有效降级版权查询。"
+    },
+    {
+      "caseId": "h30",
+      "repetition": 2,
+      "turn": 1,
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "failureCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "第2次第1轮：仅识别恐怖/mv，未处理5岁、全家适宜与“越吓人越好”的冲突。回答只有通用减少条件提示，未询问年龄适宜优先级或给温和替代；没有实际推荐，故内容伤害/硬条件违规不能从空结果推定。"
+    }
+  ]
+}

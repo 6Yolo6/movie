@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-11-04T14:11:59.441946+00:00",
+  "status": "offline-ready-for-root-review",
+  "offlineChecksPassed": 21,
+  "pythonAstParse": "passed",
+  "powershellParseErrors": 0,
+  "bindingsSha256": "a6cf3275a7a53608d90769d58cac06c14385053944a61214638173c6b2f4a9f8",
+  "nativeCurrentArgvVerified": false,
+  "ordinaryCheckOnlyExitCode": 1,
+  "ordinaryCheckOnlyMeaning": "Get-Process.Path unreadable; tracked identity unavailable, port5000 still occupied; no stop request sent",
+  "administratorFreshIdentityRequired": true,
+  "movieOrder": "already upgraded Movie actual JAR2c1301be verified before capturing execution-time image baseline",
+  "oldAgentResponseFieldCompatibility": "ObjectNode readTree/plan copy tolerates Movie new fields at transport layer; new identity/theme guarantees require new Agent",
+  "deploymentExecuted": false,
+  "uacRequested": false,
+  "checkpointsCreated": 0,
+  "authenticatedDecryptionExecuted": false,
+  "productionEnvOrStateWritten": false,
+  "helperFileSha256": {
+    "Common.py": "64893b7ce6f0f217d3cbc1776e010e2f7b20aedb77af28c547ca6574f53a8b29",
+    "DeployAgent.py": "117d3787880b2ac674a324559fba12c46bd80dffabf18e3fdb0be09e0c020d60",
+    "LaunchAgent.ps1": "8f72625d21e3d5d79e86cc92577eff3d38263649048a7a8c4d203e4085fc4d55",
+    "ReadAiStateCounts.js": "c4612d4a51145ab0ee023dce8a2f168a149001f41576d764797ec0cf6fcbac94",
+    "RunAgent.ps1": "a3da8d0d36fa503a201a28e37effca593d7b1d595922e7df3d95a06da6850513",
+    "TestAgentPreparation.py": "e36ffab324b11c2b86822a69154c3df1d98e33d5e6490036f3c2d57cd1e0ec81"
+  }
+}

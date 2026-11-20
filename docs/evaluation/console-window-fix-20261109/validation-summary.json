@@ -1,0 +1,77 @@
+{
+  "date": "2026-11-09",
+  "hostFixDeployed": true,
+  "backendOrFrontendDeployedByAgent": false,
+  "taskName": "GYing Baidu QR Login",
+  "newTaskCommand": "E:/gying-tools/baidu-login/baidu-login-hidden.exe",
+  "taskArgumentsPrincipalTriggerSettingsAndAclsPreserved": true,
+  "runnerNodeHelperAndConfigurationUnchanged": true,
+  "limitedInteractiveEnabled": true,
+  "guiLauncherTests": {
+    "tests": 4,
+    "passed": 4,
+    "failures": 0
+  },
+  "naturalObservation": {
+    "seconds": 135,
+    "launcherProcesses": 3,
+    "powerShellChildren": 3,
+    "sameInteractiveSession": true,
+    "visibleConsoleShowEvents": 0,
+    "completedNaturalTaskResult": 0,
+    "rawObservationEndResult": 267009,
+    "rawResultMeaning": "RUNNING; later completed result was independently read as 0"
+  },
+  "manualTaskStartPerformed": false,
+  "originalTaskAndHostCheckpointAuthenticated": true,
+  "rollback": "ManageConsoleFix.py rollback: requires naturally idle task and exact current XML/register SHA, restores only original task XML and registration script; preserves added launcher files and current config",
+  "oldInstallationEvidencePreserved": true,
+  "backupConfigChangedByAgent": false,
+  "evidence": {
+    "prepared.json": {
+      "path": "E:\\gying-tools\\releases\\console-window-fix-20261109\\prepared.json",
+      "sha256": "27a465de8be81deb22cfb0c14d7c99d6a7afb341aa5246fd75a7d0b262a287de"
+    },
+    "applied.json": {
+      "path": "E:\\gying-tools\\releases\\console-window-fix-20261109\\applied.json",
+      "sha256": "e7c768205f252369d58be3e16a04a07a2a64e90d6b8d8b306beb4e3a6af21fd9"
+    },
+    "manifest.json": {
+      "path": "E:\\gying-tools\\releases\\console-window-fix-20261109\\manifest.json",
+      "sha256": "bf21f3b2ef2d5c56f9884461d4d0fe8876fe91bce8733e6c5106d7e4ff5e0746"
+    },
+    "installation.json": {
+      "path": "E:\\gying-tools\\releases\\console-window-fix-20261109\\installation.json",
+      "sha256": "0e0afd47cbfb245b6f4345642d6e1d5fe225ee7680c13d4b398ef280f78adc32"
+    },
+    "source-manifest.json": {
+      "path": "E:\\gying-tools\\releases\\console-window-fix-20261109\\source-manifest.json",
+      "sha256": "5d2b2cd3bb211361b60147c0fe738d977e254a90be280a7e96a27fe13d474b02"
+    },
+    "launcher-tests.log": {
+      "path": "E:\\gying-tools\\releases\\console-window-fix-20261109\\launcher-tests.log",
+      "sha256": "afc51dafa283a848e4ac0548a436c5a0c7d49e2499cc6fec9fa8a746d05178a7"
+    },
+    "natural-window-observation.json": {
+      "path": "E:\\gying-tools\\releases\\console-window-fix-20261109\\natural-window-observation.json",
+      "sha256": "904bdd631ac70795d6722fd0cfbab1ba32dc701e8a6955f0d68d0d8c1bf18c49"
+    },
+    "natural-validation.json": {
+      "path": "E:\\gying-tools\\releases\\console-window-fix-20261109\\natural-validation.json",
+      "sha256": "dde8407d8a1c0249416b35e7fd24bcc523723ba4b0106a63d9f9fd955f5ac690"
+    },
+    "ManageConsoleFix.py": {
+      "path": "E:\\gying-tools\\releases\\console-window-fix-20261109\\ManageConsoleFix.py",
+      "sha256": "eefd4f0a254cecdcf7c48866cdf5c6c43c2d4d4da09f455a687b4efeb46870dc"
+    },
+    "ObserveNaturalTask.ps1": {
+      "path": "E:\\gying-tools\\releases\\console-window-fix-20261109\\ObserveNaturalTask.ps1",
+      "sha256": "6fbca05a3832898a5e07be22611c7fea42f11319a0adaacd36bcf97b52ac6cd8"
+    },
+    "backup-coverage-proposal.json": {
+      "path": "E:\\gying-tools\\releases\\console-window-fix-20261109\\backup-coverage-proposal.json",
+      "sha256": "c7c6f559f2c58343e25a73d0a51f9ba4ca2e4ebb348eff05b8bc3b2addaeed40"
+    }
+  },
+  "manualQrLoginOrCloudWriteInvokedByAgent": false
+}

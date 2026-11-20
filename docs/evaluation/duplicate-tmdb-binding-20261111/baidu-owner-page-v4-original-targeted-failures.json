@@ -1,0 +1,223 @@
+{
+  "version": 4,
+  "status": "FAIL",
+  "createdAt": "2026-11-11T12:45:59.732192+00:00",
+  "sourceSha256": {
+    "ReconcileBaiduOwnerPageReadOnlyV4.java": "3d57a0bf5848a46b10ea2338bca7d0397b3887dae977c73d71dfaf906bdc34da",
+    "CompileReconcilerOwnerPageV4.py": "cb165e463fdf845906f18d3bf07155efe1651a3428b678bab4aec2ae13759498",
+    "PostReconcileOwnerPageV4.py": "e855561349c64067c14eb3cea9bb2d8e8f9f85e4c7ca37ee45403238f4ccf583",
+    "OwnerPageV4Binding.py": "5a87fc1ecc9eeee152c10f9bf3c7f53b2d160d208d7addeba8a50f5e0487e99e"
+  },
+  "frozenBeforeBugProbe": true,
+  "javaSourcePath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-page-v4-before-lexer-fix-d6427f6c0b6244d0917ef96276f7cc18\\ReconcileBaiduOwnerPageReadOnlyV4.java",
+  "bindingSourcePath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-page-v4-before-lexer-fix-d6427f6c0b6244d0917ef96276f7cc18\\OwnerPageV4Binding.py",
+  "testSourceSha256": {
+    "OwnerPageSchemaMocksV4.java": "d71b58b9fa1107bf2ea4d643d9940dffd30cc0d392120818c95a4741d2b87db6",
+    "test_owner_page_v4_pipeline.py": "3b000174dd3ce53910b6e4386473988d53dfe899f317c4ddfb624667fb277027"
+  },
+  "javaCompilation": {
+    "release": 17,
+    "exit": 0,
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "oldCompilerReceipt": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-parse-diagnostic-v31-build-attempts\\233b292ec6fb44ab845f9ca4f07fb488\\compile-completed.json",
+      "sha256": "4b7d5b0684c50ff1d771fdb59170816f55766413fcac17e4da54c0167d63e02e"
+    },
+    "oldArtifactsVerified": 541
+  },
+  "productionDockerCommands": 0,
+  "productionApiRequests": 0,
+  "productionSqlQueries": 0,
+  "cloudWrites": 0,
+  "directSqlWrites": 0,
+  "manualPostRequests": 0,
+  "settingsPutRequests": 0,
+  "actualPageSchemaObserved": false,
+  "ownerProofAccepted": false,
+  "officialReconciliationVerified": false,
+  "fullOldSuitesExecuted": false,
+  "javaMocks": {
+    "exit": 1,
+    "stdoutSha256": "916eff3b3527b808069bc203380c77dc4adc95834ab70ffcac856f21d1bc0d05",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "result": {
+      "targetFailures": 6,
+      "cloudWrites": 0,
+      "safeProof": {
+        "version": 4,
+        "source": "TRY_BODY_JSON",
+        "parserMode": "STRICT_JSON",
+        "sessionUidCanonical": true,
+        "recordAliases": {
+          "uk": {
+            "canonicalDigits": false,
+            "present": false,
+            "jsonType": "MISSING",
+            "matchesExpected": false,
+            "integer": false,
+            "text": false
+          },
+          "uid": {
+            "canonicalDigits": false,
+            "present": false,
+            "jsonType": "MISSING",
+            "matchesExpected": false,
+            "integer": false,
+            "text": false
+          }
+        },
+        "recordShareId": {
+          "canonicalDigits": true,
+          "present": true,
+          "jsonType": "NUMBER",
+          "matchesExpected": true,
+          "integer": true,
+          "text": false
+        },
+        "pageOwner": {
+          "canonicalDigits": true,
+          "present": true,
+          "jsonType": "STRING",
+          "matchesExpected": true,
+          "integer": false,
+          "text": true
+        },
+        "pageShareId": {
+          "canonicalDigits": true,
+          "present": true,
+          "jsonType": "NUMBER",
+          "matchesExpected": true,
+          "integer": true,
+          "text": false
+        },
+        "pageLoginState": {
+          "recognizedState": true,
+          "present": true,
+          "jsonType": "NUMBER",
+          "integer": true
+        },
+        "recordAliasesConsistent": true,
+        "pageCriticalAliasesConsistent": true,
+        "sameObjectOwnerAndId": true,
+        "ownerMatchesCurrentSession": true,
+        "shareIdMatchesOwnRecord": true,
+        "serverAccountBeforeAndAfterVerified": true,
+        "transport": {
+          "utf8Valid": true,
+          "responseBytes": 98,
+          "responseSha256": "37ff49f9331873ed8fb0a43110131ae1650106d9e13ec0605a5b50cf66859158",
+          "redirectCount": 0,
+          "finalTargetClass": "SHARE",
+          "sameOriginAllHops": true,
+          "mediaType": "HTML",
+          "boundShareIdentityAllHops": true
+        },
+        "inventory": {
+          "candidateInventoryComplete": true,
+          "candidateCount": 1,
+          "rootFieldCount": 3,
+          "shareCandidateCount": 1,
+          "scriptHashes": [
+            {
+              "index": 0,
+              "sha256": "4ce5e663ba0e66fb3e6a3ba62858ae2c91f77280c8856d38b0eb5e55ea40720f",
+              "bytes": 81
+            }
+          ],
+          "strictDuplicateDetection": true,
+          "strictTrailingDetection": true,
+          "scriptInventoryComplete": true,
+          "rootFieldsInspectedComplete": true,
+          "scriptCount": 1,
+          "inertParsing": true
+        },
+        "candidate": {
+          "bytes": 56,
+          "source": "TRY_BODY_JSON",
+          "sha256": "1fe21c80a6ad6c587939f4848e78297e3abbe81cac6e5f41265d8167b4bd2277",
+          "scriptIndex": 0
+        },
+        "failure": {
+          "reason": "NONE",
+          "lexemeKind": "NONE",
+          "coordinateSpace": "CANDIDATE_UTF16",
+          "line": 0,
+          "column": 0,
+          "stage": "NONE"
+        }
+      },
+      "productionApiRequests": 0,
+      "targetResults": [
+        {
+          "actualAccepted": true,
+          "case": "actual-var-locals-try-prefix",
+          "expectedAccepted": true,
+          "pass": true,
+          "gate": "NONE"
+        },
+        {
+          "actualAccepted": true,
+          "case": "division-before-regex-fake-only",
+          "expectedAccepted": false,
+          "pass": false,
+          "gate": "NONE"
+        },
+        {
+          "actualAccepted": false,
+          "case": "division-before-regex-plus-real",
+          "expectedAccepted": true,
+          "pass": false,
+          "gate": "PAGE_SHARE_CANDIDATE_NOT_UNIQUE"
+        },
+        {
+          "actualAccepted": true,
+          "case": "html-open-line-comment-fake-only",
+          "expectedAccepted": false,
+          "pass": false,
+          "gate": "NONE"
+        },
+        {
+          "actualAccepted": false,
+          "case": "html-open-line-comment-plus-real",
+          "expectedAccepted": true,
+          "pass": false,
+          "gate": "PAGE_SHARE_CANDIDATE_NOT_UNIQUE"
+        },
+        {
+          "actualAccepted": true,
+          "case": "html-close-line-comment-fake-only",
+          "expectedAccepted": false,
+          "pass": false,
+          "gate": "NONE"
+        },
+        {
+          "actualAccepted": false,
+          "case": "html-close-line-comment-plus-real",
+          "expectedAccepted": true,
+          "pass": false,
+          "gate": "PAGE_SHARE_CANDIDATE_NOT_UNIQUE"
+        }
+      ],
+      "sqlWrites": 0,
+      "status": "FAIL",
+      "tests": 170
+    }
+  },
+  "javaDefault": {
+    "exit": 0,
+    "result": {
+      "mode": "no-I/O plan",
+      "cloudWrites": 0,
+      "springStarted": false,
+      "sqlOpened": false
+    }
+  },
+  "pythonMocks": {
+    "tests": 21,
+    "failures": 5,
+    "errors": 0
+  },
+  "oldFrozenArtifactBytesRetained": true,
+  "completedAt": "2026-11-11T12:46:04.758988+00:00"
+}

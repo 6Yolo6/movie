@@ -1,0 +1,139 @@
+{
+  "status": "PASS",
+  "runId": "ec23c218fba5",
+  "stage": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5",
+  "backendCodeCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "runnerBaselineCommit": "37d946e8cbe5ec0988331312d25b01679f9ab3a6",
+  "sourceManifestSha256": "4ba8a13372b15d513fc76cf7e8cb3c95126823df39505bd5968fd3698d5bfa98",
+  "sourceManifestUnchanged": true,
+  "sourceManifestRawBytesVerified": true,
+  "backendSourceFiles": 423,
+  "tests": {
+    "totals": {
+      "tests": 334,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "classes": {
+      "com.gying.movie.service.impl.GyingMetadataItemRetryServiceTest": {
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.GyingMetadataSyncServiceImplTest": {
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.GyingSourceWorkflowServiceTest": {
+        "tests": 113,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.MetadataCrawlRecoveryTest": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.MetadataUpdatesCheckpointMySqlTest": {
+        "tests": 18,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.MetadataUpdatesCheckpointTest": {
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.MetadataUpdatesProvidersTest": {
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.P2pArchiveTaskServiceTest": {
+        "tests": 76,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.ResourceHubConfigServiceImplTest": {
+        "tests": 21,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.ResourceHubWorkerServiceImplTest": {
+        "tests": 44,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.TmdbGyingResourceFollowUpServiceTest": {
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.TmdbMetadataCrawlTest": {
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.TmdbMetadataSyncServiceImplTest": {
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "mavenExitCodeCaptured": 0,
+  "exitCodeCapturedBeforeLogOutput": true,
+  "realMySqlTests": 18,
+  "network": "none",
+  "freshFixture": true,
+  "freshStageCreateOnly": true,
+  "compileCacheReused": false,
+  "testClassesOrReportsReused": false,
+  "allSelectedClassesPresent": true,
+  "fixtureContainersCleaned": 2,
+  "productionChanged": false,
+  "packageBuildOrDeploymentByThisChild": false,
+  "evidence": {
+    "result.json": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5\\result.json",
+      "sha256": "f9a7760b2e0b36701080ec494a4aead1df10d0b76472e9a6f42f5af6ab82f503"
+    },
+    "maven-exit.json": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5\\maven-exit.json",
+      "sha256": "82e713a92c757ede69517bba53b7813dd740cf2fce7925ef5b3748c7051c7fb4"
+    },
+    "sources.json": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5\\sources.json",
+      "sha256": "4ba8a13372b15d513fc76cf7e8cb3c95126823df39505bd5968fd3698d5bfa98"
+    },
+    "test.log": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5\\test.log",
+      "sha256": "d57801757c18fdbe3c886f2cdfd407389d2e8da991114bc3df5f7a3ee0dd68f3"
+    }
+  },
+  "priorRunsPreserved": [
+    "871b1a49291c",
+    "9aa0d2a9662b",
+    "ea18bf0e51fd"
+  ],
+  "limits": [
+    "Missing or conflicting identity anchors remain for review without downloads.",
+    "Resource attempts retry independently at least 24h apart, maximum three; exhausted intents are never reset.",
+    "Historical trusted metadata completions and old archive checkpoints are not backfilled or replayed."
+  ]
+}

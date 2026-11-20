@@ -1,0 +1,59 @@
+{
+  "checkedAt": "2026-11-08T14:29:11.392320+00:00",
+  "privilege": "ordinary current token",
+  "restrictedStateOrKeyRead": false,
+  "managedRecords": {
+    "backend": {
+      "recordSha256": "98bbdbc0a0ba29bcb2817ceec2c99e1ac72c6d955f88940b89eab2aee2ad25e0",
+      "processId": 4992,
+      "instanceId": "bae7404a-043e-49d0-b3e0-ff9879478b18",
+      "startedAt": "2026-11-08T01:36:49.5166714Z"
+    },
+    "frontend": {
+      "recordSha256": "f669957ff365e99e5f2631938c019d85226df52b7eac3dc3ed3557a6af98911d",
+      "processId": 17880,
+      "instanceId": "2c7e5d85-04b8-4aac-8d97-60c59f0a5222",
+      "startedAt": "2026-11-08T01:37:09.7316974Z"
+    },
+    "router": {
+      "recordSha256": "c9827089f9d80cd417f08121fb39f44b653b5782931b2719bcb075575f5bb0c4",
+      "processId": 8908,
+      "instanceId": "11e8e5da-20fe-4684-b287-de5208eeb9b2",
+      "startedAt": "2026-11-08T01:37:01.4830735Z"
+    },
+    "ollama": {
+      "recordSha256": "4cb11bd306d1ed8ca799a739a1e7bb5ca314cb86cfebe42b0598aaf65e731139",
+      "processId": 24652,
+      "instanceId": "6c9302cf-152a-464b-badb-0549a360c101",
+      "startedAt": "2026-11-08T01:36:42.8911574Z"
+    }
+  },
+  "readyMatchesStoredRecord": true,
+  "runtimeJarSha256": "1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64",
+  "runtimeJarMatchesExpected": true,
+  "freshProcess": {
+    "status": "UNKNOWN",
+    "errorType": "ValueError"
+  },
+  "liveArgvStatus": "UNKNOWN",
+  "health": {
+    "agent": {
+      "httpStatus": 200,
+      "bodySha256": "d43bbbcdd83e1f2892c13ee0071456bfe9b03375c202d5ea8550f09021e46a30"
+    },
+    "router": {
+      "httpStatus": 200,
+      "bodySha256": "cbbf9f816d04c5c2be65365d4539a268e741760e502d3bf0907aed26834cd0cb"
+    },
+    "agentFrontend": {
+      "httpStatus": 200,
+      "bodySha256": "ff77a2543b74428ace6feaeddf342ca6a0cf4bf4b6abc9ff49fef2fc5cd13c63"
+    },
+    "ollama": {
+      "httpStatus": 200,
+      "bodySha256": "9bf1e9079ca4d42c0cf543680b3c7a54957ddbec19d170d7e064ad9152f3d206"
+    }
+  },
+  "phase": "before backend/frontend deployment",
+  "supersededProjectionFailure": "agent-before-deploy-readonly.initial-projection-failure.json"
+}

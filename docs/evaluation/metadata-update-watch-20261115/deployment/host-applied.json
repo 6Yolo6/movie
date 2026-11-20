@@ -1,0 +1,21 @@
+{
+  "status": "HOST_PIN_APPLIED_VERIFIED",
+  "completedAt": "2026-11-15T09:44:33.567786+00:00",
+  "sourceCommit": "1adbc336cdadefa48be40ff37082a6de840fbd41",
+  "receipt": {
+    "path": "E:/gying-tools/releases/metadata-update-watch-20261115/update-receipt.json",
+    "sha256": "f4012609550995006bd90cfe976931b8c22b7440b36147e3c1306ba1deb058a7"
+  },
+  "prepared": {
+    "path": "E:/gying-tools/releases/metadata-update-watch-20261115/host-prepared.json",
+    "sha256": "ff732672ef575357c879f8b2f1b14427ce483565adb1b90f652e48e4c9c7e5ae"
+  },
+  "configurationSha256": "e22ebc2059b7d07dade8d33dae73a6374a0181ffbd9dc3ebfbc4dbc018c9d377",
+  "newExpectedImage": "sha256:3094a644b065d0546ee0d06fea5e8128abb14f79d42c829cb6d007674e893707",
+  "ownerGroupDaclRetained": true,
+  "taskXmlAndAclRetained": true,
+  "onlyExpectedBackendImageChanged": true,
+  "casAttempts": 1,
+  "configurationOutcomeUnknown": false,
+  "automaticRetry": false
+}

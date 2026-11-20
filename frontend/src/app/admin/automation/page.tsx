@@ -10,6 +10,7 @@ import {
     Col,
     Empty,
     Form,
+    Grid,
     Input,
     InputNumber,
     Modal,
@@ -31,7 +32,6 @@ import {
     MessageOutlined,
     NotificationOutlined,
     PlusOutlined,
-    RedoOutlined,
     ReloadOutlined,
     SaveOutlined,
     SendOutlined,
@@ -41,6 +41,9 @@ import type { ColumnsType } from 'antd/es/table';
 import { useTranslation } from 'react-i18next';
 import { api, readApiError } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
+import { SOCIAL_POST_STATUSES, type SocialPublishTarget, type SocialPostLog } from '@/lib/socialPublishing';
+import { SocialTargetMobileCards, SocialLogMobileCards, SocialPostRetryButton, SocialPostStatusTag } from '@/components/admin/SocialPublishingMobile';
+import socialMobileStyles from '@/components/admin/SocialPublishingMobile.module.css';
 
 const { Title, Text } = Typography;
 
@@ -124,21 +127,6 @@ interface ChannelPostLog {
     createdAt?: string;
 }
 
-interface SocialPublishTarget {
-    id: number;
-    platform: 'QQ_CHANNEL' | 'WEIBO';
-    accountKey: string;
-    name: string;
-    targetRef?: string;
-    channelRef?: string;
-    enabled: boolean;
-    autoPostEnabled: boolean;
-    scheduleTime: string;
-    postsPerRun: number;
-    postIntervalSeconds: number;
-    template?: string;
-    lastAutoRunAt?: string;
-}
 
 interface SocialPublishingOverview {
     targets: SocialPublishTarget[];
@@ -146,6 +134,8 @@ interface SocialPublishingOverview {
     failed: number;
     pending: number;
     postedLast24Hours: number;
+    processing?: number;
+    unknown?: number;
     publisher?: {
         ok?: boolean;
         qq?: {
@@ -192,19 +182,6 @@ interface QqAccountFormValues {
     accountKey: string;
 }
 
-interface SocialPostLog {
-    id: number;
-    targetId: number;
-    platform: 'QQ_CHANNEL' | 'WEIBO';
-    resourceLinkId: number;
-    movieId: string;
-    title?: string;
-    status: 'PENDING' | 'POSTED' | 'FAILED';
-    externalUrl?: string;
-    errorMessage?: string;
-    postedAt?: string;
-    createdAt?: string;
-}
 
 interface SocialTargetFormValues {
     platform: 'QQ_CHANNEL' | 'WEIBO';
@@ -222,7 +199,6 @@ interface SocialTargetFormValues {
 
 const BOT_STATUSES = ['SUCCEEDED', 'NO_RESOURCE', 'NO_METADATA', 'TRAILER', 'AMBIGUOUS', 'BLOCKED', 'RATE_LIMITED', 'REJECTED', 'FAILED'];
 const CHANNEL_STATUSES = ['POSTED', 'FAILED', 'SKIPPED'];
-const SOCIAL_STATUSES = ['PENDING', 'POSTED', 'FAILED'];
 
 function unwrap<T>(payload: ApiEnvelope<T> | T): T {
     if (payload && typeof payload === 'object' && 'data' in payload) {
@@ -240,6 +216,8 @@ export default function QqAutomationAdminPage() {
     const router = useRouter();
     const { message, modal } = App.useApp();
     const { t } = useTranslation();
+    const screens = Grid.useBreakpoint();
+    const socialMobile = screens.md === false;
     const [form] = Form.useForm<AutomationConfig>();
     const [socialTargetForm] = Form.useForm<SocialTargetFormValues>();
     const [qqAccountForm] = Form.useForm<QqAccountFormValues>();
@@ -729,11 +707,11 @@ export default function QqAutomationAdminPage() {
                 method: 'POST',
                 body: targetId ? undefined : JSON.stringify([]),
             });
-            message.success(t('socialPublishingPublished'));
-            await Promise.all([fetchSocialOverview(), fetchSocialLogs()]);
+            message.info(t('socialPublishingResultRecorded'));
         } catch (error) {
             message.error(error instanceof Error ? error.message : t('operationFailed'));
         } finally {
+            await Promise.all([fetchSocialOverview(), fetchSocialLogs()]);
             setSocialBusyId(undefined);
         }
     };
@@ -744,11 +722,11 @@ export default function QqAutomationAdminPage() {
             await requestJson(`/api/admin/social-publishing/logs/${logId}/retry`, {
                 method: 'POST',
             });
-            message.success(t('socialPublishingRetrySubmitted'));
-            await Promise.all([fetchSocialOverview(), fetchSocialLogs()]);
+            message.info(t('socialPublishingResultRecorded'));
         } catch (error) {
             message.error(error instanceof Error ? error.message : t('operationFailed'));
         } finally {
+            await Promise.all([fetchSocialOverview(), fetchSocialLogs()]);
             setSocialRetryId(undefined);
         }
     };
@@ -931,6 +909,8 @@ export default function QqAutomationAdminPage() {
         },
     ];
 
+    const socialStatusTag = (status?: string) => <SocialPostStatusTag status={status} />;
+
     const socialLogColumns: ColumnsType<SocialPostLog> = [
         { title: 'ID', dataIndex: 'id', width: 80 },
         {
@@ -951,7 +931,7 @@ export default function QqAutomationAdminPage() {
                 || t('socialPublishingDeletedTarget', { id: value }),
         },
         { title: t('movieTitle'), dataIndex: 'title', width: 220, ellipsis: true, render: (value?: string) => value || '-' },
-        { title: t('status'), dataIndex: 'status', width: 110, render: statusTag },
+        { title: t('status'), dataIndex: 'status', width: 180, render: socialStatusTag },
         { title: t('movieId'), dataIndex: 'movieId', width: 160, ellipsis: true },
         { title: t('resourceId'), dataIndex: 'resourceLinkId', width: 110 },
         {
@@ -978,21 +958,28 @@ export default function QqAutomationAdminPage() {
             key: 'actions',
             fixed: 'right',
             width: 110,
-            render: (_, log) => {
-                const targetExists = socialOverview?.targets.some(target => target.id === log.targetId);
-                return (
-                    <Button
-                        icon={<RedoOutlined />}
-                        loading={socialRetryId === log.id}
-                        disabled={log.status === 'POSTED' || !targetExists}
-                        onClick={() => retrySocialLog(log.id)}
-                    >
-                        {t('socialPublishingRetry')}
-                    </Button>
-                );
-            },
+            render: (_, log) => (
+                <SocialPostRetryButton
+                    log={log}
+                    targetReady={Boolean(socialOverview?.targets.some(target => target.id === log.targetId && target.enabled))}
+                    loading={socialRetryId === log.id}
+                    onRetry={retrySocialLog}
+                />
+            ),
         },
     ];
+
+    const socialTargetActions = (
+        <div className={socialMobile ? 'grid grid-cols-1 gap-2' : 'flex items-center gap-2'}>
+            <Button icon={<PlusOutlined />} onClick={openCreateSocialTarget} style={socialMobile ? { minHeight: 44 } : undefined}>
+                {t('socialPublishingAddTarget')}
+            </Button>
+            <Button type="primary" icon={<SendOutlined />} loading={socialBusyId === 'all'}
+                onClick={() => publishSocialTarget()} style={socialMobile ? { minHeight: 44 } : undefined}>
+                {t('socialPublishingPublishAll')}
+            </Button>
+        </div>
+    );
 
     const botSummary = overview?.botSummary;
     const channelCounts = overview?.channelStatusCounts || {};
@@ -1312,29 +1299,40 @@ export default function QqAutomationAdminPage() {
                             key: 'social',
                             label: t('socialPublishingTab'),
                             children: (
-                                <Space direction="vertical" size={16} className="w-full">
+                                <Space direction="vertical" size={16} className={`w-full min-w-0 ${socialMobileStyles.layout}`}>
                                     <Row gutter={[16, 16]}>
-                                        <Col xs={12} md={6}>
+                                        <Col xs={12} md={8} xl={4}>
                                             <Card loading={socialLoading}>
                                                 <Statistic title={t('socialPublishingPosted')} value={socialOverview?.posted || 0} />
                                             </Card>
                                         </Col>
-                                        <Col xs={12} md={6}>
+                                        <Col xs={12} md={8} xl={4}>
                                             <Card loading={socialLoading}>
                                                 <Statistic title={t('socialPublishingPosted24h')} value={socialOverview?.postedLast24Hours || 0} />
                                             </Card>
                                         </Col>
-                                        <Col xs={12} md={6}>
+                                        <Col xs={12} md={8} xl={4}>
                                             <Card loading={socialLoading}>
                                                 <Statistic title={t('socialPublishingPending')} value={socialOverview?.pending || 0} />
                                             </Card>
                                         </Col>
-                                        <Col xs={12} md={6}>
+                                        <Col xs={12} md={8} xl={4}>
                                             <Card loading={socialLoading}>
                                                 <Statistic title={t('socialPublishingFailed')} value={socialOverview?.failed || 0} />
                                             </Card>
                                         </Col>
+                                        <Col xs={12} md={8} xl={4}>
+                                            <Card loading={socialLoading}>
+                                                <Statistic title={t('socialPublishingProcessing')} value={socialOverview?.processing || 0} />
+                                            </Card>
+                                        </Col>
+                                        <Col xs={12} md={8} xl={4}>
+                                            <Card loading={socialLoading}>
+                                                <Statistic title={t('socialPublishingUnknown')} value={socialOverview?.unknown || 0} />
+                                            </Card>
+                                        </Col>
                                     </Row>
+                                    <Alert type="warning" showIcon title={t('socialPublishingRetryPolicy')} />
                                     <Alert
                                         type={socialOverview?.publisher?.qq?.ready && socialOverview?.publisher?.weibo?.ready ? 'success' : 'warning'}
                                         showIcon
@@ -1374,42 +1372,36 @@ export default function QqAutomationAdminPage() {
                                     </Card>
                                     <Card
                                         title={t('socialPublishingTargets')}
-                                        extra={(
-                                            <Space>
-                                                <Button icon={<PlusOutlined />} onClick={openCreateSocialTarget}>
-                                                    {t('socialPublishingAddTarget')}
-                                                </Button>
-                                                <Button
-                                                    type="primary"
-                                                    icon={<SendOutlined />}
-                                                    loading={socialBusyId === 'all'}
-                                                    onClick={() => publishSocialTarget()}
-                                                >
-                                                    {t('socialPublishingPublishAll')}
-                                                </Button>
-                                            </Space>
-                                        )}
+                                        extra={socialMobile ? undefined : socialTargetActions}
                                     >
-                                        <Table
-                                            rowKey="id"
-                                            columns={socialColumns}
-                                            dataSource={socialOverview?.targets || []}
-                                            loading={socialLoading}
-                                            pagination={false}
-                                            scroll={{ x: 1900 }}
-                                        />
+                                        {socialMobile && <div className="mb-4">{socialTargetActions}</div>}
+                                        {socialMobile ? (
+                                            <SocialTargetMobileCards targets={socialOverview?.targets || []} busyId={socialBusyId}
+                                                loading={socialLoading} onChange={updateSocialTargetValue} onSave={saveSocialTarget}
+                                                onPublish={publishSocialTarget} onRemove={removeSocialTarget} />
+                                        ) : (
+                                            <Table
+                                                rowKey="id"
+                                                columns={socialColumns}
+                                                dataSource={socialOverview?.targets || []}
+                                                loading={socialLoading}
+                                                pagination={false}
+                                                scroll={{ x: 1900 }}
+                                            />
+                                        )}
                                     </Card>
                                     <Card title={t('socialPublishingHistory')}>
-                                        <Space className="mb-4" wrap>
+                                        <div className="mb-4 grid grid-cols-1 gap-3 md:flex md:flex-wrap md:items-center" data-testid="social-log-filters">
                                             <Select
                                                 allowClear
                                                 placeholder={t('socialPublishingPlatform')}
+                                                aria-label={t('socialPublishingPlatform')}
                                                 options={[
                                                     { value: 'QQ_CHANNEL', label: 'QQ' },
                                                     { value: 'WEIBO', label: t('socialPublishingWeibo') },
                                                 ]}
                                                 value={socialLogPlatform}
-                                                style={{ width: 150 }}
+                                                style={{ width: socialMobile ? '100%' : 150 }}
                                                 onChange={(value) => {
                                                     setSocialLogPlatform(value);
                                                     setSocialLogPage(1);
@@ -1418,12 +1410,13 @@ export default function QqAutomationAdminPage() {
                                             <Select
                                                 allowClear
                                                 placeholder={t('filterByStatus')}
-                                                options={SOCIAL_STATUSES.map(value => ({
+                                                aria-label={t('filterByStatus')}
+                                                options={SOCIAL_POST_STATUSES.map(value => ({
                                                     value,
-                                                    label: t(`qqAutomationStatus.${value}`, { defaultValue: value }),
+                                                    label: t(`socialPublishingStatus.${value}`, { defaultValue: value }),
                                                 }))}
                                                 value={socialLogStatus}
-                                                style={{ width: 160 }}
+                                                style={{ width: socialMobile ? '100%' : 180 }}
                                                 onChange={(value) => {
                                                     setSocialLogStatus(value);
                                                     setSocialLogPage(1);
@@ -1432,22 +1425,28 @@ export default function QqAutomationAdminPage() {
                                             <Button icon={<ReloadOutlined />} onClick={fetchSocialLogs}>
                                                 {t('refresh')}
                                             </Button>
-                                        </Space>
-                                        <Table
-                                            rowKey="id"
-                                            columns={socialLogColumns}
-                                            dataSource={socialLogs}
-                                            loading={socialLogsLoading}
-                                            scroll={{ x: 1900 }}
-                                            locale={{ emptyText: <Empty description={t('socialPublishingNoLogs')} /> }}
-                                            pagination={{
-                                                current: socialLogPage,
-                                                pageSize: 20,
-                                                total: socialLogTotal,
-                                                onChange: setSocialLogPage,
-                                                showTotal: total => t('totalItems', { count: total }),
-                                            }}
-                                        />
+                                        </div>
+                                        {socialMobile ? (
+                                            <SocialLogMobileCards logs={socialLogs} targets={socialOverview?.targets || []}
+                                                loading={socialLogsLoading} retryId={socialRetryId} page={socialLogPage} total={socialLogTotal}
+                                                onRetry={retrySocialLog} onPage={setSocialLogPage} formatDate={formatDate} />
+                                        ) : (
+                                            <Table
+                                                rowKey="id"
+                                                columns={socialLogColumns}
+                                                dataSource={socialLogs}
+                                                loading={socialLogsLoading}
+                                                scroll={{ x: 1900 }}
+                                                locale={{ emptyText: <Empty description={t('socialPublishingNoLogs')} /> }}
+                                                pagination={{
+                                                    current: socialLogPage,
+                                                    pageSize: 20,
+                                                    total: socialLogTotal,
+                                                    onChange: setSocialLogPage,
+                                                    showTotal: total => t('totalItems', { count: total }),
+                                                }}
+                                            />
+                                        )}
                                     </Card>
                                 </Space>
                             ),

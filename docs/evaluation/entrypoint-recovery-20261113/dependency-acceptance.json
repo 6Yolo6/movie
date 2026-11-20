@@ -1,0 +1,4 @@
+{
+  "authenticated_redis_ping": true,
+  "pansou_internal_tcp": true
+}

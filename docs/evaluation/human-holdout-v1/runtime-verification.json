@@ -1,0 +1,18 @@
+{
+  "gying-movie-backend-1": {
+    "unchangedSinceEvaluationBaseline": true,
+    "image": "sha256:81d6bd4c41161cab085c1732975e245a2613919cba172139a26d0334b499dd15"
+  },
+  "gying-movie-frontend-1": {
+    "unchangedSinceEvaluationBaseline": true,
+    "image": "sha256:6066320686beb3ae02e07a9f44418527b0bf91bcad44857c2affff800be7e6c1"
+  },
+  "gying-movie-gying-source-1": {
+    "unchangedSinceEvaluationBaseline": true,
+    "image": "sha256:76fe318b24b1c1222a6615918f5aedc83f772357d6ba01ed1e94458d63bdb58a"
+  },
+  "gying-movie-social-publisher-1": {
+    "unchangedSinceEvaluationBaseline": true,
+    "image": "sha256:a5a2c09753ded42f4d7a2dd653e70573fcd28767920ecaa0c4bcc35112a4677b"
+  }
+}

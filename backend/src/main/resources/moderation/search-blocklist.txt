@@ -1,0 +1,236 @@
+# 网站资源搜索与 QQ 群搜索的内置拒绝词库（UTF-8）
+# 与 sys_config 的 qq.bot.blocked_keywords 合并；配置为空不会关闭基础策略。
+# 普通行按归一化后的子串匹配；@token 行要求英文词边界，避免 AV 误伤 Avatar。
+# 只覆盖明确成人资源语境；不要加入“成人”“性”“写真”“sex”等过宽单词。
+
+# 中文明确色情资源
+色情
+情色资源
+情色视频
+情色電影
+情色电影资源
+淫秽
+淫穢
+黄色录像
+黃色錄像
+黄色视频
+黃色視頻
+黄色电影
+黃色電影
+黄色资源
+黃色資源
+黄色网站
+黃色網站
+黄网
+黃網
+黄站
+黃站
+黄片
+黃片
+小黄片
+小黃片
+成人视频
+成人視頻
+成人电影
+成人電影
+成人影片
+成人影视
+成人影視
+成人资源
+成人資源
+成人片源
+成人短片
+成人网站
+成人網站
+成人网盘
+成人網盤
+成人福利
+成人直播
+成人毛片
+毛片资源
+毛片資源
+A片资源
+A片資源
+AV片
+AV电影
+AV電影
+AV视频
+AV视频
+AV合集
+AV资源
+AV資源
+AV女优
+AV女優
+日本AV
+欧美AV
+歐美AV
+国产AV
+國產AV
+亚洲AV
+亞洲AV
+女优合集
+女優合集
+女优作品
+女優作品
+无码
+無碼
+有码资源
+有碼資源
+有码合集
+有碼合集
+无码流出
+無碼流出
+步兵资源
+步兵資源
+骑兵资源
+騎兵資源
+
+# 成人动漫及明确年龄限制资源标签
+里番
+裏番
+肉番
+成人动漫
+成人動漫
+成人动画
+成人動畫
+成人漫画
+成人漫畫
+H动漫
+H動漫
+H动画
+H動畫
+H漫画
+H漫畫
+H漫资源
+H漫資源
+18禁
+十八禁
+18X资源
+18X資源
+R18资源
+R18資源
+R18动画
+R18動畫
+@token r18
+@token r18g
+@token hentai
+@token jav
+@token av
+@token nsfw
+
+# 明确裸露/私密色情资源语境，不屏蔽普通写真与摄影
+露点写真
+露點寫真
+全裸写真
+全裸寫真
+裸体写真
+裸體寫真
+色情写真
+色情寫真
+性爱视频
+性愛視頻
+性爱电影
+性愛電影
+性交视频
+性交視頻
+做爱视频
+做愛視頻
+自慰视频
+自慰視頻
+撸管视频
+擼管視頻
+口交视频
+口交視頻
+肛交视频
+肛交視頻
+群交视频
+群交視頻
+乱伦视频
+亂倫視頻
+乱伦资源
+亂倫資源
+
+# 性剥削与非自愿私密内容
+儿童色情
+兒童色情
+未成年色情
+幼童色情
+幼女色情
+恋童资源
+戀童資源
+偷拍性爱
+偷拍性愛
+偷拍露点
+偷拍露點
+偷拍私密
+偷拍视频资源
+偷拍視頻資源
+强奸视频
+強姦視頻
+强暴视频
+強暴視頻
+迷奸视频
+迷姦視頻
+
+# 英文明确成人内容（空格、大小写、标点均归一化）
+porn
+porno
+pornography
+pornographic
+p0rn
+pr0n
+adult video
+adult videos
+adult movie
+adult movies
+adult film
+adult films
+adult content
+adult entertainment
+adult torrent
+sex video
+sex videos
+sex movie
+sex movies
+sex tape
+sex tapes
+xxx video
+xxx movie
+xxx资源
+xxx資源
+xxx合集
+uncensored sex
+explicit sex
+hardcore sex
+softcore sex
+nude video
+nude videos
+nudes leak
+leaked nudes
+revenge porn
+child pornography
+child porn
+
+# 成人站点/资源品牌标识；不主动访问这些站点
+pornhub
+xvideos
+xnxx
+youporn
+redtube
+xhamster
+spankbang
+tube8
+youjizz
+tnaflix
+javdb
+javbus
+javlibrary
+missav
+thisav
+jable
+tokyohot
+tokyo hot
+caribbeancom
+一本道
+东京热
+東京熱

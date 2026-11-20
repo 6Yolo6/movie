@@ -1,0 +1,137 @@
+{
+  "at": "2026-11-09T12:53:40.965426+00:00",
+  "scope": "isolated Baidu QQ and website search candidate",
+  "sourceCommit": "bd16a9ac9c51f057daeeec3a9a4cf94f7719fe3e",
+  "deployed": false,
+  "productionMigrationPerformed": false,
+  "backendTests": {
+    "tests": 1360,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 1359
+  },
+  "requiredSqlVerified": true,
+  "independentJava17CompileVerified": true,
+  "backendSourceFiles": 402,
+  "backendVerifiedClassResources": 418,
+  "backendImage": "sha256:3feb648617ff330b53a882f6338fabeac8e2745363a3715f7d2b52f43c7f468e",
+  "backendJarSha256": "2d2fd6be9e6e3c5cc4687a072602ed4d5d2b1b5c642e25e49c9d95f8718b81e5",
+  "frontendChecks": {
+    "typegen": true,
+    "tsc": true,
+    "lint": true,
+    "tests": 93,
+    "passed": 93,
+    "browserGroups": 7,
+    "mockedApi": true,
+    "realBaiduTransferVerified": false
+  },
+  "frontendSourceFiles": 88,
+  "frontendRuntimeArtifacts": 375,
+  "frontendImage": "sha256:e083baeef9394fffda0887a41223da2d1bf679005d9ad9b81e4848ae3cd6dbe4",
+  "frontendBuildId": "bZw8VcHwwgQtxu00lHvw3",
+  "permanentDirectories": [
+    "/GYing Resource Hub/mv",
+    "/GYing Resource Hub/tv",
+    "/GYing Resource Hub/ac"
+  ],
+  "temporaryRoot": "/GYing QQ Temp",
+  "retentionMinutesDefault": 10,
+  "retentionClock": "first durable own-share confirmation plus task-allocation retentionMinutes",
+  "cleanup": {
+    "mode": "PERMANENT",
+    "exactTaskDirectoryOnly": true,
+    "unknownPostReadOnlyReconciliation": true,
+    "realTemporaryTransferPerformed": false,
+    "realDeletePerformed": false,
+    "quotaReleaseMeasured": false,
+    "webApiProvidesAtomicExpectedFsidDelete": false
+  },
+  "deploymentGates": {
+    "idle": "FAIL",
+    "oldConsumerCompatibility": "FAIL",
+    "basis": [
+      "Retained P2P BAIDU child 17584 has an unconfirmed upstream upload result",
+      "Original parent 17583 is BLOCKED with retained child and v2 intent",
+      "Retained legacy/v2 pointer and Baidu task require compatible consumer; existing reviewed gate rejects an old consumer",
+      "Fresh targeted reads confirm unchanged history and running original service identity; no full gate scanner was rerun"
+    ],
+    "automaticBackfillEnabled": false,
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "deploymentAllowed": false
+  },
+  "productionBackend": "sha256:adfd0dfad9dd63a8d0996848b7b13745f1af15669f45c800ae04ecde0cd2a4e6",
+  "productionFrontend": "sha256:663b83853b72bbaff753a12c42e6a9a54718643c3cb3d10b95dda1e938f90c54",
+  "evidence": {
+    "backendTests": {
+      "path": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-b744b3dfc8f2\\result.json",
+      "sha256": "4f30bc2cc0af16c73ee16af510b673f4c891f79bfa30f9a05f5707e4cbd405d6"
+    },
+    "backendSourceManifest": {
+      "path": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-b744b3dfc8f2\\sources.json",
+      "sha256": "a4dbdbfab718c8547ee6302766fb5a977a2c55b6b5107e10b4f5bb9451fea9cb"
+    },
+    "backendBuild": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-temp-20261109\\backend-build-raw.json",
+      "sha256": "b242ce89e36d3d61697d7018ca525d648433976d4a3a971811b7b78981148e59"
+    },
+    "frontendBuild": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-temp-20261109\\frontend-eb7d33b6084c\\frontend-runtime-image.json",
+      "sha256": "b1c7bf3995a701a3a6dce08b96e7ac9c49dca6ed6ff03718ba53a84879a7950a"
+    },
+    "frontendChecks": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-temp-20261109\\frontend-eb7d33b6084c\\native-build\\validation-result.json",
+      "sha256": "284248089003d37a3f58dc7cf2f52202778579c0e031431ecbeacf5a616e4b60"
+    },
+    "browser": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-temp-20261109\\frontend-eb7d33b6084c\\native-build\\conversation-browser.json",
+      "sha256": "77e0cbce9ea08ede24699ed12f3625bc426f0e435fa3280a3ba6fa4201f0ac5b"
+    },
+    "productionGates": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-temp-20261109\\ops\\production-gate-review-20261109T122940.902507Z.json",
+      "sha256": "eae0b20a2879dc5628d8b51abab0796d856901d9d4bb7dea1eb7fc35536b3bf2"
+    },
+    "finalProductionRead": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-temp-20261109\\ops\\production-gate-readonly-20261109T125158.844692Z.json",
+      "sha256": "5f1badcc2801abdb38f82a1089489dd28e9b0b44de7e440067f315abc0d116d8"
+    },
+    "frontendCommitBinding": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-temp-20261109\\frontend-eb7d33b6084c\\frontend-commit-binding.json",
+      "sha256": "557f67fd7a1238335cc15d2539ed72a3e6150942b87eb1e0c888e82765537412"
+    },
+    "cleanupApiResearch": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-temp-20261109\\cleanup-api-research.json",
+      "sha256": "99d2880f9012116bf640dd7cba22c6e7902dc20d019acee72b0679c5d330bb0e"
+    },
+    "production-gate-review.json": {
+      "path": "D:\\gying-movie\\movie\\docs\\evaluation\\baidu-search-temp-20261109\\production-gate-review.json",
+      "sha256": "d258e8aaf590dac38a698663329b0035b093528dd02eae9e6b01463de6db8cff"
+    },
+    "final-production-read.json": {
+      "path": "D:\\gying-movie\\movie\\docs\\evaluation\\baidu-search-temp-20261109\\final-production-read.json",
+      "sha256": "257514f0947effc88e89566eff6fae7899da4ae617835fdbcd638fc69531b84f"
+    },
+    "changedFilesSecretScan": {
+      "path": "E:/gying-tools/releases/baidu-search-temp-20261109/changed-files-secret-scan.json",
+      "sha256": "94ea79a0a4273bcbb1199f853549aa82cd479365e5190ddf56c323742faee50e"
+    }
+  },
+  "retainedFailedStages": [
+    "query-boundaries-mysql-7fa6bb6858f3",
+    "query-boundaries-mysql-e1ef048641ec",
+    "query-boundaries-mysql-c2573ad50b90",
+    "query-boundaries-mysql-db0e37968853"
+  ],
+  "failureNotes": "Compiler fixture failures had zero executions; c257 copy failed with disk ENOSPC; db0e ran 1360 with 4 fixture failures. Final fixtures enable Baidu video and own-account validator without relaxing assertions.",
+  "productionWrites": 0,
+  "cloudWritesInThisImplementationPhase": 0,
+  "historicalTasksReplayed": false,
+  "diagnosticProbeDeleted": false,
+  "qrLoginTaskChanged": false,
+  "leaseProjectionNote": "JSON_EXTRACT(...) IS NOT NULL also includes explicit JSON null; these fields mean JSON-node presence and are not evidence of an active lease.",
+  "newSecretScanFindings": 0,
+  "repositoryWideSecretScanPassed": false,
+  "unchangedRepositorySecretScanFindings": 2
+}

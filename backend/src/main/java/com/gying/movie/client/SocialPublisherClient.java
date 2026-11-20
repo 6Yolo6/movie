@@ -32,7 +32,8 @@ public class SocialPublisherClient {
 
     @SuppressWarnings("unchecked")
     public Map<String, Object> health() {
-        Map<String, Object> response = restClient.get().uri("/health").retrieve().body(Map.class);
+        Map<String, Object> response = restClient.get().uri("/health")
+                .header("X-Internal-Token", requiredToken()).retrieve().body(Map.class);
         return response == null ? Map.of() : response;
     }
 
@@ -95,6 +96,15 @@ public class SocialPublisherClient {
                 .header("X-Internal-Token", requiredToken())
                 .retrieve()
                 .body(Map.class);
+        return response == null ? Map.of() : response;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> weiboSessionStatus() {
+        Map<String, Object> response = restClient.get()
+                .uri("/accounts/weibo/session-status")
+                .header("X-Internal-Token", requiredToken())
+                .retrieve().body(Map.class);
         return response == null ? Map.of() : response;
     }
 

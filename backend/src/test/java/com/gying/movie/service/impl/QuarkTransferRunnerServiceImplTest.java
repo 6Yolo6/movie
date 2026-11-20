@@ -129,7 +129,7 @@ class QuarkTransferRunnerServiceImplTest {
                 movie.getTitleCn(),
                 movie.getTitleEn(),
                 movie.getAliases(),
-                movie.getYear()))
+                movie.getYear(), discovery.getTitle()))
                 .thenReturn(new QuarkAutoSaveClient.MovieShareSelection(task.getOriginalUrl(), false));
         when(autoSaveClient.buildTaskPayload(anyString(), anyString(), anyString(), any()))
                 .thenAnswer(invocation -> {
@@ -207,7 +207,7 @@ class QuarkTransferRunnerServiceImplTest {
                 movie.getTitleCn(),
                 movie.getTitleEn(),
                 movie.getAliases(),
-                movie.getYear()))
+                movie.getYear(), discovery.getTitle()))
                 .thenReturn(new QuarkAutoSaveClient.MovieShareSelection(selectedUrl, true));
         when(autoSaveClient.addTask(any()))
                 .thenReturn(new ObjectMapper().createObjectNode().put("code", 200));
@@ -280,4 +280,48 @@ class QuarkTransferRunnerServiceImplTest {
         assertTrue(task.getRequestPayload().contains("\"update_subdir\":\".*\""));
         verify(autoSaveClient, never()).resolveSeasonShareUrl(anyString(), anyInt(), any());
     }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(booleans = {true, false})
+    void weeklyTransfersNeverRegisterDailyFollowUps(boolean immediate) {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.setEnabled(true); properties.getQuark().setRunImmediately(immediate);
+        var client = mock(QuarkAutoSaveClient.class);
+        var shares = mock(IQuarkShareService.class);
+        var tasks = mock(IQuarkTransferTaskService.class);
+        var hub = mock(IResourceHubTaskService.class);
+        var service = new QuarkTransferRunnerServiceImpl(properties, client, shares, tasks,
+                mock(IResourceDiscoveryResultService.class), hub, mock(IMovieMetadataService.class), new ObjectMapper());
+        var task = new QuarkTransferTask();
+        task.setId(51L); task.setMovieId("fixture"); task.setStatus("PENDING");
+        task.setOriginalUrl("https://pan.quark.cn/s/fixture");
+        task.setRequestPayload("{\"origin\":\"GYING_WEEKLY_ONE_SHOT\"}");
+        when(tasks.getById(51L)).thenReturn(task);
+        when(client.buildTaskPayload(any(), any(), any(), any())).thenReturn(new LinkedHashMap<>());
+        when(client.runTaskNow(any())).thenReturn("ok");
+        var result = service.submitOne(51L);
+        verify(client, never()).addTask(any());
+        verify(hub, never()).enqueue(any());
+        assertTrue(task.getRequestPayload().contains("GYING_WEEKLY_ONE_SHOT"));
+        if (immediate) { verify(client).runTaskNow(any()); assertEquals(1, result.getSubmitted()); }
+        else { verify(client, never()).runTaskNow(any()); assertEquals(1, result.getFailed()); }
+    }
+    @Test void disabledQuarkPolicyBlocksBatchAndDirectCallsBeforeTaskOrAccountAccess() {
+        var properties = new ResourceHubProperties(); properties.setEnabled(true);
+        properties.getQuark().setTransferEnabled(false);
+        var client = mock(QuarkAutoSaveClient.class);
+        var shares = mock(IQuarkShareService.class);
+        var tasks = mock(IQuarkTransferTaskService.class);
+        var discoveries = mock(IResourceDiscoveryResultService.class);
+        var hub = mock(IResourceHubTaskService.class);
+        var movies = mock(IMovieMetadataService.class);
+        var service = new QuarkTransferRunnerServiceImpl(properties, client, shares, tasks, discoveries, hub, movies, new ObjectMapper());
+        for (boolean batch : new boolean[] {true, false}) {
+            var error = org.junit.jupiter.api.Assertions.assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                    () -> { if (batch) service.submitPending(2); else service.submitOne(42L); });
+            assertEquals(409, error.getStatusCode().value());
+        }
+        org.mockito.Mockito.verifyNoInteractions(client, shares, tasks, discoveries, hub, movies);
+    }
+
 }

@@ -1,0 +1,78 @@
+{
+  "startedAt": "2026-11-09T05:55:53.909469+00:00",
+  "status": "passed",
+  "httpRequests": [
+    {
+      "method": "GET",
+      "path": "/baidu/session",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/config",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/baidu/backfill",
+      "status": 200
+    }
+  ],
+  "browserScenarios": 0,
+  "configurationWrites": 0,
+  "loginSaveRunRequests": 0,
+  "tokenSecretOrJtiWritten": false,
+  "helperSha256": "62833e02840322c8c99cec916efd386f8c4735efa01a01e0e870b3f506e4e315",
+  "parentCountBefore": 1,
+  "parentSnapshotBeforeSha256": "92ac0ecebad3b8ffe2ce314862c3055f1bf25ed71a3b7ef67cd66565131d3766",
+  "configPointerSnapshotBeforeSha256": "8ed19cb41726f9a2a3e7ce98225a7ecc4c9fbacdd5bf85cb00b9fe2aee172944",
+  "session": {
+    "configured": true,
+    "state": "CONNECTED"
+  },
+  "baiduWorkflow": {
+    "provider": "BAIDU",
+    "supported": true,
+    "status": "AVAILABLE",
+    "credentialConfigured": true,
+    "videoEnabled": false,
+    "torrentEnabled": true,
+    "discoveryEnabled": true,
+    "transferEnabled": true,
+    "shareEnabled": true,
+    "gyingPublishEnabled": true
+  },
+  "backfill": {
+    "taskId": null,
+    "legacyTaskId": 17580,
+    "enabled": false,
+    "status": "PAUSED",
+    "phase": "GYING_TORRENTS",
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "processed": 0,
+    "succeeded": 0,
+    "skipped": 0,
+    "failed": 0,
+    "nextRunAt": null,
+    "currentIdentityId": null,
+    "currentChildId": null,
+    "currentAction": "IDLE",
+    "currentSeedCount": 0,
+    "currentChildStatus": null,
+    "currentChildError": null,
+    "lastResult": null
+  },
+  "configRowsPreserved": true,
+  "configRowCount": 9,
+  "backfillParentTaskCount": 1,
+  "backfillParentTasksCreated": 0,
+  "legacyAndV2ParentsPreserved": true,
+  "parentSnapshotAfterSha256": "92ac0ecebad3b8ffe2ce314862c3055f1bf25ed71a3b7ef67cd66565131d3766",
+  "configPointerSnapshotAfterSha256": "8ed19cb41726f9a2a3e7ce98225a7ecc4c9fbacdd5bf85cb00b9fe2aee172944",
+  "reviewedCommit": "b55080d8c0449f6dc6852beff0356d7350cce570",
+  "existingDeviceOnly": true,
+  "expectedBackendImage": "sha256:adfd0dfad9dd63a8d0996848b7b13745f1af15669f45c800ae04ecde0cd2a4e6",
+  "expectedFrontendImage": "sha256:663b83853b72bbaff753a12c42e6a9a54718643c3cb3d10b95dda1e938f90c54",
+  "completedAt": "2026-11-09T05:55:56.904159+00:00"
+}

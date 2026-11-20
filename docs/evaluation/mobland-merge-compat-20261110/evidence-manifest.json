@@ -1,0 +1,165 @@
+{
+  "scope": "Sanitized operation receipts and two real screenshots; no credential files or plaintext archives",
+  "files": [
+    {
+      "path": "deployment-original-failed.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\deployment-20261110T120655.546399Z.json",
+      "sha256": "0b16d5c40f8cb23f80f7177d24ba6a90d8d583b88ff07b78a46d824853b735cf"
+    },
+    {
+      "path": "verification-completed.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\verification-completed.json",
+      "sha256": "c0747de5952efae65255e310ef9e4984a55ce10379dbb10b094792fee16e2796"
+    },
+    {
+      "path": "verification-binding.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\verification-binding.json",
+      "sha256": "4aaba3fd76a99053fe498e3337184b9a75a27bf7c1ff66c34792c29336a44ac6"
+    },
+    {
+      "path": "acceptance-original-selector-failed.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-20261110T125044.133792Z.json",
+      "sha256": "e54a2f80dfd4fb725306f87d50a1f01fb019c209ce3d9ae3bb345768158ac888"
+    },
+    {
+      "path": "browser-original-selector-failed.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-browser-20261110T124914.013549Z\\browser-result.json",
+      "sha256": "a02259d46de59d32b9814a3d02633ad8477a690ea9a1039b2ebc39b7d0b78168"
+    },
+    {
+      "path": "acceptance-ui-passed.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-20261110T130024.241605Z.json",
+      "sha256": "72803161c2f49f426b63721f72fa31fd24fb1f0fab2e9d434cde14cbfbc01d21"
+    },
+    {
+      "path": "browser-ui-passed.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-browser-20261110T125930.697589Z\\browser-result.json",
+      "sha256": "b6892595ff7ac7b00b90530fab841a2181075474506817bab3aaafef1c26ee35"
+    },
+    {
+      "path": "ui-selector-binding.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\ui-selector-binding.json",
+      "sha256": "25381a11d600a97f14327a29f129e069a128913561485226132d9a4779e11ee6"
+    },
+    {
+      "path": "full-suite-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\full-suite-independent-review.json",
+      "sha256": "aadd17d95896b1a2a52f1069f00eca8911d2392ce3463f12a111e39cf7ab43fa"
+    },
+    {
+      "path": "backend-build.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\backend-build-raw.json",
+      "sha256": "ae7cf6b15d3147f57b32b48a330f94a74ced64d6872730c2ce1516cd059f8a17"
+    },
+    {
+      "path": "candidate-binding.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\binding.json",
+      "sha256": "f7451612dc7c56d02ca59edc00a922c479f60002e49090eba756ed951a7c36da"
+    },
+    {
+      "path": "acceptance-offline.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-offline-20261110T114319.130235Z.json",
+      "sha256": "2ab22430d07a90d3df95bd491f7e42effa5fb19d1c92a47fd62db4a9432f725f"
+    },
+    {
+      "path": "ops-offline.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\offline-test-report.json",
+      "sha256": "1841def90541b15bf59e755f7b36ffe0f388d0bd948bb2020a9fa78b3382a2e3"
+    },
+    {
+      "path": "verification-offline.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\verification-offline-report.json",
+      "sha256": "9be9bad38be4b115b9d0addd7f1e8c557a142795d94cc98954e223c1dc70aeed"
+    },
+    {
+      "path": "backup-preflight.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\backup-preflight-20261110T120334.768036Z.json",
+      "sha256": "aaa74890c2a601b43f6cc7db9ab525bc8b18dce258f1c2c9582c73cacba1c70b"
+    },
+    {
+      "path": "minio-authenticated-read.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\minio-authenticated-read-20261110T120344Z.json",
+      "sha256": "c750599903498884069f3f937474169e47381aa85d7a01a938219fb1016e73f4"
+    },
+    {
+      "path": "candidate-log-check.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\candidate-log-check-20261110T121953Z.json",
+      "sha256": "ec391e460ce717b0414e35c17652ac9ec0eea1ee240964dde8865ca35753f9a1"
+    },
+    {
+      "path": "mobland-preview-top-390-zh-light.png",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-browser-20261110T125930.697589Z\\mobland-preview-top-390-zh-light.png",
+      "sha256": "a1967e32f85ade6f15ca59f4205defd7f89e16a1a4335cf228193bb5366c6b8c"
+    },
+    {
+      "path": "mobland-preview-action-390-zh-light.png",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-browser-20261110T125930.697589Z\\mobland-preview-action-390-zh-light.png",
+      "sha256": "69c8d7a48da59c1e2f71b443e310c45210f795748249c7d5f8175d27b7709b79"
+    },
+    {
+      "path": "host-pin-original-failed.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-20261110T130414.705387Z.json",
+      "sha256": "6cf0049ab40b39a6c292b15b749407986ab90e8f8b0752d53e5ec8cce1e46d4f"
+    },
+    {
+      "path": "completion-member-diagnosis.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\completion-member-diagnosis-20261110T135228.872774Z.json",
+      "sha256": "9aed57fe603cc06e981244220ce87e785bbc3eeb86e5b9d8e3d117b453abfba5"
+    },
+    {
+      "path": "host-pin-completion-original-failed.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-completion-20261110T134851.997714Z.json",
+      "sha256": "f9cd55f6bc63a834a77e97b263a352f83f6fd60e6512d9c76091fc49a3375652"
+    },
+    {
+      "path": "host-pin-completion-binding.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-completion-binding.json",
+      "sha256": "690ca274cc96aa5c434f5040298b357faa5431cd2a7fa1cf30111d6c5517171c"
+    },
+    {
+      "path": "host-pin-completion-offline.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-completion-offline-report.json",
+      "sha256": "dcf08ebcd8b81b063b1d4f4d8b7ff3beb6d08c40662fbd916ea55238a9883513"
+    },
+    {
+      "path": "host-pin-completion-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\independent-host-pin-completion-review.json",
+      "sha256": "71d213e1d82fdff6b587c8275796e10064b798a1b70677715216ccaf94a46865"
+    },
+    {
+      "path": "host-pin-completion-v2-binding.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-completion-v2-binding.json",
+      "sha256": "743ec62f36f6a950665412d2b315910ed792905a3ca862c456be382dc2ae5398"
+    },
+    {
+      "path": "host-pin-completion-v2-offline.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-completion-v2-offline-report.json",
+      "sha256": "2511277754a8fb0ff27452a3dc404525e766d124ec4fc51f907d7d3ccba8046b"
+    },
+    {
+      "path": "host-pin-completion-v2-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\independent-host-pin-completion-v2-review.json",
+      "sha256": "e2a247552e993e57466e34cf9456e7e7325c60c344104baf9f4e7012840b17f0"
+    },
+    {
+      "path": "host-pin-completion-v2-passed.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-completion-20261110T135913.824420Z.json",
+      "sha256": "632cd33718e89bbbf969df9ed2eff8749b507c7965fafc39f867a4970a76ded0"
+    },
+    {
+      "path": "daily-prepared.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\daily-prepared.json",
+      "sha256": "20b3a5e9b4f7e9ef381127f4327e234559e864211108c88faf1a823c7ad23eed"
+    },
+    {
+      "path": "daily-apply-passed.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\daily-apply-20261110T140258.404976Z.json",
+      "sha256": "94962690344171a977bd3ecf168f10d8768b07ab0745e09fc0a31431e61be0ab"
+    },
+    {
+      "path": "final-read-only-passed.json",
+      "sourcePath": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\final-read-only-20261110T140421.902114Z.json",
+      "sha256": "b2d42c785e59109632c0615abe05eb29ccae3dd0d363cecbe0883f1dece7d81d"
+    }
+  ]
+}

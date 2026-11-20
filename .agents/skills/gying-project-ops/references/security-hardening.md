@@ -29,10 +29,10 @@
 python -X utf8 tools/security/scan_secrets.py
 python -X utf8 tools/security/scan_secrets.py --history
 python -X utf8 tools/security/check_security.py --repo . --probe
-docker compose -f docker-compose.prod.yml config --quiet
+docker compose -p gying-movie -f docker-compose.prod.yml config --quiet
 ```
 
-`check_security.py` 在旧生产容器仍运行时预期会报告失败；这类失败应作为部署前风险证据记录，不得通过修改期望值掩盖。
+`check_security.py` 以实际运行态判定；FAIL/UNKNOWN保留，不通过改期望值掩盖，也不假定所有失败都只是旧容器。
 
 ## 4. 变更前约束
 
@@ -61,7 +61,7 @@ docker compose -f docker-compose.prod.yml config --quiet
 ```powershell
 python -X utf8 tools/security/test_nginx.py
 python -X utf8 tools/security/scan_secrets.py
-python -X utf8 tools/security/verify_backup.py E:\gying-backups\<timestamp>
+python -X utf8 tools/security/verify_backup.py G:\gying-backups\<timestamp>
 docker ps -a --format "{{.Names}}`t{{.Status}}`t{{.Ports}}"
 ```
 

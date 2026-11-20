@@ -1,0 +1,19 @@
+{
+  "scope": "Targeted P2pArchiveTaskServiceTest GREEN infrastructure preparation",
+  "recordedAt": "2026-11-10T14:43:10.195299+00:00",
+  "status": "ABORTED_BEFORE_CONTAINER_CREATION",
+  "testsExecuted": false,
+  "containerCreated": false,
+  "providerCalls": 0,
+  "sqlFixturesCreated": 0,
+  "sourceFilesChanged": false,
+  "failure": "Original preparation assertion rejected classpath; the only rejected entry was a trailing empty entry.",
+  "originalAssertion": "classpath.startswith('/workspace/target/test-classes:/workspace/target/classes:') and all(p.startswith('/workspace/target/') or p.startswith('/m2/') for p in classpath.split(':'))",
+  "classpathEntries": 132,
+  "unexpectedEntries": [
+    ""
+  ],
+  "redClasspathEvidence": "D:\\gying-movie\\movie\\tmp\\p2p-archive-red-1a66ea5bf2bc\\backend\\target\\surefire-reports\\TEST-com.gying.movie.service.impl.P2pArchiveTaskServiceTest.xml",
+  "testSourceSha256": "4d426737cba9c03840ea7585c9f780b599d1c587bd6d669b7cc14e1581270abe",
+  "followUp": "Parent stopped runner work and owns fresh-source full-suite validation in session 3451."
+}

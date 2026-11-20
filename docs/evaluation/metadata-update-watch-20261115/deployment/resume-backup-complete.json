@@ -1,0 +1,61 @@
+{
+  "status": "CONTINUATION_PREBACKUP_COMPLETE_VERIFIED_AWAITING_ACTIVATION_REVIEW",
+  "completedAt": "2026-11-15T09:16:10.123288+00:00",
+  "binding": {
+    "path": "E:/gying-tools/releases/metadata-update-watch-20261115/resume-binding.json",
+    "sha256": "4303198bc8912124a164d5ccfcf15d9c44ad0d27d3c43a0c08c8a4565b80c5c9"
+  },
+  "helper": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\UpdateResume.py",
+    "sha256": "b4bf73d7f9c2ea4f7b82d940b9f79df3ed7df47f4e4fe5f0d63130cb11568794"
+  },
+  "sourceCommit": "1adbc336cdadefa48be40ff37082a6de840fbd41",
+  "plan": {
+    "path": "E:/gying-tools/releases/metadata-update-watch-20261115/update-prepared.json",
+    "sha256": "f1a983bcfdf4f2602fa3f2ee124faf7d5afa0076419a95c774861ee0a41e876f"
+  },
+  "checkpoint": {
+    "directory": "G:\\gying-backups\\metadata-updates-completed-predeploy-20261115-20261115T091532.990934Z",
+    "artifacts": 4,
+    "authenticated": true,
+    "manifestSha256": "1f15aed93bd6f353ad24f840ae662af0f2b80caa3a1b41a090bad7b0ccab8abc"
+  },
+  "runtime": {
+    "regularMembers": 49,
+    "frozenFileMembers": 43,
+    "containerAndEffectiveMembers": 4,
+    "hostAndPreparedMembers": 2,
+    "exactMemberContentHashes": true,
+    "fullStreamingAuthenticatedDecryption": true,
+    "plaintextWritten": false
+  },
+  "originalCheckpointManifest": {
+    "path": "G:\\gying-backups\\metadata-updates-predeploy-20261115-20261115T090047.340235Z\\manifest.json",
+    "sha256": "31e14718534087006c5526569417f093d3f1647cfadfb06cd7541a54152b54f3"
+  },
+  "originalPartialRuntime": {
+    "path": "G:/gying-backups/metadata-updates-predeploy-20261115-20261115T090047.340235Z/runtime-preimage.tar.age",
+    "sha256": "55e1038a2df550330b8f0e1698683e33fa311c0b9e0edf11ef60af79b84e3496"
+  },
+  "originalMaterialPreserved": true,
+  "copiedImages": [
+    {
+      "name": "backend-image.tar.age",
+      "size": 652264104,
+      "sha256": "d28e931c12620602463be3c83c3f8de685ca9594c563b2ddd6963968f1307504",
+      "authenticatedDecryption": true
+    },
+    {
+      "name": "frontend-image.tar.age",
+      "size": 307243960,
+      "sha256": "850483d065b761af59a1e6735b43b92efa081dbb095ba6016cf055232c8ebfa5",
+      "authenticatedDecryption": true
+    }
+  ],
+  "dockerImageExportsRepeated": 0,
+  "newRuntimeArchives": 1,
+  "newSqlBackups": 1,
+  "serviceActivations": 0,
+  "configurationPuts": 0,
+  "automaticRetry": false
+}

@@ -4,16 +4,22 @@ import lombok.Data;
 
 @Data
 public class ResourceHubConfigResponse {
+    private java.util.List<CloudDriveWorkflowConfig> driveWorkflows;
+    private java.util.List<GyingWeeklyTransferSchedule> weeklyTransferSchedules;
     private boolean xunleiAuthorizationConfigured;
     private String xunleiAuthorizationExpiresAt;
     private boolean xunleiAuthorizationExpired;
     private boolean xunleiCaptchaConfigured;
+    private java.util.List<MetadataCrawlProgress> metadataCrawlProgress = java.util.List.of();
     private boolean enabled;
     private boolean autoApprove;
     private boolean tmdbConfigured;
     private boolean tmdbAutoSyncEnabled;
+    private boolean tmdbAutoSyncUpdatesOnly;
     private String tmdbAutoSyncSources;
+    private java.util.Map<String, MetadataCrawlRange> tmdbAutoSyncRanges;
     private int tmdbAutoSyncPage;
+    private int tmdbAutoSyncEndPage;
     private int tmdbAutoSyncMaxItems;
     private int tmdbAutoSyncIntervalHours;
     private boolean tmdbAutoDiscoveryEnabled;
@@ -21,10 +27,18 @@ public class ResourceHubConfigResponse {
     private int tmdbDiscoveryCooldownHours;
     private boolean gyingDiscoveryEnabled;
     private boolean gyingAutoSyncEnabled;
+    private boolean gyingAutoSyncUpdatesOnly;
     private String gyingAutoSyncSources;
+    private java.util.Map<String, Boolean> gyingAutoSyncPausedSources;
+    private java.util.Map<String, MetadataCrawlRange> gyingAutoSyncRanges;
     private int gyingAutoSyncPage;
+    private int gyingAutoSyncEndPage;
     private int gyingAutoSyncMaxItems;
     private int gyingAutoSyncIntervalHours;
+    private boolean tvmazeAutoSyncEnabled;
+    private int tvmazeAutoSyncMaxItems;
+    private int tvmazeAutoSyncIntervalHours;
+    private TvmazeSyncProgress tvmazeSyncProgress;
     private boolean workerEnabled;
     private long workerFixedDelayMs;
     private int workerTaskLimit;

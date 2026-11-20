@@ -1,0 +1,19 @@
+{
+  "status": "CURRENT_ORIGINAL_RUNTIME_OBSERVED",
+  "at": "2026-11-15T12:54:34.483633+00:00",
+  "allThirteenGenerationsExact": true,
+  "backendOriginalImageExact": true,
+  "backendRunning": true,
+  "workerEnabled": true,
+  "tmdbUpdatesOnly": true,
+  "gyingUpdatesOnly": true,
+  "stableConfigurationExact": null,
+  "existingAdminFailureCode": "EXISTING_ACTIVE_ADMIN_DEVICE_REQUIRED",
+  "workerPauseReservationAbsent": true,
+  "termReservationAbsent": true,
+  "activationReservationAbsent": true,
+  "newLoginRequests": 0,
+  "providerRequests": 0,
+  "configurationWrites": 0,
+  "existingDeviceLastSeenMayChange": true
+}

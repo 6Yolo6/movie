@@ -1,0 +1,66 @@
+{
+  "capturedAt": "2026-11-14T13:08:53.661115+00:00",
+  "status": "bounded-Docker-log-review",
+  "services": [
+    {
+      "service": "gying-movie-backend-1",
+      "id": "9239e03222057de70ba9b9b5fb05c9f1dd3ec9bb8ac74e7566d5e7e635c9b8ec",
+      "since": "2026-11-14T12:33:15.591897086Z",
+      "until": "2026-11-14T13:08:53.661115+00:00",
+      "maximumTail": 2000,
+      "streams": {
+        "stdout": {
+          "bytes": 3022,
+          "sha256": "fde7ceef08f4c387318cf66d5ad21afbab9314e1f0da8afaec2c9dcf4ecfc166",
+          "matchedLines": {
+            "error": 0,
+            "exception": 0,
+            "oom": 0
+          }
+        },
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchedLines": {
+            "error": 0,
+            "exception": 0,
+            "oom": 0
+          }
+        }
+      },
+      "containerRestartCount": 0,
+      "oomKilled": false
+    },
+    {
+      "service": "gying-movie-frontend-1",
+      "id": "e901160d28c1291e61e3ebcfde2bb9fe30eca546c46eacbdf596afb61e839527",
+      "since": "2026-11-14T13:00:37.375874417Z",
+      "until": "2026-11-14T13:08:53.661115+00:00",
+      "maximumTail": 2000,
+      "streams": {
+        "stdout": {
+          "bytes": 145,
+          "sha256": "047cf5b7cfbb18f786d1b125946b8c8d5bf87bc669bef744bbb9f3afec511279",
+          "matchedLines": {
+            "error": 0,
+            "exception": 0,
+            "oom": 0
+          }
+        },
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchedLines": {
+            "error": 0,
+            "exception": 0,
+            "oom": 0
+          }
+        }
+      },
+      "containerRestartCount": 0,
+      "oomKilled": false
+    }
+  ],
+  "rawLogsWritten": false,
+  "applicationFileLogsChecked": false
+}

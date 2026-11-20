@@ -18,6 +18,8 @@ public final class SeasonSearchUtils {
     private static final Pattern SEASON_RANGE = Pattern.compile(
             "(?:第\\s*)?(" + NUMBER_TOKEN + ")\\s*(?:[-~～至到])\\s*(" + NUMBER_TOKEN + ")\\s*季",
             Pattern.CASE_INSENSITIVE);
+    private static final Pattern ENGLISH_SEASON_RANGE = Pattern.compile(
+            "(?i)(?<![a-z0-9])(?:seasons?\\s*|s)0*([0-9]{1,2})\\s*[-~～至到]\\s*(?:seasons?\\s*|s)?0*([0-9]{1,2})(?![0-9])");
     private static final Pattern COMPLETE_SEASONS = Pattern.compile(
             "全\\s*(" + NUMBER_TOKEN + ")\\s*季",
             Pattern.CASE_INSENSITIVE);
@@ -112,7 +114,8 @@ public final class SeasonSearchUtils {
 
     public static boolean hasSeasonCollection(String value) {
         return hasText(value)
-                && (SEASON_RANGE.matcher(value).find() || COMPLETE_SEASONS.matcher(value).find());
+                && (SEASON_RANGE.matcher(value).find() || ENGLISH_SEASON_RANGE.matcher(value).find()
+                        || COMPLETE_SEASONS.matcher(value).find());
     }
 
     /** A source title explicitly advertises a whole-series or multi-season set. */
@@ -143,11 +146,40 @@ public final class SeasonSearchUtils {
                 + "|\u7b2c\\s*(?:" + number + "|" + chinese + ")\\s*\u5b63)(?:[^0-9]|$)";
     }
 
+    /** Explicit advertised coverage only; an unspecified "全集" never invents seasons. */
+    public static Set<Integer> collectionSeasons(String title) {
+        Set<Integer> seasons = new java.util.TreeSet<>();
+        if (!hasText(title)) return seasons;
+        for (Pattern pattern : List.of(SEASON_RANGE, ENGLISH_SEASON_RANGE)) {
+            Matcher matcher = pattern.matcher(title);
+            while (matcher.find()) addSeasonRange(seasons, parseNumber(matcher.group(1)), parseNumber(matcher.group(2)));
+        }
+        Matcher complete = COMPLETE_SEASONS.matcher(title);
+        while (complete.find()) addSeasonRange(seasons, 1, parseNumber(complete.group(1)));
+        return seasons;
+    }
+
+    private static void addSeasonRange(Set<Integer> seasons, Integer start, Integer end) {
+        if (start == null || end == null || start < 1 || end < start || end > 99) return;
+        for (int season = start; season <= end; season++) seasons.add(season);
+    }
+
+    public static String collectionLabel(String title) {
+        Set<Integer> seasons = collectionSeasons(title);
+        if (seasons.isEmpty()) return isCollectionResource(title) ? "合集" : "";
+        List<Integer> ordered = seasons.stream().sorted().toList();
+        String range = ordered.size() == ordered.get(ordered.size() - 1) - ordered.get(0) + 1
+                ? ordered.get(0) + (ordered.size() > 1 ? "-" + ordered.get(ordered.size() - 1) : "")
+                : ordered.stream().map(String::valueOf).collect(java.util.stream.Collectors.joining("、"));
+        return "第" + range + "季合集";
+    }
+
     public static boolean coversSeason(String resourceTitle, int season) {
         if (!hasText(resourceTitle) || season < 1 || season > 99) {
             return false;
         }
 
+        if (collectionSeasons(resourceTitle).contains(season)) return true;
         Matcher rangeMatcher = SEASON_RANGE.matcher(resourceTitle);
         while (rangeMatcher.find()) {
             Integer start = parseNumber(rangeMatcher.group(1));
@@ -200,6 +232,7 @@ public final class SeasonSearchUtils {
             return false;
         }
         return SEASON_RANGE.matcher(value).find()
+                || ENGLISH_SEASON_RANGE.matcher(value).find()
                 || COMPLETE_SEASONS.matcher(value).find()
                 || EXPLICIT_SEASON.matcher(value).find();
     }

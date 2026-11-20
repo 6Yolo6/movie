@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "status": "LOCAL_OLD_STOP_ABSENT_NO_NATURAL_INTENT_OR_RECEIPT",
+  "observedAt": "2026-11-11T10:49:45.276724+00:00",
+  "oldStopPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\STOP.json",
+  "oldStopExists": false,
+  "naturalIntentOrReceiptCount": 0,
+  "manual2UnknownReceiptSha256": "24ebeb78f8cd1588d99be5ad4485f3388a9e6208c0768fcff23bff9a3285c601",
+  "frozenCycleNaturalActuallyBlockedBy": "Original manual2 SEND_OUTCOME_UNKNOWN/actualArchiveAttempts0/no after; not by an existing STOP file",
+  "previousStopFileAssumptionCorrected": true,
+  "existingStopWouldStillBlockNewEnable": true,
+  "originalStopAndManualLedgerNeverCreatedEditedOrDeletedByThisReview": true,
+  "reviewMethod": "Local path existence and bounded ledger file names only",
+  "productionApiRequests": 0,
+  "productionSqlQueries": 0,
+  "dockerRequests": 0,
+  "gitActions": 0
+}

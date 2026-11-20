@@ -1,0 +1,205 @@
+{
+  "sourceSha256": "70a7788e9b18af43098a06c117fdf0609c84528c67ef9014526eb8dbacbcec9b",
+  "files": [
+    {
+      "path": "pom.xml",
+      "sha256": "8cc56c33f79d6f05c2eaf69dc6a26c8c29e7b71989c8eb88715695152affe442"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/AssistantService.java",
+      "sha256": "f52804fa7f214b7c4abfbb2bf44280c17c6827d427a75d405e785127d0953846"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/CatalogMediaIdentity.java",
+      "sha256": "e6df4edb7acd131ad75c10d29351468ae9ce744517e4e3a1a7a622a286959800"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/EncryptedAiState.java",
+      "sha256": "8302d4b706d096eed25c2699a61351545be4a3bd327407943579c7f700619313"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/ExplicitMetadataQuery.java",
+      "sha256": "e7b7e090d83ade50ec5568aeb1741b3116a9e93084d7cc17fb547a5e7ad82826"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/ExplicitQueryChoices.java",
+      "sha256": "ff8bd8e8d92beeda0958c5f350c022fb665f3f552a3b16356f9167b9d2836753"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/ExplicitQueryConstraints.java",
+      "sha256": "f6fb98eb7779fef55e01927c3eec41b1d09be6c5a724e0dbb0d4a2d0ef99cd97"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/GyingBridge.java",
+      "sha256": "8f910a3dc39592805729744f5a03cd0322679ad024cfe2abc5fd728d32f25b09"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/GyingCatalogClient.java",
+      "sha256": "eaecdc5fd078e49432d4c63e60d350428703fc4fc5621371e29a5517d792ab8c"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/GyingResearchService.java",
+      "sha256": "c50217b4942ec45b60e5674b26b94ed189533fe79e295e720b73513021133bbc"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/GyingTools.java",
+      "sha256": "88fbd9e47920c9251e41172881e00baca642db14d64a8daad04f67ee6002856b"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/MovieQueryPlanner.java",
+      "sha256": "3afc7080e635bd7e1f370d479e0d4749b28739b50748c9434b1b5b23ef89d801"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/MovieSearchTools.java",
+      "sha256": "3cce8a1a50aaee05a38191630b143f84ec038084cdf832b6489fc3ebab867e2d"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/MovieWebTools.java",
+      "sha256": "ab07435612438f02f3f3915109c7189711cd80abe6418b6e9e8b41ca3240112a"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/ReadOnlyTools.java",
+      "sha256": "ec5493033528d460e3925ae65835970598e3cdb854bbd469195a34da63d6abdc"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/SemanticMovieIndex.java",
+      "sha256": "8fde15c1d8118abed95f018dc3533ca2594f568d80f34b6c68719f32304c59dc"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/TraceStore.java",
+      "sha256": "dfa60209e18c884afd2fa5a141e06bc1b6b64784e77d26944a4fd80c9dbae672"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/assistant/TrustedCandidateHistory.java",
+      "sha256": "be5f92c1b6d9a5e09553478469fd0a8e9ab578efb9024c6306b14babbf111c1b"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/bot/feishu/FeishuBotService.java",
+      "sha256": "e7029c37e3d12a2b531254ce331def1d92012f8f842f35b6e32a6ed7474946ab"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/bot/qq/QQBotService.java",
+      "sha256": "f3a59e89a0342a03d8269205b419ff523f3513b43351055aadbd53953cd0021c"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/config/McpToolsConfig.java",
+      "sha256": "d306dab12f4ffdb5fccedb091e71d9841cccf1f355adb47e1270227e63c5500d"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/config/WebConfig.java",
+      "sha256": "f2947a11ee7175d75e62251017cb61ac72d52642eb6cdc0934c08618b9638656"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/controller/AdminController.java",
+      "sha256": "00133c196cb5ff9a8426e991c62be0287f9f9861c5cb2bce041e8ba1b6608d11"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/controller/AssistantController.java",
+      "sha256": "45175528692bc45689534bf75b5c1eaf730428a4e955b905024a1b34d403c1cf"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/controller/LocalLifecycle.java",
+      "sha256": "80abdf85793a0e4beaf8ecca33a65de4524b67b3e366245ebec1284add44a66f"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/LocalAiAgentApplication.java",
+      "sha256": "8fdc2cfd141bb8a258bf5900c50bc718b9ec72e8a0053f9518b4f4a7543df2c8"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/mcp/community/CommunityTools.java",
+      "sha256": "e6a1a3c3b4713163a675025035aaaa82ced7906d4e8ad894a1507052fed887a4"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/mcp/dev/DevTools.java",
+      "sha256": "e62a78bde8560edef9dad29ae80e560db6c2251b1351a29ce13b4d22edbc4c92"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/mcp/system/SystemTools.java",
+      "sha256": "c357b63bb1a14e5e83ea8761eff0330ec30b1490806150541d627cf00796421f"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/model/ApiResponse.java",
+      "sha256": "2331af87bbb21f08dba3834e8f2ac07a7dd842da59c722d48381233c19fbf5cb"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/ollama/LlamaService.java",
+      "sha256": "f18baf83e9e8dcaff30959b799ad65eca5f1a431df41c0ec316a9266616c346f"
+    },
+    {
+      "path": "src/main/java/com/localai/agent/ollama/OllamaService.java",
+      "sha256": "b80ab6a291178880ae6b76d539993cd5dc91a8f2495fcb0e3ba8938cddd99b6d"
+    },
+    {
+      "path": "src/main/resources/application.yml",
+      "sha256": "a736a889a5ed67d0b58e2a35c718e526664ad19b0465fbc76b971e67bc3a557f"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/assistant/AssistantServiceTest.java",
+      "sha256": "d28369a8dfbeb22e9226465f47114b0ce649b22083ab9d88659b4f788989fc9d"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/assistant/CatalogMediaIdentityTest.java",
+      "sha256": "e87b22fbff1414c089af9496264f8439807c46536bad46a873c985f173966ed2"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/assistant/ExplicitQueryConstraintsTest.java",
+      "sha256": "d6fa45f831537759509919fcd3ac9c60fbdf5c37c320578fc1235e7662c3e6cd"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/assistant/GyingBridgeRecoveryTest.java",
+      "sha256": "8b53c168496849ca917f14c67fac20d2955ac037d8ab39d4bc4932cec6d485c4"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/assistant/GyingBridgeTest.java",
+      "sha256": "c1dd459502132e1803f2a3ef5854bb70bcf7db369b67b6fd1da66de3931a398e"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/assistant/GyingCatalogClientTest.java",
+      "sha256": "5cf445cbba1f63d40f1a1ef25d781365a13a892c6ebd47eff091939c312e723e"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/assistant/GyingResearchServiceTest.java",
+      "sha256": "10cf62df95f4146e9772b923a48f89ca064c7b8cbd4c6af081b889033c137e42"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/assistant/GyingToolsTest.java",
+      "sha256": "a22f663607101bc804a068a1f2ff769b50665d4a404c91b2bb3ac3139866d961"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/assistant/MovieQueryPlannerTest.java",
+      "sha256": "1b6b8d002262d26b0a5789990e31328c4f45ea9d4f22b1ab467ee725f6e06cdc"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/assistant/MovieSearchToolsTest.java",
+      "sha256": "e6cda78da1a83af4ea31a6e5251bbff68677a098790b6020be3bce21d751bf6f"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/assistant/MovieSearchToolsWiringTest.java",
+      "sha256": "1c6d9e13a231d260d63918b996568ade6da58e5277d05cc0d1ed6e5aa62a2268"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/assistant/MovieWebToolsTest.java",
+      "sha256": "f09d765053fda6188e9877aed0726799d5b68fdcf07e88d952b7fb0fb2a0a118"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/assistant/ReadOnlyToolsTest.java",
+      "sha256": "a437e1ee229b491a91a20c02abc09acdd55177348ba7f8457f35a161cadab87b"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/assistant/SemanticMovieIndexTest.java",
+      "sha256": "d6cf636b581408e532e4c3538a90fabbcf970a5b0c54ba2a3bd26a3282cec088"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/assistant/TrustedCandidateHistoryTest.java",
+      "sha256": "3919016f4ced5c30b907db3ad1c9d0e9d555df724f528d1d2c2dd31de8a8994c"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/controller/LocalLifecycleTest.java",
+      "sha256": "0097d3958dcb5dd2d54f1c91a40782a204d20edf2b0da8a21d068ebd4d33520b"
+    },
+    {
+      "path": "src/test/java/com/localai/agent/ollama/OllamaServiceTest.java",
+      "sha256": "e35027948a3bcc25a82558bf58f0c411a414afa23622d4eaa9f6840f3942a8b8"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "exit": 0,
+  "sourceFileCount": 417,
+  "sourceManifestSha256": "dead108ed408407d4f0a848d775fb451279f269496fa14cb683a585275dd77b0",
+  "suiteResultSha256": "c9373cc84b56dab15969c68631dd038d811dcfa0719078109d3e7296eb8ef1c1",
+  "jarPath": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-517fda4e8f1a\\backend\\target\\movie-backend-0.0.1-SNAPSHOT.jar",
+  "jarSha256": "0a536d7f471e1f375da26d7168d2c23bda259fd6c51befea079d916fe7b229b2",
+  "network": "none",
+  "productionMounts": [],
+  "testsRerun": false,
+  "deployed": false
+}

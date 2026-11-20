@@ -1,0 +1,418 @@
+{
+  "schemaVersion": 1,
+  "reviewProtocol": "catalog-answer-diagnostic-model-review-v1",
+  "hashContract": {
+    "reportSha256": "SHA-256 of original report file bytes, preserved verbatim as candidate-report.json; not evaluate_agent.digest(report).",
+    "answerSha256": "SHA-256 of the original answer string encoded as UTF-8; not evaluate_agent.digest(answer).",
+    "usesQualityReviewV2": false
+  },
+  "reviewer": {
+    "kind": "model",
+    "name": "Codex review_candidate_quality subagent",
+    "newHumanReviews": 0,
+    "separateAgentReview": true,
+    "independentModelTypeClaimed": false,
+    "previousDevelopmentReviewObserved": true,
+    "independentBlindReviewClaimed": false
+  },
+  "reviewedAt": "2026-11-03T12:48:49.868483+00:00",
+  "reportFile": "docs/evaluation/query-quality-20261103/candidate-report.json",
+  "reportSha256": "1cc71feaf6c557bd5639c4a8aa47026b888817f5b3ef3e75877324997946d50c",
+  "agentJarSha256": "055f1bdc4bc8d52b8e9c2330d8a3937085d6043f96323cc2461db16f71d75eda",
+  "movieJarSha256": "4f73846fd722f1c6d33baa2ee9df31d0a1745cf87c53ba48dd38904b1dc51112",
+  "scope": {
+    "candidateOnly": true,
+    "deployed": false,
+    "websiteUserSessionUsed": false,
+    "productionBrowserVerified": false,
+    "observedDevelopmentQuestions": true,
+    "independentHoldout": false,
+    "independentQualityImprovementClaimed": false,
+    "newHumanReviews": 0,
+    "snapshotDate": "2026-10-31",
+    "snapshotRows": 12822,
+    "snapshotIsAtomicDatabaseSnapshot": false,
+    "historicalContext": "Fixture rounds from actual earlier candidate responses; not production owner/TTL queue verification.",
+    "oldAnswersOrScoresChanged": false,
+    "noInferenceReplay": true,
+    "noExternalFactLookupsPerformedByReviewer": true
+  },
+  "definitions": {
+    "scores": "0=关键已证实错误/无可用答案；1=部分满足或部分依据；2=在声明证据范围内满足该维度；null=证据不足，真实事实保持未知。",
+    "factuality": "评最终正文事实断言和明确未知提示；无法证明主题/类型时保留null，不把简介未提及推断为影片没有。",
+    "grounding": "评正文身份、实际工具字段与引文是否支持原要求；引文存在不自动证明主题蕴含。",
+    "usefulness": "按原请求判断可用程度；硬条件未知或缺所求依据时不计完全满足。",
+    "verdicts": "满足=本次声明证据范围内全部硬条件成立；部分有用=明确待核验的可用线索；有效澄清=针对实际缺失或矛盾正确澄清；未满足=未交付可用目标或依据不支持要求；证据不足=关键身份/公告仍未知，无法计完整满足。",
+    "execution": "HTTP/API200与completed只证明一次执行完成；本报告没有evaluate_development机械断言协议的passed字段，因此不冒称15轮机械通过。"
+  },
+  "summary": {
+    "plannedTurns": 15,
+    "executedTurns": 15,
+    "completedTurns": 15,
+    "executionFailedTurns": 0,
+    "mechanicalAssertionProtocolUsed": false,
+    "mechanicallyPassedTurns": null,
+    "verdictCounts": {
+      "未满足": 4,
+      "部分有用": 2,
+      "有效澄清": 2,
+      "满足": 5,
+      "证据不足": 2
+    },
+    "scoreDimensionCounts": {
+      "factuality": {
+        "scored": 12,
+        "unknown": 3
+      },
+      "grounding": {
+        "scored": 15,
+        "unknown": 0
+      },
+      "usefulness": {
+        "scored": 15,
+        "unknown": 0
+      }
+    },
+    "fullThreeDimensionReviews": 12,
+    "modelDiagnosedRows": 15,
+    "newHumanReviews": 0,
+    "durationSecondsSum": 642.77,
+    "tokens": null,
+    "monetaryCost": null
+  },
+  "reviews": [
+    {
+      "caseId": "dev-v3-01",
+      "repetition": 1,
+      "turn": 1,
+      "reportRowPointer": "rows[0]",
+      "answerSha256": "c39b71e4abe8e4a6ea0d49bb5a142ee5f0e218093a3bd2dd23e919a5c446ee26",
+      "requestText": "想看记录修复师怎样修复旧胶片的纪录片，给我两部就好。这里的“旧胶片修复”是主题，不是片名。",
+      "verdict": "未满足",
+      "scores": {
+        "factuality": null,
+        "grounding": 0,
+        "usefulness": 0
+      },
+      "hardConstraints": "unknown",
+      "failureCategories": [
+        "candidates",
+        "facts"
+      ],
+      "reason": "主题进入semanticText且电影/纪录/最多2项进入计划，但正文将《迁徙的鸟》列为可能符合旧胶片修复过程的候选。实际引用“记录胶片长达460多公里”只说明拍摄素材量；本次完整简介讲鸟类迁徙及拍摄，不提供修复师或胶片修复过程的依据。真实引文身份成立，主题蕴含未成立。",
+      "limits": [
+        "不据简介没有提及就断言影片绝无修复镜头；影片实际主题关系在本次资料之外仍未知。",
+        "这一候选不能按rubric计有用近似，数量少于两部不是主要问题。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-02",
+      "repetition": 1,
+      "turn": 1,
+      "reportRowPointer": "rows[1]",
+      "answerSha256": "e43389fb6283a81587b0f86c9580221e91510830287b4f1efbd73ff51ccde3cd",
+      "requestText": "找动画电影，原始对白是中文或西班牙语，片长至少70分钟但严格小于95分钟，列最多三部；只有配音语言的信息就先标成未核验。",
+      "verdict": "部分有用",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 1
+      },
+      "hardConstraints": "unknown",
+      "failureCategories": [
+        "facts"
+      ],
+      "reason": "三项正文逐一列魁拔Ⅲ战神崛起/宝莲灯/麦兜·当当伴我心，电影与动画字段及90/85/80分钟均有本次片库依据，符合70<=片长<95、最多3项。languagesAny保留中文或西班牙语并集；正文每项均注明原始对白未核验，并全局说明语言字段不能区分原声与配音。",
+      "limits": [
+        "原声事实保持未知，不能以片库语言或配音演员证明原始对白满足。",
+        "联网保留0项，片库已识别条件共31项不等于31项满足全部硬条件。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-03",
+      "repetition": 1,
+      "turn": 1,
+      "reportRowPointer": "rows[2]",
+      "answerSha256": "e0e1fdb278964fc91f8240811b6512c421a7c8d90ee1dd2c486d034e0acc701f",
+      "requestText": "找以火车旅行为主题的纪录电影，最多四部，按豆瓣评分从高到低排；没有豆瓣分的放最后并写“暂无”，不能拿IMDb分补。",
+      "verdict": "未满足",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 0
+      },
+      "hardConstraints": "unknown",
+      "failureCategories": [
+        "candidates"
+      ],
+      "reason": "火车旅行主题、纪录片、最多4项和豆瓣降序进入计划。本次片库召回35项后保留0项，联网原返回1项但相关性核对后0项；正文如实说明缺依据，没有把无关候选补足数量。但没有交付可用影片，泛化补人物/语言不能解决已明确的火车旅行主题。",
+      "limits": [
+        "仅证明这次有界检索未保留结果，不能证明世界或整个片库不存在相应作品。",
+        "缺分末尾与改分不补片的正常非空列表路径未由这轮真实回答命中。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-03",
+      "repetition": 1,
+      "turn": 2,
+      "reportRowPointer": "rows[3]",
+      "answerSha256": "93eabd68bf5e0e654b9c61b24fecb78761a384ab8124cc8dfc563fd7958af207",
+      "requestText": "现在改用IMDb评分排，还是刚才这些片，不要重新补片。",
+      "verdict": "有效澄清",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "hardConstraints": "notApplicable",
+      "failureCategories": [],
+      "reason": "前轮真实候选为空；本轮scope=previousResults且ratingSource切换IMDb，正文明确不能在空列表中筛选或排序，要求先补查找条件或授权重新查片库。没有虚构评分、增加影片或把旧豆瓣次序冒充IMDb排序。",
+      "limits": [
+        "这是针对前轮空列表的有效澄清，不是非空候选IMDb重新排序验收。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-04",
+      "repetition": 1,
+      "turn": 1,
+      "reportRowPointer": "rows[4]",
+      "answerSha256": "780a1374ce210c7f4b601f59b929bff747f7e3c44c46655914c47e83d3ab6107",
+      "requestText": "片库里的《小妇人》是不是有多个电影版本？请用年份和导演区分，不要把几个版本的演员混在一起。",
+      "verdict": "满足",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "hardConstraints": "satisfied",
+      "failureCategories": [],
+      "reason": "正文区分本次片库两条《小妇人》身份：gying_mv_M4Lk为2019/格蕾塔·葛韦格，tmdb_movie_9587为1994/Gillian Armstrong。演员分别来自各自同ID的实际字段，未合并两版；其他时长与评分也分别与本次返回一致。",
+      "limits": [
+        "只证明10月31日公开快照中本次找到的两个版本，不证明全球版本全集或当前生产库存完整。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-04",
+      "repetition": 1,
+      "turn": 2,
+      "reportRowPointer": "rows[5]",
+      "answerSha256": "0a938eb7d2d098d11a86dda3d7b6ae0df4ebdf12ae14b85b8eaefa5409c9e680",
+      "requestText": "只查2019年那个版本的主演，其他版本不要带进来。",
+      "verdict": "满足",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "hardConstraints": "satisfied",
+      "failureCategories": [],
+      "reason": "计划锁定2019年《小妇人》，queryCatalog.selectedId与getMovieDetails.movie.id均为gying_mv_M4Lk。正文三位主演与该详情实际返回的西尔莎·罗南/艾玛·沃森/弗洛伦丝·皮尤一致，附简介也取同ID，没有引入1994版。",
+      "limits": [
+        "fieldsTruncated=true；三位只是本次有界返回的主演，不宣称完整演员表。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-05",
+      "repetition": 1,
+      "turn": 1,
+      "reportRowPointer": "rows[6]",
+      "answerSha256": "1136f61b4ff55d74cb29ec1519a5f36452fe7a4b8e515c2b896c42374cd8ace5",
+      "requestText": "想看野外徒步纪录片，但必须没有动物受伤的镜头。如果你没有逐场内容指南或可核查的相关说明，就不要保证这一点，可以直接说还不能确认。",
+      "verdict": "未满足",
+      "scores": {
+        "factuality": 2,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "hardConstraints": "unknown",
+      "failureCategories": [
+        "routing",
+        "candidates",
+        "facts"
+      ],
+      "reason": "semanticText恢复“野外徒步”，不将动物受伤排除当主题；正文诚实保留没有逐场内容指南、不能保证无动物受伤的未知边界。但计划category=ac（Planner类别合同中为动漫），将没有要求动漫的纪录片查询不当地限制到动漫，片库与相关性核对后联网均无候选，未提供野外徒步作品。",
+      "limits": [
+        "不能据本次无结果证明没有野外徒步纪录片。",
+        "无动物受伤的真实逐场事实仍未知；本轮没有足以核实该排除条件的内容指南。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 1,
+      "reportRowPointer": "rows[7]",
+      "answerSha256": "7e0928734777d547fa2b4b4e5ad57c7c6fe51205872efba2aa3ea5eadda3753c",
+      "requestText": "先找2000至2010年上映、最多110分钟的音乐电影，给两部并列出年份。",
+      "verdict": "满足",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "hardConstraints": "satisfied",
+      "failureCategories": [],
+      "reason": "正文列第一轮实际候选1MeM《电台司令: 彩虹里》（2008/43分钟）和gying_mv_X5Dz《放牛班的春天》（2004/97分钟）。本次两项category=mv、genres含音乐，年份均在2000至2010闭区间，片长均<=110，数量2且字段有真实依据。",
+      "limits": [
+        "满足仅按本次片库电影分类和实际公开字段评估，不证明发行类别或外部元数据独立核验。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 2,
+      "reportRowPointer": "rows[8]",
+      "answerSha256": "6262f8acf6ed6f3a3b661907da6c6f5bc07428432b70961a9a2fbc40b9637185",
+      "requestText": "年份改成2015年及以后，其他条件不变，重新给两部。",
+      "verdict": "证据不足",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 1
+      },
+      "hardConstraints": "unknown",
+      "failureCategories": [
+        "facts",
+        "candidates"
+      ],
+      "reason": "计划以yearFrom=2015替换旧2000–2010区间，保留音乐、maxRuntime=110、电影及最多2项。正文RAYE（2024/80分钟）与坂本龙一：杰作（2023/103分钟）符合年份/时长字段。但RAYE虽category=mv，实际简介首句为“电视特辑节目”，与电影身份存在资料冲突；正文未说明这一冲突，因此不能把两项都计已核验音乐电影。",
+      "limits": [
+        "不凭记忆判定该作品是或不是电影；需要额外身份/发行资料核对，影片类型事实保留null。",
+        "这轮确实验证年份替换和其他计划条件保留，不足以证明两个候选全部满足。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 3,
+      "reportRowPointer": "rows[9]",
+      "answerSha256": "63b80c604ac0be1b091478b58ff13e5dda6e3e23567c194d982cd44e2fd5a247",
+      "requestText": "我问的是最开始那份2000到2010年列表里的第一部，它的导演是谁？",
+      "verdict": "满足",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "hardConstraints": "satisfied",
+      "failureCategories": [],
+      "reason": "本轮fixture candidateHistory保留第一轮1MeM/gying_mv_X5Dz；最开始列表首项真实为1MeM。计划details/movieId=1MeM且本轮2000–2010年份条件保留，queryCatalog.selectedId与详情同ID，正文返回该2008片目导演David Barnard，未误用最新列表的RAYE。",
+      "limits": [
+        "历史由实际先前候选回答生成的fixture传输，不能代替生产owner/TTL/加密任务链验证。",
+        "正文附加了很长的有界简介，导演字段正确不代表正文长度已优化。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-07",
+      "repetition": 1,
+      "turn": 1,
+      "reportRowPointer": "rows[10]",
+      "answerSha256": "022d20cd201e078f2acacab01029714ad48f8d67aa5b16bed0f414481872f1b4",
+      "requestText": "找村上春树原著改编的电影，最多三部，写清对应哪篇原作并给依据。这里说的是原作者，不是让你查他当主演或导演的作品。",
+      "verdict": "部分有用",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 1
+      },
+      "hardConstraints": "unknown",
+      "failureCategories": [
+        "facts"
+      ],
+      "reason": "作者未进入演员、导演或排除人物字段，semanticText为村上春树原著改编。正文列《燃烧》（2018）并引用本次完整简介里的“本片根据村上春树的短篇小说《烧仓房》改编”，明确对应原作且引文实际支持改编关系，未用相似题材代替。正文同时保留原作关系仍需来源核验，联网未保留相关结果，因此只计有用的待核验线索。",
+      "limits": [
+        "事实2分只针对本次片库引用与诚实未知提示；不把尚待核验的真实改编关系当作独立外部确认。",
+        "最多3是上限，给1项不是缺陷；全局unsupportedConditions尚未按已支持的候选关系逐项闭环。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-08",
+      "repetition": 1,
+      "turn": 1,
+      "reportRowPointer": "rows[11]",
+      "answerSha256": "53a7a8ce0a5f875f5cbde4497b3c6e371e7b65f0ed830e70c6840f0c7e5327bc",
+      "requestText": "截至你本次查询这一天，官方有没有宣布《花样年华》4K修复版在中国大陆的新一轮院线重映？给公告来源和发布日期；只查公告，不帮我买票。",
+      "verdict": "证据不足",
+      "scores": {
+        "factuality": 1,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "hardConstraints": "unknown",
+      "failureCategories": [
+        "facts",
+        "candidates"
+      ],
+      "reason": "正文正确记录查询日期2026-11-03，并明确当前官方公告是否存在、地区/4K版本/发布日期仍未知；实际Bing相关结果为空，没有把未找到断言为官方没有宣布。但正文称“搜索摘要与链接列在下方”，实际没有保留任何摘要/链接，与本次工具结果不一致，也没有交付所求公告来源。",
+      "limits": [
+        "不能根据本次空搜索推断中国大陆不存在新一轮官方重映公告。",
+        "没有购买、外发或发布操作；本次只读查询日期不能代替公告发布日期。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-09",
+      "repetition": 1,
+      "turn": 1,
+      "reportRowPointer": "rows[12]",
+      "answerSha256": "36d53ff69964154ab551048eb6c43d005e0cbaeaa5210e5942f0e1d9ad2970f9",
+      "requestText": "找一部电影，片长至少150分钟，同时不能超过100分钟。这两个都是硬条件；先告诉我条件能不能同时满足。",
+      "verdict": "有效澄清",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "hardConstraints": "notApplicable",
+      "failureCategories": [],
+      "reason": "计划与正文明确150分钟最低值超过100分钟最高值，同一电影不可能同时满足两个硬条件，并请用户选择修改哪一项。没有虚构影片、截短版本或自行放宽片长。",
+      "limits": [
+        "澄清满足先判断冲突的请求，不计电影推荐成功；这条实际计划未出现错误数字演员字段。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-10",
+      "repetition": 1,
+      "turn": 1,
+      "reportRowPointer": "rows[13]",
+      "answerSha256": "7d5b59435c6f48d7094945b49ac662218c85709d575b284f40d593050bff6c4f",
+      "requestText": "想看以小镇电影院为故事重要场景的剧情电影，不要剧集。最好结尾温暖，但这只是偏好；先给最多三部，并说明剧情依据。",
+      "verdict": "满足",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "hardConstraints": "satisfied",
+      "failureCategories": [],
+      "reason": "正文仅列tmdb_movie_11216《天堂电影院》，电影/剧情/最多3项字段成立。引用本次简介中小镇、多多、放映师剪电影的实际段落，完整来源反复围绕小镇电影放映、胶片着火、接任放映及旧吻戏胶片展开，支持小镇电影院/放映为重要故事场景。温暖结尾作为软偏好单列未核验，不作硬性排除或已证实事实。",
+      "limits": [
+        "主题支持只基于本次完整简介，不是逐场影像或独立外部核实。",
+        "温暖结尾未知不影响硬条件满足，也不能声称该软偏好已满足；真人实用性复核仍0。"
+      ]
+    },
+    {
+      "caseId": "dev-v3-10",
+      "repetition": 1,
+      "turn": 2,
+      "reportRowPointer": "rows[14]",
+      "answerSha256": "12fd79aece80b7070e7393900b9c3a4fff4789eded00993b25e01f23382bf85e",
+      "requestText": "结尾不用温暖也行，但电影院必须是核心场景，电影类型和最多三部都别改。",
+      "verdict": "未满足",
+      "scores": {
+        "factuality": null,
+        "grounding": 0,
+        "usefulness": 0
+      },
+      "hardConstraints": "unknown",
+      "failureCategories": [
+        "candidates",
+        "facts",
+        "multiTurn"
+      ],
+      "reason": "计划确实移除温暖结尾偏好，保留剧情电影/最多3项并将电影院加强为核心场景。但正文把《沼泽深处的女孩》的“基亚被镇上来的两位年轻人所吸引…尸体被发现后”作为两项剧情依据；引文来自同片简介，却只支持小镇/人物/悬疑事件，没有支持电影院或其核心地位。两次重复相同真引文不能证明两个核心要求，最终回答未提供所需核心场景依据。",
+      "limits": [
+        "不因简介没有提及就断言影片绝无电影院场景，真实场景事实保持null。",
+        "移除偏好和保留计划条件只计机制观察，不能据此计最终候选满足；此处仍存在语义误判。"
+      ]
+    }
+  ]
+}

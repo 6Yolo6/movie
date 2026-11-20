@@ -1,0 +1,12 @@
+{
+  "candidateBuild": "G:\\gying-tools\\builds\\baidu-search-temp-20261109\\bsf-eb7d33b6084c\\frontend",
+  "mockedApi": true,
+  "productionApiWrites": false,
+  "serverApiRequests": 0,
+  "startedAt": "2026-11-09T12:48:28.413Z",
+  "completedAt": "2026-11-09T12:48:38.765Z",
+  "exitCode": 0,
+  "passedGroups": 7,
+  "loopbackServerClosed": true,
+  "productionServicesStartedOrStopped": false
+}

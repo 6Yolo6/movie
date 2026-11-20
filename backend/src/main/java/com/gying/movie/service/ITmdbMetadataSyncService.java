@@ -10,11 +10,20 @@ import java.util.List;
 public interface ITmdbMetadataSyncService {
     ResourceHubTask enqueue(ResourceHubMetadataSyncRequest request);
 
+    ResourceHubTask enqueueAutomatic(String source);
+
+    ResourceHubTask enqueueUpdates(java.util.List<String> sources);
+
     TmdbSyncResult runTask(Long taskId);
 
     MovieMetadata syncBestByKeyword(String keyword);
 
     MovieMetadata syncExactByKeyword(String keyword);
+
+    MovieMetadata syncSelectedCandidate(MovieSearchCandidate candidate);
+
+    /** Exact TV identity only; ambiguous local records require review. */
+    MovieMetadata syncExactTv(long tmdbId, Integer expectedYear);
 
     List<MovieSearchCandidate> searchCandidatesByKeyword(String keyword, int limit);
 }

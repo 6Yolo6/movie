@@ -1,62 +1,18 @@
-# Gying Movie 片库
+# 影窝 · GYing Movie
 
-Gying Movie 是一个面向电影、剧集、动漫的片库资源管理项目。用户可以浏览片库、筛选影片、收藏影片、提交网盘/磁力/种子/在线播放资源、评论留言求资源；管理员可以审核资源、处理失效举报、管理评论、用户和系统配置。
+电影、剧集和动漫片库，提供检索、个性化推荐、资源治理、GYING 采集与夸克/迅雷自有分享。英文品牌为 FilmNest。
 
-## 技术栈
+| 需要做什么 | 从这里开始 |
+| --- | --- |
+| 了解系统、在线版本和待办 | [项目状态](docs/current-project-status.md) |
+| 理解全项目的设计与知识 | [知识导读](docs/project-guide.md) |
+| 查全部文档 | [文档导航](docs/README.md) |
+| 开发、测试 | [开发手册](docs/development.md) · [前端](frontend/README.md) |
+| 对接接口、修改数据库 | [API](docs/api.md) · [数据库](docs/database.md) |
+| 发布、回滚、迁移 | [部署](docs/deployment.md) · [迁移恢复](MIGRATION.md) |
+| 安全与故障 | [安全导航](docs/security/README.md) · [排障](.agents/skills/gying-project-ops/references/troubleshooting.md) |
+| AI 架构与求职补强 | [完整架构](docs/ai-architecture.md) · [求职路线](docs/ai-career-roadmap.md) · [评测](docs/ai-evaluation.md) |
 
-- 后端：Spring Boot 3.2、MyBatis Plus、MySQL、Redis、JWT
-- 前端：Next.js 16 App Router、React 19、Ant Design、Zustand、i18next
-- 数据：`movie_metadata`、`resource_link`、`resource_report`、`comment`、`user_favorite`、`user_notification`
+`backend/` 为 Java 17 / Spring Boot API；`frontend/` 为 Next.js；`crawler/` 为 Python 数据源；`social-publisher/` 为独立发布器；`tools/` 为测试及运维工具。
 
-## 核心功能
-
-- 片库浏览：分页、分类、关键词、类型、地区、语言、年份、排序。
-- 动态筛选：`/api/movies/filters` 根据当前分类返回可用筛选项。
-- 资源提交：支持网盘、磁力、种子、在线播放；支持清晰度、字幕、大小、版本说明。
-- 审核闭环：管理员通过/拒绝资源，拒绝原因会通知上传者并在“我的投稿”展示。
-- 失效举报：登录用户可举报失效链接，管理员在“举报管理”中处理、误报或标记失效。
-- 评论留言：影片评论和留言板支持回复、点赞、删除，后台可管理评论状态。
-- 用户体系：注册验证码、登录、JWT 鉴权、角色、禁用/启用、管理员切换账号。
-- 收藏热门：用户收藏影片，热门页支持日/周/月/总榜。
-- 站内通知：审核结果、链接状态变化、评论回复写入通知中心。
-- 主题语言：前端支持日/夜主题和中英文切换。
-
-## 快速启动
-
-1. 准备 MySQL 8、Redis 6、JDK 17、Maven 3.9、Node.js 20。
-2. 创建数据库并导入 `backend/src/main/resources/db/schema.sql`。
-3. 本地开发复制对应子项目环境变量示例；Docker 部署复制根目录 `.env.example`。
-4. 启动后端：
-
-```bash
-cd backend
-mvn spring-boot:run
-```
-
-5. 启动前端：
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-默认地址：前端 `http://localhost:3000`，后端 `http://localhost:8880`。
-
-默认管理员：`admin / admin123`。
-
-## 文档
-
-- [部署文档](docs/deployment.md)
-- [接口文档](docs/api.md)
-- [数据库迁移](docs/database.md)
-- [开发文档](docs/development.md)
-- [Resource Hub 架构](docs/resource-hub.md)
-- [当前项目状态](docs/current-project-status.md)
-
-## 验收命令
-
-```bash
-cd backend && mvn test
-cd frontend && npm run lint && npm run build
-```
+使用独立检出与测试依赖开发，禁止复制生产凭据。`schema.sql` 含 DROP，只能用于确认空的新库，且缺两张 QQ 日志表；没有默认管理员。生产配置和历史报告不能代替在线证据。发布仅替换受影响服务，保留加密检查点；真实转存、发帖、凭据变更及破坏性操作按各专项流程执行。

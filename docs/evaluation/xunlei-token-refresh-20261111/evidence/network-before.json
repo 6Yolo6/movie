@@ -1,0 +1,619 @@
+{
+  "startedAt": "2026-11-11T14:48:00.529Z",
+  "passwordSubmissions": 0,
+  "driveWrites": 0,
+  "phases": [
+    {
+      "target": {
+        "host": "pan.xunlei.com",
+        "officialPage": true,
+        "officialFrame": false,
+        "endpointPath": null,
+        "urlSha256": "5c81b07d971c76616f1163cae565a9e9a122932c1db18531a4ec55669309a77c"
+      },
+      "blocked": [
+        {
+          "host": "xluser-ssl.xunlei.com",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": "/risk",
+          "urlSha256": "7f6950e2e082b074f2eca9c304790db7839ec5879c84a6224af696dcbca07bdd",
+          "type": "fetch",
+          "method": "POST",
+          "password": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "17202f4314a90745a2debba8c7355c999aea88c08e9054a6a70f634b4e513669",
+          "type": "fetch",
+          "method": "POST",
+          "password": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "13a9444d2bf0eeb78373ae0cd234c14972696a6dd42f20bea5ca683557521a5a",
+          "type": "fetch",
+          "method": "POST",
+          "password": false
+        }
+      ],
+      "failed": [
+        {
+          "host": "xluser-ssl.xunlei.com",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": "/risk",
+          "urlSha256": "7f6950e2e082b074f2eca9c304790db7839ec5879c84a6224af696dcbca07bdd",
+          "type": "fetch",
+          "error": "ERR_FAILED"
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "17202f4314a90745a2debba8c7355c999aea88c08e9054a6a70f634b4e513669",
+          "type": "fetch",
+          "error": "ERR_FAILED"
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "13a9444d2bf0eeb78373ae0cd234c14972696a6dd42f20bea5ca683557521a5a",
+          "type": "fetch",
+          "error": "ERR_FAILED"
+        }
+      ],
+      "responses": [
+        {
+          "host": "pan.xunlei.com",
+          "officialPage": true,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "5c81b07d971c76616f1163cae565a9e9a122932c1db18531a4ec55669309a77c",
+          "type": "document",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "36af243bb0ffd034a0da8b389461252c2ea7fceca11f907750cd295323298d86",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "3a71cc3c3a9b8b39ff9412c0d215a7839b7f7300831656cdccf1954a6bfbdffc",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "7043ba9e30cc33974bad1e82948aef802e5fe65ddfcb5d7ed1a69da6d1ce82af",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "4d3e4cf6c339100e0be4c8721e955b615078af25625d281474ea3b2edc8d659c",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "6c4ddaab8f78fde22f6d5a11da9fb6a412af04c61af6277e82232238e23ee1ff",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "431c54005d0ab22de00b83520784d43cac5593f9464c04612ef81c536692df16",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "03d8f9fbfb6041e98b5e6bb79424ee5abfe117156c35a259dddd92462b5da070",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "35b8975083629c82c339a65a2ad0e69e9a9ae3733e1f50c9630b5425f7b24108",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "67db66d15c7b6eb46e92597711a3b3ecb721f57334303d8e5ea6dec5dd63c766",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "4cd4bb5af6ff4094176dc48cebcdb1c26df1dc4a623e3fc53c4bff0acfd10829",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "81c0cb05cc99665b6550623387ae76b0a395ced56a3e687a32a1f9904f47d7a3",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "61226281623d3651677039296005fbca38d9bf7614173c9753c8cefe7721d6d8",
+          "type": "script",
+          "status": 200,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "xluser-ssl.xunlei.com",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": "/risk",
+          "urlSha256": "e07f184df3cad1ca2e6d017b1c15c979416a657f075f882fdc033207fb982a2d",
+          "type": "script",
+          "status": 200,
+          "html": false,
+          "fromCache": false
+        }
+      ],
+      "errors": [],
+      "mainStatus": 304,
+      "page": {
+        "host": "pan.xunlei.com",
+        "officialPage": true,
+        "officialFrame": false,
+        "endpointPath": null,
+        "urlSha256": "5c81b07d971c76616f1163cae565a9e9a122932c1db18531a4ec55669309a77c"
+      },
+      "frames": [
+        {
+          "host": "pan.xunlei.com",
+          "officialPage": true,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "5c81b07d971c76616f1163cae565a9e9a122932c1db18531a4ec55669309a77c"
+        }
+      ],
+      "dom": {
+        "readyState": "complete",
+        "titleLength": 4,
+        "htmlLength": 330818,
+        "bodyTextLength": 24,
+        "scriptCount": 20,
+        "iframeCount": 0,
+        "appElement": false,
+        "appChildren": 0,
+        "rootElement": false,
+        "rootChildren": 0,
+        "mentionsXunlei": false,
+        "mentionsLogin": false,
+        "accessDenied": false,
+        "browserNetworkError": false,
+        "javascriptDisabled": false,
+        "knownWords": [
+          "网络",
+          "失败",
+          "加载",
+          "刷新",
+          "重试"
+        ]
+      }
+    },
+    {
+      "target": {
+        "host": "pan.xunlei.com",
+        "officialPage": true,
+        "officialFrame": false,
+        "endpointPath": null,
+        "urlSha256": "9c39193fcfc789fb43ebcc9c182053838a88a988630c21f6b151f12d5c73563d"
+      },
+      "blocked": [
+        {
+          "host": "xluser-ssl.xunlei.com",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": "/risk",
+          "urlSha256": "7f6950e2e082b074f2eca9c304790db7839ec5879c84a6224af696dcbca07bdd",
+          "type": "fetch",
+          "method": "POST",
+          "password": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "17202f4314a90745a2debba8c7355c999aea88c08e9054a6a70f634b4e513669",
+          "type": "fetch",
+          "method": "POST",
+          "password": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "13a9444d2bf0eeb78373ae0cd234c14972696a6dd42f20bea5ca683557521a5a",
+          "type": "fetch",
+          "method": "POST",
+          "password": false
+        },
+        {
+          "host": "xluser-ssl.xunlei.com",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": "/risk",
+          "urlSha256": "7f6950e2e082b074f2eca9c304790db7839ec5879c84a6224af696dcbca07bdd",
+          "type": "fetch",
+          "method": "POST",
+          "password": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "17202f4314a90745a2debba8c7355c999aea88c08e9054a6a70f634b4e513669",
+          "type": "fetch",
+          "method": "POST",
+          "password": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "13a9444d2bf0eeb78373ae0cd234c14972696a6dd42f20bea5ca683557521a5a",
+          "type": "fetch",
+          "method": "POST",
+          "password": false
+        }
+      ],
+      "failed": [
+        {
+          "host": "xluser-ssl.xunlei.com",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": "/risk",
+          "urlSha256": "7f6950e2e082b074f2eca9c304790db7839ec5879c84a6224af696dcbca07bdd",
+          "type": "fetch",
+          "error": "ERR_FAILED"
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "17202f4314a90745a2debba8c7355c999aea88c08e9054a6a70f634b4e513669",
+          "type": "fetch",
+          "error": "ERR_FAILED"
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "13a9444d2bf0eeb78373ae0cd234c14972696a6dd42f20bea5ca683557521a5a",
+          "type": "fetch",
+          "error": "ERR_FAILED"
+        },
+        {
+          "host": "xluser-ssl.xunlei.com",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": "/risk",
+          "urlSha256": "7f6950e2e082b074f2eca9c304790db7839ec5879c84a6224af696dcbca07bdd",
+          "type": "fetch",
+          "error": "ERR_FAILED"
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "17202f4314a90745a2debba8c7355c999aea88c08e9054a6a70f634b4e513669",
+          "type": "fetch",
+          "error": "ERR_FAILED"
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "13a9444d2bf0eeb78373ae0cd234c14972696a6dd42f20bea5ca683557521a5a",
+          "type": "fetch",
+          "error": "ERR_FAILED"
+        }
+      ],
+      "responses": [
+        {
+          "host": "pan.xunlei.com",
+          "officialPage": true,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "9c39193fcfc789fb43ebcc9c182053838a88a988630c21f6b151f12d5c73563d",
+          "type": "document",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "36af243bb0ffd034a0da8b389461252c2ea7fceca11f907750cd295323298d86",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "4d3e4cf6c339100e0be4c8721e955b615078af25625d281474ea3b2edc8d659c",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "7043ba9e30cc33974bad1e82948aef802e5fe65ddfcb5d7ed1a69da6d1ce82af",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "431c54005d0ab22de00b83520784d43cac5593f9464c04612ef81c536692df16",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "35b8975083629c82c339a65a2ad0e69e9a9ae3733e1f50c9630b5425f7b24108",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "6c4ddaab8f78fde22f6d5a11da9fb6a412af04c61af6277e82232238e23ee1ff",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "6023cc165bdff6e00e023abcbed032817943f2f0a7f1e1b2a4d710b8bf6be440",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "f50cc95ce64c54eba418385c0d7dc054b61d5790fa9642a126cb054b45103df3",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "f6ab124924ec701eef8512f0c2fa50c00f9faf9389f3e76f3bd9a349b11a1bf0",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "61226281623d3651677039296005fbca38d9bf7614173c9753c8cefe7721d6d8",
+          "type": "script",
+          "status": 200,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "4cd4bb5af6ff4094176dc48cebcdb1c26df1dc4a623e3fc53c4bff0acfd10829",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "81c0cb05cc99665b6550623387ae76b0a395ced56a3e687a32a1f9904f47d7a3",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "other",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "67db66d15c7b6eb46e92597711a3b3ecb721f57334303d8e5ea6dec5dd63c766",
+          "type": "script",
+          "status": 304,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "xluser-ssl.xunlei.com",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": "/risk",
+          "urlSha256": "db589322d0e82389cba20d9f6c99bcb40d71c1c2343f7683cf999874c336d85b",
+          "type": "script",
+          "status": 200,
+          "html": false,
+          "fromCache": false
+        },
+        {
+          "host": "xluser-ssl.xunlei.com",
+          "officialPage": false,
+          "officialFrame": false,
+          "endpointPath": "/risk",
+          "urlSha256": "82bf99b648da98f6456993d6d0927dfd36dd0d4c7f897036785ad5dea56a65b9",
+          "type": "script",
+          "status": 200,
+          "html": false,
+          "fromCache": false
+        }
+      ],
+      "errors": [],
+      "mainStatus": 304,
+      "page": {
+        "host": "pan.xunlei.com",
+        "officialPage": true,
+        "officialFrame": false,
+        "endpointPath": null,
+        "urlSha256": "9c39193fcfc789fb43ebcc9c182053838a88a988630c21f6b151f12d5c73563d"
+      },
+      "frames": [
+        {
+          "host": "pan.xunlei.com",
+          "officialPage": true,
+          "officialFrame": false,
+          "endpointPath": null,
+          "urlSha256": "9c39193fcfc789fb43ebcc9c182053838a88a988630c21f6b151f12d5c73563d"
+        }
+      ],
+      "dom": {
+        "readyState": "complete",
+        "titleLength": 4,
+        "htmlLength": 214275,
+        "bodyTextLength": 132,
+        "scriptCount": 22,
+        "iframeCount": 0,
+        "appElement": false,
+        "appChildren": 0,
+        "rootElement": false,
+        "rootChildren": 0,
+        "mentionsXunlei": true,
+        "mentionsLogin": false,
+        "accessDenied": false,
+        "browserNetworkError": false,
+        "javascriptDisabled": false,
+        "knownWords": []
+      }
+    }
+  ],
+  "status": "READONLY_NETWORK_DIAGNOSED",
+  "ownedBrowserClosed": true,
+  "completedAt": "2026-11-11T14:48:19.325Z"
+}

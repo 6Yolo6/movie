@@ -1,0 +1,57 @@
+{
+  "backup_config_exists": true,
+  "backend_data_covered": true,
+  "baidu_helper_covered": false,
+  "helper_install_exists": false,
+  "default_backend_paths": [
+    "/app/data/baidu/session.enc",
+    "/app/data/baidu/session.key",
+    "/app/data/baidu/login-request.json"
+  ],
+  "production_sql_executed": false,
+  "baidu_table_online_exists": "UNKNOWN; not queried during read-only filesystem baseline",
+  "backend": {
+    "id": "defa419359eaabb5a4cd3fd55133dba84e42d6babd7f82dff9ccb9f103687986",
+    "image": "sha256:2925c3b129e1ddf505f0483403ae5c3eb11c4675fbb6f8cec6af96ffcb78c6d4",
+    "user": "gying",
+    "mounts": [
+      {
+        "Destination": "/app/logs",
+        "Driver": "local",
+        "Mode": "rw",
+        "Name": "gying-movie_backend-logs",
+        "Propagation": "",
+        "RW": true,
+        "Source": "/var/lib/docker/volumes/gying-movie_backend-logs/_data",
+        "Type": "volume"
+      },
+      {
+        "Destination": "/app/data",
+        "Driver": "local",
+        "Mode": "rw",
+        "Name": "gying-movie_backend-data",
+        "Propagation": "",
+        "RW": true,
+        "Source": "/var/lib/docker/volumes/gying-movie_backend-data/_data",
+        "Type": "volume"
+      },
+      {
+        "Destination": "/run/gying-ai",
+        "Driver": "local",
+        "Mode": "ro",
+        "Name": "gying-movie_ai-state-key",
+        "Propagation": "",
+        "RW": false,
+        "Source": "/var/lib/docker/volumes/gying-movie_ai-state-key/_data",
+        "Type": "volume"
+      }
+    ],
+    "files": "D:\\gying-movie\\movie\\docker-compose.prod.yml,E:\\gying-tools\\releases\\ai-query-plan-v2-20261025\\deploy.json,E:\\gying-tools\\releases\\ai-recovery-20261029-1750\\rescue.json,E:\\gying-tools\\releases\\ai-recovery-20261029-1750\\backend-candidate.json,E:\\gying-tools\\releases\\metadata-source-pause-20261029\\candidate.json,E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\backend-quality-final.json,E:\\gying-tools\\releases\\publishing-recovery-20261101\\candidate.json,E:\\gying-tools\\releases\\tmdb-empty-range-20261102\\candidate.json,E:\\gying-tools\\releases\\ai-query-quality-20261103\\backend-candidate.json,E:\\gying-tools\\releases\\qq-prada-transfer-20261103\\backup-audit\\rollback.json,E:\\gying-tools\\releases\\qq-prada-transfer-20261103\\candidate.json,E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\candidate.json,E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\candidate.json"
+  },
+  "runtime_uid": "10001",
+  "path_presence": {
+    "/app/data/baidu/session.enc": false,
+    "/app/data/baidu/session.key": false,
+    "/app/data/baidu/login-request.json": false
+  }
+}

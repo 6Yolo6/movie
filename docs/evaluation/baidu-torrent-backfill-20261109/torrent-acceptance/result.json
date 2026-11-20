@@ -1,0 +1,79 @@
+{
+  "at": "2026-11-09T06:24:21.934691+00:00",
+  "parent": {
+    "taskId": 17583,
+    "enabled": false,
+    "status": "BLOCKED",
+    "phase": "GYING_TORRENTS",
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "processed": 0,
+    "succeeded": 0,
+    "skipped": 0,
+    "failed": 0,
+    "nextRunAt": null,
+    "blockedReason": "CHILD_UNKNOWN",
+    "currentIdentityId": 41,
+    "currentChildId": 17584,
+    "currentResourceIds": [
+      28253,
+      28254
+    ],
+    "currentSeedCount": 2,
+    "currentAction": "UPLOAD_MAGNET_TEXT",
+    "currentChildStatus": "UNKNOWN",
+    "currentChildError": "BaiduActionException",
+    "lastResult": null,
+    "legacyTaskId": 17580
+  },
+  "childChain": {
+    "childId": 17584,
+    "provider": "BAIDU",
+    "type": "P2P_ARCHIVE",
+    "status": "UNKNOWN",
+    "attempts": 1,
+    "maxAttempts": 3,
+    "payloadSha256": "9d1eabac1569f202a0914e96556c5ce395b0c4685d812119a385e575758c44df",
+    "payloadSha256Definition": "SHA256 of UTF-8 JSON: decoded object, sort_keys=True, ensure_ascii=False, separators=(',', ':'), allow_nan=False",
+    "resourceIds": [
+      28253,
+      28254
+    ],
+    "stage": "UPLOAD_MAGNET_TEXT",
+    "shareIntentPresent": false,
+    "uploadedMetadataFileCount": 0,
+    "p2pResourceRefs": [
+      {
+        "id": 28253,
+        "type": "MAGNET",
+        "provider": "P2P",
+        "source": "GYING",
+        "quality": "1080P",
+        "status": "ACTIVE",
+        "auditStatus": 1,
+        "autoCollected": 1,
+        "sourceRefSha256": "130ba87950e0c57f85e82a9be214c412c92d9ddc573b23e1f6dbc3edd33dd88b",
+        "urlSha256": "0c7bf08990f0fc88c987956e80837856f5dcfa7a95dbb759da1d6eeef7ee283a"
+      },
+      {
+        "id": 28254,
+        "type": "MAGNET",
+        "provider": "P2P",
+        "source": "GYING",
+        "quality": "4K",
+        "status": "ACTIVE",
+        "auditStatus": 1,
+        "autoCollected": 1,
+        "sourceRefSha256": "fc124bff23203f2ed777558557f3ffdfefae649111c31c3e576d1bb6951d6dd9",
+        "urlSha256": "b66e9d8c0877cfd4167cc8e5888ca462c26f34bb90bcf8d27e646a39e5cec24d"
+      }
+    ]
+  },
+  "legacyRowsUnchanged": true,
+  "runSendIntentRetained": true,
+  "postRequestsMaximum": 1,
+  "noPostReplay": true,
+  "automaticSchedulingEnabled": false,
+  "videoTransferDiscoveryOrGyingPublishCalled": false,
+  "outcome": "BLOCKED_REQUIRES_REVIEW"
+}

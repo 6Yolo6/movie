@@ -87,6 +87,13 @@ resource-hub:
     auto-sync-page: ${RESOURCE_HUB_GYING_AUTO_SYNC_PAGE:1}
     auto-sync-max-items: ${RESOURCE_HUB_GYING_AUTO_SYNC_MAX_ITEMS:10}
     auto-sync-interval-hours: ${RESOURCE_HUB_GYING_AUTO_SYNC_INTERVAL_HOURS:24}
+  tvmaze:
+    base-url: https://api.tvmaze.com
+    auto-sync-enabled: false
+    auto-sync-max-items: 10
+    auto-sync-interval-hours: 24
+    request-interval-ms: 600
+    max-retries: 2
   pansou:
     base-url: ${RESOURCE_HUB_PANSOU_BASE_URL:http://localhost:8888}
     token: ${RESOURCE_HUB_PANSOU_TOKEN:}
@@ -94,6 +101,11 @@ resource-hub:
     api-key: ${PANSOU_API_KEY:${PANSO_API_KEY:}}
   quark:
     base-url: ${QUARK_AUTO_SAVE_BASE_URL:http://localhost:5005}
+    directory-ai:
+      enabled: ${QUARK_DIRECTORY_AI_ENABLED:true}
+      base-url: ${QUARK_DIRECTORY_AI_BASE_URL:http://127.0.0.1:21434}
+      model: ${QUARK_DIRECTORY_AI_MODEL:qwen3:4b-instruct-2507-q4_K_M}
+      timeout-seconds: ${QUARK_DIRECTORY_AI_TIMEOUT_SECONDS:20}
     token: ${QUARK_AUTO_SAVE_TOKEN:}
     save-path: ${QUARK_AUTO_SAVE_PATH:/GYing Resource Hub}
     pattern: ${QUARK_AUTO_SAVE_PATTERN:(.*)\.(mp4|mkv|avi|mov|flv|wmv|webm|m4v|ts)}

@@ -1,0 +1,50 @@
+{
+  "status": "PASS",
+  "allTestsPassed": true,
+  "testsRun": 13,
+  "failures": 0,
+  "errors": 0,
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceV3.py",
+      "sha256": "b02d75746158c96c49f1adf143a5a8775d360699bd9aece0be0ebf3b01e54f91"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceCoreV3.py",
+      "sha256": "af5618beaf19427cd7e354a28898ba9e4f1a6616c803c1b86269fa45dda2c04f"
+    }
+  ],
+  "testScript": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\TestEntryAcceptanceV3.py",
+    "sha256": "cf25525e348a80aa623d5df6d8d10d681103aebf007220396bccb7777ad9cc90"
+  },
+  "productionPosts": 0,
+  "productionSqlQueries": 0,
+  "productionHttpRequests": 0,
+  "runtimeDockerRequests": 0,
+  "cloudActions": 0,
+  "realCredentialsRead": false,
+  "mockActualCoreExecuted": true,
+  "originalPassedSuitesRepeated": false,
+  "mockFixturesNeverUsedAsProductionEvidence": true,
+  "results": [
+    "test_confirmed_identity_missing_wrong_owner_type_external_or_status_rejected (__main__.SemanticTests) ... ok",
+    "test_default_v3_has_no_runtime_io (__main__.SemanticTests) ... ok",
+    "test_exact_raw_dto_list_season_equality (__main__.SemanticTests) ... ok",
+    "test_movie_confirmed_identity_must_be_namespace_zero (__main__.SemanticTests) ... ok",
+    "test_movie_detail_zero_does_not_replace_raw_null_or_part (__main__.SemanticTests) ... ok",
+    "test_movie_list_zero_does_not_replace_raw_null_or_part (__main__.SemanticTests) ... ok",
+    "test_movie_raw_null_zero_and_parts_pass_actual_core_detail_list_ssr (__main__.SemanticTests) ... ok",
+    "test_movie_reviewed_namespace_must_be_integer_zero (__main__.SemanticTests) ... ok",
+    "test_original_http_resource_ssr_and_final_guards_unchanged (__main__.SemanticTests) ... ok",
+    "test_second_conflicting_confirmed_identity_rejected (__main__.SemanticTests) ... ok",
+    "test_tv_identity_wrong_season_rejected (__main__.SemanticTests) ... ok",
+    "test_tv_null_zero_wrong_season_rejected (__main__.SemanticTests) ... ok",
+    "test_tv_positive_exact_namespace_passes (__main__.SemanticTests) ... ok",
+    "",
+    "----------------------------------------------------------------------",
+    "Ran 13 tests in 0.117s",
+    "",
+    "OK"
+  ]
+}

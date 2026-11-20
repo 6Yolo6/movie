@@ -1,0 +1,93 @@
+{
+  "status": "SAFE_SUMMARY_OF_ACTUAL_V4_PREPARED",
+  "source": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\mobland-binding-v4-prepared.json",
+    "bytes": 8734,
+    "sha256": "f37655c3f3b01fcc8b784379f63643474b39aa894ff1c9e11d0202a8d7d0c398"
+  },
+  "sourceStatus": "PREPARED",
+  "sourceVersion": 4,
+  "sourceAt": "2026-11-11T08:07:35.392440+00:00",
+  "sourceLocalAt": "2026-11-11T16:07:35.392440+08:00",
+  "helperSha256": "9b8e68fe63049302ec032bdd33d039c2166f468c00499188f6b6fd83044a2b3f",
+  "originalPreparedSha256": "53e3d3631b1f08a988f0cafdf5b9dbc6a683420419747c6a9634024f715cb696",
+  "beforeSha256": "f243970d6ea9a230fe5e8174ceae149ab9abc46a35a2e98f57f499b8ef95f752",
+  "expectedAfterSha256": "6fef56de4af629686d00f1d04660f7c000b43125e6df475e69c6bce3620bba65",
+  "preimage": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\mobland-binding-rows-before.json.age",
+    "sha256": "8604c8448286daa120e456ba78e7e3fa446de91338e1f9e398de885ec767cc49"
+  },
+  "applicationPermission": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\mobland-application-privileges-v2-f673bd889b57417591b4de5e97bf86ec.json",
+    "sha256": "45331a57a2da17dabe163c25f85c35035e18637e1a34502f11077eaece6b445d"
+  },
+  "scope": {
+    "automaticRestore": false,
+    "automaticRetry": false,
+    "canonical": "1YKW",
+    "cloudActions": 0,
+    "identityWrites": 0,
+    "mergeRequests": 0,
+    "metadataFields": [
+      "tmdb_id",
+      "tmdb_type"
+    ],
+    "metadataRows": 1,
+    "schemaChanges": 0,
+    "season": 1,
+    "tmdbId": 247718,
+    "tmdbType": "tv",
+    "updatedAtPreserved": true
+  },
+  "lockingPlan": {
+    "grantsChanged": false,
+    "isolation": "SERIALIZABLE",
+    "metadataQueries": "FOR UPDATE",
+    "protectionQueriesIncludingExcludedOwnerJoin": "FOR SHARE",
+    "singleConnectionThroughCommit": true
+  },
+  "rowCounts": {
+    "baidu_temporary_cleanup_job": 0,
+    "baidu_transfer_task": 1,
+    "comment": 0,
+    "movie_duplicate_review": 1,
+    "movie_merge_alias": 1,
+    "movie_merge_favorite_history": 0,
+    "movie_merge_reference_history": 21,
+    "movie_metadata": 2,
+    "movie_source_identity": 2,
+    "qq_bot_search_log": 0,
+    "qq_channel_post_log": 0,
+    "qq_transfer_cleanup_job": 0,
+    "quark_transfer_task": 1,
+    "resource_discovery_result": 2,
+    "resource_hub_task": 7,
+    "resource_link": 8,
+    "resource_operation_log": 43,
+    "social_post_log": 0,
+    "sys_config": 89,
+    "tmdb_identity_active_owners": 0,
+    "tmdb_identity_owners": 1,
+    "tmdb_metadata_active_owners": 0,
+    "user_favorite": 0,
+    "user_notification": 0,
+    "xunlei_transfer_task": 1
+  },
+  "priorFiles": {
+    "BindMergedV2.py": "647f4c1a09a96c630ac5674112f680ab20fffde6e9be8853076e9cf1830c5b2c",
+    "BindMergedV3.py": "e8e2c2a056102eed1ad64c80d7a09c534b136bde0380c2797ee31fff5e709304",
+    "mobland-binding-apply-result.json": "df142f531c54a5be4f891f4313a8bd94833e67cb66b42abd9489b957069678db",
+    "mobland-binding-prepared.json": "53e3d3631b1f08a988f0cafdf5b9dbc6a683420419747c6a9634024f715cb696",
+    "mobland-binding-read-only-verification-3324ea6160094481899bde78ca42a7f9.json": "743f4bfcd6e9409a9eb2fdbbf90ef379c3cd0f22bd04be81d94676d3a3b08041",
+    "mobland-binding-v3-apply-result.json": "233fe2e30515fb5d7446f8e3edbc012181ccc19848490f9f2811457cd49ee709",
+    "mobland-binding-v3-prepared.json": "e132d72f7c719bcf9cf82a87e34b79dfb8d105ecc1c37857f29512a631f9253f",
+    "mobland-binding-v3-read-only-verification-46b9c3afb68e4485a53dc036c7a26a2d.json": "15f9d47fcfb11a0fb113879f06e0d0045d320d1fab3bf8aa69015dee4002742a"
+  },
+  "retainedOriginalRuntimeProjectionComparedLocally": true,
+  "retainedOriginalAuthenticatedPreimageReference": true,
+  "completeRuntimeProjectionKeptOutsideRepository": true,
+  "fullBusinessRowsPersistedInThisSummary": false,
+  "freshBothIdentitiesBeforeEqualityRequiredByReviewedHelper": true,
+  "actualApplyVerified": false,
+  "actualEntryVerified": false
+}

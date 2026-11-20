@@ -1,0 +1,42 @@
+[
+  {
+    "path": "frontend/tests/async-lists.test.mjs",
+    "sha256": "5fa07934956018d562cbb5dedcb5b8767c396d1255bc3aa6667ecd86e04ccf26",
+    "bytes": 16405
+  },
+  {
+    "path": "frontend/tests/baidu-account.test.mjs",
+    "sha256": "8e71f174131c7145a9853c38a84f4ef965d89ad6dd1b9a225ae466190fc419ca",
+    "bytes": 9468
+  },
+  {
+    "path": "frontend/tests/baidu-backfill.test.mjs",
+    "sha256": "daa0797030aa37c609013269cb4b25ca021f2cfa53635177383ec9f605a21bb1",
+    "bytes": 21734
+  },
+  {
+    "path": "frontend/tests/cloud-drive-workflows.browser.mjs",
+    "sha256": "440ea0d97a2f4830b01571ddd1c29b94860721b8b05481e1a74627693dadc7f7",
+    "bytes": 10187
+  },
+  {
+    "path": "frontend/tests/cloud-drive-workflows.test.mjs",
+    "sha256": "3919c467a661f7a20fbb04ecf98b9d15d08531daef41702faac8d78e7474a708",
+    "bytes": 30471
+  },
+  {
+    "path": "frontend/tests/gying-source-pause.test.mjs",
+    "sha256": "73a7eea2112fd94f284f1a74c1cfe23e264a0937333a8442895417b82dd8fc43",
+    "bytes": 23422
+  },
+  {
+    "path": "frontend/tests/helpers/offline-react.mjs",
+    "sha256": "b0cd2d6c164991168eb64498e8788085a1faee83f7064739a16f0a7233c3d454",
+    "bytes": 6810
+  },
+  {
+    "path": "frontend/tests/tmdb-empty-range.browser.mjs",
+    "sha256": "424ae3b86c518b958e09f9a83d6ad7c926acf9948dcc2ae765a612d17ce67f4d",
+    "bytes": 13578
+  }
+]

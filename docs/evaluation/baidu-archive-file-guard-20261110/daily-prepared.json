@@ -1,0 +1,50 @@
+{
+  "status": "prepared-additive-daily-coverage",
+  "sourceCommit": "2f282d26525b3ce64c5c854a7c237c61dc85b142",
+  "pin": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\host-pin-20261110T151433.084345Z.json",
+    "sha256": "e8f622f7016fa65ca039d763f141a85c988aca41d42dac081fe4251670f86698"
+  },
+  "oldSha256": "c135007aac9079d23d3e05df7ca8b2e7e0b93e4bbf481cdde0e59e0dc31fb4d5",
+  "proposedSha256": "3ed90a283e8ac8a6447ffc692b30262e1e0bf64eb1854d758ec0988f84bddb29",
+  "ownerGroupDaclSha256": "1f7c501081e6e1ccd3830ba3cb2b31f4b628a839151c64c52ac8777f5d37f749",
+  "onlyAddition": {
+    "name": "baidu-archive-file-guard-release-20261110",
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110"
+  },
+  "beforeDryRun": {
+    "mode": "dry-run",
+    "artifactCount": 44,
+    "allScopedPathsVerified": true,
+    "fullBackupExecuted": false,
+    "naturalBackupVerified": false
+  },
+  "proposedDryRun": {
+    "mode": "dry-run",
+    "artifactCount": 45,
+    "allScopedPathsVerified": true,
+    "fullBackupExecuted": false,
+    "naturalBackupVerified": false
+  },
+  "originalCheckpoint": {
+    "directory": "G:\\gying-backups\\baidu-archive-file-guard-daily-config-before-20261110-20261110T151520.706159Z",
+    "artifacts": 1,
+    "authenticated": true,
+    "manifestSha256": "c3106d309c9cb2ea1990c203e4660c2ae4b1f64c483fe283f5ed88d2c2087428",
+    "archive": "G:\\gying-backups\\baidu-archive-file-guard-daily-config-before-20261110-20261110T151520.706159Z\\backup-config-before.tar.age",
+    "archiveSha256": "1e20dabc1084459d48f10493baaf9242b1ece5134919bfccf1ec13351193294e",
+    "exactOriginalContentAuthenticated": true
+  },
+  "idle": {
+    "at": "2026-11-10T15:15:17.781863+00:00",
+    "phase": "Daily coverage prepare after authenticated host pin",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "at": "2026-11-10T15:15:20.987239+00:00",
+  "productionConfigurationWritten": false,
+  "naturalBackupVerified": false
+}

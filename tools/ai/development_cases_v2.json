@@ -1,0 +1,61 @@
+{
+  "purpose": "Implementation development set, not an independent holdout",
+  "cases": [
+    {
+      "id": "dev-v2-01",
+      "turns": [
+        {
+          "message": "找2018到2024年的法国或英国悬疑电影，豆瓣至少7分，按年份从旧到新列5部"
+        },
+        {
+          "message": "刚才的结果只留100分钟以内的，别放英语电影",
+          "useHistory": true
+        }
+      ]
+    },
+    {
+      "id": "dev-v2-02",
+      "turns": [
+        {
+          "message": "查凯特布兰切特主演的电影，不要彼得杰克逊导演的，列4部"
+        },
+        {
+          "message": "第2部是哪一年，主演是谁",
+          "useHistory": true
+        }
+      ]
+    },
+    {
+      "id": "dev-v2-03",
+      "turns": [
+        {
+          "message": "找讲人在海上遇险、等待别人救援的电影，先给我4部"
+        }
+      ]
+    },
+    {
+      "id": "dev-v2-04",
+      "turns": [
+        {
+          "message": "类似《降临》的语言沟通题材电影，排除维伦纽瓦的作品"
+        }
+      ]
+    },
+    {
+      "id": "dev-v2-05",
+      "turns": [
+        {
+          "message": "联网查《阿玛迪斯》故事讲什么，请提供来源"
+        }
+      ]
+    },
+    {
+      "id": "dev-v2-06",
+      "turns": [
+        {
+          "message": "找喜剧或冒险电影，2020年以后，IMDB至少7.5分，最多90分钟，列6部"
+        }
+      ]
+    }
+  ]
+}

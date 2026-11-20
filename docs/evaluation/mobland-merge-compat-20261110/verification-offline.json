@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "command": "python -B E:/gying-tools/releases/mobland-merge-compat-20261110/VerificationOfflineTests.py",
+  "exitCode": 0,
+  "tests": 6,
+  "failures": 0,
+  "productionMutations": 0,
+  "testSource": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\VerificationOfflineTests.py",
+    "sha256": "479e1226e11676d59bff8f9f02eaaf0ab08da1d915c19beeccc55577df1f504c"
+  },
+  "reportedAt": "2026-11-10T12:43:24.996587+00:00",
+  "checks": [
+    "all default modes no runtime/binding reads",
+    "complete17 Config fieldset and11 strict metadata labels accepted",
+    "changed Cmd rejected",
+    "unknown Config field rejected",
+    "changed baked/custom label rejected",
+    "changed replacement or unknown generated metadata rejected"
+  ],
+  "pythonAstSyntax": "PASS",
+  "finalObservationBoundary": "Independent static review requested exact final generation/current Config/HostConfig/runtime reread; added before verify_live return. No production verification executed by this author."
+}

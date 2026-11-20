@@ -1,0 +1,14 @@
+{
+  "startedAt": "2026-11-15T12:13:14.328773+00:00",
+  "finishedAt": "2026-11-15T12:13:14.916807+00:00",
+  "tests": 41,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "passed": true,
+  "realWindowsCalls": 0,
+  "mavenCalls": 0,
+  "productionMutations": 0,
+  "adapterSha256": "7c799fa149eb80681a3aeda15739ca25d3601fbd19d58f76cb3d95b02d780625",
+  "testsSha256": "1633fc2fd662f0ff3ce27820d4f0bb7eb426870f977e0a2a527895040e45a748"
+}

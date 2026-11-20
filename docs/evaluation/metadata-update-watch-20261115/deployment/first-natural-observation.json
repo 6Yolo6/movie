@@ -1,0 +1,83 @@
+{
+  "status": "READ_ONLY_OBSERVED",
+  "startedAt": "2026-11-15T09:40:34.134196+00:00",
+  "completedAt": "2026-11-15T09:40:37.455497+00:00",
+  "sourceCommit": "1adbc336cdadefa48be40ff37082a6de840fbd41",
+  "metadata": {
+    "observedAt": "2026-11-15T09:40:34.727520+00:00",
+    "newMetadataAfterPreparedId": [
+      {
+        "id": 18064,
+        "source": "TMDB",
+        "status": "SUCCEEDED",
+        "crawlMode": "UPDATES",
+        "keyword": "UPDATES",
+        "attempts": 1,
+        "createdAt": "2026-11-15 17:40:16.000000",
+        "crawl": {
+          "headPages": 2,
+          "sources": [
+            "TRENDING_MOVIE_DAY",
+            "TRENDING_TV_DAY",
+            "UPCOMING_MOVIE"
+          ],
+          "roundAttempts": 10,
+          "roundBudget": 10,
+          "lastRound": {
+            "failed": 0,
+            "seeded": 34,
+            "pending": 61,
+            "skipped": 0,
+            "attempted": 10,
+            "exhausted": 0,
+            "processed": 10,
+            "detailBudget": 10
+          },
+          "pendingCount": 61,
+          "completedCount": 44,
+          "pendingExhaustedCount": 0
+        }
+      },
+      {
+        "id": 18065,
+        "source": "GYING",
+        "status": "RUNNING",
+        "crawlMode": "UPDATES",
+        "keyword": "UPDATES",
+        "attempts": 1,
+        "createdAt": "2026-11-15 17:40:16.000000",
+        "crawl": {
+          "headPages": 2,
+          "sources": [
+            "TIME_MOVIE",
+            "TIME_TV",
+            "TIME_ANIME"
+          ],
+          "roundAttempts": 0,
+          "roundBudget": 10,
+          "lastRound": {},
+          "pendingCount": 0,
+          "completedCount": 0,
+          "pendingExhaustedCount": 0
+        }
+      }
+    ],
+    "allNewMetadataUsesUpdatesMode": true,
+    "rangeResumeObserved": false,
+    "firstNaturalBatchMayStillBePending": false
+  },
+  "newP2pTasksAfterPreparedMetadataId": [],
+  "protected": {
+    "otherConfigurationAndLegacyFullRowsExact": true,
+    "historicalFullRowsExact": true,
+    "parentRawChanged": true,
+    "parentRevision": 1870,
+    "parentBlockedReason": "WORKER_DISABLED",
+    "parentInvariantSha256": "27360a8d04479aaba473f07caaa80dc0e3c1960fce89a78ed6d7f9480190e8db",
+    "otherElevenGenerationsExact": true
+  },
+  "productionWrites": 0,
+  "manualProviderRequests": 0,
+  "newLoginDevices": 0,
+  "strictActivationIdleInvoked": false
+}

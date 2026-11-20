@@ -1,0 +1,14 @@
+{
+  "status": "ORIGINAL_67_CANDIDATE_BYTES_PRESERVED",
+  "sources": {
+    "RestoreResolvedNaturalOnce.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\RestoreResolvedNaturalOnce-67pass-frozen-732de12d7708474e883fcc73fa90d59a.py",
+      "sha256": "1ca6538b82d2a11e01a3877e7bb09e2addf817ab0cd622e5cb52aa716e6502fd"
+    },
+    "TestRestoreResolvedNaturalOffline.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\TestRestoreResolvedNaturalOffline-67pass-frozen-0fdabc0b3aa44617a45d223cb77ece33.py",
+      "sha256": "3d9ccfc2e30b4ee68f50f6e3f9fe965e26284778a928bb992b8235cc627841ff"
+    }
+  },
+  "productionMutations": 0
+}

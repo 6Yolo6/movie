@@ -1,0 +1,18 @@
+{
+  "status": "READ_ONLY_REMOTE_FOLDER_VERIFIED",
+  "remoteGetRequests": 3,
+  "remoteWriteRequests": 0,
+  "credentialValuesWritten": false,
+  "privatePathsOrUrlsWritten": false,
+  "aesGcmAuthenticated": true,
+  "sameDedicatedAccount": true,
+  "folderPathSha256": "cf705a4369b86015d6e83e38d500ee1ef38b91bd3a32ccf29e7867f6253f1087",
+  "remoteFileCount": 0,
+  "folderListComplete": true,
+  "files": [],
+  "at": "2026-11-09T06:29:31.998756+00:00",
+  "unknownChildRowUnchanged": true,
+  "legacyRowsUnchanged": true,
+  "encryptedSessionPairUnchanged": true,
+  "localWriteRequests": 0
+}

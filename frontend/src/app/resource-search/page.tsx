@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { App, Alert, Button, Card, Input, QRCode, Tag, Typography } from 'antd';
 import type { InputRef } from 'antd';
@@ -13,19 +15,38 @@ import { useAuthStore } from '../../store/authStore';
 interface SearchJob { jobId: string; status: string; reply?: string; links?: SearchLink[]; message?: string; }
 
 function ResourceLinks({ links }: { links: SearchLink[] }) {
-    return <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        {links.map((link, index) => {
-            const host = new URL(link.url).hostname;
-            const app = host === 'pan.quark.cn' ? '夸克 App' : host === 'pan.xunlei.com' ? '迅雷 App' : '对应手机 App';
-            return <div key={link.url} data-testid="resource-qr-card" className="flex min-w-0 flex-col items-center rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-center dark:border-blue-950 dark:bg-blue-950/20">
-                <div className="mb-3 flex max-w-full items-center gap-2"><QrcodeOutlined className="shrink-0 text-blue-500" /><Typography.Text strong className="break-words">{stripSearchUrls(link.name) || '资源分享'}</Typography.Text><Tag bordered={false}>{index + 1}</Tag></div>
-                {new TextEncoder().encode(link.url).length <= 1000
-                    ? <div className="rounded-xl bg-white p-2" aria-label={`${app}扫码二维码`}><QRCode value={link.url} size={180} errorLevel="M" color="#111827" bgColor="#ffffff" /></div>
-                    : <Alert type="warning" showIcon title="该资源地址过长，无法生成清晰二维码，请选择其他资源" />}
-                <p className="mb-0 mt-3 text-sm font-medium text-blue-600 dark:text-blue-400">请使用{app}扫一扫</p>
-            </div>;
+    const groups = [
+        { type: 'DISK', title: '网盘资源', action: '打开网盘链接' },
+        { type: 'MAGNET', title: '磁力资源', action: '打开磁力链接' },
+        { type: 'TORRENT', title: '种子资源', action: '打开种子资源' },
+        { type: 'ONLINE', title: '在线资源', action: '打开资源链接' },
+    ];
+    return <div className="mt-4 space-y-4">
+        {groups.map(group => {
+            const items = links.filter(link => (link.type || 'DISK') === group.type);
+            if (!items.length) return null;
+            return <section key={group.type} data-testid={`resource-links-${group.type.toLowerCase()}`}>
+                <Typography.Title level={5}>{group.title}</Typography.Title>
+                {group.type === 'TORRENT' && <p className="text-xs text-slate-500">仅种子/磁力文件，不含视频；可通过对应客户端下载。</p>}
+                <div className="grid gap-3 sm:grid-cols-2">
+                    {items.map(link => {
+                        const url = new URL(link.url);
+                        const app = url.hostname === 'pan.quark.cn' ? '夸克 App' : url.hostname === 'pan.xunlei.com' ? '迅雷 App' : url.hostname === 'pan.baidu.com' ? '百度网盘 App' : '对应手机 App';
+                        const magnet = url.protocol === 'magnet:';
+                        return <div key={link.url} data-testid="resource-qr-card" className="flex min-w-0 flex-col items-center rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-center dark:border-blue-950 dark:bg-blue-950/20">
+                            <div className="mb-3 flex max-w-full items-center gap-2"><QrcodeOutlined className="shrink-0 text-blue-500" /><Typography.Text strong className="break-words">{stripSearchUrls(link.name) || group.title}</Typography.Text></div>
+                            {new TextEncoder().encode(link.url).length <= 1000
+                                ? <div className="rounded-xl bg-white p-2" aria-label={`${group.title}二维码`}><QRCode value={link.url} size={180} errorLevel="M" color="#111827" bgColor="#ffffff" /></div>
+                                : <Alert type="info" showIcon title="地址较长，请使用下方链接打开" />}
+                            <p className="mb-0 mt-3 text-sm font-medium text-blue-600 dark:text-blue-400">{magnet ? '请使用支持磁力下载的客户端打开' : `可使用${app}扫一扫，或点击下方链接`}</p>
+                            <a href={link.url} target="_blank" rel="noopener noreferrer" className="mt-3 flex min-h-11 items-center text-sm font-medium text-blue-600 underline dark:text-blue-400">{group.action}</a>
+                            <a href={link.url} target="_blank" rel="noopener noreferrer" className="mt-1 max-w-full break-all text-xs text-slate-500 underline dark:text-slate-400">{link.url}</a>
+                        </div>;
+                    })}
+                </div>
+            </section>;
         })}
-        {links.length > 0 && <p className="text-xs text-slate-500 sm:col-span-2">扫码后请及时保存；临时分享会按系统设置清理，二维码以实际访问结果为准。</p>}
+        {links.some(link => link.type === 'DISK') && <p className="text-xs text-slate-500">请及时转存到自己的网盘；临时资源会按回复中的期限清理，链接以实际访问结果为准。</p>}
     </div>;
 }
 
@@ -44,7 +65,7 @@ function SearchReply({ turn, active, busy, onAction }: {
                     className="group flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left transition-colors enabled:hover:border-blue-400 enabled:hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:enabled:hover:bg-blue-950/30">
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-xs font-semibold text-blue-600 dark:bg-blue-950">{part.command}</span>
                     <span className="min-w-0 flex-1 break-words text-sm font-medium text-slate-800 dark:text-slate-100">{part.title}</span>
-                    {part.badge && <Tag className="!m-0 shrink-0" color={part.badge === '夸克' ? 'blue' : part.badge === '迅雷' ? 'cyan' : 'default'}>{part.badge}</Tag>}
+                    {part.badge && <Tag className="!m-0 shrink-0" color={part.badge === '夸克' ? 'blue' : part.badge === '迅雷' ? 'cyan' : part.badge === '百度' ? 'geekblue' : 'default'}>{part.badge}</Tag>}
                     <ArrowRightOutlined className="shrink-0 text-slate-400" />
                 </button>)}
         </div>
@@ -56,6 +77,11 @@ function SearchReply({ turn, active, busy, onAction }: {
                 <span className="px-1 text-xs text-slate-500">第 {reply.page.current} / {reply.page.total} 页</span>
                 <Button size="small" data-command="下一页" icon={<ArrowRightOutlined />} disabled={!active || busy || reply.page.current >= reply.page.total} onClick={() => onAction('下一页', '下一页资源')}>下一页</Button>
             </>}
+        </div>}
+        {(reply.hasMoreResources || reply.parts.some(part => part.type === 'choice' && part.kind === 'resource')) && <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="按网盘筛选资源">
+            <span className="text-xs text-slate-500">筛选网盘：</span>
+            {['夸克', '迅雷', '百度'].map(provider => <Button key={provider} size="small" data-command={provider} disabled={!active || busy}
+                onClick={() => onAction(provider, `筛选${provider}资源`)}>{provider}</Button>)}
         </div>}
         {(reply.hasChoices || reply.hasMoreResources) && <p className="mt-3 text-xs text-slate-500">{active ? '点击候选即可继续，也可以在下方输入序号或新片名。' : '历史候选仅供查看，请使用最新回复；刷新后可重新搜索片名。'}</p>}
     </div>;
@@ -198,8 +224,8 @@ function SearchConversation({ userId, entryKeyword = '', autoSearch = false }: {
     const latest = turns[turns.length - 1];
     return <main className="mx-auto max-w-4xl px-3 py-5 sm:px-6 sm:py-8">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-            <div><Typography.Title level={3} className="!mb-1">搜索影片资源</Typography.Title><p className="text-sm text-slate-500">先查片库已有资源 → 手机 App 扫码保存</p></div>
-            <Tag color="blue">夸克 / 迅雷</Tag>
+            <div><Typography.Title level={3} className="!mb-1">搜索影片资源</Typography.Title><p className="text-sm text-slate-500">先查片库已有资源 → 点击链接或扫码保存</p></div>
+            <Tag color="blue">网盘 / 磁力 / 种子</Tag>
         </div>
         <Card styles={{ body: { padding: 0 } }} className="overflow-hidden shadow-sm">
             <div ref={scrollRef} data-testid="search-conversation" className="space-y-6 overflow-y-auto overscroll-contain p-4 sm:p-6" style={{ minHeight: 260, maxHeight: 'min(65dvh, 760px)' }}>
@@ -240,12 +266,23 @@ const serverHydration = () => false;
 
 function ResourceSearchContent() {
     const { user } = useAuthStore();
+    const { t } = useTranslation();
     const mounted = useSyncExternalStore(subscribeHydration, clientHydration, serverHydration);
     const searchParams = useSearchParams();
     const entryKeyword = (searchParams.get('q') || '').trim().slice(0, 120);
     const autoSearch = entryKeyword.length > 0 && searchParams.get('auto') === '1';
     if (!mounted) return <main className="mx-auto max-w-4xl px-4 py-10" aria-busy="true">正在加载资源搜索…</main>;
-    if (!user) return <main className="mx-auto max-w-4xl px-4 py-10"><Card title="搜索影片资源">请先登录后使用资源搜索与临时转存。</Card></main>;
+    if (!user) {
+        const returnPath = `/resource-search${searchParams.size ? `?${searchParams.toString()}` : ''}`;
+        return <main className="mx-auto max-w-4xl px-4 py-10">
+            <Card title={t('navSearchResources')} data-testid="resource-search-login">
+                <Alert type="info" showIcon title={t('resourceSearchLoginRequired')} className="mb-4" />
+                <Link href={`/login?redirect=${encodeURIComponent(returnPath)}`}>
+                    <Button type="primary" size="large">{t('loginSubmit')}</Button>
+                </Link>
+            </Card>
+        </main>;
+    }
     return <SearchConversation key={`${user.id}:${entryKeyword}`} userId={user.id} entryKeyword={entryKeyword} autoSearch={autoSearch} />;
 }
 

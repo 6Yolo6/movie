@@ -1,0 +1,21 @@
+{
+  "startedAt": "2026-11-04T13:32:52.292386+00:00",
+  "sourceSha256": "70a7788e9b18af43098a06c117fdf0609c84528c67ef9014526eb8dbacbcec9b",
+  "sourceFileCount": 50,
+  "productionEnvLoaded": false,
+  "deploymentPerformed": false,
+  "verifyExitCode": 0,
+  "tests": {
+    "tests": 202,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "skippedClasses": [],
+  "compileExitCode": 0,
+  "jarSha256": "1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64",
+  "jarSize": 35512847,
+  "candidatePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\final-candidate\\agent-candidate-1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64.jar",
+  "sourceStillMatches": true,
+  "completedAt": "2026-11-04T13:34:22.435957+00:00"
+}

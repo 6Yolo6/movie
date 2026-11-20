@@ -1,0 +1,349 @@
+{
+  "status": "PASSED",
+  "startedAt": "2026-11-15T08:20:02.341831+00:00",
+  "completedAt": "2026-11-15T08:20:04.781174+00:00",
+  "pauseReceipt": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\pause-result.json",
+    "sha256": "3983d1599489eb232db02b7ea7ee7ca1475aa51f105a4b575dd74895c8ddae00",
+    "completedAt": "2026-11-15T08:16:52.997527+00:00"
+  },
+  "authentication": {
+    "existingDeviceReused": true,
+    "newDeviceCreated": false,
+    "loginPerformed": false,
+    "jwtLifetimeSeconds": 300,
+    "deviceJtiSha256": "0ebc72961597ffca62e9cb9f07baa4b6e37a23e7b67920cc57f5f4e8d5b519bf"
+  },
+  "apiRead": {
+    "path": "/api/admin/resource-hub/config",
+    "method": "GET",
+    "attempts": 1,
+    "httpStatus": 200,
+    "bytes": 4681,
+    "dataSha256": "630d1bbdb10148d046f0be864a6620993f028cf0322e838900d62f3066d9a9c3",
+    "responseBodyWritten": false
+  },
+  "checks": {
+    "sqlAutoFlagsBothFalse": true,
+    "apiAutoFlagsBothFalse": true,
+    "workerDbStillTrue": true,
+    "workerApiStillTrue": true,
+    "resourceHubEnabled": true,
+    "other93ConfigurationFullRowsExact": true,
+    "requiredHistoricalRowCounts": true,
+    "allProtectedHashesExact": true,
+    "generationsStableDuringIndependentRead": true,
+    "allThirteenGenerationsMatchPriorAuthenticatedDeployment": true,
+    "sqlFlagHashMatchesReceipt": true
+  },
+  "protectedCurrent": {
+    "otherConfigurationRows": 93,
+    "otherConfigurationSha256": "da27f408768857f4dcc001a9e42ba6180d24b5ce6c5ebdd78a714f695265dabc",
+    "quark2262FullRowSha256": "ee9c4cb2a66a5629097c7f5a34810000274ef1ca7ff1dfc687588c39c7f83056",
+    "discovery9904FullRowSha256": "473eb3187f141cd092dde7c0ed11019558d2ead8eba0ca24d0416a25d30d4814",
+    "historicalHubRowsSha256": "f674ecaa19773e4587b351f21374801bef851f8bd6cab3d60d3aa7fad6951fe6"
+  },
+  "sqlFlagsCurrent": {
+    "rowCount": 2,
+    "sha256": "349339f66d09381880fcc0c3e8de61a28e95a91ab49315038cb8e7a7d99759b2"
+  },
+  "generationBaseline": {
+    "plan": {
+      "path": "E:\\gying-tools\\releases\\gying-collection-20261114\\deployment\\plan.json",
+      "sha256": "71795a03423cd4f4d708c84665be55dd1e5762123340cf1aa1b61f3d3dbc80df"
+    },
+    "receipt": {
+      "path": "E:\\gying-tools\\releases\\gying-collection-20261114\\deployment\\receipt.json",
+      "sha256": "040779b610bec223e91df451add63997d647dcaee4b49cb3a22dd0a16827c1ee"
+    },
+    "derivation": "Prior plan allContainers with only backend/frontend replaced by liveServices in the successful Nov14 receipt",
+    "separateRawPausePreimageWasNotSaved": true
+  },
+  "currentGenerations": {
+    "/gying-movie-frontend-1": {
+      "id": "e901160d28c1291e61e3ebcfde2bb9fe30eca546c46eacbdf596afb61e839527",
+      "image": "sha256:3dad5be604c4467e97ca52d408323420f2a863edd4ff14cb95a483bd49daa578",
+      "startedAt": "2026-11-14T13:00:37.375874417Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-movie-backend-1": {
+      "id": "9239e03222057de70ba9b9b5fb05c9f1dd3ec9bb8ac74e7566d5e7e635c9b8ec",
+      "image": "sha256:807798b99d0054bca76f98126b960a010333e672d1675a05abb2b252631f77c4",
+      "startedAt": "2026-11-14T12:33:15.591897086Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-baidu-share-probe-748d2e7e229848a698f6f6c52a1d07fa": {
+      "id": "6484372ccd7c23da8f0bf3b7507035ab803359357ff109ff9edfcd9a8b7209e3",
+      "image": "sha256:4cdba6fee3813bf625e85bbd243b294efae49861a4c38174c320cf17428e5018",
+      "startedAt": "2026-11-09T11:03:00.889598807Z",
+      "restarts": 0,
+      "running": false,
+      "oomKilled": false
+    },
+    "/gying-baidu-upload-probe-748d2e7e229848a698f6f6c52a1d07fa": {
+      "id": "4ca46c07f8121c818f6b2aabed1d7adfeadd7a6d4b31c8e39d7063c866dc5891",
+      "image": "sha256:dc5af8a7d3c59b86c266641a8e61dc862aeb73b4f54a280cf1c8cc7ce03e1555",
+      "startedAt": "2026-11-09T10:38:35.238615165Z",
+      "restarts": 0,
+      "running": false,
+      "oomKilled": false
+    },
+    "/gying-movie-social-publisher-1": {
+      "id": "7cc7f5b50c33ad61a0661ee9a6510cedd08244341017ee679666f63ae9368cf7",
+      "image": "sha256:8b6dd6e77fa93f012add7fb7cc6f17082d13fa937a9d5b21bfb62697185381cb",
+      "startedAt": "2026-11-12T16:25:52.037660616Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-movie-quark-auto-save-1": {
+      "id": "745766c57b469fda5fa6f582f4b105c59e37f93606176917be8f4e1782e880a6",
+      "image": "sha256:4d97439c0cd095c5fb8ef7133ca4726c8a3f996fa319f8c049180270b61c29be",
+      "startedAt": "2026-11-12T16:25:52.05782569Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-movie-gying-source-1": {
+      "id": "711354de91c2996ae1234bc3c0495f75fd5b1eb13b3f0f02af332a3a22fe0980",
+      "image": "sha256:76fe318b24b1c1222a6615918f5aedc83f772357d6ba01ed1e94458d63bdb58a",
+      "startedAt": "2026-11-12T16:25:52.003989711Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-xunlei-path-probe-20261006": {
+      "id": "63faa9f10028710288586cc9351914a6787f74f84dd1b1ab2248494b68250b3f",
+      "image": "sha256:880934ae394bf91bc3e57d573e4fc04774f064f3c4df7ccd7cc10b3b126737bf",
+      "startedAt": "2026-10-06T12:51:15.863953362Z",
+      "restarts": 0,
+      "running": false,
+      "oomKilled": false
+    },
+    "/gying-movie-nginx-1": {
+      "id": "597ccdf922360332f4601df99f350ff31f584203797bd19c651bd3ee87bb3d53",
+      "image": "sha256:ef8676b33d681f272ba429b27658bdd7e640963279714c96bddf1dc76307f7b6",
+      "startedAt": "2026-11-13T05:17:41.962140773Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/openclaw-openclaw-gateway-1": {
+      "id": "552c8ca45d600dce1d9cc704c6eeb091723b43bf8764b14132d6263fefc4125a",
+      "image": "sha256:3814fb1f62f9cfc5944de088c5817c68c88b5d721feebe36420b666a90a61ce7",
+      "startedAt": "2026-11-12T16:25:52.067402289Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-movie-redis-1": {
+      "id": "d1f7476316b67709e937593676f43eb89ea19bc5619e48141575b22bde2a7d2c",
+      "image": "sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf",
+      "startedAt": "2026-11-12T16:25:52.083554955Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-movie-pansou-1": {
+      "id": "c4a5526d4b272e37c634cbeb27053400998ff208be9a06f4383d2c63fced069d",
+      "image": "sha256:be601cc820d76ea6409f0efa0800533d95fb0dd0b6569fac1d43708b660b21f5",
+      "startedAt": "2026-11-12T16:25:52.000446791Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/minio-server": {
+      "id": "3d8b79bbac44b8a9baa780fb0f84a8244d456968344bb12232be33b45dbb3262",
+      "image": "sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e",
+      "startedAt": "2026-11-13T05:26:14.384837165Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    }
+  },
+  "metadata": {
+    "countsBySourceAndStatus": [
+      {
+        "source": "GYING",
+        "status": "FAILED",
+        "count": 77
+      },
+      {
+        "source": "GYING",
+        "status": "SUCCEEDED",
+        "count": 845
+      },
+      {
+        "source": "TMDB",
+        "status": "FAILED",
+        "count": 297
+      },
+      {
+        "source": "TMDB",
+        "status": "SUCCEEDED",
+        "count": 1628
+      }
+    ],
+    "pendingCount": 0,
+    "runningCount": 0,
+    "activeProjection": [],
+    "activeProjectionLimit": 100,
+    "latestProjection": [
+      {
+        "id": 18060,
+        "source": "GYING",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "taskType": "METADATA_SYNC",
+        "createdAt": "2026-11-15T16:12:29",
+        "updatedAt": "2026-11-15T16:13:01",
+        "finishedAt": "2026-11-15T16:13:01",
+        "maxAttempts": 3
+      },
+      {
+        "id": 18059,
+        "source": "TMDB",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "taskType": "METADATA_SYNC",
+        "createdAt": "2026-11-15T16:12:29",
+        "updatedAt": "2026-11-15T16:12:59",
+        "finishedAt": "2026-11-15T16:12:59",
+        "maxAttempts": 3
+      },
+      {
+        "id": 18056,
+        "source": "GYING",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "taskType": "METADATA_SYNC",
+        "createdAt": "2026-11-15T15:11:38",
+        "updatedAt": "2026-11-15T15:12:16",
+        "finishedAt": "2026-11-15T15:12:16",
+        "maxAttempts": 3
+      },
+      {
+        "id": 18055,
+        "source": "TMDB",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "taskType": "METADATA_SYNC",
+        "createdAt": "2026-11-15T15:11:38",
+        "updatedAt": "2026-11-15T15:12:13",
+        "finishedAt": "2026-11-15T15:12:13",
+        "maxAttempts": 3
+      },
+      {
+        "id": 18040,
+        "source": "GYING",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "taskType": "METADATA_SYNC",
+        "createdAt": "2026-11-15T14:10:46",
+        "updatedAt": "2026-11-15T14:13:08",
+        "finishedAt": "2026-11-15T14:13:08",
+        "maxAttempts": 3
+      },
+      {
+        "id": 18039,
+        "source": "TMDB",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "taskType": "METADATA_SYNC",
+        "createdAt": "2026-11-15T14:10:46",
+        "updatedAt": "2026-11-15T14:12:15",
+        "finishedAt": "2026-11-15T14:12:15",
+        "maxAttempts": 3
+      },
+      {
+        "id": 18038,
+        "source": "GYING",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "taskType": "METADATA_SYNC",
+        "createdAt": "2026-11-15T13:09:51",
+        "updatedAt": "2026-11-15T13:11:34",
+        "finishedAt": "2026-11-15T13:11:34",
+        "maxAttempts": 3
+      },
+      {
+        "id": 18037,
+        "source": "TMDB",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "taskType": "METADATA_SYNC",
+        "createdAt": "2026-11-15T13:09:51",
+        "updatedAt": "2026-11-15T13:11:21",
+        "finishedAt": "2026-11-15T13:11:21",
+        "maxAttempts": 3
+      },
+      {
+        "id": 18026,
+        "source": "GYING",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "taskType": "METADATA_SYNC",
+        "createdAt": "2026-11-15T12:09:10",
+        "updatedAt": "2026-11-15T12:09:57",
+        "finishedAt": "2026-11-15T12:09:57",
+        "maxAttempts": 3
+      },
+      {
+        "id": 18025,
+        "source": "TMDB",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "taskType": "METADATA_SYNC",
+        "createdAt": "2026-11-15T12:09:10",
+        "updatedAt": "2026-11-15T12:09:41",
+        "finishedAt": "2026-11-15T12:09:41",
+        "maxAttempts": 3
+      },
+      {
+        "id": 18024,
+        "source": "GYING",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "taskType": "METADATA_SYNC",
+        "createdAt": "2026-11-15T11:08:23",
+        "updatedAt": "2026-11-15T11:09:59",
+        "finishedAt": "2026-11-15T11:09:59",
+        "maxAttempts": 3
+      },
+      {
+        "id": 18023,
+        "source": "TMDB",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "taskType": "METADATA_SYNC",
+        "createdAt": "2026-11-15T11:08:23",
+        "updatedAt": "2026-11-15T11:09:50",
+        "finishedAt": "2026-11-15T11:09:50",
+        "maxAttempts": 3
+      }
+    ],
+    "createdAtOrAfterPause": [],
+    "createdAtOrAfterPauseCount": 0,
+    "createdAtOrAfterPauseProjectionLimit": 100,
+    "pauseBoundaryDatabaseLocal": "2026-11-15 16:16:52.997527",
+    "databaseClock": {
+      "observedNow": "2026-11-15T16:20:03",
+      "observedUtcNow": "2026-11-15T08:20:03",
+      "sessionTimezone": "SYSTEM",
+      "systemTimezone": "?\u0439???\u05fc\u02b1?",
+      "offsetSeconds": 28800
+    },
+    "preexistingNaturalWorkMayComplete": true
+  },
+  "configurationWrites": 0,
+  "sqlWrites": 0,
+  "providerRequests": 0,
+  "backupsRepeated": 0,
+  "serviceActivations": 0,
+  "existingDeviceLastSeenMayChange": true,
+  "rawConfigRowsOrResponseBodiesWritten": false
+}

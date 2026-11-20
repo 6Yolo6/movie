@@ -1,0 +1,226 @@
+{
+  "status": "NGINX_TIMEOUT_DEPLOYED_AND_READ_ONLY_VERIFIED",
+  "startedAt": "2026-11-11T10:41:26.545523+00:00",
+  "scriptSha256": "42822d572e8eb8a0e0291d9aa66c68fb02735e0104cd64e6f529d0a9890bb174",
+  "nginxReloadRequests": 0,
+  "manualPostRequests": 0,
+  "settingsPutRequests": 0,
+  "cloudWrites": 0,
+  "directSqlWrites": 0,
+  "entries": [
+    {
+      "public": false,
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "bytes": 68036,
+      "sha256": "3ad4bfe92d95b720d409279e8217de4fc879ae69a70819240ef039df0ef96881",
+      "credentialsSent": false
+    },
+    {
+      "public": false,
+      "path": "/resource-search",
+      "method": "GET",
+      "status": 200,
+      "bytes": 61122,
+      "sha256": "31754401f4f15f362d048342e134ec1a7e17841db7b045a0f772240d9cb1a9f3",
+      "credentialsSent": false
+    },
+    {
+      "public": false,
+      "path": "/movie/x3xX",
+      "method": "GET",
+      "status": 200,
+      "bytes": 239469,
+      "sha256": "d1dbb981ee42e666c31eeed3b671fb4b765fd66ea7202b82e75b4a30ee592df1",
+      "credentialsSent": false
+    },
+    {
+      "public": false,
+      "path": "/api/movies/list?page=1&size=2",
+      "method": "GET",
+      "status": 200,
+      "bytes": 3412,
+      "sha256": "896f442a798fae7afd4c04c789e9c397c50a8e6fd2d6ab74b7403e8b54106cae",
+      "credentialsSent": false
+    },
+    {
+      "public": false,
+      "path": "/api/internal/resource-hub/health",
+      "method": "GET",
+      "status": 404,
+      "bytes": 146,
+      "sha256": "55f7d9e99b8e2d4e0e193b2f0275501e6d9c1ebd29cadbea6a0da48a8587e3e0",
+      "credentialsSent": false
+    },
+    {
+      "public": false,
+      "path": "/api/admin/resource-hub/baidu/backfill",
+      "method": "GET",
+      "status": 401,
+      "bytes": 60,
+      "sha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+      "credentialsSent": false
+    },
+    {
+      "public": false,
+      "path": "/api/admin/resource-hub/baidu/backfill/run",
+      "method": "GET",
+      "status": 405,
+      "bytes": 72,
+      "sha256": "a6004179adb99143521a80fedcf7acf458f31c12c916125fd9a23a3946bc0e8f",
+      "credentialsSent": false
+    },
+    {
+      "public": true,
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "bytes": 68403,
+      "sha256": "67313d652bf75cbb9462f26c6e4633a4f1d50e0edef0d2aad90b4189ee7312ba",
+      "credentialsSent": false
+    },
+    {
+      "public": true,
+      "path": "/resource-search",
+      "method": "GET",
+      "status": 200,
+      "bytes": 61489,
+      "sha256": "38c4a6d67e9f921fdf20cb326592ac9ab44acae633a4f5b8e40ee0ea5562375b",
+      "credentialsSent": false
+    },
+    {
+      "public": true,
+      "path": "/movie/x3xX",
+      "method": "GET",
+      "status": 200,
+      "bytes": 239836,
+      "sha256": "1ba1032dcd27f18bdf7c2df3faa5a44e000b0aeba7b9cb0eae7ee9cdbba8b74a",
+      "credentialsSent": false
+    },
+    {
+      "public": true,
+      "path": "/api/movies/list?page=1&size=2",
+      "method": "GET",
+      "status": 200,
+      "bytes": 3412,
+      "sha256": "896f442a798fae7afd4c04c789e9c397c50a8e6fd2d6ab74b7403e8b54106cae",
+      "credentialsSent": false
+    },
+    {
+      "public": true,
+      "path": "/api/internal/resource-hub/health",
+      "method": "GET",
+      "status": 404,
+      "bytes": 513,
+      "sha256": "f2d95ed95fbf26a018fc563471c34988ba5e344cd6ab801beb0618654b2323f4",
+      "credentialsSent": false
+    },
+    {
+      "public": true,
+      "path": "/api/admin/resource-hub/baidu/backfill",
+      "method": "GET",
+      "status": 302,
+      "bytes": 510,
+      "sha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+      "credentialsSent": false
+    },
+    {
+      "public": true,
+      "path": "/api/admin/resource-hub/baidu/backfill/run",
+      "method": "GET",
+      "status": 302,
+      "bytes": 510,
+      "sha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+      "credentialsSent": false
+    }
+  ],
+  "originalConfigurationExactHashProof": [
+    {
+      "name": "/gying-movie-backend-1",
+      "originalConfigurationSha256": "69710eef489beb4672f4d13a905e34fe0576ab6994e9ce835ad87a4066ec0267",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-movie-frontend-1",
+      "originalConfigurationSha256": "ad38704b70d11a7ef7e4a135b1dfc2579b1c5dcd85f78200f21661efdac6188e",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-baidu-share-probe-748d2e7e229848a698f6f6c52a1d07fa",
+      "originalConfigurationSha256": "8896bb99334ab26ae64230297391bf9506f67c1fc855b48213ddd97946c79b6d",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-baidu-upload-probe-748d2e7e229848a698f6f6c52a1d07fa",
+      "originalConfigurationSha256": "b2db2621236cfd35428635263e87f9db983addec6f0f8fc9d19fc255cc892333",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-movie-social-publisher-1",
+      "originalConfigurationSha256": "884bdaa918222c29bad5d7f3cbc0847b15c270e1cf9fed57c0447f6d011f0e5c",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-movie-quark-auto-save-1",
+      "originalConfigurationSha256": "fcaf403afc147ae62bdc858dba0344f76d3090c80e8154a7242893376e943853",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-movie-gying-source-1",
+      "originalConfigurationSha256": "48a18b294613ac43fe115a6e55fa96fb12a59516070985ec107f3fbe788f6378",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-xunlei-path-probe-20261006",
+      "originalConfigurationSha256": "fd37302942277fcccc90ea50ffcd7b51a1f2f0ff304ad255393cef3834dcc32e",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-movie-nginx-1",
+      "originalConfigurationSha256": "12bf74f0bff1f6c73a9d6f4c438e01e4ce99d369854cb720045dbd874136276c",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/openclaw-openclaw-gateway-1",
+      "originalConfigurationSha256": "86b6680d85f6ba07b664f7223960cd297698c26a00ea2a4eb7507cfe942f6ea9",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-movie-redis-1",
+      "originalConfigurationSha256": "98397dbfe796fc0c37431cb6f282e0fc44e3923189e5629fc19dfc396c9ec0bf",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-movie-pansou-1",
+      "originalConfigurationSha256": "2c37aee7bb61a123f09d5c480c645ca72931854c51ccfc74f3e21efe78631360",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/minio-server",
+      "originalConfigurationSha256": "75eb76ec4a631a2f59f384d086388daf1089dd29b55ae8f7ca5f520e8efb71f9",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    }
+  ],
+  "authentication": {
+    "existingDeviceReused": true,
+    "newDeviceCreated": false,
+    "loginPerformed": false,
+    "jwtLifetimeSeconds": 300,
+    "deviceJtiSha256": "9533d9842c86a9222029bc78cee1c1c943aabc26f3be942e63e73e464e7016b5"
+  },
+  "postReloadLogs": {
+    "stdoutSha256": "80092654dfe888a65a9c8e77072e67d8af88c4fa1fe39c0f89fdad9f4d77e92d",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "emergCount": 0,
+    "alertCount": 0,
+    "rawLogsWritten": false
+  },
+  "actualMountedConfigurationSha256": "20111b6a8f2fe40e301011e52de85245f1232f49af3d0628d72835bcf60ac1f8",
+  "allThirteenGenerationsAndConfigurationsRetained": true,
+  "baiduSnapshotRetained": true,
+  "actualInProcessReloadRequestsFromPriorReceipt": 1,
+  "previousStoppedReceiptsPreserved": true,
+  "verificationCorrection": "Use actual /resource-search and /movie/x3xX pages; GET-only run route returns 405 locally, mapped status GET requires 401, both administrative routes require public Access 302.",
+  "completedAt": "2026-11-11T10:41:44.033312+00:00"
+}

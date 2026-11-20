@@ -1,0 +1,59 @@
+{
+  "status": "PAUSED",
+  "startedAt": "2026-11-10T15:19:48.662009+00:00",
+  "liveBackend": {
+    "id": "0b96c7e0e4809269ad59ab717bfbc13a31de94d9360de256bb14b99fc7bce19f",
+    "image": "sha256:5b5530ed328738aca237776200825b71041002fd4cd5304286efc2e53855386d",
+    "startedAt": "2026-11-10T15:09:58.682715663Z"
+  },
+  "newFilmTestBudgetUsed": 3,
+  "newFilmTestBudgetMaximum": 3,
+  "additionalCloudWriteAuthorization": false,
+  "cloudWrites": 0,
+  "sqlWrites": 0,
+  "archiveRunRequests": 0,
+  "unknownReplayedOrResolved": false,
+  "schedulerRestored": false,
+  "parentTaskId": 17583,
+  "revision": 63,
+  "enabled": false,
+  "intervalMinutes": 10,
+  "batchLimit": 1,
+  "processed": 5,
+  "skipped": 5,
+  "succeeded": 0,
+  "failed": 0,
+  "deferredCount": 3,
+  "identityCursor": 46,
+  "identityMaxId": 18820,
+  "nextIdentity": {
+    "identityId": 47,
+    "movieId": "0WG4",
+    "sourceType": "mv",
+    "externalId": "0WG4"
+  },
+  "selectionSourceSha256": "d3371ac4964babd3522e01f2fa30e3ab251f67e461d7d63cd024e978314d1f21",
+  "sourceProjection": {
+    "safeProjection": [],
+    "resourceTotalCount": 0,
+    "p2pCount": 0,
+    "torrentCount": 0,
+    "magnetCount": 0,
+    "explicitChineseCount": 0,
+    "estimatedSelectedMetadataCount": 0,
+    "eligibilityFixedCodes": [
+      "NO_P2P_METADATA_CANDIDATES",
+      "NO_TORRENT_CANDIDATE",
+      "NO_EXPLICIT_CHINESE_SUBTITLE"
+    ],
+    "eligible": false,
+    "rawResponseSha256": "6ccd51ba1a0ccb19c50394b3f6b7269b708ce8da4ad06750d0f5a0c9f748f2ff",
+    "rawResponseBytes": 17,
+    "sourceResourceGetRequests": 1,
+    "projectionHelperSha256": "50f6844c45f2354ccd6d8bf608203ba13923b0ca16ef4c1607bcdac76afdc26d",
+    "rawResponseOrUrlsWritten": false
+  },
+  "protectedRowsRetained": true,
+  "allGenerationsRetained": true,
+  "completedAt": "2026-11-10T15:19:53.090241+00:00"
+}

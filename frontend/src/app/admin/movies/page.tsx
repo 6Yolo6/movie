@@ -48,6 +48,9 @@ type WorkflowJob = {
         reason?: string;
         mode?: string;
         gyingUnavailable?: boolean;
+        metadataCreated?: number;
+        bound?: number;
+        warnings?: string[];
     } | null;
 };
 
@@ -65,6 +68,7 @@ export default function AdminMoviesPage() {
     const [modalOpen, setModalOpen] = useState(false);
     const [editingMovie, setEditingMovie] = useState<MovieMetadata | null>(null);
     const [running, setRunning] = useState('');
+    const [selectedMovieIds, setSelectedMovieIds] = useState<React.Key[]>([]);
 
     const fetchMovies = useCallback(async () => {
         if (!token) {
@@ -106,13 +110,14 @@ export default function AdminMoviesPage() {
         fetchMovies();
     }, [fetchMovies, message, router, t, user]);
 
-    const runGyingJob = async (key: string, path: string) => {
+    const runGyingJob = async (key: string, path: string, body?: unknown) => {
         if (!token) return;
         setRunning(key);
         try {
             const response = await api(path, {
                 method: 'POST',
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: body === undefined ? undefined : JSON.stringify(body),
             });
             if (!response.ok) {
                 message.error(await readApiError(response, t('operationFailed')));
@@ -129,6 +134,20 @@ export default function AdminMoviesPage() {
                 }
                 const job = await jobResponse.json() as WorkflowJob;
                 if (job.status === 'SUCCEEDED') {
+                    if (job.result?.mode === 'METADATA_AND_EXISTING_COLLECTION' || job.result?.mode === 'METADATA_ONLY_COLLECTION') {
+                        const summary = t('movieSeasonCompletionSummary', {
+                            created: job.result.metadataCreated ?? 0,
+                            bound: job.result.bound ?? 0,
+                        });
+                        if (job.result.status === 'PARTIAL' || job.result.status === 'SKIPPED') {
+                            message.warning(summary);
+                        } else {
+                            message.success(summary);
+                        }
+                        if (job.result.warnings?.length) message.warning(job.result.warnings.join('；'), 8);
+                        await fetchMovies();
+                        return;
+                    }
                     if (job.result?.status === 'FAILED') {
                         message.error(job.result.reason || t('gyingSourceActionFailed'));
                         await fetchMovies();
@@ -266,7 +285,7 @@ export default function AdminMoviesPage() {
         {
             title: t('actions'),
             key: 'actions',
-            width: 220,
+            width: 260,
             fixed: 'right',
             render: (_: unknown, record) => (
                 <Space size={4}>
@@ -289,6 +308,14 @@ export default function AdminMoviesPage() {
                             }}
                         />
                     </Tooltip>
+                    <Tooltip title={t('movieSyncGyingMetadata')}>
+                        <Button type="text" icon={<ReloadOutlined />}
+                            aria-label={t('movieSyncGyingMetadata')}
+                            loading={running === `metadata-${record.id}`}
+                            disabled={Boolean(running) || record.status === 'DELETED'}
+                            onClick={() => runGyingJob(`metadata-${record.id}`,
+                                `/api/admin/gying-source/movies/${record.id}/metadata/sync`)} />
+                    </Tooltip>
                     <Tooltip title={t('movieRepairPoster')}>
                         <Button
                             type="text"
@@ -302,8 +329,8 @@ export default function AdminMoviesPage() {
                             )}
                         />
                     </Tooltip>
-                    {['tv', 'ac'].includes(record.category) && (
-                        <Tooltip title={t('gyingSourceEnsureSeasons')}>
+                    {record.status !== 'DELETED' && (
+                        <Tooltip title={t('movieSeasonCompletionHint')}>
                             <Button
                                 type="text"
                                 icon={<DatabaseOutlined />}
@@ -356,10 +383,20 @@ export default function AdminMoviesPage() {
                                 onClick={() => runGyingJob(
                                     'repair-posters',
                                     '/api/admin/gying-source/posters/repair?limit=50',
+                                    selectedMovieIds.length ? { movieIds: selectedMovieIds } : undefined,
                                 )}
                             >
-                                {t('movieRepairMissingPosters')}
+                                {selectedMovieIds.length ? t('movieRepairSelectedMissingPosters', { count: selectedMovieIds.length }) : t('movieRepairMissingPosters')}
                             </Button>
+                            <Popconfirm title={t('movieRefreshSelectedPostersConfirm')}
+                                onConfirm={() => runGyingJob('refresh-posters', '/api/admin/gying-source/posters/repair',
+                                    { movieIds: selectedMovieIds, refreshExisting: true })}
+                                disabled={!selectedMovieIds.length || Boolean(running)}>
+                                <Button icon={<PictureOutlined />} loading={running === 'refresh-posters'}
+                                    disabled={!selectedMovieIds.length || Boolean(running)}>
+                                    {t('movieRefreshSelectedPosters', { count: selectedMovieIds.length })}
+                                </Button>
+                            </Popconfirm>
                             <Button
                                 type="primary"
                                 icon={<PlusOutlined />}
@@ -396,10 +433,20 @@ export default function AdminMoviesPage() {
                         </Space>
                     </div>
 
+                    {selectedMovieIds.length > 0 && <Space className="mb-3">
+                        <Text>{t('movieSelectedCount', { count: selectedMovieIds.length })}</Text>
+                        <Button type="link" onClick={() => setSelectedMovieIds([])} disabled={Boolean(running)}>{t('clearSelection')}</Button>
+                    </Space>}
                     <Table
                         columns={columns}
                         dataSource={movies}
                         rowKey="id"
+                        rowSelection={{
+                            selectedRowKeys: selectedMovieIds,
+                            preserveSelectedRowKeys: true,
+                            onChange: (keys) => setSelectedMovieIds(keys.slice(0, 100)),
+                            getCheckboxProps: (record) => ({ disabled: record.status === 'DELETED' || Boolean(running) }),
+                        }}
                         loading={loading}
                         scroll={{ x: 2100 }}
                         locale={{ emptyText: <Empty description={t('noMoviesFound')} /> }}

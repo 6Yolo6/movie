@@ -1,0 +1,8 @@
+{
+  "exitCode": 0,
+  "buildDir": "D:\\gying-movie\\movie\\tmp\\bb-de3e851e\\frontend",
+  "command": "npm run build -- --webpack",
+  "isolatedCopy": true,
+  "productionEnvLoaded": false,
+  "readOnlyLoopbackFixture": true
+}

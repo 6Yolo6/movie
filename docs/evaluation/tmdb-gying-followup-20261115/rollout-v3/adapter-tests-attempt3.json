@@ -1,0 +1,34 @@
+{
+  "status": "PASS",
+  "at": "2026-11-15T11:59:39.876065+00:00",
+  "tests": 25,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exitCode": 0,
+  "testedFilesBefore": {
+    "HostReadyAdapter.py": "30f4575299742f3e0ef684870c324e0b9017704768ddd7b63454f9d8805e7610",
+    "TestHostReadyAdapter.py": "be65601728a636c0c37c71b7a319da26292561ff913a0e46fcf25b76cf548c48"
+  },
+  "testedFilesAfter": {
+    "HostReadyAdapter.py": "30f4575299742f3e0ef684870c324e0b9017704768ddd7b63454f9d8805e7610",
+    "TestHostReadyAdapter.py": "be65601728a636c0c37c71b7a319da26292561ff913a0e46fcf25b76cf548c48"
+  },
+  "log": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v3\\adapter-tests-attempt3.log",
+    "sha256": "25210f2c6d150a082a94e0a4daf85e359aa4ca9ee4e945712d8ace1bd7348540"
+  },
+  "changeSincePriorPass": "Snapshot absolute deadline now begins before source verification and rejects a slow-source-check before any process; one regression added.",
+  "originalValidationCodeReused": true,
+  "privateCopiedGlobalsOnly": true,
+  "originalHostModuleAndSubprocessUnchanged": true,
+  "actualReadyOnlyReturned": true,
+  "normalizedRunningCopyUsedOnlyForWaiting": true,
+  "deadlineIncludesSourceStrictProbeSleepAndDigest": true,
+  "productionOperations": 0,
+  "windowsProcessCalls": 0,
+  "mavenRuns": 0,
+  "deployPrepareRuns": 0,
+  "deployExecuteRuns": 0,
+  "rawHostMetadataOrProviderBodiesWritten": false
+}

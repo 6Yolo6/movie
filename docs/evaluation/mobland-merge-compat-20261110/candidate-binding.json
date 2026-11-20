@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "affectedServices": [
+    "backend"
+  ],
+  "productionMergeAuthorized": false,
+  "authorizationBasis": "AGENTS.md delivery workflow for this user-requested code change",
+  "sourceCommit": "0bba123db30867e0ea2cf045ae2ed0976104bb16",
+  "candidateBackendImage": "sha256:daaeafd28dde4647f07da2cf0a58ba385f3ab1b2c181e6cc6948b52472d18bae",
+  "candidateJarSha256": "2f8657ab78c864f6ab5ef31ca257c69ff529b024d2f6359444dd301ca263a59a",
+  "suiteReport": {
+    "path": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-8f42d9be5998\\result.json",
+    "sha256": "9250841db94531f51abb00cabc33b271b924c24211798acf515b1644eae793b3"
+  },
+  "sourceManifest": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\backend-source-manifest.json",
+    "sha256": "3c0256cda80213696e7cf6f9c2950a515d0bfe9e798b70f20b240a6618f05dad"
+  },
+  "buildReport": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\backend-build-raw.json",
+    "sha256": "ae7cf6b15d3147f57b32b48a330f94a74ced64d6872730c2ce1516cd059f8a17"
+  }
+}

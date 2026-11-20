@@ -1,0 +1,121 @@
+# 发布与恢复证据台账
+
+本文汇总保留必要的部署范围、检查点、原始证据与验收限制。日期均为原观测时点；文档整理未重新部署、查询生产库或执行恢复。旧全文从[Git来源](README.md#git-history)读取，实际操作按[部署](../deployment.md)/[迁移](../../MIGRATION.md)执行。
+
+<a id="identity-theme-20261104"></a>
+## 2026-11-04 22:39/22:42：电影身份与主题双后端上线
+
+按本轮用户“可上线”限定授权，Movie backend于22:39:17上线镜像91dc9539…/JAR2c1301be…/代码d6641e7，Agent于22:42:34上线JAR1d1ad180…/代码6c277a4；Movie973项942通过/31环境跳过、Agent202/202及真实SQL12/12。自然空闲、正常停止、实际产物与服务保留通过，Movie五份/Agent三份停止窗口age检查点完整认证；原11层Compose追加第12层，两份覆盖已纳日常备份且dry-run30通过，未验自然完整备份。独立复验18/18、22入口及139页13805条身份投影通过，部署窗口ERROR/Exception/OOM0；首次验收脚本size200超过过滤器100上限的400报告保留，按100复验，未改生产或回退。电影身份历史写入后禁止不兼容旧Movie自动启动，回退保留当前SQL/state/key。原模型7/7仅完成，满足3/部分有用1/缺证2/未满足1、真人0；主题回答、网站USER与真人验收仍待补，第一阶段未完成，安全58/11/1及G01–G11未关闭。[上线与恢复](../evaluation/identity-theme-20261104/deployment.md)。
+
+<a id="query-quality-20261103"></a>
+## 2026-11-03 21:12/21:47：查询条件、主题与可信历史上线
+
+用户获知G01–G11失败后限定授权双后端。Agent055f…/15a2b8a于21:12:14上线，旧7700正常受管停止、新38460/instance7d5364c2…独立ready；Movief2b7361b…/JAR1b8a09d5…/13660c9于21:47:47上线，旧TERM143、349文件固定来源与运行配置/其他9容器核对通过。Agent三age、Movie最终五age及固定助手补充单age完整认证，未恢复SQL或实际回退；新v2请求出现后禁止旧Movie自动回退并保留当前SQL/state/key。日常备份只追加本轮覆盖、apply/dry-run通过，自然完整备份未验。原15轮绑定4f73846f…且未重跑，模型满足5/部分2/澄清2/未满足4/缺证2。新增网站4提交/4成功/4机械通过/0重试，首轮身份和矛盾澄清通过，模型满足2/未满足1/缺证1、真人0；test恢复disabled/有效设备0/401/密码USER不变/cnf删除。本机/经既有代理公网14入口分次通过，UA1010/三项URLError原记录保留，非浏览器/密码登录验收；电影身份/主题问题与安全风险保持，第一阶段未完成。[本轮上线与恢复](../evaluation/query-quality-20261103/deployment.md)、[网站复核](../evaluation/query-quality-20261103/website-review.md)。
+
+<a id="tmdb-empty-range-20261102"></a>
+## 2026-11-02 19:08：TMDB空范围冷却与管理提示上线
+
+高分剧集实测131页、配置360–500，旧Worker自10月23日21:05后重复104轮空跑。代码fe042692已推送并仅替换backend/frontend固定镜像d7014158…/f16cb8f144…；实测末页、持久24小时复查及跳过冷却榜轮转上线，管理页显示范围无数据/北京时间复查时间。范围、历史和电影原next252保持；881项880通过/1跳过，111定向与前端TS/lint/build/6组合成API浏览器检查通过。本机/经现有代理的公网入口与新bundle复核通过，原脚本Access302误判/传输中断证据保留；19:15:57创建/19:15:59完成的自然任务17301保存EMPTY_RANGE与11月3日19:15:59复查，19:18:02回读配置保持/提前TV重排0，电影新轮未到。短日志至19:15:59无ERROR/Exception/OOM；跨重启/次日复查/上游增长待发生时验。最终检查点 `G:/gying-backups/tmdb-empty-range-20261102-20261102T110716.404280Z` 六age完整认证；新覆盖已纳入日常备份dry-run，实际SQL恢复/回退/自然完整备份未执行。历史安全风险保留，回退旧backend会恢复空跑。[本轮报告](../evaluation/tmdb-empty-range-20261102/README.md)。
+
+<a id="agent-quality-final-20261101"></a>
+## 2026-11-01 17:12：Agent最终候选上线与四问真实观测
+
+在本候选明确批准的有限范围内，仅Agent backend替换为代码e19b6b16对应JAR1f9d…，管理员受管身份/argv与自然空闲通过，旧9516正常停止，新7700/instancea9366577…使用对应hash不可变runtime、ready及hostInJob=false通过，最终部署和root绑定复核passed。新检查点 `G:/gying-backups/ai-agent-quality-20261031-20261101T091153.915087Z` 三份age hash/完整认证解密通过，manifest533d9247…；Movie实际image8d65…/JARd0149…/配置、其他12容器、Ollama/Router/frontend/config/key/token/index保持。回退只恢复应用并保留当前data/state/key，不恢复旧SQL或重放任务。四问均HTTP/API200 completed、程序0失败，总耗时39.0秒；第1与第4正文未列片名，第4原始对白仍未核验，模型复核为满足2/未满足1/有用但不完全1，有效澄清0、真人新增0，不计四条全部满足。网站USER15轮仍未执行、G01–G11未关闭。见[最终部署验收](../evaluation/quality-improvement-20261031/deployment-final-20261101.md)；全部旧阶段、9JSON与三轮观测保留。
+
+## 2026-11-01 16:59：维护后重新绑定与Windows启动取消
+
+11月1日16:59继续触发Windows提权仍返回取消，助手未启动；上午维护已改变Agent实例，当时stored PID9516/instance5e9e0e80…，进程/监听及四本机health200，但新管理员argv与运行版本当时仍待证明。新16项离线检查和候选绑定通过；4条实际回答仍为0。Movie实际image8d65…/JARd0149…与配置hash保持；该次助手绑定当时9516及维护恢复journal，旧两阶段证据保持。未停止服务或新建检查点；当时管理员系统确认待完成。见[本次记录](../evaluation/quality-improvement-20261031/continuation-20261101-attempt.md)。
+
+<a id="agent-quality-rollback-20261101"></a>
+## 2026-11-01：Agent候选部署失败、确认回退与重试准备
+
+Agent于11月1日08:34通过管理员身份/空闲门禁并启动最终候选，随后最终运行态核对PermissionError，正常停止候选并确认回退01eab8…/PID40148；三份age认证通过。08:55修正助手提权返回取消、未执行，新4条回答仍未执行。旧36916与新35532均正常受管停止；回退instance0ad13b71…独立启动、hostInJob=false及四本机健康200。检查点 `G:/gying-backups/ai-agent-quality-20261031-20261101T003442.363732Z` 三age完整认证，manifest1db013…；状态/配置/key/token/index保持，未恢复SQL/state或重放。生产回执未记录异常文件名，运行态锁读取诊断结合调用顺序与独立Java复现；修正助手79dc…/9161…及7项离线/独立审查a4d3…通过但未执行。Movie8d65…/d0149…与其他12容器保持，08:59普通权限回退记录/40148监听/health200不等于新提权argv证明。11项安全FAIL和网站USER15轮/生产跨轮待验保留。见[新阶段](../evaluation/quality-improvement-20261031/deployment-20261101-summary.md)，旧阶段绑定与9JSON/三轮观测不覆盖。
+
+<a id="quality-improvement-20261031"></a>
+## 2026-10-31：82条原因审计与Movie改进上线阶段
+
+82条历史原因/42个case-turns审计及三轮冻结开发观测完成，未称全部修复。用户批准本候选有限两后端部署例外；22:58仅Movie backend替换为image8d65…/JARd0149…，旧TERM143，四age检查点 `G:/gying-backups/movie-quality-20261031-20261031T145725.979995Z` 大小/hash/完整认证解密通过，其他容器与资源/挂载保持。三个直接只读契约和本机/公网业务读取通过，公网admin超时未验；缺分显示/网站USER/真正多轮未验。11月1日已将新覆盖纳入日常备份并dry-run，原配置单age认证保存，自然完整运行待验。Agent于11月1日00:04受管身份通过，但在途门禁阻断且未停；11月1日01:06 Windows提权再次返回操作取消、助手未启动，仍01eab8…/PID36916，新4条回答未执行。有界等待助手已准备、5项离线检查通过，11项安全FAIL未关闭。详见[部署阶段](../evaluation/quality-improvement-20261031/deployment-summary.md)，原开发报告/回答/评分保持。
+
+<a id="metadata-source-pause-20261029"></a>
+## 2026-10-29：GYING 自动目录独立暂停
+
+23:34（Asia/Shanghai）仅backend/frontend固定候选替换，正常TERM退出143，nginx重载。六目录分别暂停/继续，保留来源选择、范围和任务游标；现役选中的三个CSCORE目录已做真实管理页面1280/390浏览器视口点击、刷新持久化及草稿保留，六目录另有合成覆盖。后续跨午夜验收的原UTC时间见[报告](../evaluation/metadata-source-pause-20261029/README.md)。完整后端765项735通过/30条件跳过，79定向/compile；前端8新增/15原场景及lint/TS通过。QQ回复5本库链接、公网API与经现有代理片目数据通过，当前可见海报通过，全页图片覆盖仍partial；本机Edge直连fake-IP超时单独待处理，未更改主机网络，未发送/转存/发布。Agent与其他容器/有效配置保持，六age检查点和旧固定镜像可回退；旧worker回退须保护新pause键意图，不恢复旧SQL/state。日常备份仅追加现役覆盖并dry-run，完整自然执行待验。TMDB普通列表500/Trending官方论坛索引1000区分保留，本站范围未改；真实TMDB边界未测。
+
+<a id="resource-recovery-20261029"></a>
+## 2026-10-29 17:55–18:13：后端内存与QQ/公网恢复
+
+用户恢复上线授权。旧heap512MiB/容器768MiB出现Java heap OOM与公网片库504；先以原fa06…镜像增加内存并正常TERM恢复，再18:02替换为c4b8955/固定0b349813…镜像，768MiB heap/1280MiB容器。BM25与人物字典按快照懒加载/复用，不降目录上限、不恢复旧数据。742项测试712通过/30条件跳过，冷/暖/TTL内库、QQ生成回复、本机/公网数据和完整桌面/手机页面通过；PanSou及GYING纯搜索有结果。普通USER会话缺失，登录后资源job与真实群消息/转存未验。
+
+检查点 `G:/gying-backups/backend-recovery-20261029T095350.591530Z` 四age hash/认证通过，旧镜像/有效覆盖/脚本与结果在 `E:/gying-tools/releases/ai-recovery-20261029-1750/`。仅后端替换/nginx重载，其他容器和数据/state/key保持。Agent早先UAC取消后，用户明确重试，20:56–20:57最终01eab8…/代码9cd1d2b已上线；三age检查点 `G:/gying-backups/ai-agent-final-20261029T125645.591658Z` 完整认证，旧实例stopped、新独立hostInJob=false，其他本机/容器/配置/state保持。21:00两条类别/评分来源专项通过，评分排序与剧情类型遗漏保留；安全58/11/1未关闭。详见[报告](../evaluation/resource-recovery-20261029/README.md)。
+
+<a id="restart-window-20261026"></a>
+## 2026-10-26 单次重启失败排查与维护修复
+
+10月25日20:00单次计划实际触发，20:00:02在window阶段失败（`Invalid bounded one-off window`），未停服务或创建维护journal；主机最后启动仍为9月24日21:51:41。绑定Python3.10.6无法解析安装器.NET roundtrip七位小数，真实permit和实际版本复现通过。原每周09:30:30结果1仍无完整原因，不能归因本次格式错误。
+
+安装器改秒级+08:00窗口，写permit后、注册前以配置Python调用已安装runtime验证；失败保原回退。维护HTTP Request显式发送已实证的浏览器UA，避免Cloudflare默认urllib403/1010误判恢复失败。实际Python3.10.6维护42/42、PowerShell时间8/8及ops-readiness无FAIL；本机API、Tunnel ready、公网主页/API通过。证据与旧脚本回退在`E:/gying-tools/releases/restart-window-20261026/`，昨天过期permit/attempt保留。12:56回读新单次 `GYing One-off Graceful Restart 20261026-1305` Ready，13:05–13:15开始、14:05截止（Windows NextRunTime13:05:05）；15项验证全通过，10个原运行容器及主机启动时间不变。现役runtime SHA `aa7fb8b56658965fbbf5309c6f8ea852de47b448166f6951e62bec4a0c66e6b8`，原子回退/旧runtime/任务XML在 `G:/gying-tools/restart-20261018/oneoff-installation-20261026-125553/`。新permit未消费，实际重启与ASUS登录恢复仍待验，不以测试或注册代实际运行。
+
+<a id="ai-availability-20261025"></a>
+## 2026-10-25 17:19–17:26：AI可用性恢复
+
+16:49四个本机服务均无监听，旧PID/ready残留，没有匹配正常停止确认。16:36 CodexSandboxService事件可能相关但完整消息不可读，唯一终止原因未确认。16:53 WMI独立恢复四服务，生产只读搜《星际穿越》7.53秒完成。另有复杂查询HTTP200/API500；有效片库冷读取15.05秒超过原10秒read上限。
+
+代码`cd79797`仅修本机独立WMI隐藏启动、ServiceHost在Job中拒绝及read/call30秒（connect2秒、总体deadline保留）。91/91 Maven verify，6项合成Windows Job、9项配置、完整JAR15000隔离健康/握手/优雅退出通过。17:17首次公网403验收失败已平滑回退；17:19–17:20第二次使用浏览器标识验收成功。
+
+| 材料 | 原记录 |
+| --- | --- |
+| 当前Agent JAR | `33d9b6748cdac41f82e7d7ac9afbcda4f672d2bf71fce640c235f8e3efdf3c37`，对应hash不可变运行副本 |
+| Agent检查点 | `G:/gying-backups/ai-agent-20261025T091941.886931Z`；旧JAR、私有state/key/token/config、旧启动器三份age，hash/完整认证解密通过 |
+| 修复证据 | `E:/gying-tools/releases/ai-assistant-unavailable-20261025/`，失败/第二次部署报告及真实查询分开保留 |
+| 验收 | 条件27.98秒、语义62.50秒、Bing17.42秒、生产只读队列7.52秒；9入口符合200/401/404预期，17:19:45–17:26:18 ERROR/Exception=0 |
+| 保持与限制 | Movie容器/其他本机实例/配置及索引hash保持；不重启电脑、未登录网站复验、未转存/发消息/发帖；短窗口非长期可用性结论 |
+
+条件查询额外排除“比利·克里斯托”、包含2010年；相似查询额外排除“雷金纳德·丹尼”。实际BGE-M3返回100候选，最终保留《E.T.外星人》；Bing《莫扎特传》原始2条/同名TV排除1/IMDb保留1，未逐页核实剧情。人物/年份偏差未掩盖，completed不等于全部正确。
+
+<a id="ai-query-20261025"></a>
+## 2026-10-25 16:00–16:01：结构化查询与语义索引
+
+原网站88轮中78走直接业务分流，仅10到模型，4失败；单个“推荐”、人物否定、缺历史/空结果升级与1.7B理解共同影响。旧searchMovieWeb实际调用为0，不能把百科联网当成已做全网搜索。原30题/10,432快照冻结，不据逐题回答调规则。
+
+Movie业务代码`f209e87`/Agent`8a65287`；Movie backend镜像`sha256:fa06d609e0d04ecaf790f0965ba7b0a4ecfe5030e2b7a25f60b1814e4227221a`，frontend`sha256:9b4eb2377a1ce3608b9f501c6ef8c4c8394e086684ae3c931486d5f7838ae177`。当时Agent SHA`b7bd517cbe6f7c5b8cdf01ce0d8872460958fc8b108653d7c8882fa74ff7f399`，已由上节补丁替换。
+
+仅backend/frontend/本机Agent上线。首次15:51–15:53装配失败已回退，补MovieSearchTools构造器标记、87项verify和完整JAR验证后第二次成功。23入口、95静态、3依赖与四组真实游客页面通过；登录条件查询未复验。检查点`G:/gying-backups/20261025T080048.799654Z`的15份age hash/完整认证通过；覆盖、旧镜像/包及失败报告在`E:/gying-tools/releases/ai-query-plan-v2-20261025/`。
+
+生效索引11,272条、SHA`f74cb9c6afd7c5b029305a3c0a141a3d1348eb5116285fb7de43bcdbc9b43eb4`、modelDigest`7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab`。原11,220开发对照/provenance和10,432留出快照不改写。构建器100项分页/1秒节奏/有界Retry-After行为9项通过，定期增量调度未登记。
+
+两组同一11,220快照的开发对照各8轮completed，包含海上场景明显误召回；不是8/8答对或独立盲评。关键词11.8–39.8秒/中位22.6秒、混合12.9–56.6秒/中位21.8秒仅一次小样本，含加载/排队/动态搜索。可交互对照原文件`E:/gying-tools/releases/ai-query-plan-v2-20261025/comparison.html`保留。
+
+小模型调查基于当时官方材料与实际1.7B/普通4B/指令4B开发对照；最终部署的是Qwen3指令4B，不是本项目训练或蒸馏。替代候选和硬件兼容边界在原Git报告，文档整理没有重新调查最新模型。
+
+<a id="ai-reliability-20261023"></a>
+## 2026-10-23 12:43–12:54：加密任务与回执启用
+
+仅Movie/backend与本机Agent替换，代码`3052f2c`/`e11c631`。两套独立state/key启用，45秒可续期lease与幂等回执生效；16真实入口、新包模型8/8程序检查、2条终态跨平滑重启state/attempt不变。本轮没有生产崩溃注入，在途回执、工具中间步骤与真实网站用户恢复未代验。
+
+检查点`G:/gying-backups/20261023T044352.387300Z`、`G:/gying-backups/20261023T045302.843250Z`各14份age认证，含SQL、两个发布状态卷、AI state/key/配置与旧包。恢复范围是应用回退，不是全栈/异机灾备。材料`E:/gying-tools/releases/ai-reliability-20261023/`；回退保留新state/key及来源二进制排序规则，不恢复旧SQL。
+
+<a id="manual-completion-20261023"></a>
+## 2026-10-23 21:22–21:25：手动资源补齐与Node升级
+
+Movie代码`2b1809b`仅backend/frontend部署，ensure和按id修复共用双盘有效性判断/原位修复/P2P同步。有效覆盖、旧镜像在`E:/gying-tools/releases/gying-manual-completion-20261023/`，检查点`G:/gying-backups/20261023T132303.117468Z`的11份age认证；26入口、3依赖、线上JAR/95静态与三组模拟API页面通过，未真实转存/发布。机器摘要保留在[evaluation](../evaluation/gying-manual-completion-20261023/validation-summary.json)。
+
+本机Node20.17.0升级24.22.1，npm11.19.1，旧版本保留；生产frontend容器Node补至22.23.4。包hash核对是当时证据；本整理未升级运行时或重新核查外部公告。
+
+<a id="earlier-releases"></a>
+## 更早的必要来源
+
+| 日期/变更 | 原证据及恢复材料 | 必须保留的边界 |
+| --- | --- | --- |
+| 10月22独立采集进度/资源链接 | `E:/gying-tools/releases/crawl-resource-links-20261022/`；`G:/gying-backups/20261022T132212.039731Z`，9份age | 元数据范围/游标保留，链接协议校验；mock页面不代真实转存 |
+| 10月22 AI资料工具 | `E:/gying-tools/releases/ai-research-20261022/`；`G:/gying-backups/20261022T053706.234649Z`，7份age | 原Wikipedia工具与摘录边界；现役联网另见结构化研究 |
+| 10月8来源身份/P2P恢复 | `E:/gying-tools/releases/p2p-workflow-recovery-20261008/`；代码457673a/8182cda，旧镜像见[P2P手册](../p2p-cloud-archive.md) | utf8mb4_bin迁移2983行保持，双盘任务4305/4306成功；58耗尽失败不重置，自然失败隔离未实证 |
+| 10月21实现/22部署特征与BM25 | `E:/gying-tools/releases/catalog-features-search-20261021/`；`G:/gying-backups/20261021T160733.115483Z`，7份age | 检查点曾核25表；40合成题与2000片计算基准非独立泛化/线上CTR；[原始JSON](../evaluation/catalog-20261021/validation-summary.json)保持 |
+| 10月19/20桥接与标题分页 | `E:/gying-tools/releases/ai-assistant-20261019/`；`G:/gying-backups/ai-assistant-config-20261019-232528`，4份age；旧Agent `G:/local-ai-agent/backups/ai-catalog-20261019/before.jar` | 后端/前端/桥接与OpenClaw独立接线，配置检查点不是一致性DB灾备 |
+| 10月19资源/P2P隔离 | 原 `docs/resource-search-p2p-deployment-20261019.md`，按[Git索引](README.md)追溯 | 账号 `/dbt/` 不公开；保留磁力与种子归档，不恢复NapCat |
+| 10月14访问身份与查询边界 | `E:/gying-tools/releases/access-identity-20261014/`；`G:/gying-backups/20261014T125228.430856Z`，8份age | 先INSTANT追加client_ip/user_agent再切换，80467旧行保持NULL；回退不DROP列；可信代理与伪造头边界保留 |
+| 10月11监控/分类计数/发布认领/手机适配 | 原 `docs/code-optimization-deployment-20261011.md`、`docs/monitoring-resource-counts-20261011.md` | 条件认领/UNKNOWN、统计口径、UI竞态提炼入当前手册；完整镜像/检查点按Git原文，不套用旧命令 |
+| 10月13 Access启用 | `G:/gying-tools/security-20260926/access-enable-20261013-205517-925b9d` | verify只读、rollback须核精确归属；本人OTP/角色/origin JWT另验，[现行流程](../security/cloudflare-security.md) |
+| 9月25完整加密恢复样本 | `G:/gying-backups/20260925T030328.719395Z`，19份age约372MiB | 25表行数/CHECKSUM与MinIO隔离单图通过；系统账号/异机/离线私钥未闭环 |
+| 9月14旧迁移 | `migration-data/20260914-081539`，4832文件hash核对；旧回退`E:/gying-data/gying-pre-deploy-20260914.sql` | 1631影片/2165资源仅历史容量，DPAPI限定原机器账户；按现行迁移替代旧明文导出 |
+
+上述外部路径是原记录位置，本轮没有逐一重新验证文件存在性或恢复可用性。安全10月23为59/11/0、10月25为58/11/1；G01–G11未关闭，UNKNOWN为退出旧迅雷探针。历史业务例外批准不能代替后续安全门禁。

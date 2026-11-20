@@ -1,0 +1,122 @@
+{
+  "status": "PASS",
+  "startedAt": "2026-11-14T13:28:08.542340+00:00",
+  "scope": "Independent read-only verification; only acknowledged host/daily CAS bytes supersede original frozen configuration hashes. No production writes, deployment, worker PUT or repeated native backup dry run.",
+  "frozenInputs": {
+    "PostDeployment.py": "721f25436fe72e85e80fbe795ef774b15522b6f6c7efc7fb521fd1b7f85ea034",
+    "Continuation.py": "347d8df4fce792b7f56cb88979753f9c56dbf3ef9e77933b2e1f8d470afccec6",
+    "Guard.py": "94bd5eb62f5e38e74b7dd0c3f70300e88f8173ff09a72798e1016c628ca36777",
+    "scheduler-delta-proof.json": "8ba5b9f52b9acad2d56831a1db8cc875b7f276404959f8dc3d2f29f0ee8daf84",
+    "receipt.json": "040779b610bec223e91df451add63997d647dcaee4b49cb3a22dd0a16827c1ee",
+    "post-declaration.json": "76114cef06f7f1198754494687560ceabfcc22d68e312de739d2cfa884ee81f5",
+    "host-prepared.json": "ccd4552d9e7e42b7752bb7f5f47897d63ddb1945c67dc7d01c93427340fba91b",
+    "host-apply-20261114T131634.003215Z.json": "e154df56fe1a69acd4261b6ad5880426fc11926a9a40fd917ba76c40ef1cb829",
+    "daily-prepared.json": "4902a2d7390172edea1e271c08d9de218be89e0880bfffc3583efec8aefb9872",
+    "daily-apply-20261114T131930.914362Z.json": "16425f9663fb312935bf0406c462d50c4ecea152c287fc2a9dd9dad875d61b91",
+    "final-independent.json": "5505caab550c1fe24c32d5ee8c7035d10c3d99ab67d798ea7e2f1bc11c3102da"
+  },
+  "productionBusinessWrites": 0,
+  "serviceActivations": 0,
+  "workerPuts": 0,
+  "nativeDryRunsRepeated": 0,
+  "credentialOutput": false,
+  "existingDeviceLastSeenMayChange": true,
+  "firstFailurePreserved": true,
+  "services": {
+    "backend": {
+      "id": "9239e03222057de70ba9b9b5fb05c9f1dd3ec9bb8ac74e7566d5e7e635c9b8ec",
+      "image": "sha256:807798b99d0054bca76f98126b960a010333e672d1675a05abb2b252631f77c4",
+      "startedAt": "2026-11-14T12:33:15.591897086Z",
+      "running": true,
+      "restartCount": 0,
+      "oomKilled": false,
+      "paused": false,
+      "runtimeAndEnvironmentVerified": true,
+      "jarSha256": "0a536d7f471e1f375da26d7168d2c23bda259fd6c51befea079d916fe7b229b2"
+    },
+    "frontend": {
+      "id": "e901160d28c1291e61e3ebcfde2bb9fe30eca546c46eacbdf596afb61e839527",
+      "image": "sha256:3dad5be604c4467e97ca52d408323420f2a863edd4ff14cb95a483bd49daa578",
+      "startedAt": "2026-11-14T13:00:37.375874417Z",
+      "running": true,
+      "restartCount": 0,
+      "oomKilled": false,
+      "paused": false,
+      "runtimeAndEnvironmentVerified": true,
+      "jarSha256": null
+    }
+  },
+  "worker": {
+    "dbEnabled": true,
+    "apiEnabled": true,
+    "originalRestoreWriteCount": 1,
+    "putRepeated": false
+  },
+  "host": {
+    "currentExpectedBackendImage": "sha256:807798b99d0054bca76f98126b960a010333e672d1675a05abb2b252631f77c4",
+    "currentConfigurationSha256": "ddf99e97061da7d301a026ca11ff8a23edb06de8d6d8ae018b5d1febe44671f4",
+    "onlyExpectedBackendImageChanged": true,
+    "fullPreimageAuthenticated": true,
+    "fullTaskXmlOwnerGroupDaclRetained": true,
+    "metadataSha256": "66c818e75ecb0a83ae0232a98e2e2be66b5a5fa94993833ccac7103bd8cb82ce",
+    "casAttempts": 1
+  },
+  "daily": {
+    "currentConfigurationSha256": "695d666a7c936a0e076dd2d8e9ad3b1291cdd6c95edc29151ec6c719a3470054",
+    "singleAddition": {
+      "name": "gying-collection-release-20261114",
+      "path": "E:\\gying-tools\\releases\\gying-collection-20261114"
+    },
+    "fullPreimageAuthenticated": true,
+    "allOldRulesFieldsVolumesRetained": true,
+    "ownerGroupDaclRetained": true,
+    "casAttempts": 1,
+    "originalArtifacts": 46,
+    "currentArtifacts": 47,
+    "storedNativeAfterDryRunVerified": true,
+    "nativeDryRunRepeated": false,
+    "fullBackupExecuted": false,
+    "naturalBackupVerified": false
+  },
+  "entries": [
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/",
+      "status": 200,
+      "bytes": 73643,
+      "sha256": "770481c8e59563bc168560e142bf9f6b9c0835b4e6cd4230a5f4ead3e237c01d"
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "path": "/",
+      "status": 200,
+      "bytes": 74010,
+      "sha256": "54cf561cd4004cf8c6addc89d34b23a938426d08e8578946305748e60ef398c7"
+    }
+  ],
+  "legacy": {
+    "oldQuark2262FullRowSha256": "5edd50616905b9209e3b695341d0d622953e46a54bc9dbd99fa2c0f093e19861",
+    "discovery9904FullRowSha256": "dc0f3d58be7ee784b4582d683f040ffff1411979cf6e3778fd2e25723c5149cb",
+    "oldQuarkOutcomeStillUnknown": true,
+    "legacyRowsUntouched": true,
+    "historicalSixFullRowsUnchanged": true,
+    "currentChildFullRowUnchanged": true,
+    "parentRawRowChanged": true,
+    "parentInvariantProjectionSha256": "27360a8d04479aaba473f07caaa80dc0e3c1960fce89a78ed6d7f9480190e8db",
+    "parentRevision": 1515,
+    "parentBlockedReason": "CHILD_FAILED",
+    "guardStatus": "PASS_NATURAL_BAIDU_PARENT_SCHEDULER_DELTA",
+    "guardSha256": "94bd5eb62f5e38e74b7dd0c3f70300e88f8173ff09a72798e1016c628ca36777",
+    "baselineOrPlanChanges": false
+  },
+  "git": {
+    "head": "0ce354e89664c4e3b768753c5b7452f721a8109c",
+    "worktreeClean": true
+  },
+  "frozenScope": {
+    "originalPlanUnchanged": true,
+    "allUnrelatedConfigurationAndImplementationFilesExact": true,
+    "onlyAcknowledgedHostDailyCasPostimagesAccepted": true
+  },
+  "completedAt": "2026-11-14T13:28:26.715978+00:00"
+}

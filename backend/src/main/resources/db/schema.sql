@@ -349,7 +349,7 @@ CREATE TABLE `movie_source_identity` (
   `movie_id` varchar(64) NOT NULL COMMENT '本站影片 ID',
   `source` varchar(20) NOT NULL COMMENT '数据来源：TMDB、GYING',
   `source_type` varchar(20) NOT NULL COMMENT '来源类型：movie、tv、mv、ac',
-  `external_id` varchar(100) NOT NULL COMMENT '来源站点影片 ID',
+  `external_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '来源站点影片 ID',
   `season` int NOT NULL DEFAULT '0' COMMENT '季号，电影或未知为 0',
   `confidence` decimal(5,2) NOT NULL DEFAULT '100.00' COMMENT '匹配置信度',
   `match_method` varchar(50) NOT NULL COMMENT '匹配方式',
@@ -398,7 +398,7 @@ CREATE TABLE `social_post_log` (
   `resource_link_id` bigint NOT NULL COMMENT '资源链接 ID',
   `movie_id` varchar(100) NOT NULL COMMENT '影片 ID',
   `title` varchar(500) DEFAULT NULL COMMENT '发布时影片标题',
-  `status` varchar(30) NOT NULL COMMENT '状态：PENDING、POSTED、FAILED',
+  `status` varchar(30) NOT NULL COMMENT '状态：PENDING、PREPARING、PUBLISHING、POSTED、PREPARE_FAILED、UNKNOWN、FAILED（历史待核验）',
   `external_url` varchar(1000) DEFAULT NULL COMMENT '外部帖子地址',
   `error_message` varchar(1000) DEFAULT NULL COMMENT '发布失败原因',
   `posted_at` datetime DEFAULT NULL COMMENT '成功发布时间',
@@ -519,6 +519,8 @@ CREATE TABLE IF NOT EXISTS `site_access_log` (
   `referer` varchar(500) DEFAULT NULL COMMENT '来源页面',
   `duration_ms` bigint NOT NULL DEFAULT 0 COMMENT '处理耗时毫秒',
   `event_type` varchar(30) NOT NULL DEFAULT 'API' COMMENT 'API 或 PAGE_VIEW',
+  `client_ip` varchar(45) DEFAULT NULL COMMENT '来源IP：可信代理链解析或直连地址；历史为空',
+  `user_agent` varchar(1024) DEFAULT NULL COMMENT '原始User-Agent，最多1024个字符；历史为空',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '访问时间',
   PRIMARY KEY (`id`),
   KEY `idx_access_created` (`created_at`),
@@ -587,3 +589,124 @@ CREATE TABLE `login_device` (
   UNIQUE KEY `uk_login_device_jti` (`jti`),
   KEY `idx_login_device_user_active` (`user_id`, `revoked_at`, `expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='登录设备授权';
+
+-- 百度网盘独立转存任务；只新增表，不修改或重置旧网盘任务。
+CREATE TABLE IF NOT EXISTS baidu_transfer_task (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '百度转存任务ID',
+    discovery_result_id BIGINT NULL COMMENT '发现结果ID',
+    movie_id VARCHAR(100) NOT NULL COMMENT '本库影视ID',
+    original_url TEXT NOT NULL COMMENT '来源分享链接，不含账号会话',
+    original_url_hash VARCHAR(64) NOT NULL COMMENT '来源链接哈希',
+    scope_key VARCHAR(80) CHARACTER SET ascii COLLATE ascii_bin NOT NULL DEFAULT 'PERMANENT' COMMENT '永久归档或独立临时搜索范围',
+    search_request_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NULL COMMENT '用户和来源选择的幂等摘要，不存用户标识',
+    share_confirmed_at DATETIME(6) NULL COMMENT '首次自有分享确认时间，临时清理时钟不延长',
+    cleanup_evidence LONGTEXT NULL COMMENT '首次分享确认的精确目录和文件证据，不含账号会话',
+    account_uid VARCHAR(100) NULL COMMENT '执行计划绑定的百度账号ID',
+    saved_path VARCHAR(1000) NULL COMMENT '目标网盘目录',
+    share_url TEXT NULL COMMENT '已核验自有分享链接',
+    share_url_hash VARCHAR(64) NULL COMMENT '自有分享链接哈希',
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING' COMMENT '任务状态',
+    phase VARCHAR(30) NOT NULL DEFAULT 'NEW' COMMENT '持久化副作用阶段',
+    attempts INT NOT NULL DEFAULT 0 COMMENT '执行次数',
+    last_error VARCHAR(255) NULL COMMENT '不含会话信息的错误码',
+    request_payload LONGTEXT NULL COMMENT '执行来源上下文，不存账号凭据',
+    response_payload LONGTEXT NULL COMMENT '执行计划和内容核验，不存原始上游响应',
+    remote_task_id VARCHAR(100) NULL COMMENT '远端任务ID',
+    lease_owner VARCHAR(36) NULL COMMENT '当前执行租约标识',
+    lease_until DATETIME(6) NULL COMMENT '执行租约到期时间',
+    started_at DATETIME(6) NULL COMMENT '最近执行开始时间',
+    finished_at DATETIME(6) NULL COMMENT '最近执行结束时间',
+    created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+    updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_baidu_movie_source_scope (movie_id, original_url_hash, scope_key),
+    KEY idx_baidu_search_request (search_request_hash, id),
+    KEY idx_baidu_confirmed_temp (share_confirmed_at, id),
+    KEY idx_baidu_discovery (discovery_result_id),
+    KEY idx_baidu_pending (status, updated_at, id),
+    KEY idx_baidu_lease (lease_until)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='百度网盘独立转存任务';
+
+
+-- 百度QQ与网站搜索临时目录独立清理；不改写旧任务，不执行全局回收站清空。
+CREATE TABLE IF NOT EXISTS baidu_temporary_cleanup_job (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '临时清理任务ID',
+  transfer_task_id BIGINT NOT NULL COMMENT '本系统新临时百度转存任务ID',
+  scope_key VARCHAR(64) COLLATE utf8mb4_bin NOT NULL COMMENT '不可变临时请求范围',
+  movie_id VARCHAR(64) NOT NULL COMMENT '关联片目，仅核对不批量清理',
+  discovery_result_id BIGINT NOT NULL COMMENT '独立临时发现记录ID',
+  resource_link_id BIGINT NULL COMMENT '本次临时资源链接ID',
+  original_url VARCHAR(1000) COLLATE utf8mb4_bin NOT NULL COMMENT '原始来源地址，用于关联核对',
+  original_url_hash CHAR(64) COLLATE utf8mb4_bin NOT NULL COMMENT '原始来源哈希',
+  share_url_hash CHAR(64) COLLATE utf8mb4_bin NOT NULL COMMENT '首次确认自有分享哈希',
+  account_uid VARCHAR(30) COLLATE utf8mb4_bin NOT NULL COMMENT '首次确认百度帐号UID',
+  target_path VARCHAR(300) COLLATE utf8mb4_bin NOT NULL COMMENT '精确临时目录路径，禁止别名',
+  directory_id VARCHAR(30) COLLATE utf8mb4_bin NOT NULL COMMENT '首次确认目录唯一标识',
+  plan_json LONGTEXT NOT NULL COMMENT '首次确认执行计划，不含认证材料',
+  evidence_json LONGTEXT NOT NULL COMMENT '首次确认全树路径大小类型标识与可用摘要证据',
+  recycle_evidence LONGTEXT NULL COMMENT '已核验的精确回收站目录标识路径与帐号',
+  delete_mode VARCHAR(20) NOT NULL DEFAULT 'PERMANENT' COMMENT '仅精确临时目录彻底删除',
+  status VARCHAR(32) NOT NULL DEFAULT 'PENDING' COMMENT '独立回收与彻底删除意图状态，未知只读对账',
+  attempts INT NOT NULL DEFAULT 0 COMMENT '租约领取次数，仅未提交读失败允许有界重试',
+  last_error VARCHAR(100) NULL COMMENT '固定错误码，不含上游响应或敏感信息',
+  lease_owner VARCHAR(36) COLLATE utf8mb4_bin NULL COMMENT '独占租约持有者',
+  lease_until DATETIME(6) NULL COMMENT '租约到期时间',
+  share_confirmed_at DATETIME(6) NOT NULL COMMENT '首次确认自有分享时间，不可延长',
+  delete_after DATETIME(6) NOT NULL COMMENT '首次确认时间加任务创建时冻结的保留分钟数',
+  finished_at DATETIME(6) NULL COMMENT '精确回收站对象消失及本地核对完成时间',
+  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+  UNIQUE KEY uk_baidu_temporary_cleanup_task (transfer_task_id),
+  KEY idx_baidu_temporary_cleanup_due (status,delete_after,lease_until)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='百度搜索临时目录精确彻底清理任务';
+
+INSERT INTO sys_config (config_key,config_value,description) VALUES
+('qq.bot.transfer_cleanup.baidu_root','/GYing QQ Temp','QQ与网站百度搜索临时转存专用根目录'),
+('qq.bot.transfer_cleanup.baidu_mode','PERMANENT','百度新临时任务清理模式：彻底删除无法恢复，仅本任务目录')
+ON DUPLICATE KEY UPDATE description=VALUES(description);
+
+-- Additive duplicate-review schema. No existing business table or row is removed.
+CREATE TABLE IF NOT EXISTS movie_duplicate_review (
+  id VARCHAR(36) CHARACTER SET ascii COLLATE ascii_bin PRIMARY KEY,
+  actor_id BIGINT NOT NULL,
+  plan_json LONGTEXT NOT NULL,
+  fingerprint CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  eligible BOOLEAN NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'PREVIEWED',
+  idempotency_key VARCHAR(36) CHARACTER SET ascii COLLATE ascii_bin NULL,
+  result_json LONGTEXT NULL,
+  created_at DATETIME(6) NOT NULL,
+  expires_at DATETIME(6) NOT NULL,
+  completed_at DATETIME(6) NULL,
+  UNIQUE KEY uk_duplicate_actor_key(actor_id,idempotency_key),
+  KEY idx_duplicate_actor_created(actor_id,created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+CREATE TABLE IF NOT EXISTS movie_merge_alias (
+  source_movie_id VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin PRIMARY KEY,
+  canonical_movie_id VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  review_id VARCHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  actor_id BIGINT NOT NULL,
+  created_at DATETIME(6) NOT NULL,
+  KEY idx_merge_canonical(canonical_movie_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+CREATE TABLE IF NOT EXISTS movie_merge_favorite_history (
+  review_id VARCHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  original_favorite_id BIGINT NOT NULL,
+  user_id BIGINT NOT NULL,
+  original_movie_id VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  canonical_movie_id VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  original_created_at DATETIME NULL,
+  retained_favorite_id BIGINT NOT NULL,
+  recorded_at DATETIME(6) NOT NULL,
+  PRIMARY KEY(review_id,original_favorite_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+CREATE TABLE IF NOT EXISTS movie_merge_reference_history (
+  review_id VARCHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  reference_table VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  reference_row_id VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  original_movie_id VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  canonical_movie_id VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  original_fingerprint CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  recorded_at DATETIME(6) NOT NULL,
+  PRIMARY KEY(review_id,reference_table,reference_row_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;

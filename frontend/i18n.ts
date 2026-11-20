@@ -4,13 +4,6 @@ import { initReactI18next } from 'react-i18next';
 import enTranslations from './public/locales/en/common.json';
 import zhTranslations from './public/locales/zh/common.json';
 
-const getInitialLanguage = () => {
-  if (typeof window === 'undefined') return 'en';
-  const saved = window.localStorage.getItem('i18nextLng');
-  if (saved) return saved;
-  return window.navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en';
-};
-
 i18n
   .use(initReactI18next)
   .init({
@@ -23,7 +16,8 @@ i18n
       },
     },
     fallbackLng: 'en',
-    lng: getInitialLanguage(),
+    // The first client render must match the server's English snapshot.
+    lng: 'en',
     defaultNS: 'common',
     interpolation: {
       escapeValue: false,
@@ -32,9 +26,18 @@ i18n
 
 if (typeof window !== 'undefined') {
   i18n.on('languageChanged', (lng) => {
-    window.localStorage.setItem('i18nextLng', lng);
+    try { window.localStorage.setItem('i18nextLng', lng); } catch { /* Storage can be unavailable. */ }
     document.documentElement.lang = lng === 'zh' ? 'zh-CN' : 'en';
   });
+}
+
+// Restore preferences only after React hydration, never during module initialization.
+export function restoreClientLanguage() {
+  if (typeof window === 'undefined') return;
+  let preferred: string | null = null;
+  try { preferred = window.localStorage.getItem('i18nextLng'); } catch { /* Use browser language. */ }
+  const language = (preferred || window.navigator.language).toLowerCase().startsWith('zh') ? 'zh' : 'en';
+  return i18n.changeLanguage(language);
 }
 
 export default i18n;

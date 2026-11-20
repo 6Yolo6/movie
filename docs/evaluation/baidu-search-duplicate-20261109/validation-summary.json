@@ -1,0 +1,427 @@
+{
+  "date": "2026-11-09",
+  "timezone": "Asia/Shanghai",
+  "sourceCommit": "048795f0fe4e9ef95c3aed144e3f1a2efcb51e54",
+  "deployedServices": [
+    "backend",
+    "frontend"
+  ],
+  "actualImages": {
+    "backend": "sha256:b972a85394e12647efaf440534f9702e67a4f62cff78d7c8bf1f07a10c83b6e4",
+    "frontend": "sha256:37d166c94c9566611f0c15ffc43f618faac57e0f4d4f29d17381cb93364ce715"
+  },
+  "actualJarSha256": "6be29239cc55912fc6bce6a8ab2e66a457f15a7ab3316b3915175bf9d1b9090e",
+  "backendStartedAt": "2026-11-09 22:39:17 +08:00",
+  "frontendStartedAt": "2026-11-09 22:48:50 +08:00",
+  "deploymentCompletedAt": "2026-11-09 22:49:07 +08:00",
+  "backendTests": {
+    "tests": 1384,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 1383
+  },
+  "java17CompileVerified": true,
+  "requiredRealMysqlVerified": true,
+  "frontendTests": {
+    "tests": 101,
+    "pass": 101,
+    "fail": 0,
+    "skipped": 0
+  },
+  "frontendTypegenTypescriptLintBuild": "PASS",
+  "sourceFiles": {
+    "backend": 408,
+    "frontend": 90
+  },
+  "actualFrontendArtifacts": 375,
+  "composeLayers": {
+    "backend": 17,
+    "frontend": 11
+  },
+  "independentRuntimeChecks": {
+    "PASS": 17,
+    "FAIL": 0
+  },
+  "publicAndLocalEntries": {
+    "count": 20,
+    "originalPass": 19,
+    "originalFail": 1,
+    "expectedAccess302Verified": true,
+    "publicAdminAuthenticatedUiVerified": false,
+    "publicSearchRawHtmlEqualsLocal": false,
+    "publicSearchContentMatchesAfterExactInsightsAndNewlineNormalization": true,
+    "originalFailuresPreserved": true
+  },
+  "staticAssetAndLocaleShaMatches": 194,
+  "allOtherContainerIdentitiesPreservedInIndependentWindow": true,
+  "mockBrowser": {
+    "duplicateStates": 40,
+    "duplicateScrollChecks": 8,
+    "duplicatePngs": 48,
+    "searchGroups": 7,
+    "productionApiRequests": 0,
+    "realAdminAuthentication": false,
+    "firstDuplicateHarnessFailurePreserved": true
+  },
+  "realAdminApi": {
+    "status": "PASS",
+    "startedAt": "2026-11-09 23:05:12 +08:00",
+    "completedAt": "2026-11-09 23:05:33 +08:00",
+    "userPerformedFreshAdminLogin": true,
+    "baselineStartedAfterUserLogin": true,
+    "validAdminDevicesAtLatestRootAggregation": 1,
+    "agentLoginStarted": false,
+    "agentDevicesCreatedOrRevoked": 0,
+    "requestsSent": 4,
+    "httpStatuses": [
+      200,
+      200,
+      200,
+      200
+    ],
+    "allDryRunTrue": true,
+    "fullLibraryCoverage": true,
+    "summary": {
+      "dryRun": true,
+      "scanMode": "FULL_LIBRARY",
+      "scannedMovies": 15366,
+      "candidates": 144,
+      "merged": 0,
+      "movedResources": 0,
+      "mergeEnabled": false,
+      "complete": true,
+      "excludedMovies": 100,
+      "conflicts": 12,
+      "crowdedBuckets": 0
+    },
+    "categoryCounts": {
+      "mv": 102,
+      "tv": 36,
+      "ac": 6
+    },
+    "mobland": {
+      "fromMovieId": "tmdb_tv_247718",
+      "toMovieId": "1YKW",
+      "fromResources": 0,
+      "toResources": 8,
+      "category": "tv",
+      "year": 2025,
+      "season": 1,
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true
+    },
+    "all144CandidateResourceCountsVerifiedAgainstOnlineSql": true,
+    "paginationChecksPassed": true,
+    "businessAndAuthorizationRowsPreservedWithinAfterLoginBaseline": true,
+    "historicalAnchorsAndFixedContainerIdentitiesPreserved": true,
+    "routineDeviceLastSeenChanged": true,
+    "fullDatabaseZeroWritesClaimed": false,
+    "beforeLoginAccountDeviceHashesClaimedUnchangedAcrossUserLogin": false,
+    "configurationTransferShareDeletePublishMergeOrDirectSqlWrites": 0,
+    "authenticatedBrowserUiVerified": false,
+    "userDeviceValidityRechecked": false,
+    "originalDeviceGateFailure": {
+      "at": "2026-11-09 22:53:09 +08:00",
+      "gate": "EXISTING_ACTIVE_ADMIN_DEVICE",
+      "validAdminDevices": 0,
+      "requestsSent": 0,
+      "preserved": true
+    }
+  },
+  "deployedClassesWithReadonlyDatabaseSnapshot": {
+    "status": "PASS",
+    "execution": "deployed_classes_with_readonly_repeatable_read_sql_snapshot_adapter",
+    "businessClassesRecompiled": false,
+    "actualDeployedJarSha256": "6be29239cc55912fc6bce6a8ab2e66a457f15a7ab3316b3915175bf9d1b9090e",
+    "snapshotObservedAt": "2026-11-09 22:59:30.059928",
+    "consistentSnapshot": true,
+    "sqlWrites": 0,
+    "scannedMovies": 15366,
+    "candidates": 144,
+    "categoryCounts": {
+      "tv": 36,
+      "ac": 6,
+      "mv": 102
+    },
+    "complete": true,
+    "excludedMovies": 100,
+    "conflicts": 12,
+    "crowdedBuckets": 0,
+    "mobland": {
+      "fromMovieId": "tmdb_tv_247718",
+      "toMovieId": "1YKW",
+      "fromResources": 0,
+      "toResources": 8,
+      "category": "tv",
+      "year": 2025,
+      "season": 1,
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true
+    },
+    "paginationChecks": 3,
+    "paginationPassed": true,
+    "businessAndAuthorizationRowsPreserved": true,
+    "fixedContainerGenerationsPreserved": true,
+    "httpRequests": 0,
+    "httpAdminApiVerified": false,
+    "myBatisDatabaseQueryChainVerified": false,
+    "liveProductionJdbcChainVerified": false,
+    "newLoginsOrDevices": 0,
+    "externalCloudCalls": 0
+  },
+  "hostPin": {
+    "status": "PASS",
+    "onlyExpectedBackendImageChanged": true,
+    "taskEnabled": true,
+    "taskState": "Ready",
+    "exactXmlAndNtfsAclsRetained": true,
+    "strictIdleBeforeAndAfter": true,
+    "browserOpened": false,
+    "cloudWritesPerformed": false
+  },
+  "checkpoints": {
+    "stopped": {
+      "directory": "G:\\gying-backups\\baidu-search-duplicate-20261109-20261109T142050.854970Z",
+      "artifacts": 7,
+      "fullyAuthenticated": true,
+      "sqlImportPerformed": false
+    },
+    "postPin": {
+      "directory": "G:\\gying-backups\\baidu-search-duplicate-post-pin-20261109-20261109T145702.543117Z",
+      "artifacts": 3,
+      "fullyAuthenticated": true,
+      "hostRegularFiles": 880,
+      "hostDirectories": 494,
+      "allFileHashesDirectoryStructureAndNtfsAclsMatched": true,
+      "exactTaskXmlMatched": true,
+      "backendDataRegularFiles": 7,
+      "baiduSessionGcmIdentityAndModesVerified": true,
+      "strictIdleBeforeAndAfter": true
+    },
+    "crossServiceAtomicSnapshotClaimed": false,
+    "productionDataRestored": false
+  },
+  "dailyBackup": {
+    "additions": 2,
+    "casApplied": true,
+    "dryRunArtifacts": 40,
+    "naturalFullBackupVerified": false
+  },
+  "originalGates": {
+    "idle": "FAIL",
+    "oldConsumerCompatibility": "FAIL",
+    "strictZeroForward": "FAIL",
+    "retained": true
+  },
+  "currentForwardUpgrade": {
+    "exactHistoricalRowsAndActivityVerified": true,
+    "completeTemporarySchemaContractVerified": true,
+    "firstPauseCausedByNaturalMetadataTask": 17600,
+    "naturalMetadataTaskSucceeded": true,
+    "originalFailurePreserved": true
+  },
+  "security": {
+    "PASS": 58,
+    "FAIL": 11,
+    "UNKNOWN": 1,
+    "G01_G11Closed": false,
+    "authorizationScope": "this backend/frontend deployment only"
+  },
+  "externalActions": {
+    "historicalUnknownResetOrReplay": false,
+    "movieMergeOrDelete": false,
+    "temporaryCloudTransferDeleteQuotaVerified": false,
+    "realMovieBaiduArchiveVerified": false,
+    "externalPublishingPerformed": false
+  },
+  "evidence": {
+    "backend_build": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\backend-build.json",
+      "sha256": "3f043265ca4e0fff925389d7904e9dc5c4ea96c557e6bd5ff4c647ad2272ef02"
+    },
+    "backend_full_suite": {
+      "path": "G:\\gying-tools\\builds\\baidu-search-duplicate-20261109\\query-boundaries-mysql-c702b5f8abc4\\result.json",
+      "sha256": "798d8e76c3a8b1945c5a4d670542a9dbfd4b39f604a0db06829e32d0feb2da1d"
+    },
+    "frontend_delivery": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\frontend-4f563074b5ae\\frontend-delivery.json",
+      "sha256": "c160439c62f5dd734cab6e7ff10965d7474a1136d3ecf59e4b87de1339d62f13"
+    },
+    "schema_readonly_after_user_sql": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\schema-forward-20261109T142719.319130Z.json",
+      "sha256": "83de6715ebf0413a17641d8793a46223700565192a00add65816a5613f99457c"
+    },
+    "stopped_schema_handoff": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\deployment\\schema-handoff.json",
+      "sha256": "7d4316eaefe5ef887892799c82bca08a7305193bc0490d7e78be58049748d143"
+    },
+    "first_deployment_failure": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\deployment\\attempts\\20261109T143725.051141Z\\deployment-result.json",
+      "sha256": "8fbd60706eb2f5bce2f9c3fb98fdde7734896d86a88c7b8bda9cb61e325111ac"
+    },
+    "deployment_completed": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\deployment\\attempts\\resume-after-backend-01\\deployment-result.json",
+      "sha256": "bca1cc93b1369e9e737454f15a831d1b6a169dff519e6a74efb6f5253ae6249e"
+    },
+    "independent_runtime_entries_assets": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\independent-runtime-entry-assets-20261109\\independent-final-summary.json",
+      "sha256": "35cc42e5f7d317407496da62bf3335cde6e6ff9df9e4019cd7de0212316cdd18"
+    },
+    "first_public_entry_html_failure": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\independent-runtime-entry-assets-20261109\\result-20261109T144957.650132Z.json",
+      "sha256": "57864dc79c297156253934f96426f7e72c9e6aa1e6b26d404d5a7a924f761052"
+    },
+    "public_access_insights_resolution": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\independent-runtime-entry-assets-20261109\\public-html-final-2026-11-09T145509256160+0000.json",
+      "sha256": "aacba99b65fa4d29fbf05f800908fd78bf8ae70a4f562cd973ffc7403e5becb7"
+    },
+    "search_mock_browser": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\search-browser-20261109T144449Z\\conversation-browser.json",
+      "sha256": "82108b5b05305328f4e9a75cf0801e6a758364603691283890f9e1235d5e6a90"
+    },
+    "duplicate_mock_browser": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\duplicate-browser-retry-20261109T144816.913016Z\\browser-result.json",
+      "sha256": "1b5697953230400db58b0067db0df072ba2c8a3ddeb33580d37f66f130162c0d"
+    },
+    "duplicate_mock_scroll": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\duplicate-browser-scroll-20261109T145016.581381Z\\browser-result.json",
+      "sha256": "10a00c5bff98d2f79a55311905deb6738cb2007979712a2f8c5a33187a12386e"
+    },
+    "duplicate_mock_first_failure": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\duplicate-browser-20261109T144550.334918Z\\browser-result.json",
+      "sha256": "e7796e2b760f4749c5dff02e7bdfef07c7572e5128706df423e23f758d2290dc"
+    },
+    "admin_device_gate_failure": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\duplicate-admin-readonly-20261109T143331.659525Z\\live-duplicate-admin-20261109T145309.274248Z.json",
+      "sha256": "58e94acb3e0aedb8d4f3163b7127b5db0a9276901d680bc23fedfaecc3d30bff"
+    },
+    "host_pin": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\host\\attempts\\pin-after-resume-01\\pin-result.json",
+      "sha256": "69467041f3bd83306c11c92a6346108acf92206c876585baaf95ae7e103e364d"
+    },
+    "post_pin_checkpoint": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\post-pin-checkpoint\\attempts\\post-pin-01\\post-checkpoint-result.json",
+      "sha256": "cf441905b0a1722a2fcde027c79a22b00243f630f6386b54dc70d9ff77b43dd0"
+    },
+    "daily_backup_coverage": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\backup-audit\\daily-backup-plan.json",
+      "sha256": "402ed64618d6e56d0bb21769fb1ce898b8c1b23fd8634ec35b39e0e35dcd8cc5"
+    },
+    "console_window_fix": {
+      "path": "D:\\gying-movie\\movie\\docs\\evaluation\\console-window-fix-20261109\\validation-summary.json",
+      "sha256": "d3f3e8cbd2db3febe759dc55f89a784c4a3e9a393d87202f88b74017d0d41bf4"
+    },
+    "stopped_checkpoint_manifest": {
+      "path": "G:\\gying-backups\\baidu-search-duplicate-20261109-20261109T142050.854970Z\\manifest.json",
+      "sha256": "09d58b8c299b33ce1f3d93f231a669a9997a5dd832ab3bc897fb4fdfc1fe0bc6"
+    },
+    "post_pin_checkpoint_manifest": {
+      "path": "G:\\gying-backups\\baidu-search-duplicate-post-pin-20261109-20261109T145702.543117Z\\manifest.json",
+      "sha256": "00a4429c8ecd9fbcf1680d3649b83e2739ec0b867a7bbd155133e19e8b9ee4c2"
+    },
+    "deployed_class_sql_snapshot_verification": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\duplicate-class-sql-20261109T145657.985771Z\\readonly-class-sql-result.json",
+      "sha256": "339121aeeedd7cc8b6cc979d21f0b7bb17332667099de71beafc68edf366ead9"
+    },
+    "deployed_class_scanner_result": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\duplicate-class-sql-20261109T145657.985771Z\\class-scanner-result.json",
+      "sha256": "cd382fdadf4ee7af1afd1bf2b7401a3299c48b0fc3ac82ae94ddb0d3861a1d1a"
+    },
+    "readonly_database_snapshot": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\duplicate-class-sql-20261109T145657.985771Z\\sql-snapshot.json",
+      "sha256": "a29a1b45154faef5360b8a0d460235bf3d35232fa7b4708d498fde81dc8a8fbf"
+    },
+    "real_admin_http_scan_pass": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\duplicate-admin-readonly-20261109T143331.659525Z\\live-duplicate-admin-20261109T150533.848698Z.json",
+      "sha256": "19ba0d7a80f5eb7b752bedd5db4cfbf22fbc0a4bdef903a3827bf59f3e848c93"
+    },
+    "independent_post_pin_audit": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\independent-post-pin-2026-11-09T151149358943+0000.json",
+      "sha256": "67e964ff12a2143ee45fa92b4ab6bf094a5aa76706cf88d266ed465346513fe6"
+    },
+    "independent_post_pin_original_failure_1": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\independent-post-pin-2026-11-09T150257697940+0000.json",
+      "sha256": "c8e30bf8cd18b2c75f0bc5b8944c44779cc259b5f9e4aee4a38eb0f26ee3f686"
+    },
+    "independent_post_pin_original_failure_2": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\independent-post-pin-2026-11-09T150858703252+0000.json",
+      "sha256": "a11b324ef996c3bb18923f48e4c73ed2b7c93733c62a63e25bc2cde733696749"
+    },
+    "final_ops_snapshot": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\final-ops-snapshot-20261109T1515.md",
+      "sha256": "e73b8de0a6a5d6b31d737c6bf7c266440af6a17f855006a9f27c36b3bf7ded3b"
+    },
+    "final_runtime_docker_logs": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\final-runtime-logs-20261109T151113735577Z.json",
+      "sha256": "f3dfac77ce38fd172e26a30534fb1e57c8324e89761b72e8b502e54ca8521da1"
+    },
+    "final_readiness": {
+      "path": "E:\\gying-tools\\releases\\baidu-search-duplicate-20261109\\verification\\final-readiness-20261109.json",
+      "sha256": "074502beae84b8c82b49773088911b6b091e3e572a6679b952e948b17288aae9"
+    }
+  },
+  "independentPostPinAudit": {
+    "completedAt": "2026-11-09 23:12:23 +08:00",
+    "summary": {
+      "PASS": 27,
+      "FAIL": 0
+    },
+    "allThreeAgeStreamsFullyAuthenticated": true,
+    "oldEncryptedConfigPreimageFullyAuthenticated": true,
+    "onlyExpectedBackendImageFieldChanged": true,
+    "otherCanonicalFieldBytesPreserved": true,
+    "hostMetadataProfileNtfsAclExactXmlAndCurrentSessionPairVerified": true,
+    "allSevenBackendDataFilesAndLiveGenerationPreservedBeforeAndAfter": true,
+    "freshMaintenanceAndLoginLocksHeld": true,
+    "strictIdleBeforeAndAfter": true,
+    "sourceReverificationPerformed": false,
+    "productionMutationsPerformed": false,
+    "originalAttempts": {
+      "count": 2,
+      "checksPassedBeforeHostSnapshotError": 16,
+      "errorType": "RuntimeError",
+      "causeConfirmed": false,
+      "originalFilesPreserved": true
+    },
+    "v2InvocationChanges": [
+      "explicit executable",
+      "NonInteractive",
+      "CREATE_NO_WINDOW",
+      "redacted diagnostics"
+    ],
+    "originalGatesRemoved": false,
+    "newSnapshotReads": 2,
+    "newSnapshotStderrBytes": [
+      0,
+      0
+    ],
+    "newSnapshotTaskStates": [
+      "Ready",
+      "Ready"
+    ],
+    "naturalDailyFullBackupOrNewVisibleWindowObservationVerified": false
+  },
+  "finalReadinessAndHealth": {
+    "opsReadinessPass": 11,
+    "opsReadinessWarning": 1,
+    "opsReadinessFail": 0,
+    "warning": "existing QQ schema coverage",
+    "snapshotAt": "2026-11-09 23:10:50 +08:00",
+    "localHealthEndpoints": 5,
+    "allHealthHttpStatuses": 200
+  },
+  "finalRuntimeObservation": {
+    "at": "2026-11-09 23:11:13 +08:00",
+    "fixedImagesAndRunningStatesVerified": true,
+    "restarts": 0,
+    "oomKilled": false,
+    "source": "Docker stdout/stderr",
+    "logBytes": {
+      "backend": 0,
+      "frontend": 0
+    },
+    "entireApplicationFileLogsVerified": false,
+    "productionMutationsPerformed": false
+  }
+}

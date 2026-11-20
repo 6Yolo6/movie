@@ -1,0 +1,35 @@
+{
+  "status": "stopped-preserve-current-state",
+  "sourceCommit": "0bba123db30867e0ea2cf045ae2ed0976104bb16",
+  "startedAt": "2026-11-10T13:03:56.969717+00:00",
+  "privateConfigurationWritten": true,
+  "configurationOutcomeUnknown": false,
+  "automaticRetry": false,
+  "automaticRestore": false,
+  "cloudWrites": 0,
+  "sqlWrites": 0,
+  "productionMergePerformed": false,
+  "deployment": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\verification-completed.json",
+    "sha256": "c0747de5952efae65255e310ef9e4984a55ce10379dbb10b094792fee16e2796"
+  },
+  "acceptance": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-20261110T130024.241605Z.json",
+    "sha256": "72803161c2f49f426b63721f72fa31fd24fb1f0fab2e9d434cde14cbfbc01d21"
+  },
+  "idle": {
+    "at": "2026-11-10T13:04:01.259105+00:00",
+    "phase": "Immediately before exact host image CAS",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "configurationReplaceAttempted": true,
+  "errorType": "RuntimeError",
+  "configurationSha256": "3fb400407d475c82806c18a597b5a0df412d98c298039b59061a65fa32f64671",
+  "onlyExpectedBackendImageChanged": true,
+  "hostOwnerGroupDaclRetained": true,
+  "completedAt": "2026-11-10T13:04:14.705387+00:00"
+}

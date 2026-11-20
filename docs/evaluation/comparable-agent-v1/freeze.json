@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "datasetSha256": "1b43fe6a03e02d9d245c41785e33c1d4fb3df7740ac2ce9b74245246ff279084",
+  "datasetVersion": "gying-comparable-regression-v1",
+  "provenance": "agent-authored-regression",
+  "frozenAt": "2026-10-23T11:40:50.589608+00:00",
+  "caseCount": 9,
+  "groupSplits": {
+    "interstellar": "regression",
+    "absent-title": "regression",
+    "invalid-request": "regression"
+  },
+  "dataScope": "live-read-only-catalog; no frozen corpus or independent quality claim"
+}

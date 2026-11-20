@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 2,
+  "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+  "reviewer": {
+    "kind": "model",
+    "name": "Codex"
+  },
+  "plannedTurns": 88,
+  "executedTurns": 88,
+  "notExecutedTurns": 0,
+  "mechanicallyPassedTurns": 84,
+  "mechanicallyFailedTurns": 4,
+  "answerCount": 84,
+  "scorableAnswerCount": 84,
+  "reviewedAnswers": 48,
+  "pendingAnswers": 36,
+  "humanReviewedAnswers": 0,
+  "humanPendingAnswers": 84,
+  "modelReviewedAnswers": 48,
+  "scoreDimensions": {
+    "factuality": {
+      "reviewed": 48,
+      "pending": 36,
+      "mean": 1.7083333333333333
+    },
+    "grounding": {
+      "reviewed": 80,
+      "pending": 4,
+      "mean": 1.425
+    },
+    "usefulness": {
+      "reviewed": 84,
+      "pending": 0,
+      "mean": 0.023809523809523808
+    }
+  },
+  "diagnosisReviewedRows": 84,
+  "diagnosisPendingRows": 4,
+  "failureCategoryCounts": {
+    "routing": 40,
+    "conditions": 42,
+    "candidates": 22,
+    "facts": 2,
+    "clarification": 70,
+    "multiTurn": 26
+  },
+  "hardConstraintCounts": {
+    "pending": 4,
+    "satisfied": 0,
+    "violated": 12,
+    "unknown": 72,
+    "notApplicable": 0
+  },
+  "outcomeCounts": {
+    "pending": 4,
+    "exact": 0,
+    "usefulApproximation": 2,
+    "clarification": 0,
+    "unhelpful": 82
+  },
+  "failedTurns": [
+    {
+      "caseId": "h02",
+      "repetition": 1,
+      "turn": 1,
+      "failure": "WEBSITE_JOB_FAILED"
+    },
+    {
+      "caseId": "h11",
+      "repetition": 1,
+      "turn": 1,
+      "failure": "WEBSITE_JOB_FAILED"
+    },
+    {
+      "caseId": "h19",
+      "repetition": 1,
+      "turn": 3,
+      "failure": "WEBSITE_JOB_FAILED"
+    },
+    {
+      "caseId": "h19",
+      "repetition": 2,
+      "turn": 3,
+      "failure": "WEBSITE_JOB_FAILED"
+    }
+  ],
+  "tokens": null,
+  "monetaryCost": null,
+  "scope": "Offline review; reviewer attribution is self-declared, not identity-verified. Model reviews do not count as human review. Per-dimension means include partial reviews. Diagnosis closes with documented categories or a documented outcome and constraint check; categories can overlap. Mechanical pass/failure does not determine score eligibility; any executed answer remains reviewable. Execution failures are not inferred quality causes. Usage is copied from the report only; missing values remain null. Scores are not production accuracy."
+}

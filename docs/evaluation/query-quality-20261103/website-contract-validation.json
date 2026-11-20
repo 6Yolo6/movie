@@ -1,0 +1,239 @@
+{
+  "schemaVersion": 2,
+  "validatedAt": "2026-11-03T14:03:01.923003+00:00",
+  "reportCanonicalSha256": "f027788aaf70e9968ec1830885554ab06cb2324dce7878480cec8249076273fc",
+  "reportByteSha256": "da50298bff1fc6136862b35c418f5e2b056f91ce7666d63ede5ee06c630fc820",
+  "hashProtocol": "quality_review.py v2 canonical JSON SHA-256 via evaluate_agent.digest; original runner reportSchemaVersion=1 preserved",
+  "allInScopeChecksPassed": true,
+  "checks": {
+    "exactFourSelectedRows": true,
+    "exactFourSubmissionAttempts": true,
+    "noInferenceRetry": true,
+    "allFourCompleted": true,
+    "allFourMechanicalPasses": true,
+    "reportCanonicalEnvelopeMatches": true,
+    "datasetCanonicalHashMatches": true,
+    "freezeCanonicalHashMatches": true,
+    "selectionCanonicalHashMatches": true,
+    "datasetFileHashUnchanged": true,
+    "freezeFileHashUnchanged": true,
+    "reportFileHashMatchesOperation": true,
+    "fourObservationsBoundToRows": true,
+    "freshDistinctRequestKeys": true,
+    "freshDistinctJobIds": true,
+    "ledgerJobIdsMatchTerminalRows": true,
+    "secondTurnReferencesFirstJob": true,
+    "thirdTurnReferencesSecondJob": true,
+    "independentTurnsHaveNoPreviousReference": true,
+    "historyCountsMatch": true,
+    "historyHashesMatchLedgerRowsObservations": true,
+    "ordinaryUserOriginIdentityVerified": true,
+    "backendExactImageBeforeAfter": true,
+    "agentExactJarBeforeAfter": true,
+    "agentStoredInstanceBeforeAfter": true,
+    "runnerExitedBeforeCleanup": true,
+    "oneDeviceRevokedOneAccountDisabled": true,
+    "originalDisabledUserStateRestored": true,
+    "passwordUnchanged": true,
+    "evaluationTokenRejectedAfterCleanup": true,
+    "temporaryMysqlCredentialRemoved": true,
+    "restrictedBackupsHashSizeAndAuthentication": true,
+    "postRunReadOnlyEntrypointsHttp200": true,
+    "sourceUnchanged:evaluate_development.py": true,
+    "sourceUnchanged:evaluate_website.py": true,
+    "sourceUnchanged:evaluate_agent.py": true,
+    "sourceUnchanged:comparable_evaluation.py": true,
+    "allTraceMetadataInScopeValid": true,
+    "yearReplacementPreservesMusicRuntimeAndCount": true,
+    "thirdPlanMatchesFirstActualCandidate": true,
+    "thirdDetailMatchesFirstActualCandidate": true,
+    "thirdDoesNotUseLatestFirstCandidate": true,
+    "directorAnswerMatchesAttributedCatalogField": true,
+    "contradictionClarifiedWithoutCandidate": true,
+    "allAnswerBindingsVerified": true,
+    "allQueryPlanBindingsVerified": true
+  },
+  "traceValidation": [
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 1,
+      "steps": 2,
+      "toolNames": [
+        "queryCatalog"
+      ],
+      "allowedKinds": true,
+      "allowedToolNames": true,
+      "successfulStatuses": true,
+      "validTimestamps": true,
+      "nonnegativeDurations": true
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 2,
+      "steps": 2,
+      "toolNames": [
+        "queryCatalog"
+      ],
+      "allowedKinds": true,
+      "allowedToolNames": true,
+      "successfulStatuses": true,
+      "validTimestamps": true,
+      "nonnegativeDurations": true
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 3,
+      "steps": 3,
+      "toolNames": [
+        "queryCatalog",
+        "getMovieDetails"
+      ],
+      "allowedKinds": true,
+      "allowedToolNames": true,
+      "successfulStatuses": true,
+      "validTimestamps": true,
+      "nonnegativeDurations": true
+    },
+    {
+      "caseId": "dev-v3-09",
+      "repetition": 1,
+      "turn": 1,
+      "steps": 3,
+      "toolNames": [
+        "queryCatalog"
+      ],
+      "allowedKinds": true,
+      "allowedToolNames": true,
+      "successfulStatuses": true,
+      "validTimestamps": true,
+      "nonnegativeDurations": true
+    }
+  ],
+  "sanitizedObservationBindings": [
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 1,
+      "originalAnswerCanonicalSha256": "409631f82099f2597d4f8797305165fca3028bb9602a59ca63bfa64772aaef08",
+      "sanitizedAnswerCanonicalSha256": "409631f82099f2597d4f8797305165fca3028bb9602a59ca63bfa64772aaef08",
+      "sanitizedAnswerMatchesOriginal": true,
+      "sanitizedQueryPlanMatchesOriginal": true,
+      "sanitizedEvidenceCanonicalSha256": "1407573a66ebda1643caba7dd4ee04101ee3161225db45180d67923dd547c07a",
+      "originalEvidenceCanonicalSha256": "1407573a66ebda1643caba7dd4ee04101ee3161225db45180d67923dd547c07a",
+      "sanitizedEvidenceEqualsOriginalDigest": true
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 2,
+      "originalAnswerCanonicalSha256": "59f070c322b1270e34a69b7f2de4d4ef316fb18f0262b3fd849d4149219bbb6c",
+      "sanitizedAnswerCanonicalSha256": "59f070c322b1270e34a69b7f2de4d4ef316fb18f0262b3fd849d4149219bbb6c",
+      "sanitizedAnswerMatchesOriginal": true,
+      "sanitizedQueryPlanMatchesOriginal": true,
+      "sanitizedEvidenceCanonicalSha256": "dd14d54309ebc6f12b32f9fb976c6da1eb9e141f08704afd24031404eba92dc3",
+      "originalEvidenceCanonicalSha256": "dd14d54309ebc6f12b32f9fb976c6da1eb9e141f08704afd24031404eba92dc3",
+      "sanitizedEvidenceEqualsOriginalDigest": true
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 3,
+      "originalAnswerCanonicalSha256": "a304dc4578d9839f8d9fdcb7d873b4eb5163fb2db5c11c677a50a0a3f4488878",
+      "sanitizedAnswerCanonicalSha256": "a304dc4578d9839f8d9fdcb7d873b4eb5163fb2db5c11c677a50a0a3f4488878",
+      "sanitizedAnswerMatchesOriginal": true,
+      "sanitizedQueryPlanMatchesOriginal": true,
+      "sanitizedEvidenceCanonicalSha256": "6b8fe3fd543c8c69358bf2ce6963e6196bd932717c35841a6da269f22b5bc6bd",
+      "originalEvidenceCanonicalSha256": "dd8bdba6708b0a7ee31171156ba65712cfc22b9d9019a2aca240c7a23cae012f",
+      "sanitizedEvidenceEqualsOriginalDigest": false
+    },
+    {
+      "caseId": "dev-v3-09",
+      "repetition": 1,
+      "turn": 1,
+      "originalAnswerCanonicalSha256": "0aedb2e9bd5fe52d2afd484637c5b27cf752aa667d8732b3596c5f0f459a0e74",
+      "sanitizedAnswerCanonicalSha256": "0aedb2e9bd5fe52d2afd484637c5b27cf752aa667d8732b3596c5f0f459a0e74",
+      "sanitizedAnswerMatchesOriginal": true,
+      "sanitizedQueryPlanMatchesOriginal": true,
+      "sanitizedEvidenceCanonicalSha256": "d752e2e98b1abcae396b98cee0c0a780fee6f6751619c0fe978010870afd8f54",
+      "originalEvidenceCanonicalSha256": "d752e2e98b1abcae396b98cee0c0a780fee6f6751619c0fe978010870afd8f54",
+      "sanitizedEvidenceEqualsOriginalDigest": true
+    }
+  ],
+  "jobLineage": [
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 1,
+      "jobId": "e2cecc09-d8f4-47d4-b71f-933f9b761223",
+      "previousJobId": null,
+      "requestKeyCanonicalSha256": "624830fdb8d170f4c86f5d5d04179024e0cd77f5344888650bec92aa697cef93",
+      "historyEntries": 0,
+      "historyCanonicalSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 2,
+      "jobId": "d5ca7883-37f3-46df-8f93-cdb84e49e093",
+      "previousJobId": "e2cecc09-d8f4-47d4-b71f-933f9b761223",
+      "requestKeyCanonicalSha256": "9726533174c5e7cd519e7cdeeef804a4d84446db1df38dd36a81d0163c19f53a",
+      "historyEntries": 2,
+      "historyCanonicalSha256": "28d14ff1afd086c5b61c55b3d335c8b89a382a2c0dbca569ac40ac85df5218fb"
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 3,
+      "jobId": "049825a9-5bba-4024-b05c-b2dfa6370c13",
+      "previousJobId": "d5ca7883-37f3-46df-8f93-cdb84e49e093",
+      "requestKeyCanonicalSha256": "2907e0b8a499954988d4edcc160acffb53434bb14627d6d10832e7909c6054c9",
+      "historyEntries": 4,
+      "historyCanonicalSha256": "985bd6599a5266a34f8f2505e9481107d27b878aa572680619aab49db4797662"
+    },
+    {
+      "caseId": "dev-v3-09",
+      "repetition": 1,
+      "turn": 1,
+      "jobId": "ccb50e63-6ae7-42e4-937a-a839dbc427cd",
+      "previousJobId": null,
+      "requestKeyCanonicalSha256": "298200846bf69fca06101ff875c33c4f49d563ee571bde680f30a606ac8beac4",
+      "historyEntries": 0,
+      "historyCanonicalSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  ],
+  "candidateReference": {
+    "firstListFirstCandidateId": "1MeM",
+    "firstListFirstTitle": "电台司令: 彩虹里",
+    "latestListFirstCandidateId": "za3R",
+    "thirdQueryPlanMovieId": "1MeM",
+    "thirdDetailMovieId": "1MeM",
+    "catalogDirectors": [
+      "David Barnard"
+    ]
+  },
+  "coverage": {
+    "sameUserFreshLinkedJobs": true,
+    "serverStoredVsForgedClientHistoryIsolation": false,
+    "crossOwnerRejection": false,
+    "natural900SecondExpiry": false,
+    "passwordLogin": false,
+    "browserUi": false
+  },
+  "preRedactionEvidenceHashesAreNotRedactionHashes": true,
+  "semanticQualityScoredSeparately": true,
+  "newHumanReviews": 0,
+  "protectedOriginalFifteenTurnEvidenceByteSha256": {
+    "candidate-report.json": "1cc71feaf6c557bd5639c4a8aa47026b888817f5b3ef3e75877324997946d50c",
+    "candidate-answers.md": "7d151017da37325bb809ea368896f6103cda79795326348b014d573ee7364ef2",
+    "candidate-review.json": "09da6292aa7c9240d00f419fed3aa5a2a561507673c781b29a5acec01d6e1a87",
+    "review.md": "02c2c6686e7a7eed10893596c72c34de2bbf2c2ac2efa66c55bb2461c0f925cb",
+    "review-validation.json": "46bd35b8b9eaa5e98cfd5b632565ace75ef7231c0044331aef7b8853109cf4fd",
+    "runner-manifest.json": "f51abe104d7f21b84bcf79ab9b7cbe4fb1b10782f276ac6f6e39512611a6d7df",
+    "runtime-before.json": "6ce7abaff273c3bfaca4bf02ebf823155700648c472ee5147345df86c07301ef",
+    "runtime-after.json": "c8253b526204707ec66f9b8329f0c7988e948425bf83d1452df1fb21ef2b625c"
+  },
+  "limits": "Bindings, contract metadata, targeted plan behavior and cleanup only. No semantic quality labels are inferred from these passed checks."
+}

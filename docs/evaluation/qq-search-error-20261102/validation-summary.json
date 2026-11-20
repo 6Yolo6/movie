@@ -1,0 +1,160 @@
+{
+  "date": "2026-11-02",
+  "timezone": "Asia/Shanghai",
+  "deployment": {
+    "service": "openclaw-openclaw-gateway-1",
+    "healthyAt": "2026-11-02T14:56:05.777789+00:00",
+    "gatewaySha256": "94922920ec9f653d6976ab95b0dee9501fd55962432ec29d84f2aa21fcc1593d",
+    "image": "sha256:3814fb1f62f9cfc5944de088c5817c68c88b5d721feebe36420b666a90a61ce7",
+    "gracefulStopExitCode": 0,
+    "configUnchanged": true,
+    "otherContainersUnchanged": true,
+    "otherContainerCount": 9
+  },
+  "tests": {
+    "tests": 17,
+    "pass": 17,
+    "fail": 0,
+    "skipped": 0
+  },
+  "deployedRuntimeValidation": {
+    "status": "passed",
+    "gatewaySha256": "94922920ec9f653d6976ab95b0dee9501fd55962432ec29d84f2aa21fcc1593d",
+    "slashSha256": "ce0cbaa6019572daf0022d3a8e615172548b6c0a712317c92c94b9af0a4cf3c4",
+    "runtimeCases": [
+      {
+        "name": "group_at_search",
+        "backendCalls": 1,
+        "sendCalls": 2,
+        "errorCount": 0,
+        "agentQueued": 0
+      },
+      {
+        "name": "group_at_search_no_space",
+        "backendCalls": 1,
+        "sendCalls": 2,
+        "errorCount": 0,
+        "agentQueued": 0
+      },
+      {
+        "name": "qq_fetch_failure",
+        "backendCalls": 1,
+        "sendCalls": 2,
+        "errorCount": 1,
+        "agentQueued": 0
+      },
+      {
+        "name": "qq_content_rejection",
+        "backendCalls": 1,
+        "sendCalls": 2,
+        "errorCount": 1,
+        "agentQueued": 0
+      },
+      {
+        "name": "matcher_exception",
+        "backendCalls": 0,
+        "sendCalls": 0,
+        "errorCount": 1,
+        "agentQueued": 0
+      },
+      {
+        "name": "unmatched_command",
+        "backendCalls": 0,
+        "sendCalls": 0,
+        "errorCount": 0,
+        "agentQueued": 1
+      },
+      {
+        "name": "explicit_delegate",
+        "backendCalls": 0,
+        "sendCalls": 0,
+        "errorCount": 0,
+        "agentQueued": 1
+      },
+      {
+        "name": "group_at_natural_language",
+        "backendCalls": 1,
+        "sendCalls": 1,
+        "errorCount": 0,
+        "agentQueued": 0
+      },
+      {
+        "name": "unauthorized_stop",
+        "backendCalls": 0,
+        "sendCalls": 1,
+        "errorCount": 0,
+        "agentQueued": 0
+      },
+      {
+        "name": "unauthorized_approve",
+        "backendCalls": 0,
+        "sendCalls": 1,
+        "errorCount": 0,
+        "agentQueued": 0
+      },
+      {
+        "name": "unauthorized_bot-update",
+        "backendCalls": 0,
+        "sendCalls": 1,
+        "errorCount": 0,
+        "agentQueued": 0
+      },
+      {
+        "name": "unauthorized_bot-config",
+        "backendCalls": 0,
+        "sendCalls": 1,
+        "errorCount": 0,
+        "agentQueued": 0
+      },
+      {
+        "name": "authorized_admin",
+        "backendCalls": 0,
+        "sendCalls": 1,
+        "errorCount": 0,
+        "agentQueued": 0
+      }
+    ],
+    "extractCases": 11,
+    "adminAuthorized": 3,
+    "adminRejected": 3,
+    "managementCases": 4,
+    "progressUtf8": true,
+    "realMessagesSent": 0,
+    "realNetworkRequests": 0
+  },
+  "realSearch": {
+    "status": "passed",
+    "probe": "deployed QQBot helper -> authenticated backend search",
+    "requests": 1,
+    "elapsedMs": 279,
+    "replyChars": 694,
+    "hasTitle": true,
+    "missingApiKey": false,
+    "httpFailure": false,
+    "realQQMessagesSent": 0
+  },
+  "entrypoints": {
+    "checkedAt": "2026-11-02T14:57:02.898390+00:00",
+    "since": "2026-11-02T14:55:52.332257647Z",
+    "probes": {
+      "http://127.0.0.1:18789/healthz": 200,
+      "http://127.0.0.1:8880/api/qq-bot/health": 200,
+      "http://127.0.0.1/": 200,
+      "http://127.0.0.1/api/qq-bot/health": 404
+    },
+    "logPatternCounts": {
+      "qqbot_connected": 7,
+      "plugin_permission_error": 0,
+      "missing_api_key": 0,
+      "slash_command_error": 0,
+      "startup_error": 0
+    }
+  },
+  "backup": {
+    "directory": "G:\\gying-backups\\qq-search-error-20261102T145108.776437Z",
+    "encryptedArtifacts": 1,
+    "verification": "SHA-256, full age authentication, archive member hashes verified in memory"
+  },
+  "rollback": "E:/gying-tools/releases/qq-search-error-20261102/deploy.py rollback",
+  "realGroupMessageEndToEndTested": false
+}

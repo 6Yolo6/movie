@@ -1,0 +1,65 @@
+{
+  "startedAt": "2026-11-15T12:40:13.531858+00:00",
+  "readOnly": true,
+  "rawOutputSaved": false,
+  "historicalFailedSnapshotAvailable": false,
+  "fixedNames": [
+    "GYing Cloudflare Tunnel",
+    "GYing QQ Channel Auto Post",
+    "GYing Xunlei Token Sync"
+  ],
+  "configurationSha256": "959876c0c155b2d624e330e73a392561606e3d22cba9ee62556a6f48093c5d13",
+  "qrIncludedInFixedNames": false,
+  "returncode": 0,
+  "stdoutBytes": 789,
+  "stderrBytes": 0,
+  "stderrEmpty": true,
+  "stdoutSha256": "59183cad2c64bebcbc9b637f6a8d92fda75f74b6dc5064c28e987d1a974317b6",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "readComplete": true,
+  "fixed": [
+    {
+      "name": "GYing Cloudflare Tunnel",
+      "state": "Running",
+      "enabled": true,
+      "lastRunTimeUtc": "2026-11-08T01:37:37.0000000Z",
+      "nextRunTimeUtc": null,
+      "lastResult": 267009,
+      "missedRuns": 0
+    },
+    {
+      "name": "GYing QQ Channel Auto Post",
+      "state": "Ready",
+      "enabled": true,
+      "lastRunTimeUtc": "2026-11-15T01:15:15.0000000Z",
+      "nextRunTimeUtc": "2026-11-16T01:00:00.0000000Z",
+      "lastResult": 0,
+      "missedRuns": 0
+    },
+    {
+      "name": "GYing Xunlei Token Sync",
+      "state": "Ready",
+      "enabled": true,
+      "lastRunTimeUtc": "2026-11-15T12:33:33.0000000Z",
+      "nextRunTimeUtc": "2026-11-15T14:33:33.0000000Z",
+      "lastResult": 0,
+      "missedRuns": 0
+    }
+  ],
+  "qr": [
+    {
+      "name": "GYing Baidu QR Login",
+      "state": "Ready",
+      "enabled": true,
+      "lastRunTimeUtc": "2026-11-15T12:40:40.0000000Z",
+      "nextRunTimeUtc": "2026-11-15T12:41:41.0000000Z",
+      "lastResult": 0,
+      "missedRuns": 0
+    }
+  ],
+  "projectedFieldsValid": true,
+  "fixedTaskSetExact": true,
+  "runningFixedBusinessTasks": [],
+  "originalTaskGateCurrentlyPasses": true,
+  "finishedAt": "2026-11-15T12:40:16.388955+00:00"
+}

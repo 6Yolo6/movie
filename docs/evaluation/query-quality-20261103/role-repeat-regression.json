@@ -1,0 +1,39 @@
+{
+  "red-validation.json": {
+    "startedAt": "2026-11-03T12:46:44.603993+00:00",
+    "completedAt": "2026-11-03T12:47:26.381901+00:00",
+    "phase": "red",
+    "exitCode": 1,
+    "sourceSha256": "1d76a034991b54c4d26639d777380139b3df2fa5be0661531688e72beccd3d37",
+    "productionEnvLoaded": false,
+    "deploymentPerformed": false,
+    "stats": {
+      "tests": 48,
+      "failures": 2,
+      "errors": 0,
+      "skipped": 0
+    },
+    "failedTests": [
+      "anAuthorCanAlsoBeExplicitlyRequestedAsDirectorWithinTheSameClause",
+      "anAuthorCanAlsoBeExplicitlyRequestedAsActorWithinTheSameClause"
+    ],
+    "sourceStillMatches": true
+  },
+  "green-validation.json": {
+    "startedAt": "2026-11-03T12:48:08.665795+00:00",
+    "completedAt": "2026-11-03T12:48:45.542636+00:00",
+    "phase": "green",
+    "exitCode": 0,
+    "sourceSha256": "90a1533dffaf5aa9221b57972d243ba53188298b670b276cedfe3fa84a45ec3a",
+    "productionEnvLoaded": false,
+    "deploymentPerformed": false,
+    "stats": {
+      "tests": 48,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "failedTests": [],
+    "sourceStillMatches": true
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "tmdbAutoSyncEnabled": true,
+  "tmdbAutoSyncUpdatesOnly": true,
+  "tmdbAutoSyncIntervalHours": 24,
+  "tmdbAutoSyncMaxItems": 10,
+  "tmdbAutoSyncSources": "TRENDING_MOVIE_DAY,TRENDING_TV_DAY,UPCOMING_MOVIE",
+  "gyingAutoSyncEnabled": true,
+  "gyingAutoSyncUpdatesOnly": true,
+  "gyingAutoSyncIntervalHours": 24,
+  "gyingAutoSyncMaxItems": 10,
+  "gyingAutoSyncSources": "TIME_MOVIE,TIME_TV,TIME_ANIME"
+}

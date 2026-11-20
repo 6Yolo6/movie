@@ -48,11 +48,21 @@ public class PosterStorageService {
     }
 
     public String storeTmdbPoster(String mediaType, Long tmdbId, String posterPath) {
+        return storeTmdbPoster(mediaType, tmdbId, null, posterPath);
+    }
+
+    public String storeTmdbSeasonPoster(Long tmdbId, int season, String posterPath) {
+        if (season < 1 || season > 99) return null;
+        return storeTmdbPoster("tv", tmdbId, season, posterPath);
+    }
+
+    private String storeTmdbPoster(String mediaType, Long tmdbId, Integer season, String posterPath) {
         if (!hasText(mediaType) || tmdbId == null || tmdbId <= 0 || !hasText(posterPath) || !isConfigured()) {
             return null;
         }
         String extension = extension(posterPath);
-        String objectName = "tmdb/" + mediaType.trim().toLowerCase() + "/" + tmdbId + "/poster" + extension;
+        String objectName = "tmdb/" + mediaType.trim().toLowerCase() + "/" + tmdbId
+                + (season == null ? "" : "/season-" + season) + "/poster" + extension;
         try {
             ResponseEntity<byte[]> response = restTemplate.getForEntity(TMDB_IMAGE_BASE_URL + posterPath, byte[].class);
             byte[] body = response.getBody();

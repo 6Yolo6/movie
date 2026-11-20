@@ -1,0 +1,50 @@
+{
+  "status": "DESIGN_SAFE_IF_IMPLEMENTATION_CONSTRAINTS_MET",
+  "atUtc": "2026-11-15T12:13:10.539911+00:00",
+  "scope": "READONLY_LOCAL_EVIDENCE_AND_DESIGN_NO_REAL_PROBE_REPEATED",
+  "protocolEvidence": [
+    {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-probe-diagnostic-20261115\\probe-20261115T120846Z.json",
+      "sha256": "03fa297a768108e8a8e9d6974d795df23a4599b26ae2cb304f9f14cffc215f8f"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-probe-diagnostic-20261115\\probe-output-text-20261115T120940Z.json",
+      "sha256": "835231334159757c3962053019181e94d9f28b1e9b7c0a041fa3fd054b1715db"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-probe-diagnostic-20261115\\probe-plain-command-20261115T121106Z.json",
+      "sha256": "703be5e04c214ba49dfb7401d631a054034ed5ef7528ef3d8bff8a552c4f6af4"
+    }
+  ],
+  "checks": {
+    "allThreeReadOnlyNoRawOutputSaved": true,
+    "allThreeReturnCodeZero": true,
+    "allThreeStdoutSameShaAndBytes": true,
+    "allThreeReadyIdentityAcl1374Valid": true,
+    "encodedProgressClixmlNonemptyProven": true,
+    "textFlagAloneStillNonemptyProven": true,
+    "plainCommandSingleArgvNoShellStderrEmptyProven": true
+  },
+  "recommendedProtocol": "powershell -NoProfile -Command, pinned probe source as one argv, shell omitted/false",
+  "outputFormatTextRecommendationRejected": true,
+  "requiredImplementationConstraints": [
+    "Original pinned probe script remains exactly the original source with only the Running rejection term removed; no progress/error stream filtering.",
+    "Keep return code zero, bytes stdout, valid complete JSON and empty stderr mandatory.",
+    "Complete probe metadata may be Running or Ready only; exact identity, enabled principal fields, full XML and unique ACL validation remain.",
+    "A copied Running value is normalized only to compare against the one persistent expected anchor; Ready is compared without state change.",
+    "Probe Ready never returns or archives a probe object. It only permits another original strict snapshot inside the remaining deadline.",
+    "Only a subsequent actual original strict Ready snapshot matching the anchor may return. Initial prepare without expected digest must preserve one anchor and still pass the durable V2 prior-host gate.",
+    "Original second-message failed response still must be a valid Running response; wrong identity/disabled/other states cannot be excused by a later probe.",
+    "Keep monotonic total 45-second budget including source verification, original strict, probe and sleeps.",
+    "V4 must use a unique pinned module name and the same name/path/hash/exact-class checks for safe error codes, with no V3 fallback.",
+    "Keep archive raw-byte gate, original mutation sequence, CAS, V1/V2/V3 sources/reservations/failures unchanged."
+  ],
+  "v3FailureAt120520OriginalStderrCapturedByReviewer": false,
+  "readyObservedLaterDoesNotProveEarlierState": true,
+  "historicalQrRunningConfirmed": false,
+  "realProbeRepeatedByReviewer": false,
+  "helperEditedByReviewer": false,
+  "productionMutationPerformed": false,
+  "executeRetryPerformed": false,
+  "finalV4ImplementationReviewed": false
+}

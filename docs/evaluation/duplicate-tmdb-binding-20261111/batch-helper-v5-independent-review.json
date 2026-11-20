@@ -1,0 +1,55 @@
+{
+  "version": 5,
+  "status": "PASS",
+  "at": "2026-11-11T06:44:50.233135+00:00",
+  "reviewer": "review_data_helpers",
+  "reviewType": "INDEPENDENT_V5_FROZEN_CHAIN_ONLY",
+  "revisionBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v5-binding.json",
+    "sha256": "0f96f542a7a21575498e2cecb36aa9c50afcf1a358392f92d5190278f6563297"
+  },
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchUnsentMergeV5.py",
+      "sha256": "8b3948610433cbe5f54efac4e53f05c24cb03f1cb46e0670f9dc4df712209c1f"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMergeV4.py",
+      "sha256": "b346f82f4548cc9e491424df5c2f985850cd33ff3d28669aee2e3b743bfdfbfb"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerifyV4.py",
+      "sha256": "c2938ba847727afe1bf727733a0af1d5aa99a71aab38c30d781cb99e344c4f28"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchPresendResume.py",
+      "sha256": "da75b6cdeab288b9689e4a25ec8118720d1ffab270bb61abcb28ce5ff9dc4266"
+    }
+  ],
+  "previousBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v4-binding.json",
+    "sha256": "de37382a454a06b5d2b24b62b0b95d3406405f40571e1c750045f26b2bebdb33"
+  },
+  "offlineReview": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v5-offline-review.json",
+    "sha256": "21e6c250c9bcc7cde00d85a2f5d39e17bbff63440edae60ebce69cb44ca36dcc"
+  },
+  "derivation": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v5-derivation.json",
+    "sha256": "e9218c5ff907538888e279c76ea6ce2c162aebfb03381f1aae9515a54b6c3f80"
+  },
+  "priorBatchInputCount": 22,
+  "allFrozenChainReferencesPassed": true,
+  "allTestsPassed": true,
+  "productionPosts": 0,
+  "productionRuntimeIo": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0,
+  "gitActions": 0,
+  "runtimeLoadExecutionAndPostFailClosed": true,
+  "productionResultVerifiedByThisReview": false,
+  "executionDecision": "NOT_EXECUTED_ORIGINAL_REVIEW_SEND_WINDOW_EXPIRED",
+  "originalReviewExpiresAt": "2026-11-11T06:43:05Z",
+  "requiredRemainingSecondsGreaterThan": 90,
+  "lastPermittedSendTimeStrictlyBefore": "2026-11-11T06:41:35Z"
+}

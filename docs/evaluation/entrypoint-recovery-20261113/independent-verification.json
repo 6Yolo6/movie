@@ -1,0 +1,456 @@
+{
+  "schemaVersion": 1,
+  "verificationTime": "2026-11-13T05:36:24.460934+00:00",
+  "baseline": {
+    "source": "container-baseline.dpapi",
+    "authenticatedDecrypt": true,
+    "plaintextWritten": false,
+    "containerCount": 3
+  },
+  "containers": [
+    {
+      "name": "gying-movie-nginx-1",
+      "running": true,
+      "startedAt": "2026-11-13T05:17:41.962140773Z",
+      "restartCount": 0,
+      "sameId": true,
+      "sameImage": true,
+      "sameCompleteConfig": true,
+      "sameCompleteHostConfig": true,
+      "passed": true,
+      "dynamicIp": "172.18.0.10",
+      "noFixedIp": true,
+      "sameAliases": true,
+      "sameNetworkId": true
+    },
+    {
+      "name": "gying-movie-backend-1",
+      "running": true,
+      "startedAt": "2026-11-13T05:27:00.80354556Z",
+      "restartCount": 0,
+      "sameId": true,
+      "sameImage": true,
+      "sameCompleteConfig": true,
+      "sameCompleteHostConfig": true,
+      "passed": true
+    },
+    {
+      "name": "minio-server",
+      "running": true,
+      "startedAt": "2026-11-13T05:26:14.384837165Z",
+      "restartCount": 0,
+      "sameId": true,
+      "sameImage": true,
+      "sameCompleteConfig": true,
+      "sameCompleteHostConfig": true,
+      "passed": true
+    }
+  ],
+  "http": [
+    {
+      "status": 200,
+      "bytes": 2786,
+      "contentType": "application/json",
+      "sha256": "95a9ae11b6275d8d76e5c7cca0a99fa13c04d7b76e9372fbfd8b29e0d9bff692",
+      "bodyValid": true,
+      "label": "local-catalog",
+      "expected": [
+        200
+      ],
+      "seconds": 0.031,
+      "passed": true
+    },
+    {
+      "status": 200,
+      "bytes": 68036,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "3ad4bfe92d95b720d409279e8217de4fc879ae69a70819240ef039df0ef96881",
+      "bodyValid": true,
+      "label": "local-home",
+      "expected": [
+        200
+      ],
+      "seconds": 0.218,
+      "passed": true
+    },
+    {
+      "status": 200,
+      "bytes": 68403,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "67313d652bf75cbb9462f26c6e4633a4f1d50e0edef0d2aad90b4189ee7312ba",
+      "bodyValid": true,
+      "label": "public-home",
+      "expected": [
+        200
+      ],
+      "seconds": 1.218,
+      "passed": true
+    },
+    {
+      "status": 200,
+      "bytes": 2786,
+      "contentType": "application/json",
+      "sha256": "95a9ae11b6275d8d76e5c7cca0a99fa13c04d7b76e9372fbfd8b29e0d9bff692",
+      "bodyValid": true,
+      "label": "public-catalog",
+      "expected": [
+        200
+      ],
+      "seconds": 1.218,
+      "passed": true
+    },
+    {
+      "status": 200,
+      "bytes": 1370,
+      "contentType": "application/json",
+      "sha256": "317ad98b1c5289af65e88ff27fabd0fd34910c686066d349d31cb50bd4a2823f",
+      "bodyValid": true,
+      "label": "local-detail-api",
+      "expected": [
+        200
+      ],
+      "seconds": 0.218,
+      "passed": true
+    },
+    {
+      "status": 200,
+      "bytes": 1370,
+      "contentType": "application/json",
+      "sha256": "317ad98b1c5289af65e88ff27fabd0fd34910c686066d349d31cb50bd4a2823f",
+      "bodyValid": true,
+      "label": "public-detail-api",
+      "expected": [
+        200
+      ],
+      "seconds": 1.359,
+      "passed": true
+    },
+    {
+      "status": 200,
+      "bytes": 188815,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "38d3c77673e0dd4b1896260988f3e96e96492eb62bbfeb41316c3d563f8ce99b",
+      "bodyValid": true,
+      "label": "local-detail-ssr",
+      "expected": [
+        200
+      ],
+      "seconds": 0.203,
+      "passed": true
+    },
+    {
+      "status": 200,
+      "bytes": 189182,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "0ee21de19a7cee913700fe8e23dbd5d1e6d27870c328e2828b623ba0c8a52c15",
+      "bodyValid": true,
+      "label": "public-detail-ssr",
+      "expected": [
+        200
+      ],
+      "seconds": 1.766,
+      "passed": true
+    },
+    {
+      "status": 200,
+      "bytes": 1408,
+      "contentType": "application/json",
+      "sha256": "897da4b2b3cb6cb9138e2a50b35c0b5fd80b3000a4ceb00d33199229e8cb2bad",
+      "bodyValid": true,
+      "label": "backend-host-catalog",
+      "expected": [
+        200
+      ],
+      "seconds": 0.032,
+      "passed": true
+    },
+    {
+      "status": 200,
+      "bytes": 0,
+      "contentType": "",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "label": "minio-host-live",
+      "expected": [
+        200
+      ],
+      "seconds": 0.0,
+      "passed": true
+    },
+    {
+      "status": 200,
+      "bytes": 88,
+      "contentType": "text/plain; charset=utf-8",
+      "sha256": "779e412995935e8832ae95baf7dca35648fe0c1a0e3e83b09f200916209088f1",
+      "label": "tunnel-ready",
+      "expected": [
+        200
+      ],
+      "seconds": 0.0,
+      "passed": true
+    },
+    {
+      "status": 404,
+      "bytes": 0,
+      "label": "local-internal-denied",
+      "expected": [
+        404
+      ],
+      "seconds": 0.015,
+      "passed": true
+    },
+    {
+      "status": 404,
+      "bytes": 0,
+      "label": "public-internal-denied",
+      "expected": [
+        404
+      ],
+      "seconds": 0.828,
+      "passed": true
+    },
+    {
+      "status": 404,
+      "bytes": 0,
+      "label": "local-qq-denied",
+      "expected": [
+        404
+      ],
+      "seconds": 0.078,
+      "passed": true
+    },
+    {
+      "status": 404,
+      "bytes": 0,
+      "label": "public-qq-denied",
+      "expected": [
+        404
+      ],
+      "seconds": 1.282,
+      "passed": true
+    },
+    {
+      "status": 401,
+      "bytes": 0,
+      "label": "local-anonymous-admin-denied",
+      "expected": [
+        401
+      ],
+      "seconds": 0.079,
+      "passed": true
+    },
+    {
+      "status": 302,
+      "bytes": 0,
+      "label": "public-admin-access-redirect",
+      "expected": [
+        302
+      ],
+      "seconds": 0.532,
+      "passed": true
+    },
+    {
+      "status": 200,
+      "bytes": 54758,
+      "contentType": "image/jpeg",
+      "sha256": "b07152d5fa848d8a8a15a2db0fe31f0802a675bf9497d5ecdd9a39e8a672672f",
+      "bodyValid": true,
+      "label": "local-image",
+      "expected": [
+        200
+      ],
+      "seconds": 0.046,
+      "passed": true
+    },
+    {
+      "status": 200,
+      "bytes": 54758,
+      "contentType": "image/jpeg",
+      "sha256": "b07152d5fa848d8a8a15a2db0fe31f0802a675bf9497d5ecdd9a39e8a672672f",
+      "bodyValid": true,
+      "label": "public-image",
+      "expected": [
+        200
+      ],
+      "seconds": 1.172,
+      "passed": true
+    },
+    {
+      "status": 200,
+      "bytes": 17270,
+      "contentType": "text/plain; version=0.0.4; charset=utf-8; escaping=underscores",
+      "sha256": "4679456da3d83a741ff567982efa5db65ec934afe325306bdd983caaf2b66736",
+      "label": "tunnel-metrics",
+      "expected": [
+        200
+      ],
+      "seconds": 0.0,
+      "passed": true
+    }
+  ],
+  "unaffectedContainers": {
+    "exactOriginalStartedAtVectorAvailable": false,
+    "containers": [
+      {
+        "name": "gying-movie-frontend-1",
+        "running": true,
+        "startedAt": "2026-11-12T16:25:52.09455211Z",
+        "notStartedInRecoveryWindow": true
+      },
+      {
+        "name": "gying-baidu-share-probe-748d2e7e229848a698f6f6c52a1d07fa",
+        "running": false,
+        "startedAt": "2026-11-09T11:03:00.889598807Z",
+        "notStartedInRecoveryWindow": true
+      },
+      {
+        "name": "gying-baidu-upload-probe-748d2e7e229848a698f6f6c52a1d07fa",
+        "running": false,
+        "startedAt": "2026-11-09T10:38:35.238615165Z",
+        "notStartedInRecoveryWindow": true
+      },
+      {
+        "name": "gying-movie-social-publisher-1",
+        "running": true,
+        "startedAt": "2026-11-12T16:25:52.037660616Z",
+        "notStartedInRecoveryWindow": true
+      },
+      {
+        "name": "gying-movie-quark-auto-save-1",
+        "running": true,
+        "startedAt": "2026-11-12T16:25:52.05782569Z",
+        "notStartedInRecoveryWindow": true
+      },
+      {
+        "name": "gying-movie-gying-source-1",
+        "running": true,
+        "startedAt": "2026-11-12T16:25:52.003989711Z",
+        "notStartedInRecoveryWindow": true
+      },
+      {
+        "name": "gying-xunlei-path-probe-20261006",
+        "running": false,
+        "startedAt": "2026-10-06T12:51:15.863953362Z",
+        "notStartedInRecoveryWindow": true
+      },
+      {
+        "name": "openclaw-openclaw-gateway-1",
+        "running": true,
+        "startedAt": "2026-11-12T16:25:52.067402289Z",
+        "notStartedInRecoveryWindow": true
+      },
+      {
+        "name": "gying-movie-redis-1",
+        "running": true,
+        "startedAt": "2026-11-12T16:25:52.083554955Z",
+        "notStartedInRecoveryWindow": true
+      },
+      {
+        "name": "gying-movie-pansou-1",
+        "running": true,
+        "startedAt": "2026-11-12T16:25:52.000446791Z",
+        "notStartedInRecoveryWindow": true
+      }
+    ]
+  },
+  "selectedPublicMovieId": "tmdb_movie_9569",
+  "imageContentSame": true,
+  "tunnelHAConnections": 4.0,
+  "logs": [
+    {
+      "name": "gying-movie-nginx-1",
+      "window": "current-container-start",
+      "since": "2026-11-13T05:17:41.962140773Z",
+      "tailLimit": 2000,
+      "stdoutBytes": 12737,
+      "stderrBytes": 0,
+      "commandExitCode": 0,
+      "rawProviderLogsWritten": false,
+      "ERRORLines": 0,
+      "emergLines": 0,
+      "exceptionLines": 0,
+      "OOMLines": 0
+    },
+    {
+      "name": "gying-movie-nginx-1",
+      "window": "all-recovered-after-last-start",
+      "since": "2026-11-13T05:27:00.80354556Z",
+      "tailLimit": 2000,
+      "stdoutBytes": 8370,
+      "stderrBytes": 0,
+      "commandExitCode": 0,
+      "rawProviderLogsWritten": false,
+      "ERRORLines": 0,
+      "emergLines": 0,
+      "exceptionLines": 0,
+      "OOMLines": 0
+    },
+    {
+      "name": "gying-movie-backend-1",
+      "window": "current-container-start",
+      "since": "2026-11-13T05:27:00.80354556Z",
+      "tailLimit": 2000,
+      "stdoutBytes": 2711,
+      "stderrBytes": 0,
+      "commandExitCode": 0,
+      "rawProviderLogsWritten": false,
+      "ERRORLines": 0,
+      "emergLines": 0,
+      "exceptionLines": 0,
+      "OOMLines": 0
+    },
+    {
+      "name": "gying-movie-backend-1",
+      "window": "all-recovered-after-last-start",
+      "since": "2026-11-13T05:27:00.80354556Z",
+      "tailLimit": 2000,
+      "stdoutBytes": 2711,
+      "stderrBytes": 0,
+      "commandExitCode": 0,
+      "rawProviderLogsWritten": false,
+      "ERRORLines": 0,
+      "emergLines": 0,
+      "exceptionLines": 0,
+      "OOMLines": 0
+    },
+    {
+      "name": "minio-server",
+      "window": "current-container-start",
+      "since": "2026-11-13T05:26:14.384837165Z",
+      "tailLimit": 2000,
+      "stdoutBytes": 0,
+      "stderrBytes": 647,
+      "commandExitCode": 0,
+      "rawProviderLogsWritten": false,
+      "ERRORLines": 0,
+      "emergLines": 0,
+      "exceptionLines": 0,
+      "OOMLines": 0
+    },
+    {
+      "name": "minio-server",
+      "window": "all-recovered-after-last-start",
+      "since": "2026-11-13T05:27:00.80354556Z",
+      "tailLimit": 2000,
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "commandExitCode": 0,
+      "rawProviderLogsWritten": false,
+      "ERRORLines": 0,
+      "emergLines": 0,
+      "exceptionLines": 0,
+      "OOMLines": 0
+    }
+  ],
+  "stableDuringVerification": true,
+  "passed": true,
+  "limitations": [
+    "No exact original StartedAt vector exists for unaffected containers; only absence of starts in recovery window is established",
+    "No actual provider transfer, share, publishing, account login or authenticated admin operation was performed",
+    "Log counts cover bounded Docker streams, not all application files"
+  ],
+  "initialReportRetained": {
+    "file": "independent-verification-initial.json",
+    "sha256": "64c6a28095ad238050bde43dfb8f6ae6dce83103912f1271ed37eab2da1840d1",
+    "reason": "Verifier incorrectly expected a top-level movie id; actual MovieDetailDTO contains movie/resources; both original HTTP responses were 200 with identical hashes"
+  }
+}

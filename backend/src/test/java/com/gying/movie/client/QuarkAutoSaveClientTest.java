@@ -19,6 +19,7 @@ import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.utils.SeasonSearchUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -264,7 +265,8 @@ class QuarkAutoSaveClientTest {
                                   {"fid":"part-8","file_name":"人生七年8 56 Up (2012)","dir":true},
                                   {"fid":"part-9","file_name":"人生七年9 63 Up (2019)","dir":true}
                                 ]}}
-                                """));
+                                """),
+                        ResponseEntity.ok("{\"success\":true,\"data\":{\"list\":[{\"file_name\":\"56.Up.2012.mkv\",\"dir\":false}]}}"));
         QuarkAutoSaveClient client = new QuarkAutoSaveClient(builder, new ObjectMapper(), properties);
 
         QuarkAutoSaveClient.MovieShareSelection selection = client.resolveMovieShareUrl(
@@ -306,5 +308,202 @@ class QuarkAutoSaveClientTest {
 
         assertEquals(shareUrl, selection.shareUrl());
         assertFalse(selection.recursive());
+    }
+
+    @Test
+    void locatesZootopiaInAbbreviatedFirstMovieDirectoryByVideoNameAndYear() {
+        QuarkAutoSaveClient client = movieTree(Map.of(
+                "root", "[{\"fid\":\"collection\",\"file_name\":\"F 疯K D0ng W 成\",\"dir\":true}]",
+                "collection", "[{\"fid\":\"second\",\"file_name\":\"枫 2（2025）\",\"dir\":true},{\"fid\":\"first\",\"file_name\":\"疯 1 (2016)\",\"dir\":true}]",
+                "first", "[{\"file_name\":\"Zootopia.2016.UHD.2160p.mkv\",\"dir\":false},{\"file_name\":\"1080P 英国台粤四音轨.mkv\",\"dir\":false},{\"file_name\":\"【国语】2016.BD2160P.mp4\",\"dir\":false}]"));
+        var selection = client.resolveMovieShareUrl("https://pan.quark.cn/s/fixture", "疯狂动物城", "Zootopia", null, 2016);
+        assertEquals("https://pan.quark.cn/s/fixture#/list/share/first", selection.shareUrl());
+        assertTrue(selection.recursive());
+    }
+
+    @Test
+    void locatesOrdinalFirstMovieByItsVideoRatherThanSavingTheWholeCollection() {
+        QuarkAutoSaveClient client = movieTree(Map.of(
+                "root", "[{\"fid\":\"collection\",\"file_name\":\"疯狂动物城 全2部 合集\",\"dir\":true}]",
+                "collection", "[{\"fid\":\"second\",\"file_name\":\"第二部（2025）4K\",\"dir\":true},{\"fid\":\"first\",\"file_name\":\"第一部 4K.UHD蓝光原盘REMUX\",\"dir\":true}]",
+                "second", "[{\"file_name\":\"2.国粤英3音轨.2160p.mkv\",\"dir\":false}]",
+                "first", "[{\"file_name\":\"Zootopia.2016.2160p.UHD.BluRay.REMUX.mkv\",\"dir\":false}]"));
+        var selection = client.resolveMovieShareUrl("https://pan.quark.cn/s/fixture", "疯狂动物城", "Zootopia", null, 2016);
+        assertEquals("https://pan.quark.cn/s/fixture#/list/share/first", selection.shareUrl());
+        assertTrue(selection.recursive());
+    }
+
+    @Test
+    void rejectsMixedMovieFilesAtTheShareRootInsteadOfTransferringBoth() {
+        QuarkAutoSaveClient client = movieTree(Map.of("root",
+                "[{\"file_name\":\"Zootopia.2016.mkv\",\"dir\":false},{\"file_name\":\"Zootopia.2.2025.mkv\",\"dir\":false}]"));
+        assertThrows(IllegalStateException.class, () -> client.resolveMovieShareUrl(
+                "https://pan.quark.cn/s/mixed", "疯狂动物城", "Zootopia", null, 2016));
+    }
+
+    @Test
+    void doesNotTreatASequelWithTheSameYearAsTheRequestedMovie() {
+        QuarkAutoSaveClient client = movieTree(Map.of("root",
+                "[{\"file_name\":\"Zootopia.2.2016.mkv\",\"dir\":false}]"));
+        assertThrows(IllegalStateException.class, () -> client.resolveMovieShareUrl(
+                "https://pan.quark.cn/s/sequel", "疯狂动物城", "Zootopia", null, 2016));
+    }
+
+    @Test
+    void neverWidensAnExplicitDirectoryToTheShareRoot() {
+        QuarkAutoSaveClient client = movieTree(Map.of("first",
+                "[{\"file_name\":\"Zootopia.2016.mkv\",\"dir\":false}]"));
+        String scoped = "https://pan.quark.cn/s/fixture#/list/share/first";
+        assertEquals(scoped, client.resolveMovieShareUrl(scoped, "疯狂动物城", "Zootopia", null, 2016).shareUrl());
+    }
+
+    @Test
+    void disablesRecursionWhenSelectedDirectoryAlsoContainsUnverifiedSubdirectories() {
+        QuarkAutoSaveClient client = movieTree(Map.of("first",
+                "[{\"file_name\":\"Zootopia.2016.mkv\",\"dir\":false},{\"fid\":\"second\",\"file_name\":\"其他影片\",\"dir\":true}]"));
+        var selected = client.resolveMovieShareUrl("https://pan.quark.cn/s/fixture#/list/share/first", "疯狂动物城", "Zootopia", null, 2016);
+        assertFalse(selected.recursive());
+    }
+
+    @Test
+    void failsClosedWhenOnlyUnidentifiableNestedVideosExist() {
+        QuarkAutoSaveClient client = movieTree(Map.of(
+                "root", "[{\"fid\":\"unknown\",\"file_name\":\"电影合集\",\"dir\":true}]",
+                "unknown", "[{\"file_name\":\"movie.mkv\",\"dir\":false}]"));
+        IllegalStateException error = assertThrows(IllegalStateException.class, () -> client.resolveMovieShareUrl(
+                "https://pan.quark.cn/s/unknown", "疯狂动物城", "Zootopia", null, 2016));
+        assertTrue(error.getMessage().contains("target movie directory"));
+    }
+
+    @Test
+    void keepsNamedMovieContextForNestedEncodingVersionsButNotAnotherInstallment() {
+        QuarkAutoSaveClient client = movieTree(Map.of(
+                "root", "[{\"fid\":\"movie\",\"file_name\":\"疯狂动物城 (2016)\",\"dir\":true}]",
+                "movie", "[{\"fid\":\"second\",\"file_name\":\"第二部\",\"dir\":true},{\"fid\":\"version\",\"file_name\":\"4K蓝光版本\",\"dir\":true}]",
+                "second", "[{\"file_name\":\"movie.mkv\",\"dir\":false}]",
+                "version", "[{\"file_name\":\"2160p.mkv\",\"dir\":false}]"));
+        assertEquals("https://pan.quark.cn/s/fixture#/list/share/version", client.resolveMovieShareUrl(
+                "https://pan.quark.cn/s/fixture", "疯狂动物城", "Zootopia", null, 2016).shareUrl());
+    }
+
+    @Test
+    void doesNotFallBackToRootWhenDirectoryReadFails() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getQuark().setToken("test-token");
+        RestTemplate rest = mock(RestTemplate.class);
+        RestTemplateBuilder builder = mock(RestTemplateBuilder.class);
+        when(builder.build()).thenReturn(rest);
+        when(rest.postForEntity(contains("/get_share_detail"), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(new ResourceAccessException("offline"));
+        QuarkAutoSaveClient client = new QuarkAutoSaveClient(builder, new ObjectMapper(), properties);
+        assertThrows(IllegalStateException.class, () -> client.resolveMovieShareUrl(
+                "https://pan.quark.cn/s/fixture", "疯狂动物城", "Zootopia", null, 2016));
+        verify(rest, never()).postForEntity(contains("/run_script_now"), any(HttpEntity.class), eq(String.class));
+    }
+
+    @Test
+    void boundsCyclesInMovieDirectoryTraversal() {
+        QuarkAutoSaveClient client = movieTree(Map.of(
+                "root", "[{\"fid\":\"cycle\",\"file_name\":\"合集\",\"dir\":true}]",
+                "cycle", "[{\"fid\":\"cycle\",\"file_name\":\"合集\",\"dir\":true}]"));
+        assertThrows(IllegalStateException.class, () -> client.resolveMovieShareUrl(
+                "https://pan.quark.cn/s/fixture", "疯狂动物城", "Zootopia", null, 2016));
+    }
+
+    @Test void selectsObfuscatedMovieSubdirectoryAndStillRejectsWrongYearAndCollection() {
+        var tree=Map.of(
+          "root", "[{\"fid\":\"movie\",\"file_name\":\"一个–部门的DS (2026)\",\"dir\":true}]",
+          "movie", "[{\"fid\":\"v\",\"file_name\":\"01.mkv\",\"dir\":false}]");
+        assertEquals("https://pan.quark.cn/s/fixture#/list/share/movie",movieTree(tree).resolveMovieShareUrl("https://pan.quark.cn/s/fixture","一个部门的诞生",null,null,2026).shareUrl());
+        assertThrows(IllegalStateException.class,()->movieTree(tree).resolveMovieShareUrl("https://pan.quark.cn/s/fixture","一个部门的诞生",null,null,2025));
+        var collection=movieTree(Map.of("root","[{\"fid\":\"all\",\"file_name\":\"一个–部门的DS 合集 (2026)\",\"dir\":true}]","all","[{\"fid\":\"v\",\"file_name\":\"01.mkv\",\"dir\":false}]"));
+        assertThrows(IllegalStateException.class,()->collection.resolveMovieShareUrl("https://pan.quark.cn/s/fixture","一个部门的诞生",null,null,2026));
+    }
+
+    @Test void selectsObfuscatedAnimeDirectoryAndRejectsSecondSeasonContents() {
+        String label="黑-A-召-喚-師Z地-下-戀-愛-中";
+        var tree=Map.of("root","[{\"fid\":\"target\",\"file_name\":\""+label+"\",\"dir\":true},{\"fid\":\"other\",\"file_name\":\"其他影片\",\"dir\":true}]",
+            "target","[{\"fid\":\"v\",\"file_name\":\"01.mkv\",\"dir\":false}]");
+        assertEquals("https://pan.quark.cn/s/fixture#/list/share/target",movieTree(tree).resolveSeasonShareUrl("https://pan.quark.cn/s/fixture",1,label,"黑暗召唤师在地下恋爱中"));
+        var wrong=Map.of("root","[{\"fid\":\"target\",\"file_name\":\""+label+"\",\"dir\":true}]",
+            "target","[{\"fid\":\"v\",\"file_name\":\"S02E01.mkv\",\"dir\":false}]");
+        assertThrows(IllegalStateException.class,()->movieTree(wrong).resolveSeasonShareUrl("https://pan.quark.cn/s/fixture",1,label,"黑暗召唤师在地下恋爱中"));
+        var mixed=Map.of("root",tree.get("root"),"target","[{\"file_name\":\"01.mkv\",\"dir\":false},{\"fid\":\"foreign\",\"file_name\":\"其他电影\",\"dir\":true}]",
+            "foreign","[{\"file_name\":\"movie.mkv\",\"dir\":false}]","other","[]");
+        assertThrows(IllegalStateException.class,()->movieTree(mixed).resolveSeasonShareUrl("https://pan.quark.cn/s/fixture",1,label,"黑暗召唤师在地下恋爱中"));
+    }
+
+    @Test void keepsExecutableOnlyShareOutOfTheVideoTransferScope() {
+        String label="黑-A-召-喚-師Z地-下-戀-愛-中";
+        var executable=Map.of("root","[{\"fid\":\"target\",\"file_name\":\""+label+"\",\"dir\":true}]",
+            "target","[{\"file_name\":\"Dark Summoner S01E01.DDRT.exe\",\"dir\":false},{\"fid\":\"unpack\",\"file_name\":\"下载后解压\",\"dir\":true}]",
+            "unpack","[]");
+        assertThrows(IllegalStateException.class,()->movieTree(executable).resolveSeasonShareUrl("https://pan.quark.cn/s/fixture",1,label,"黑暗召唤师在地下恋爱中"));
+        assertThrows(IllegalStateException.class,()->movieTree(executable).resolveSeasonShareUrl("https://pan.quark.cn/s/fixture",1,"【更新至 02 集】【黑暗召唤师在地下恋爱中】","黑暗召唤师在地下恋爱中"));
+    }
+
+    @Test
+    void retainsCancelledShareCauseAcrossSupportedResponseShapesWithoutSubmittingATransfer() {
+        for (String body : List.of(
+                "{\"success\":false,\"data\":{\"error\":\"好友已取消了分享\"}}",
+                "{\"success\":false,\"error\":\"好友已取消了分享\"}",
+                "{\"success\":false,\"message\":\"好友已取消了分享\"}",
+                "{\"success\":false,\"data\":{\"error\":{\"message\":\"好友已取消了分享\"}},\"message\":\"failed\"}")) {
+            RestTemplate rest = mock(RestTemplate.class);
+            QuarkAutoSaveClient client = shareDetailClient(rest, body);
+            IllegalStateException failure = assertThrows(IllegalStateException.class, () -> client.resolveMovieShareUrl(
+                    "https://pan.quark.cn/s/fixture", "哈哈哈哈哈", null, null, 2021));
+            assertTrue(failure.getMessage().contains("好友已取消了分享"));
+            verify(rest, never()).postForEntity(contains("/run_script_now"), any(HttpEntity.class), eq(String.class));
+        }
+    }
+
+    @Test
+    void keepsSpecificShareErrorAndCodeButRemovesSensitiveValues() {
+        RestTemplate rest = mock(RestTemplate.class);
+        String body = "{\"success\":false,\"data\":{\"code\":41017,\"error\":\"分享已失效 token=private-token https://pan.quark.cn/s/private\"}}";
+        IllegalStateException failure = assertThrows(IllegalStateException.class, () -> shareDetailClient(rest, body)
+                .resolveMovieShareUrl("https://pan.quark.cn/s/fixture", "电影", null, null, 2021));
+        assertTrue(failure.getMessage().contains("分享已失效"));
+        assertTrue(failure.getMessage().contains("41017"));
+        assertFalse(failure.getMessage().contains("private-token"));
+        assertFalse(failure.getMessage().contains("pan.quark.cn"));
+    }
+
+    @Test
+    void doesNotTreatMissingDirectoryListOrMissingErrorDetailAsAnEmptyShare() {
+        for (String body : List.of("{\"success\":false,\"data\":{}}", "{\"success\":true,\"data\":{}}")) {
+            IllegalStateException failure = assertThrows(IllegalStateException.class, () -> shareDetailClient(mock(RestTemplate.class), body)
+                    .resolveMovieShareUrl("https://pan.quark.cn/s/fixture", "电影", null, null, 2021));
+            assertFalse(failure.getMessage().contains("no video"));
+            assertTrue(failure.getMessage().contains("error detail") || failure.getMessage().contains("no directory list"));
+        }
+    }
+
+    private QuarkAutoSaveClient shareDetailClient(RestTemplate rest, String body) {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getQuark().setToken("test-token");
+        RestTemplateBuilder builder = mock(RestTemplateBuilder.class);
+        when(builder.build()).thenReturn(rest);
+        when(rest.postForEntity(contains("/get_share_detail"), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(ResponseEntity.ok(body));
+        return new QuarkAutoSaveClient(builder, new ObjectMapper(), properties);
+    }
+
+    private QuarkAutoSaveClient movieTree(Map<String, String> directories) {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getQuark().setToken("test-token");
+        RestTemplate rest = mock(RestTemplate.class);
+        RestTemplateBuilder builder = mock(RestTemplateBuilder.class);
+        when(builder.build()).thenReturn(rest);
+        when(rest.postForEntity(contains("/get_share_detail"), any(HttpEntity.class), eq(String.class)))
+                .thenAnswer(invocation -> {
+                    HttpEntity<?> request = invocation.getArgument(1);
+                    String url = String.valueOf(((Map<?, ?>) request.getBody()).get("shareurl"));
+                    String key = url.contains("#/list/share/") ? url.substring(url.lastIndexOf('/') + 1) : "root";
+                    assertTrue(directories.containsKey(key), "Unexpected or out-of-scope directory: " + key);
+                    return ResponseEntity.ok("{\"success\":true,\"data\":{\"list\":" + directories.get(key) + "}}");
+                });
+        return new QuarkAutoSaveClient(builder, new ObjectMapper(), properties);
     }
 }

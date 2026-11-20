@@ -1,0 +1,19 @@
+{
+  "status": "STOPPED",
+  "startedAt": "2026-11-11T10:37:08.107946+00:00",
+  "scriptSha256": "76beb61acbb76bb79dbab121c93c52e9d8943434be47065682230f30444b3b18",
+  "configurationSha256": "20111b6a8f2fe40e301011e52de85245f1232f49af3d0628d72835bcf60ac1f8",
+  "affectedServices": [
+    "nginx"
+  ],
+  "containerRecreations": 0,
+  "cloudWrites": 0,
+  "directSqlWrites": 0,
+  "manualPostRequests": 0,
+  "settingsPutRequests": 0,
+  "failure": {
+    "type": "AssertionError",
+    "code": null
+  },
+  "completedAt": "2026-11-11T10:37:10.670568+00:00"
+}

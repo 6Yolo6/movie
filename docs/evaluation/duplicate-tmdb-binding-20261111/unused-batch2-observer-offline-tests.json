@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "tests": 31,
+  "failures": 0,
+  "errors": 0,
+  "allTestsPassed": true,
+  "productionIoCalls": 0,
+  "mockOnly": true,
+  "observer": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\ObserveUnusedBatch2.py",
+    "sha256": "2bcf8ac904d00b9a84ea0e200543179d2552d8e1e81b3ebdc7238279427fa7bb"
+  },
+  "testsFile": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\ObserveUnusedBatch2Tests.py",
+    "sha256": "83204a89806fe2bd755543c46c9096e45074fa591e8384d4966ee49d5ff83657"
+  }
+}

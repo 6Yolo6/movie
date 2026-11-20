@@ -1,0 +1,12 @@
+{
+  "status": "STOPPED_NO_RETRY_PRESERVE_CURRENT_STATE",
+  "at": "2026-11-15T12:19:55.855343+00:00",
+  "stage": "prepare",
+  "errorType": "Gate",
+  "hostSnapshotFailureCode": null,
+  "gate": "NO_QQ_CLEANUP_QUEUE",
+  "reservations": [],
+  "automaticRetry": false,
+  "automaticSqlRestore": false,
+  "oldTasksReplayed": false
+}

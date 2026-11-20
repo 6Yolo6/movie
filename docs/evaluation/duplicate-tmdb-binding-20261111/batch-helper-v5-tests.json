@@ -1,0 +1,31 @@
+{
+  "version": 5,
+  "status": "FAIL",
+  "allTestsPassed": false,
+  "productionPosts": 0,
+  "testsRun": 9,
+  "failures": 0,
+  "errors": 2,
+  "testFile": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchUnsentOfflineTestsV5.py",
+    "sha256": "2cdc73e149201f24ba57c01d6261d71b8605669f3df3fa358e8be912e3020f1b"
+  },
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchUnsentMergeV5.py",
+      "sha256": "8b3948610433cbe5f54efac4e53f05c24cb03f1cb46e0670f9dc4df712209c1f"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMergeV4.py",
+      "sha256": "b346f82f4548cc9e491424df5c2f985850cd33ff3d28669aee2e3b743bfdfbfb"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerifyV4.py",
+      "sha256": "c2938ba847727afe1bf727733a0af1d5aa99a71aab38c30d781cb99e344c4f28"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchPresendResume.py",
+      "sha256": "da75b6cdeab288b9689e4a25ec8118720d1ffab270bb61abcb28ce5ff9dc4266"
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "date": "2026-11-09",
+  "sourceCommit": "e9d0ebf369e8eac90fd022c3bdbea02015803891",
+  "testTotals": {
+    "tests": 1242,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 1241
+  },
+  "sourceFiles": 386,
+  "requiredSqlVerified": true,
+  "java17CompileVerified": true,
+  "testAndBuildContainersRemoved": true,
+  "candidate": {
+    "imageId": "sha256:dc5af8a7d3c59b86c266641a8e61dc862aeb73b4f54a280cf1c8cc7ce03e1555",
+    "imageTag": "gying-baidu-upload-fix-backend:20261109-240a73005cba-27996a8506bf",
+    "jarSha256": "ac99c30704cb3ba10f4aa6b7082f9744673bc32147e181c5e96dfc35771eae33",
+    "sourceSha256": "240a73005cba03c8a4d8055f8ce7de8f02f751bf4c453522dac0e0e4cd3f7053",
+    "verifiedClassResources": 405
+  },
+  "production": {
+    "mutationsPerformed": 0,
+    "deployed": false,
+    "backendImage": "sha256:adfd0dfad9dd63a8d0996848b7b13745f1af15669f45c800ae04ecde0cd2a4e6",
+    "frontendImage": "sha256:663b83853b72bbaff753a12c42e6a9a54718643c3cb3d10b95dda1e938f90c54",
+    "composeLayers": {
+      "backend": 16,
+      "frontend": 10
+    },
+    "cloudIdleGatePassed": false,
+    "oldBackendCompatible": false,
+    "hostPinMatchedLive": true,
+    "originalParentId": 17583,
+    "originalChildId": 17584,
+    "originalChildStatus": "UNKNOWN",
+    "automaticBackfillEnabled": false
+  },
+  "probe": {
+    "realUploadPerformed": false,
+    "realSharePerformed": false,
+    "finalCandidateBindingPending": false,
+    "readme": "E:\\gying-tools\\releases\\baidu-upload-fix-20261109\\probe\\README.md",
+    "finalCandidateSyntheticPassed": 9,
+    "sourceGateFixturePassed": 6,
+    "peerReviewRemainingMustFix": 0,
+    "bindingPath": "E:\\gying-tools\\releases\\baidu-upload-fix-20261109\\probe\\prepared-20261109T102200.897393Z\\probe-binding.json",
+    "targetFile": "/GYing Baidu Temp/上传诊断-20261109-748d2e7e229848a698f6f6c52a1d07fa/upload-probe.txt",
+    "fileBytes": 61,
+    "sharePeriodDays": 0,
+    "maxShareCreate": 1,
+    "maxShareVerify": 2,
+    "realUploadAuthorized": false,
+    "realShareAuthorized": false
+  },
+  "futureSearchSupport": {
+    "qqAndWebsiteBaiduImplemented": false,
+    "requestedCleanupMinutes": 10,
+    "implementationPlan": "E:\\gying-tools\\releases\\baidu-search-temp-20261109\\ImplementationPlan.md"
+  },
+  "evidence": [
+    {
+      "path": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-f83c96dd01cf\\result.json",
+      "sha256": "fa5297c967e385760ef4a3824b320cdbf8ef806c654899802784b9abd0d32fc2"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-f83c96dd01cf\\sources.json",
+      "sha256": "418921e0646f6c91c79ee3d170f300ae47b736d7f4393ecb9b7e3ebc52e2d37b"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-fix-20261109\\backend-build-raw.json",
+      "sha256": "5ececa89d4a180f7351f77b68b0dcaad077f2374b545443ceb9b2f3c19bd3c21"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-fix-20261109\\backend-source-manifest.json",
+      "sha256": "418921e0646f6c91c79ee3d170f300ae47b736d7f4393ecb9b7e3ebc52e2d37b"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-fix-20261109\\ops\\baseline-20261109T101821.300443Z.json",
+      "sha256": "81acfffe18e89d2ec821d169d3060e4c9f671d2973388c375c21fac337020a47"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-fix-20261109\\ops\\independent-code-review-final-20261109T101122.979033Z.json",
+      "sha256": "1462b2cf2d49e32fbe828eeccffafec3dba74b48f92fb8babf4ec7193d8f1b4c"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-fix-20261109\\current-upload-readonly.json",
+      "sha256": "87f19e7726f1f0e8d0b3772dce221fb00bd89b6b90e7c92f23a9dd25c49db911"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-fix-20261109\\probe\\prepared-20261109T102200.897393Z\\probe-binding.json",
+      "sha256": "91e5aa60181db02956ce5aa51d6068052f74fc7b54a21bc1fdf7ee07a69b44d7"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-fix-20261109\\probe\\prepared-20261109T102200.897393Z\\review-scope-draft.json",
+      "sha256": "2179b939b91afa429f2f560c8cc5c641365e66166aa71715207c562ef4a1fabf"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-fix-20261109\\probe\\prepared-20261109T102200.897393Z\\review-command-plan.json",
+      "sha256": "1dd0f0c2936e4dfbfdd6ac7fcb9b0d5a3c470c48970cacf33953666064e1ea0d"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-fix-20261109\\ops\\probe-preparation-final-20261109T102409.313832Z.json",
+      "sha256": "88cfdf05673d4dbb35276c74cc24d8008ce511bb6e4866dbd83ac898a0eae886"
+    }
+  ],
+  "failedFinalAttempt": {
+    "path": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-55f8dbdb088b\\result.json",
+    "tests": 1242,
+    "failures": 2,
+    "reason": "Existing real-adapter fixtures lacked movie category; fixed mv category and asserted category directory, final suite passed"
+  }
+}

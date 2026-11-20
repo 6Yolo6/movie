@@ -1,0 +1,76 @@
+{
+  "status": "READONLY_LOGIN_SHAPE_DIAGNOSED",
+  "startedAt": "2026-11-11T14:35:54.889Z",
+  "passwordSubmissions": 0,
+  "driveWrites": 0,
+  "backendState": {
+    "sha256": "10b9b59cf530e398d07cc5179b3c8a2c3219c71d1ca77e989891d7b477073935",
+    "expiresAt": "2026-11-09T10:33:15.000Z",
+    "expired": true,
+    "complete": true,
+    "jwtAccountMatches": true
+  },
+  "guardBlocked": false,
+  "afterHome": {
+    "page": {
+      "officialPage": true,
+      "officialAuthFrame": false,
+      "https": true,
+      "rootPath": true,
+      "loginPath": false,
+      "queryPresent": false,
+      "fragmentPresent": false,
+      "urlSha256": "5c81b07d971c76616f1163cae565a9e9a122932c1db18531a4ec55669309a77c"
+    },
+    "frames": [
+      {
+        "officialPage": true,
+        "officialAuthFrame": false,
+        "https": true,
+        "rootPath": true,
+        "loginPath": false,
+        "queryPresent": false,
+        "fragmentPresent": false,
+        "urlSha256": "5c81b07d971c76616f1163cae565a9e9a122932c1db18531a4ec55669309a77c"
+      }
+    ],
+    "dom": {
+      "exactPasswordModeLabels": 0,
+      "exactLoginLabels": 0,
+      "visiblePasswords": 0
+    },
+    "authFrameDom": []
+  },
+  "afterFixedLogin": {
+    "page": {
+      "officialPage": true,
+      "officialAuthFrame": false,
+      "https": true,
+      "rootPath": false,
+      "loginPath": true,
+      "queryPresent": false,
+      "fragmentPresent": false,
+      "urlSha256": "9c39193fcfc789fb43ebcc9c182053838a88a988630c21f6b151f12d5c73563d"
+    },
+    "frames": [
+      {
+        "officialPage": true,
+        "officialAuthFrame": false,
+        "https": true,
+        "rootPath": false,
+        "loginPath": true,
+        "queryPresent": false,
+        "fragmentPresent": false,
+        "urlSha256": "9c39193fcfc789fb43ebcc9c182053838a88a988630c21f6b151f12d5c73563d"
+      }
+    ],
+    "dom": {
+      "exactPasswordModeLabels": 0,
+      "exactLoginLabels": 0,
+      "visiblePasswords": 0
+    },
+    "authFrameDom": []
+  },
+  "ownedBrowserClosed": true,
+  "completedAt": "2026-11-11T14:36:09.060Z"
+}

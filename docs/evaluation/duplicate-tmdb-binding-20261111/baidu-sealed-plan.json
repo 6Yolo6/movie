@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "status": "PREPARATION_SEALED_NOT_AUTHORIZED",
+  "createdAt": "2026-11-11T05:56:19.938397+00:00",
+  "plan": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\plan.json",
+    "sha256": "666d2cf7ae8ddeed5fc77e5d280c74c413a7b0abadfdcfbaca788ad4e2ddfa22"
+  },
+  "cycleScript": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\Cycle.py",
+    "sha256": "da752867e57b3c79c5ffa1b3ecc8e9a12da276de46a96720bf36a9e03caf7a47"
+  },
+  "officialReconciler": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostReconcile.py",
+    "sha256": "784354902c94d94efb60a5609b0f33768a919ce9335cf49d72dda09a9d03f94c"
+  },
+  "readme": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\README.md",
+    "sha256": "18ec71727963aa33e48ebf7fc357b55ce3ff38a7798962f78f0eab5c36858962"
+  },
+  "first48FinalManifest": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\first48-final-manifest.json",
+    "sha256": "07069079bff2d774b242f5a66c3f2e8f4da3e78727c00345831dc63d279a447b"
+  },
+  "offlineTests": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\offline-cycle-guard-review-v3-20261111.json",
+    "sha256": "86cb0581c77b129b311f34cdfa9025b1db2d6ce5972845f0c24ff1945fcbae22"
+  },
+  "staticReview": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\static-cycle-guard-review-20261111.json",
+    "sha256": "81e0755abbc2808ff195438b5dc7359e0ffc8b942be94af8ceb98af0eae366fa"
+  },
+  "testScript": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\TestCycleOffline.py",
+    "sha256": "2d7855fdde05b701414d74f9c6e59d56e89c7141018734100a317f2d51201518"
+  },
+  "compileReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\reconcile-build-attempts\\f77ed83f37aa47b18726aaa9d3581042\\compile-completed.json",
+    "sha256": "cfb82ae98536be8351bd55ea9f48f2bad6e7882af6cdf30e3589cb07080417be"
+  },
+  "defaultAndSyntaxChecks": {
+    "performedInThisChat": true,
+    "pythonCompilePassed": [
+      "Cycle.py",
+      "PostReconcile.py"
+    ],
+    "defaultNoIoPassed": [
+      "Cycle.py",
+      "PostReconcile.py"
+    ],
+    "defaultManualPostRequests": 0,
+    "defaultSettingsPutRequests": 0
+  },
+  "actualPreparationRuntimeCloudWrites": 0,
+  "actualPreparationDirectSqlWrites": 0,
+  "userAuthorizationRecordCreated": false,
+  "executionBaselineCreated": false,
+  "readerRunnerExecuted": false,
+  "newManualCycleRequests": 0,
+  "newSettingsPutRequests": 0,
+  "originalBudgetExhausted": true,
+  "nextStep": "After parent data/host/daily stages finish, execute prepare to capture fresh encrypted full rows/runtime; root asks actual additional manual-film scope and binds exact confirmation to plan/baseline/script; never infer approval from this seal."
+}

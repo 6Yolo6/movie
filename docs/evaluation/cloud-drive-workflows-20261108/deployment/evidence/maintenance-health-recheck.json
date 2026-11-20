@@ -1,0 +1,35 @@
+{
+  "checkedAt": "2026-11-08T14:26:38.058139+00:00",
+  "checks": [
+    {
+      "url": "http://127.0.0.1/api/movies/list?page=1&size=1",
+      "httpStatus": 200,
+      "passed": true,
+      "transport": "direct",
+      "bodySha256": "8307e86b865f6c1de15d582162132e3211f89debfb171bc32ffa5b09dbda48f7"
+    },
+    {
+      "url": "http://127.0.0.1:20241/ready",
+      "httpStatus": 200,
+      "passed": true,
+      "transport": "direct",
+      "bodySha256": "779e412995935e8832ae95baf7dca35648fe0c1a0e3e83b09f200916209088f1"
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/",
+      "httpStatus": 200,
+      "passed": true,
+      "transport": "existing-loopback-proxy-7897",
+      "bodySha256": "8140bb33a03423f2e3211f1f912ef998e69d3121e7094e3283338ef7994af9ae"
+    }
+  ],
+  "existingProxyListener": {
+    "LocalAddress": "127.0.0.1",
+    "LocalPort": 7897,
+    "OwningProcess": 15392
+  },
+  "allServiceEntrypointsHealthy": true,
+  "configuredPublicDirectProbeStillFails": true,
+  "stateChanged": false,
+  "servicesRestarted": false
+}

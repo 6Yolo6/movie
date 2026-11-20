@@ -1,0 +1,58 @@
+{
+  "version": 31,
+  "status": "PASS",
+  "createdAt": "2026-11-11T12:09:16.838296+00:00",
+  "reviewer": "independent-static-review/review_data_helpers",
+  "scope": "Actual V31 offline compilation and complete local artifact lineage; existing reviewed source/tests reused without import or rerun",
+  "compilerReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-parse-diagnostic-v31-build-attempts\\233b292ec6fb44ab845f9ca4f07fb488\\compile-completed.json",
+    "sha256": "4b7d5b0684c50ff1d771fdb59170816f55766413fcac17e4da54c0167d63e02e"
+  },
+  "offlineCompilerCleanup": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-parse-v31-offline-compile-cleanup-33abcf7b34ff4b518b0afd268921a41d.json",
+    "sha256": "3ac08377d10759f486ad94742167a5b6a9141cdb39585f332a0ef9c9474c94d4"
+  },
+  "compiledBinding": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-parse-v31-reviewed-compiled-binding-7f6a906f259444eebed48e05091ccc61.json",
+    "sha256": "bb6b34fdb5f272cd5c201be4fd8896b44e88c54da7c111bb1ba6832d07498c80"
+  },
+  "handoff": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-parse-v31-final-local-handoff-be045c43aef946f988f49158187081eb.json",
+    "sha256": "0069fe9489e2d653f96516a9b9b7166ffe5680998b29c3d799509713a39fa288"
+  },
+  "sourceSha256": {
+    "DiagnoseBaiduOwnPageParseReadOnlyV31.java": "8fb58f7af5bbe33ce5aa5f0d88ee1059a3b6df936997529d846061b74511deed",
+    "CompileOwnPageParseDiagnosticV31.py": "7fa8917456afa84cd31e23063a4d55de00605abafa709f003d10f136d682d111",
+    "PostOwnPageParseDiagnosticV31.py": "a3dbdbaed9421cf13e1acaa61526fb1b5636dc193d1d25c98c7e88f84d867b62",
+    "OwnPageParseDiagnosticV31Binding.py": "d6f46b57e3717e4e46abcf8ea705c1023ca4667f61db98030a9d369c0b24cd70"
+  },
+  "compiledArtifactFiles": 541,
+  "artifactManifestSha256": "a3f09c7c45452c2e492f0caddfec91fbc2be595acf34b30e941e5828eb891ee7",
+  "jarSha256": "d766f376c4c1b411b133632835b4eab327d0cfeeea11a590e5d49e4dd49fd3f9",
+  "localFrozenReferencesVerified": 34,
+  "checks": {
+    "completeAppAndClassesInventoryExactNoAddedOrDeletedFiles": true,
+    "all541ArtifactSizesAndSha256": true,
+    "copiedJavaSourceAndFixedBackendJar": true,
+    "precompileCompilerCompiledBindingHandoffExactLineage": true,
+    "exactReviewedSourcesTestsDerivationAndHistoricalEvidenceReferences": true,
+    "receiptNetworkNoneNoCredentialsNoProductionMounts": true,
+    "cleanupReceiptExactRunLabelAndRemainingRunnerZero": true,
+    "cleanupWasReviewedFromLocalReceiptOnlyNoDockerQueryByReviewer": true,
+    "fixedBackendCommitAndCandidateImage": true
+  },
+  "productionDockerCommands": 0,
+  "productionApiRequests": 0,
+  "productionSqlQueries": 0,
+  "manualPostRequests": 0,
+  "settingsPutRequests": 0,
+  "cloudWrites": 0,
+  "directSqlWrites": 0,
+  "fullOldSuitesExecuted": false,
+  "ownerProofAccepted": false,
+  "officialReconciliationVerified": false,
+  "limits": [
+    "PASS applies to this offline diagnostic compile only; no formal owner proof or official reconciliation PASS.",
+    "Exact runner cleanup is recorded by inspector receipt; reviewer performed no Docker call."
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "status": "PASS",
+  "pairs": 18,
+  "historyRows": 220,
+  "movedReferences": 184,
+  "favoriteDeletes": 0,
+  "favoriteHistoryRows": 0,
+  "exactRowDeltasVerified": true,
+  "exactHistoryCoverageVerified": true,
+  "historyFingerprintSha256FormatVerified": true,
+  "historyOriginalFingerprintRecomputed": false,
+  "nativeJsonPayloadCompatible": true,
+  "sourceMetadataPreserved": true,
+  "targetOnlyTmdbBindingAndResourceStatusChanged": true,
+  "sourceIdentityOnlyMovieIdMoved": true,
+  "afterSha256": "598f38a4b83b04fb3dba29e06e123cf86d0cee6185a8e8e7761da89a6f03615f",
+  "legacyResourceUpdateAtRows": 4,
+  "legacyUpdateAtNarrowMergeWindowVerified": true,
+  "mode": "Authenticated stored snapshot full verification; no current DB queries",
+  "verifier": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerifyV4.py",
+    "sha256": "c2938ba847727afe1bf727733a0af1d5aa99a71aab38c30d781cb99e344c4f28"
+  },
+  "resourceSchema": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v4-schema.json",
+    "sha256": "58e16e67b3973eb9b00dc68a0f808c8f7c5ea9f4c4835b2c6a1e15b010474ce1"
+  },
+  "originalAnalysis": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\merge-readonly-analysis-b619e2672963464a9c44ae0d3d07e107.json",
+    "sha256": "c093df9755ad11cce7b6869073641ad42859ac2b1bc23fe183bb4d289027057a"
+  },
+  "before": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\subset-presend-rows-before.json.age",
+    "sha256": "332d46de02e210d6b84d7147e61c8f5925aed8769331b13fb6861df5aff48cc7",
+    "size": 408265,
+    "plaintextSha256": "6c9ddcc77e7875536f05ea400ce4606f23fa74e8739757aa4d23fe137a474797",
+    "stateSha256": "7099b4c8c7fa854f1b23e1db90cf9b934b0aef8cbb90c9690d2b0883de290cdf",
+    "authenticatedDecryption": true,
+    "plaintextWritten": false,
+    "dbUtcBefore": "2026-11-11 06:12:46.825826"
+  },
+  "current": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\merge-analysis-current-9562382585654f449b2925b1d2e07e6f.json.age",
+    "sha256": "01eec6365d2a139d5fdbe2870b3783514f6975563637f7d3421ff92d0efd60a4",
+    "plaintextSha256": "9281a3e9d4ddb6112af1caddc93322c0e7ec19d1f5c14540a1cc3dce778c03a7",
+    "stateSha256": "598f38a4b83b04fb3dba29e06e123cf86d0cee6185a8e8e7761da89a6f03615f",
+    "authenticatedDecryption": true,
+    "plaintextWritten": false
+  },
+  "mergeWindow": {
+    "legacyColumns": [
+      {
+        "table": "resource_link",
+        "column": "updated_at",
+        "dataType": "datetime",
+        "columnType": "datetime",
+        "datetimePrecision": "0",
+        "nullable": "YES",
+        "default": "CURRENT_TIMESTAMP",
+        "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+      },
+      {
+        "table": "resource_link",
+        "column": "update_at",
+        "dataType": "datetime",
+        "columnType": "datetime",
+        "datetimePrecision": "0",
+        "nullable": "YES",
+        "default": "CURRENT_TIMESTAMP",
+        "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+      }
+    ],
+    "offsetSeconds": 28800,
+    "requestAt": "2026-11-11T06:13:55.217607+00:00",
+    "completedAt": "2026-11-11 06:14:04.249535",
+    "ackAt": "2026-11-11T06:14:04.267063+00:00"
+  },
+  "newPosts": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0
+}

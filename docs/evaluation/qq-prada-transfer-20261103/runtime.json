@@ -1,0 +1,31 @@
+{
+  "checkedAt": "2026-11-03T15:12:33.779882+00:00",
+  "imageId": "sha256:6bee2a1d65a7114c05dcffed559bab9bbf1791751b855ba5c44a75ef2dcd471e",
+  "jarSha256": "f805f0655d8acf134b58c85908cbaef84302e16ac0b38675c197c4b9489d68b4",
+  "containerId": "6a70e9f13de8742096f244a8aa14876e01d4964552f5dd5ddc8b4c84f036b967",
+  "startedAt": "2026-11-03T15:03:46.457781879Z",
+  "running": true,
+  "restarts": 0,
+  "oomKilled": false,
+  "logWindowStart": "2026-11-03T15:03:46.457781879Z",
+  "errorLines": 0,
+  "exceptionLines": 0,
+  "oomLines": 0,
+  "aiDirectoryConfirmedEvents": 1,
+  "logSha256": "3bf3f3ed305a7e7599f2b2e93183a25c08aafb00098c4b5bfc6f1967526b4e6c",
+  "composeFiles": [
+    "D:\\gying-movie\\movie\\docker-compose.prod.yml",
+    "E:\\gying-tools\\releases\\ai-query-plan-v2-20261025\\deploy.json",
+    "E:\\gying-tools\\releases\\ai-recovery-20261029-1750\\rescue.json",
+    "E:\\gying-tools\\releases\\ai-recovery-20261029-1750\\backend-candidate.json",
+    "E:\\gying-tools\\releases\\metadata-source-pause-20261029\\candidate.json",
+    "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\backend-quality-final.json",
+    "E:\\gying-tools\\releases\\publishing-recovery-20261101\\candidate.json",
+    "E:\\gying-tools\\releases\\tmdb-empty-range-20261102\\candidate.json",
+    "E:\\gying-tools\\releases\\ai-query-quality-20261103\\backend-candidate.json",
+    "E:\\gying-tools\\releases\\qq-prada-transfer-20261103\\backup-audit\\rollback.json",
+    "E:\\gying-tools\\releases\\qq-prada-transfer-20261103\\candidate.json"
+  ],
+  "fullLogsPublished": false,
+  "bothLogStreamsChecked": true
+}

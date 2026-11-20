@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-15T12:59:19.939049+00:00",
+  "commitMiB": 29887.6,
+  "commitLimitMiB": 33261.4,
+  "commitAvailableMiB": 3373.7,
+  "commitPercent": 89.86,
+  "physicalMiB": 15791.4,
+  "physicalAvailableMiB": 2580.2,
+  "processCount": 366,
+  "configurationWrites": 0,
+  "processesStopped": 0
+}

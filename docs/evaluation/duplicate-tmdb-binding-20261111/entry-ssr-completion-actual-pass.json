@@ -1,0 +1,753 @@
+{
+  "version": 1,
+  "status": "ENTRY_ACCEPTANCE_SSR_COMPLETION_PASS",
+  "type": "ENTRY_V3_REMAINING_SSR_COMPLETION",
+  "startedAt": "2026-11-11T09:09:46.813911+00:00",
+  "helperSha256": "4561ba6cd314e2b3dfe39597649ee4b652b7d57d4a5998702f31bee86ef32f05",
+  "nginxHttpGetRequests": 4,
+  "httpReads": [
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/movie/tmdb_tv_93740",
+      "actualRequestPathSha256": "391285efc1268958369d636ff64aa3eaf3cbbec22f895b5befd0f13846f61df8",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 244883,
+      "sha256": "7b662ccf2ab8243272ce2e98033a0f730b1466cb219d19008738c9cff996db6b",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/movie/4YNV",
+      "actualRequestPathSha256": "f06ed467409db3505dda091fa56ccb8603ea18811ffcdb716c5cce15608542a5",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 244865,
+      "sha256": "09c9f95e744a634d04712f34b30bf468481e674332fafd6e1dc606caa3493267",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/movie/tmdb_tv_247718",
+      "actualRequestPathSha256": "76ebfbdcb9fb350c80a4084baaee615ec18cbe1333548732cddee488b6f3442d",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 245286,
+      "sha256": "7f32a96edb50d6c3d25f1e025ff6537589f2eae769b5d94fa177b0b2fef8808b",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/movie/1YKW",
+      "actualRequestPathSha256": "0460de195170a290963a78deeaad521b16718da267cd02a97e3bd7cd49487e38",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 245266,
+      "sha256": "97a35082a5c131e9a188ddb2f4baab9bcb5394398c1a15b2f656ef7dff570ad8",
+      "responseBodyWritten": false,
+      "attempts": 1
+    }
+  ],
+  "ssrChecks": [
+    {
+      "requestedId": "tmdb_tv_93740",
+      "targetId": "4YNV",
+      "kind": "batch",
+      "status": "PASS",
+      "year": 2021,
+      "exactIndependentYearSpan": true,
+      "matchingYearSpanCount": 1,
+      "h1ProjectionSha256": "69195f8e19db6e781189040835dad063ab9a01c6308c24938688252c7b5edbc8",
+      "h2SpanProjectionSha256": "a9faf99d51694fef4bf443f8019f325b33618e31ecb72d3c351be874e5a3d1f1",
+      "actualTitleAndYearRendered": true,
+      "completeCanonicalDtoEqualsVerifiedApi": true,
+      "canonicalDtoProjection": {
+        "canonicalId": "4YNV",
+        "tmdbId": 93740,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2021,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          935,
+          936,
+          14926,
+          14928,
+          14952
+        ],
+        "resourceCount": 5,
+        "fullDtoSha256": "c00d8b02c39634aa20c5d07e23b060583d019c64bb19644733d608035c6d425e"
+      },
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "requestedId": "4YNV",
+      "targetId": "4YNV",
+      "kind": "batch",
+      "status": "PASS",
+      "year": 2021,
+      "exactIndependentYearSpan": true,
+      "matchingYearSpanCount": 1,
+      "h1ProjectionSha256": "69195f8e19db6e781189040835dad063ab9a01c6308c24938688252c7b5edbc8",
+      "h2SpanProjectionSha256": "a9faf99d51694fef4bf443f8019f325b33618e31ecb72d3c351be874e5a3d1f1",
+      "actualTitleAndYearRendered": true,
+      "completeCanonicalDtoEqualsVerifiedApi": true,
+      "canonicalDtoProjection": {
+        "canonicalId": "4YNV",
+        "tmdbId": 93740,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2021,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          935,
+          936,
+          14926,
+          14928,
+          14952
+        ],
+        "resourceCount": 5,
+        "fullDtoSha256": "c00d8b02c39634aa20c5d07e23b060583d019c64bb19644733d608035c6d425e"
+      },
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "requestedId": "tmdb_tv_247718",
+      "targetId": "1YKW",
+      "kind": "MobLand",
+      "status": "PASS",
+      "year": 2025,
+      "exactIndependentYearSpan": true,
+      "matchingYearSpanCount": 1,
+      "h1ProjectionSha256": "279cc04a279272cc1d4dd95c323c3e75e8607f4b7634ddf2dcecf4cb00daa040",
+      "h2SpanProjectionSha256": "4ef65c5c6a787fba52f4422cea215ef239f29d493e45ae1f8534dc39ebcca33b",
+      "actualTitleAndYearRendered": true,
+      "completeCanonicalDtoEqualsVerifiedApi": true,
+      "canonicalDtoProjection": {
+        "canonicalId": "1YKW",
+        "tmdbId": 247718,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2025,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          2528,
+          2529,
+          12530,
+          12532,
+          12568,
+          12569
+        ],
+        "resourceCount": 6,
+        "fullDtoSha256": "5147e64efc03a7e0e6ca74b4d9fee78213ddb66e7fa7b2da8a97a479d5301485"
+      },
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "requestedId": "1YKW",
+      "targetId": "1YKW",
+      "kind": "MobLand",
+      "status": "PASS",
+      "year": 2025,
+      "exactIndependentYearSpan": true,
+      "matchingYearSpanCount": 1,
+      "h1ProjectionSha256": "279cc04a279272cc1d4dd95c323c3e75e8607f4b7634ddf2dcecf4cb00daa040",
+      "h2SpanProjectionSha256": "4ef65c5c6a787fba52f4422cea215ef239f29d493e45ae1f8534dc39ebcca33b",
+      "actualTitleAndYearRendered": true,
+      "completeCanonicalDtoEqualsVerifiedApi": true,
+      "canonicalDtoProjection": {
+        "canonicalId": "1YKW",
+        "tmdbId": 247718,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2025,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          2528,
+          2529,
+          12530,
+          12532,
+          12568,
+          12569
+        ],
+        "resourceCount": 6,
+        "fullDtoSha256": "5147e64efc03a7e0e6ca74b4d9fee78213ddb66e7fa7b2da8a97a479d5301485"
+      },
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    }
+  ],
+  "postRequests": 0,
+  "operatorDirectSqlWrites": 0,
+  "cloudActions": 0,
+  "apiDetailGets": 0,
+  "apiListGets": 0,
+  "anonymousOnly": true,
+  "responseBodiesOrProviderUrlsWritten": false,
+  "normalMonitoringWritesMayOccur": true,
+  "crossServiceAtomicSnapshot": false,
+  "binding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-ssr-completion-binding.json",
+    "sha256": "404db6d1b3a75ed37d59f968bcd28f281e62a2e910523aa03e2b4996d3931218"
+  },
+  "reusedEntryV3Receipt": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-acceptance-20261111T084740.641181Z.json",
+    "sha256": "5250df4151fd79272cabefcc4238c2b52f6bae2ad9f7908adbea4371582c9d25"
+  },
+  "headerObservation": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-acceptance-20261111T085216.348398Z.json",
+    "sha256": "3a04e6ea924672f5d135a0aa2561d27e59a96910dc5d41d9322c546a6bced2a6"
+  },
+  "actualMergedPairs": 67,
+  "completedInputs": [
+    {
+      "batch": 1,
+      "mergeIntent": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\merge-intent.json",
+        "sha256": "68390eb4e3a0731e2cffed7b2525dc2e01022d8a0afb894f1dade78ffb221105"
+      },
+      "verification": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\read-only-verification-0b2af9c5f5724daa989e0062bbb8d769.json",
+        "sha256": "b5c03c78ca7eaf562451700a67b70b06463a6a1d26e1bbb1f020619282f98ec3"
+      },
+      "actualMergedPairs": 18
+    },
+    {
+      "batch": 3,
+      "mergeIntent": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0003\\merge-intent.json",
+        "sha256": "76c259beffc4017df2096daff872567de53c33a623a84fd0a6aa7d5db128f890"
+      },
+      "verification": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0003\\verification.json",
+        "sha256": "0dd344a82a7e747077c781bc7621ce5ef131a28c6fdd4702958a5d4ef0399aed"
+      },
+      "actualMergedPairs": 16
+    },
+    {
+      "batch": 4,
+      "mergeIntent": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0004\\merge-intent.json",
+        "sha256": "0ea593f9b8468659626089e9f9aed1a59c0a3aaa0fe6db1ab33b02f41d80659d"
+      },
+      "verification": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0004\\verification.json",
+        "sha256": "0ca74e509714af1c9af34b72f57d83febeabb59b5c6b59785b8baceb84729af6"
+      },
+      "actualMergedPairs": 13
+    },
+    {
+      "kind": "MobLand",
+      "binding": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\mobland-binding-v4-read-only-verification-74c4339cbcf24c449b3153a1c1d37223.json",
+        "sha256": "7c7397a343e3faaf484ab379ac9ac803170cab2a3f3f0796dce6240e3678df2a"
+      },
+      "bindingPrepared": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\mobland-binding-prepared.json",
+        "sha256": "53e3d3631b1f08a988f0cafdf5b9dbc6a683420419747c6a9634024f715cb696"
+      },
+      "historicalMerge": {
+        "path": "E:\\gying-tools\\releases\\mobland-merge-apply-20261110\\merge-result.json",
+        "sha256": "8864f7723141e9f738a9b4363c8a33b952654b5695ca2a761fc846c5a2edf7e5"
+      },
+      "historicalVerification": {
+        "path": "E:\\gying-tools\\releases\\mobland-merge-apply-20261110\\verification.json",
+        "sha256": "f8bfcd5f1b8da18481cb2cb249d402ffab7e726f61d8b7372d238cfa8f6d779d"
+      }
+    },
+    {
+      "batch": 2,
+      "splitBatch": 201,
+      "actualMergedPairs": 10,
+      "mergeIntent": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\batches\\0201\\merge-intent.json",
+        "sha256": "f2d52ff64cfc021fd5bd985acb6b85aad436247cd692e6d9bf3e2a31b07b3dad"
+      },
+      "mergeRequest": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\batches\\0201\\merge-request.json",
+        "sha256": "bb3f6d6b2f9bad76b02517c2d253c6efb9bf21641026e3d3ca7f9ba27a957332"
+      },
+      "verification": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\batches\\0201\\verification.json",
+        "sha256": "b9bb33d90ebfcaacf8ad63aacc912893a7bed449491a198c813fb8b458aa85fa"
+      },
+      "currentReviewSha256": "89e84f4c932c8bd2fe491adf2d0fb86840a0f524e9785688940037a1551245f3"
+    },
+    {
+      "batch": 2,
+      "splitBatch": 202,
+      "actualMergedPairs": 9,
+      "mergeIntent": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\batches\\0202\\merge-intent.json",
+        "sha256": "43ab0c2566b31109dd28dc01bb3b126c11226343a3fa00e47faab61ee617a6d6"
+      },
+      "mergeRequest": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\batches\\0202\\merge-request.json",
+        "sha256": "6c37eb78622e404ad9cbd30c7dc5f0c054c131c042e209acf42ac6fcb1ed4703"
+      },
+      "verification": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\batches\\0202\\verification.json",
+        "sha256": "5b0fe3a72d1c82f996b3995dec17d1601c6685ae598e50c3263a8979361dfb0d"
+      },
+      "currentReviewSha256": "7d7c85fde476377b16f04c5fe866a780dd28a98cf0b972bf7389a9d9434a48a6"
+    }
+  ],
+  "unmergedStagedPairs": [
+    {
+      "fromMovieId": "tmdb_tv_95396",
+      "toMovieId": "B2kG"
+    },
+    {
+      "fromMovieId": "tmdb_tv_220102",
+      "toMovieId": "EVrv"
+    },
+    {
+      "fromMovieId": "tmdb_movie_986056",
+      "toMovieId": "gying_mv_onzr"
+    },
+    {
+      "fromMovieId": "tmdb_tv_73375",
+      "toMovieId": "gying_tv_6lx7"
+    },
+    {
+      "fromMovieId": "tmdb_tv_50878",
+      "toMovieId": "gying_tv_M9de"
+    },
+    {
+      "fromMovieId": "tmdb_tv_96102",
+      "toMovieId": "gying_tv_W7Mr"
+    },
+    {
+      "fromMovieId": "tmdb_movie_11647",
+      "toMovieId": "gying_mv_XpJM"
+    }
+  ],
+  "currentSplitDatabaseReviewsVerified": true,
+  "selectedFullRowsBefore": {
+    "movie_metadata": {
+      "rows": 134,
+      "sha256": "e2625e68b72b695ee799feb00893d57ad6d5ca1b34b1012360e180ce5b493f62"
+    },
+    "movie_source_identity": {
+      "rows": 136,
+      "sha256": "4fb90cb715a27ba2c7f80631d2595add821baaaceebf3a6e0a7f2fc5bae50628"
+    },
+    "resource_link": {
+      "rows": 461,
+      "sha256": "3405626324b9db55fef058c9e7fca9bc0aa90e18b24a7f1af95ba60208a41ba0"
+    },
+    "movie_merge_alias": {
+      "rows": 67,
+      "sha256": "861426fd0a7f3da894fc0c6eb69b18004f134a8d8131007748326663f876bc51"
+    }
+  },
+  "baiduBefore": {
+    "resource_hub_task": {
+      "rows": 5,
+      "sha256": "ea9c1e5dd64940d2337b2b2bcba77c7fedaa3fac3b6c9e4a0350ee5f6bda7297"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "runtimeBefore": {
+    "backendId": "993bc5bac12d83ee522c660ba7bfd31f4bed44050ff47eff260219dadc03ad0a",
+    "backendImage": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+    "startedAt": "2026-11-11T05:24:08.901986855Z",
+    "jarSha256": "d766f376c4c1b411b133632835b4eab327d0cfeeea11a590e5d49e4dd49fd3f9",
+    "fullConfigSha256": "b754f7b22008dcda2f89daa2fc83cc48c8787cab0043cc8df0fa6cf83e22b98b",
+    "fullHostConfigSha256": "1fb1a61ead76570c19fbc969eec160f028495909c202ec8e6982685e68229281",
+    "completeRuntimeSha256": "4364c07c6d43ded2ff7ffc91ec77964309acd585d2331f1c54ebc7f66738cc8a",
+    "allThirteenGenerationsSha256": "50d7443c175fdcfe6b4969528ca99efa66e857fe2fdaa472430ce181a898edff",
+    "allThirteenGenerationsRetained": true
+  },
+  "permanentBlockedCompleteRowsBefore": {
+    "baidu_temporary_cleanup_job": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "baidu_transfer_task": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "movie_source_identity": {
+      "rows": 2,
+      "sha256": "42e474a42a225315f97fd62421947da1ac9b05af3e0ab3c48321773fab29323e"
+    },
+    "qq_bot_search_log": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "qq_channel_post_log": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "qq_transfer_cleanup_job": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "quark_transfer_task": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "resource_discovery_result": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "resource_hub_task": {
+      "rows": 2,
+      "sha256": "703164b1166f7e75f9639c8b81b09812c8301ded7cb8929f0f4e815e74c56ecd"
+    },
+    "resource_link": {
+      "rows": 6,
+      "sha256": "ec787d8b0010fbeaba163110dcb474a7277cf13634b5288c2563b4130278e87d"
+    },
+    "resource_operation_log": {
+      "rows": 1,
+      "sha256": "f91ba41881d62f7acaf9785b0ac2b6cd4baf6b474a6fc5ccd296684f85f86f91"
+    },
+    "social_post_log": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_favorite": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "xunlei_transfer_task": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "comment": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_notification": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "movie_metadata": {
+      "rows": 2,
+      "sha256": "d421b1fb23385fa297ca9f2161eaa7846f4522fc5b321dadf92f08671bdf24bc"
+    },
+    "movie_merge_alias": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "reusedPassedChecks": {
+    "detailPairs": 67,
+    "listPairs": 67,
+    "movieSsr": [
+      {
+        "requestedId": "tmdb_movie_14310",
+        "targetId": "gying_mv_0YK0",
+        "kind": "batch",
+        "category": "mv",
+        "titleSha256": "0c30df0a82e32a05c90f26c8491d64c8d14c3eb1ac2c56aaa02b55b7a5b177bb",
+        "year": 2003,
+        "h1ProjectionSha256": "24178645e7ccc865748d31b3698bf73022b626803ecf5fa1eb214cf2af188c21",
+        "rscMatchingCanonicalDtoCount": 1,
+        "status": "PASS",
+        "canonicalId": "gying_mv_0YK0",
+        "tmdbId": 14310,
+        "tmdbType": "movie",
+        "resourceIds": [
+          13290,
+          13292,
+          13350,
+          13351
+        ],
+        "resourceCount": 4,
+        "actualTitleAndYearRendered": true
+      },
+      {
+        "requestedId": "gying_mv_0YK0",
+        "targetId": "gying_mv_0YK0",
+        "kind": "batch",
+        "category": "mv",
+        "titleSha256": "0c30df0a82e32a05c90f26c8491d64c8d14c3eb1ac2c56aaa02b55b7a5b177bb",
+        "year": 2003,
+        "h1ProjectionSha256": "24178645e7ccc865748d31b3698bf73022b626803ecf5fa1eb214cf2af188c21",
+        "rscMatchingCanonicalDtoCount": 1,
+        "status": "PASS",
+        "canonicalId": "gying_mv_0YK0",
+        "tmdbId": 14310,
+        "tmdbType": "movie",
+        "resourceIds": [
+          13290,
+          13292,
+          13350,
+          13351
+        ],
+        "resourceCount": 4,
+        "actualTitleAndYearRendered": true
+      }
+    ]
+  },
+  "selectedFullRowsAfter": {
+    "movie_metadata": {
+      "rows": 134,
+      "sha256": "e2625e68b72b695ee799feb00893d57ad6d5ca1b34b1012360e180ce5b493f62"
+    },
+    "movie_source_identity": {
+      "rows": 136,
+      "sha256": "4fb90cb715a27ba2c7f80631d2595add821baaaceebf3a6e0a7f2fc5bae50628"
+    },
+    "resource_link": {
+      "rows": 461,
+      "sha256": "3405626324b9db55fef058c9e7fca9bc0aa90e18b24a7f1af95ba60208a41ba0"
+    },
+    "movie_merge_alias": {
+      "rows": 67,
+      "sha256": "861426fd0a7f3da894fc0c6eb69b18004f134a8d8131007748326663f876bc51"
+    }
+  },
+  "baiduAfter": {
+    "resource_hub_task": {
+      "rows": 5,
+      "sha256": "ea9c1e5dd64940d2337b2b2bcba77c7fedaa3fac3b6c9e4a0350ee5f6bda7297"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "runtimeAfter": {
+    "backendId": "993bc5bac12d83ee522c660ba7bfd31f4bed44050ff47eff260219dadc03ad0a",
+    "backendImage": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+    "startedAt": "2026-11-11T05:24:08.901986855Z",
+    "jarSha256": "d766f376c4c1b411b133632835b4eab327d0cfeeea11a590e5d49e4dd49fd3f9",
+    "fullConfigSha256": "b754f7b22008dcda2f89daa2fc83cc48c8787cab0043cc8df0fa6cf83e22b98b",
+    "fullHostConfigSha256": "1fb1a61ead76570c19fbc969eec160f028495909c202ec8e6982685e68229281",
+    "completeRuntimeSha256": "4364c07c6d43ded2ff7ffc91ec77964309acd585d2331f1c54ebc7f66738cc8a",
+    "allThirteenGenerationsSha256": "50d7443c175fdcfe6b4969528ca99efa66e857fe2fdaa472430ce181a898edff",
+    "allThirteenGenerationsRetained": true
+  },
+  "permanentBlockedCompleteRowsAfter": {
+    "baidu_temporary_cleanup_job": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "baidu_transfer_task": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "movie_source_identity": {
+      "rows": 2,
+      "sha256": "42e474a42a225315f97fd62421947da1ac9b05af3e0ab3c48321773fab29323e"
+    },
+    "qq_bot_search_log": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "qq_channel_post_log": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "qq_transfer_cleanup_job": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "quark_transfer_task": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "resource_discovery_result": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "resource_hub_task": {
+      "rows": 2,
+      "sha256": "703164b1166f7e75f9639c8b81b09812c8301ded7cb8929f0f4e815e74c56ecd"
+    },
+    "resource_link": {
+      "rows": 6,
+      "sha256": "ec787d8b0010fbeaba163110dcb474a7277cf13634b5288c2563b4130278e87d"
+    },
+    "resource_operation_log": {
+      "rows": 1,
+      "sha256": "f91ba41881d62f7acaf9785b0ac2b6cd4baf6b474a6fc5ccd296684f85f86f91"
+    },
+    "social_post_log": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_favorite": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "xunlei_transfer_task": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "comment": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_notification": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "movie_metadata": {
+      "rows": 2,
+      "sha256": "d421b1fb23385fa297ca9f2161eaa7846f4522fc5b321dadf92f08671bdf24bc"
+    },
+    "movie_merge_alias": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "combinedVerifiedChecks": {
+    "detailPairs": 67,
+    "listPairs": 67,
+    "ssrPages": 6,
+    "freshSsrPages": 4,
+    "reusedMovieSsrPages": 2
+  },
+  "selectedFullRowsFinally": {
+    "movie_metadata": {
+      "rows": 134,
+      "sha256": "e2625e68b72b695ee799feb00893d57ad6d5ca1b34b1012360e180ce5b493f62"
+    },
+    "movie_source_identity": {
+      "rows": 136,
+      "sha256": "4fb90cb715a27ba2c7f80631d2595add821baaaceebf3a6e0a7f2fc5bae50628"
+    },
+    "resource_link": {
+      "rows": 461,
+      "sha256": "3405626324b9db55fef058c9e7fca9bc0aa90e18b24a7f1af95ba60208a41ba0"
+    },
+    "movie_merge_alias": {
+      "rows": 67,
+      "sha256": "861426fd0a7f3da894fc0c6eb69b18004f134a8d8131007748326663f876bc51"
+    }
+  },
+  "baiduFinally": {
+    "resource_hub_task": {
+      "rows": 5,
+      "sha256": "ea9c1e5dd64940d2337b2b2bcba77c7fedaa3fac3b6c9e4a0350ee5f6bda7297"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "runtimeFinally": {
+    "backendId": "993bc5bac12d83ee522c660ba7bfd31f4bed44050ff47eff260219dadc03ad0a",
+    "backendImage": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+    "startedAt": "2026-11-11T05:24:08.901986855Z",
+    "jarSha256": "d766f376c4c1b411b133632835b4eab327d0cfeeea11a590e5d49e4dd49fd3f9",
+    "fullConfigSha256": "b754f7b22008dcda2f89daa2fc83cc48c8787cab0043cc8df0fa6cf83e22b98b",
+    "fullHostConfigSha256": "1fb1a61ead76570c19fbc969eec160f028495909c202ec8e6982685e68229281",
+    "completeRuntimeSha256": "4364c07c6d43ded2ff7ffc91ec77964309acd585d2331f1c54ebc7f66738cc8a",
+    "allThirteenGenerationsSha256": "50d7443c175fdcfe6b4969528ca99efa66e857fe2fdaa472430ce181a898edff",
+    "allThirteenGenerationsRetained": true
+  },
+  "selectedCompleteRowsFinallyRetained": true,
+  "oldBaiduStateFinallyRetained": true,
+  "runtimeFinallyRetained": true,
+  "permanentBlockedCompleteRowsFinally": {
+    "baidu_temporary_cleanup_job": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "baidu_transfer_task": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "movie_source_identity": {
+      "rows": 2,
+      "sha256": "42e474a42a225315f97fd62421947da1ac9b05af3e0ab3c48321773fab29323e"
+    },
+    "qq_bot_search_log": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "qq_channel_post_log": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "qq_transfer_cleanup_job": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "quark_transfer_task": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "resource_discovery_result": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "resource_hub_task": {
+      "rows": 2,
+      "sha256": "703164b1166f7e75f9639c8b81b09812c8301ded7cb8929f0f4e815e74c56ecd"
+    },
+    "resource_link": {
+      "rows": 6,
+      "sha256": "ec787d8b0010fbeaba163110dcb474a7277cf13634b5288c2563b4130278e87d"
+    },
+    "resource_operation_log": {
+      "rows": 1,
+      "sha256": "f91ba41881d62f7acaf9785b0ac2b6cd4baf6b474a6fc5ccd296684f85f86f91"
+    },
+    "social_post_log": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_favorite": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "xunlei_transfer_task": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "comment": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_notification": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "movie_metadata": {
+      "rows": 2,
+      "sha256": "d421b1fb23385fa297ca9f2161eaa7846f4522fc5b321dadf92f08671bdf24bc"
+    },
+    "movie_merge_alias": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "permanentOriginalBlockedPairCompleteRowsRetained": true,
+  "completedAt": "2026-11-11T09:10:12.713724+00:00"
+}

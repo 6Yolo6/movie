@@ -1,0 +1,34 @@
+{
+  "observedAt": "2026-11-03T12:45:51.063291+00:00",
+  "health": {
+    "http://127.0.0.1:5000/api/health": 200,
+    "http://127.0.0.1:8880/api/movies/list?page=1&size=1": 200,
+    "http://127.0.0.1:80/api/movies/list?page=1&size=1": 200,
+    "http://127.0.0.1:80/": 200,
+    "http://127.0.0.1:21434/api/ps": 200
+  },
+  "containers": [
+    "gying-movie-frontend-1|163716fe61d2|f16cb8f14406|Up 26 hours",
+    "gying-movie-backend-1|dfa8e1ce0230|d7014158bbcd|Up 26 hours",
+    "gying-movie-social-publisher-1|7cc7f5b50c33|8b6dd6e77fa9|Up 47 hours",
+    "gying-movie-quark-auto-save-1|745766c57b46|4d97439c0cd0|Up 2 days",
+    "gying-movie-gying-source-1|711354de91c2|gying-resource-p2p-source:20261019b|Up 2 days",
+    "gying-movie-nginx-1|597ccdf92236|nginx:stable-alpine|Up 2 days",
+    "openclaw-openclaw-gateway-1|552c8ca45d60|ghcr.io/openclaw/openclaw:2026.6.11|Up 22 hours (healthy)",
+    "gying-movie-redis-1|d1f7476316b6|redis:7-alpine|Up 2 days",
+    "gying-movie-pansou-1|c4a5526d4b27|ghcr.io/fish2018/pansou:latest|Up 2 days",
+    "minio-server|3d8b79bbac44|quay.io/minio/minio:latest|Up 2 days"
+  ],
+  "containerQueryExitCode": 0,
+  "productionAgentIdentity": {
+    "processId": 7700,
+    "controlDirectory": "D:\\ai\\local-ai-agent\\.local\\lifecycle\\a9366577-1b6c-491b-88a0-3a8f996158d4",
+    "startedAt": "2026-11-01T09:12:18.7178929Z",
+    "instanceId": "a9366577-1b6c-491b-88a0-3a8f996158d4",
+    "executable": "D:\\Java17\\jdk-17.0.1\\bin\\java.exe"
+  },
+  "storedIdentitySameAsBefore": true,
+  "temporaryPortsClear": true,
+  "temporaryPortsCheckExitCode": 0,
+  "boundaries": "Read-only health, Docker status, stored identity and temporary port checks. Production argv and all online config/JAR contents were not revalidated. No deployment or production account mutation."
+}

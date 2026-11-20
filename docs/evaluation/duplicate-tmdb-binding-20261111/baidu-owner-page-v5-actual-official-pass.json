@@ -1,0 +1,264 @@
+{
+  "status": "OFFICIAL_RECONCILIATION_VERIFIED",
+  "startedAt": "2026-11-11T13:26:41.871609+00:00",
+  "cloudWrites": 0,
+  "sqlWrites": 0,
+  "scriptSha256": "4dee4a1bd6064d887edcacd92eda17b5c066755739bef1a62de5659e8726efe0",
+  "generationBindingSha256": "c4c1f4177c2df3ca6fe3e0e96aead90d39d48c8597b6727f39a07921d78eb67a",
+  "generationBindingPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-page-v5-reviewed-compiled-binding-af635c0e0464439c957b156461e0d74a.json",
+  "officialGeneration": "owner-page-v5",
+  "successfulArchiveRows": {
+    "childId": 17650,
+    "movieId": "x3xX",
+    "childPayloadSha256": "c73fef9b73e8f48aceec0cbec62df6a8275cecf0462b3b274aeea1a26d4cb839",
+    "sourceMovieProjectionSha256": "1e796fc93c8bbaa66123b9cfea331f7d31d99e3b49eb4af6096872ff6d6e0ffb",
+    "selectedSourceProjectionSha256": "a6d4cf81ee2ea917a4aba2d89b09893966dd54c2ea36de8072dfca93e6ea8c08",
+    "metadataLinkProjectionSha256": "c4be60ae8d469cafb8e87556f424a3d0d9f1ac96f1c81846612f86708d8d804f",
+    "resourceLinkId": 28262,
+    "selectedResourceIds": [
+      28260,
+      28261
+    ],
+    "fileCount": 4,
+    "totalBytes": 143163,
+    "urlSha256": "68221e28ac1c7302878589a8f3ba15f89ac72851d75ebabd9611255cd8c14999"
+  },
+  "cycleReceiptSha256": "6ca4fbe9cce6db86cec4ee07f2d1922ac94a1fb829b2bbf2a756a5cf028221cc",
+  "cycleReceiptPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json",
+  "officialReconciliation": {
+    "status": "read-only-reconciled",
+    "childId": 17650,
+    "parentTaskId": 17583,
+    "childPayloadSha256": "c73fef9b73e8f48aceec0cbec62df6a8275cecf0462b3b274aeea1a26d4cb839",
+    "jarSha256": "d766f376c4c1b411b133632835b4eab327d0cfeeea11a590e5d49e4dd49fd3f9",
+    "fileCount": 4,
+    "totalBytes": 143163,
+    "files": [
+      {
+        "expectedMd5": "4c04c00e35cf85df0b6f9d96fcf0dad4",
+        "actualContentVerifiedByCandidateClient": true,
+        "fileIdMatchesCheckpoint": true,
+        "expectedBytes": 150,
+        "nameSha256": "726d051cb9aa00e91419a3f6a8fc7bb417b7b0a2ed0c3afe595a3413e0fd09d7",
+        "expectedSha256": "4f8bfb1bf2a434c1d492275f18721ba8ebae7ae6de28da7b4a3f7852b878cd68",
+        "fileIdSha256": "ea3f7bbf4fe2d32ea8a1bdc0797bdef4102dc6a1dcb7b71f66195aeb368f1a67",
+        "upstreamMd5Sha256": "090e63db711a84759fe252b7da24785f440205126b4b9cfce0b5a42a20d46ab6"
+      },
+      {
+        "expectedMd5": "34121b4bcccfce12ffbfbb05de7d4930",
+        "actualContentVerifiedByCandidateClient": true,
+        "fileIdMatchesCheckpoint": true,
+        "expectedBytes": 147,
+        "nameSha256": "4c22e6272795601c0b7f0e5405c91e2d1e43687f49c444a739130d64e412166a",
+        "expectedSha256": "6dcacbacbbb2c165cd3687bff5a3a41191368989c356592adfb67eb315b5c93e",
+        "fileIdSha256": "a0f2f028fb77bd1340f0a258716bcb57f152a0631b9de8fd0831bb571fc4b876",
+        "upstreamMd5Sha256": "79ccc31e25111807655f4e0661a7cf88f922460af65ffba2f36d40d069eb971d"
+      },
+      {
+        "expectedMd5": "85fb42bf2b66e2934d0df2636dc5013b",
+        "actualContentVerifiedByCandidateClient": true,
+        "fileIdMatchesCheckpoint": true,
+        "expectedBytes": 23603,
+        "nameSha256": "ac932e36ef29ed3643b6818741f0d0148f6184973c5fc15337965d19d68a152f",
+        "expectedSha256": "14887510865f037a2d12f05e824fe441a67b897e4c23a6f7f87ed03730a8a7ad",
+        "fileIdSha256": "4f725681c59309d5d255ad94b9cdfe6ad759e102f977b4b928353e342aa5cb36",
+        "upstreamMd5Sha256": "af9b35962a49c2fdc8f35a896edaa85ace3582f4f0fe40258cf1cc555c409b08"
+      },
+      {
+        "expectedMd5": "881a07aaa2e4fe7d44d270c0aaa40062",
+        "actualContentVerifiedByCandidateClient": true,
+        "fileIdMatchesCheckpoint": true,
+        "expectedBytes": 119263,
+        "nameSha256": "398cb2309e4229eafd69ea88ba3a62e06f3633fe659b83315254723f2fe6b669",
+        "expectedSha256": "6c8763cbd0f0baf8c9ca27b70a6859370953cc62d65b848e60aafff4681cbfa7",
+        "fileIdSha256": "9b8cf775b1d218032dd5561a08d8ba90c5e239b77045d44334a26236bfd94325",
+        "upstreamMd5Sha256": "09feafc5e08730e1a03121935ab2a34e8837d9deff085473d2b1b4fda5f73464"
+      }
+    ],
+    "ownShare": {
+      "urlSha256": "68221e28ac1c7302878589a8f3ba15f89ac72851d75ebabd9611255cd8c14999",
+      "activeOwnRecord": true,
+      "shareIdSha256": "a97bbd3fd40669c92b8f9c42bdaa67dde277a05f314087e86801d995ce298384",
+      "ownerSchemaProof": {
+        "version": 5,
+        "source": "SCRIPT_SHARE_JSON",
+        "parserMode": "STRICT_JSON",
+        "sessionUidCanonical": true,
+        "recordAliases": {
+          "uid": {
+            "matchesExpected": false,
+            "integer": false,
+            "text": false,
+            "canonicalDigits": false,
+            "present": false,
+            "jsonType": "MISSING"
+          },
+          "uk": {
+            "matchesExpected": false,
+            "integer": false,
+            "text": false,
+            "canonicalDigits": false,
+            "present": false,
+            "jsonType": "MISSING"
+          }
+        },
+        "recordShareId": {
+          "matchesExpected": true,
+          "integer": true,
+          "text": false,
+          "canonicalDigits": true,
+          "present": true,
+          "jsonType": "NUMBER"
+        },
+        "pageOwner": {
+          "matchesExpected": true,
+          "integer": false,
+          "text": true,
+          "canonicalDigits": true,
+          "present": true,
+          "jsonType": "STRING"
+        },
+        "pageShareId": {
+          "matchesExpected": true,
+          "integer": true,
+          "text": false,
+          "canonicalDigits": true,
+          "present": true,
+          "jsonType": "NUMBER"
+        },
+        "pageLoginState": {
+          "jsonType": "NUMBER",
+          "integer": true,
+          "recognizedState": true,
+          "present": true
+        },
+        "recordAliasesConsistent": true,
+        "pageCriticalAliasesConsistent": true,
+        "sameObjectOwnerAndId": true,
+        "ownerMatchesCurrentSession": true,
+        "shareIdMatchesOwnRecord": true,
+        "serverAccountBeforeAndAfterVerified": true,
+        "transport": {
+          "responseSha256": "4ee8981953212d9fb8cbf02e38c505bb7f567101598d74020aaa8f173975f55a",
+          "responseBytes": 6110,
+          "redirectCount": 0,
+          "finalTargetClass": "SHARE",
+          "mediaType": "HTML",
+          "utf8Valid": true,
+          "sameOriginAllHops": true,
+          "boundShareIdentityAllHops": true
+        },
+        "inventory": {
+          "scriptHashes": [
+            {
+              "sha256": "560d65ee6d57ee80f2d4f9c03523287e25af0efad1c115dda40a26bdfbf662f8",
+              "bytes": 616,
+              "index": 0
+            },
+            {
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "index": 1
+            },
+            {
+              "sha256": "d881a0bc3d8db3bbe0ae2dd08b9c2aff87fd2cece2742869c47b4cf001950352",
+              "bytes": 1347,
+              "index": 2
+            },
+            {
+              "sha256": "00d1d12344219dcdc6b230d42cc67e35ff9b664886e632e1589de835876719d1",
+              "bytes": 63,
+              "index": 3
+            },
+            {
+              "sha256": "86456e51855ef792e9fc7a179e71557197d2089b6d72cb610a5a773d545b9488",
+              "bytes": 990,
+              "index": 4
+            },
+            {
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "index": 5
+            },
+            {
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "index": 6
+            },
+            {
+              "sha256": "9d0b19753e399d7a81a8795428b128a400c7dcaa6ece9d98e5146fc73ca16653",
+              "bytes": 1473,
+              "index": 7
+            },
+            {
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "index": 8
+            },
+            {
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "index": 9
+            },
+            {
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "index": 10
+            },
+            {
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "index": 11
+            }
+          ],
+          "strictDuplicateDetection": true,
+          "strictTrailingDetection": true,
+          "scriptInventoryComplete": true,
+          "rootFieldsInspectedComplete": true,
+          "scriptCount": 12,
+          "inertParsing": true,
+          "candidateInventoryComplete": true,
+          "candidateCount": 1,
+          "rootFieldCount": 34,
+          "shareCandidateCount": 1
+        },
+        "candidate": {
+          "sha256": "e260237961913f669d0921ded2509f74760f42260860ef20d553449268e455b1",
+          "scriptIndex": 2,
+          "bytes": 1267,
+          "source": "SCRIPT_SHARE_JSON"
+        },
+        "failure": {
+          "line": 0,
+          "column": 0,
+          "stage": "NONE",
+          "reason": "NONE",
+          "lexemeKind": "NONE",
+          "coordinateSpace": "CANDIDATE_UTF16"
+        }
+      },
+      "directoryIdSha256": "c48b4fd85f572093f9b418fd9dafd859697c4ec0a942df1b137416d69285ee06",
+      "directoryFsidMatches": true,
+      "ownerMatchesCurrentSession": true,
+      "successfulChildUrlMatches": true
+    },
+    "cloudGetRequests": 46,
+    "pageGetRequests": 1,
+    "sourceGetRequests": 2,
+    "cloudWrites": 0,
+    "springStarted": false,
+    "sqlOpened": false,
+    "sessionPairUnchanged": true,
+    "sessionStateSha256": "97528511f9a1db35440f95e41150fb31c48ea026717a94fabc6aae835f394610",
+    "sessionKeySha256": "e50bbffbde9409fe5c8d9805a27828fa336438e93b307e99cf3fdd73fe5c0909",
+    "replayAllowed": false,
+    "compilerReceiptSha256": "4b5634b2121bf4cbcd931ac259f7d7394ee8a575ee18df6d131d2ff728309e08",
+    "compilerReceiptPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\reconcile-owner-page-v5-build-attempts\\d4b1ca1929b24f3ba789e19905f17ba4\\compile-completed.json",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "expectedManifestSha256": "47499d24d35037d8204023e760104b789d93e0c2a04cafcf4289dd900d58b6e8",
+  "officialFilesMatchExpectedManifest": true,
+  "protectedRowsRetained": true,
+  "allGenerationsRetained": true,
+  "completedAt": "2026-11-11T13:27:38.346416+00:00"
+}

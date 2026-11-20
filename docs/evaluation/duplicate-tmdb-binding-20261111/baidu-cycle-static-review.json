@@ -1,0 +1,107 @@
+{
+  "status": "STATIC_AND_OFFLINE_REVIEW_PASS",
+  "createdAt": "2026-11-11T05:54:41.325833+00:00",
+  "planSha256": "666d2cf7ae8ddeed5fc77e5d280c74c413a7b0abadfdcfbaca788ad4e2ddfa22",
+  "cycleSha256": "da752867e57b3c79c5ffa1b3ecc8e9a12da276de46a96720bf36a9e03caf7a47",
+  "postReconcileSha256": "784354902c94d94efb60a5609b0f33768a919ce9335cf49d72dda09a9d03f94c",
+  "boundFileChecks": [
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\Cycle.py",
+      "sha256": "da752867e57b3c79c5ffa1b3ecc8e9a12da276de46a96720bf36a9e03caf7a47",
+      "matchesPlan": true
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostReconcile.py",
+      "sha256": "784354902c94d94efb60a5609b0f33768a919ce9335cf49d72dda09a9d03f94c",
+      "matchesPlan": true
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PrepareSource.py",
+      "sha256": "d79606ab1670d1559c651736d833a5349e707b2acb29b8d4e97ae8e279324e95",
+      "matchesPlan": true
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PrepareFirstTorrents.py",
+      "sha256": "792961d7d0dc9749d6a9c3a11a32b01b46d26fbece4c1995515644cd05a16a5d",
+      "matchesPlan": true
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileReconciler.py",
+      "sha256": "e7f60f93a18a3d0eb97285e7af3bd9a2c590e195d91b2f3b9b3373ea23259598",
+      "matchesPlan": true
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\ReconcileNewBaiduArchiveReadOnly.java",
+      "sha256": "6094c1dba7da05331e7c0e1d8ef90c007a2f3576b55a4dda63727e87cf7e76b6",
+      "matchesPlan": true
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111\\Runtime.py",
+      "sha256": "50e2efd9f180f330e59807d6f9085f41e3c22b8cbdb66b9d5bed866a1fc423ab",
+      "matchesPlan": true
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111\\BackendReadOnly.py",
+      "sha256": "81aa50d53e011a75cdcbada4f538a940f1ce17308ac90e213e3c16e4680ba1f0",
+      "matchesPlan": true
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111\\candidate-binding.json",
+      "sha256": "4349a8c4279b31929317404896eeef527f2616a785b899274a404345bafe488a",
+      "matchesPlan": true
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\readonly-preparation-20261111T054057.200743Z.json",
+      "sha256": "078384920cc6df497f4590cadb74ede4bb1d31739578e3e4573b1c41140ce014",
+      "matchesPlan": true
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\readonly-preparation-20261111T052601.888355Z.json",
+      "sha256": "0e6530b5cd003c4dc4e3cbe7a8cda998f698ff1be8bf5ae6650cf8b6566477d0",
+      "matchesPlan": true
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\reconcile-build-attempts\\f77ed83f37aa47b18726aaa9d3581042\\compile-completed.json",
+      "sha256": "cfb82ae98536be8351bd55ea9f48f2bad6e7882af6cdf30e3589cb07080417be",
+      "matchesPlan": true
+    }
+  ],
+  "offlineTests": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\offline-cycle-guard-review-v3-20261111.json",
+    "sha256": "86cb0581c77b129b311f34cdfa9025b1db2d6ce5972845f0c24ff1945fcbae22",
+    "tests": 37,
+    "failures": 0,
+    "errors": 0
+  },
+  "reviewedControls": [
+    "Default/import no runtime I/O",
+    "Original3/3 authorization exhausted and new budget unauthorized until explicit fresh confirmation",
+    "Fresh post-data-stage Baidu-only fullrow encrypted preimage and current runtime/host/daily baseline",
+    "Immediate-before-send candidate identity/movie fullrow anchor and exact productionNEXT identity",
+    "Create-once POST empty-body intents and immutable receipts",
+    "Normal SKIP consumes film cycle and creates no actual archive attempt",
+    "Any actual new child, UNKNOWN, uncertain response or error stops further manual runs",
+    "Manual consecutive identities47-50 maximum4 and maximum1actual archive attempt",
+    "Success bound to actual new SUCCEEDED/COMPLETE child and preflight metadata manifest through official GET-only reconciliation",
+    "Restoretrue10min1 only after successful official proof; observe first natural terminal cycle and keep normal schedule enabled on accepted result",
+    "Protective pausefalse10min1 exactly once on unknown/error/uncertainty; no cloud replay",
+    "No old MobLand deployment-wide protectedRows assertion",
+    "Sensitive fullrows only authenticated age ciphertext; safe report metadata/hashes only"
+  ],
+  "resolvedFindings": [
+    "Empty source production selection emits three reasons, all now accepted for legitimate SKIP",
+    "Restore official receipt now binds actual cycleReceiptSha256 and exact anticipated file manifest",
+    "Enable-may-have-been-sent flag begins false and changes immediately before enablePUT",
+    "Before-intent failures persist STOP marker and forbid same continuation",
+    "Candidate fullrow identity/movie and unselected resources are checked; exactNEXT is re-read before POST/enable",
+    "Runtime comparison avoids eager second runtime scan"
+  ],
+  "scopeLimitation": "Review and tests use inert modules and local synthetic fixtures; no production or provider request was executed. Natural actual archive should additionally run PostReconcile with its natural.receipt after terminal success. Continued normal automatic schedule after successful observation is explicitly part of the parent-stated authorization and is separate from manual film budget.",
+  "productionModulesImported": false,
+  "credentialsRead": false,
+  "runtimeDockerRequests": 0,
+  "sqlRequests": 0,
+  "sourceRequests": 0,
+  "cloudRequests": 0,
+  "productionMutations": 0
+}

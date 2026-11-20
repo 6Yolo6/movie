@@ -1,0 +1,22 @@
+{
+  "exitCode": 0,
+  "tests": 13,
+  "passed": 13,
+  "failed": 0,
+  "windowsAclIdempotenceTested": true,
+  "proxyLoopbackBounded": true,
+  "sourceFiles": [
+    {
+      "path": "tools\\baidu-browser-session.cjs",
+      "sha256": "b0cf92c4efe18ba5e3b8aee731bcee139b6cc5518612a29748da4e19c6299647"
+    },
+    {
+      "path": "tools\\run-baidu-browser-login.ps1",
+      "sha256": "9667c8d863cf7c1df76cf2ee5d694afda80f279373dd964d77c8a0bff4e0babe"
+    },
+    {
+      "path": "tools\\tests\\baidu-browser-session.test.cjs",
+      "sha256": "658fa936dea253754a1298aabd057515736f08cf25fb23f2894e71b66e7e88d6"
+    }
+  ]
+}

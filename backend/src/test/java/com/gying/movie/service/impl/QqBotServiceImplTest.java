@@ -55,6 +55,8 @@ import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
 class QqBotServiceImplTest {
@@ -67,6 +69,7 @@ class QqBotServiceImplTest {
     private IResourceDiscoveryResultService discoveryResultService;
     private IQuarkTransferTaskService quarkTransferTaskService;
     private IQuarkTransferRunnerService quarkTransferRunnerService;
+    private IQuarkShareService quarkShareService;
     private IXunleiTransferTaskService xunleiTransferTaskService;
     private IXunleiTransferRunnerService xunleiTransferRunnerService;
     private IResourceHubPublishService resourceHubPublishService;
@@ -88,6 +91,7 @@ class QqBotServiceImplTest {
         discoveryResultService = mock(IResourceDiscoveryResultService.class);
         quarkTransferTaskService = mock(IQuarkTransferTaskService.class);
         quarkTransferRunnerService = mock(IQuarkTransferRunnerService.class);
+        quarkShareService = mock(IQuarkShareService.class);
         xunleiTransferTaskService = mock(IXunleiTransferTaskService.class);
         xunleiTransferRunnerService = mock(IXunleiTransferRunnerService.class);
         resourceHubPublishService = mock(IResourceHubPublishService.class);
@@ -107,7 +111,7 @@ class QqBotServiceImplTest {
                 resourceLinkService,
                 resourceDiscoveryService,
                 discoveryResultService,
-                mock(IQuarkShareService.class),
+                quarkShareService,
                 quarkTransferTaskService,
                 quarkTransferRunnerService,
                 xunleiTransferTaskService,
@@ -144,7 +148,7 @@ class QqBotServiceImplTest {
         when(tmdbMetadataSyncService.searchCandidatesByKeyword("福尔摩斯", 10))
                 .thenReturn(List.of(first, second));
         MovieMetadata selectedMovie = movie("tv_2", "福尔摩斯：基本演绎法", 2012);
-        when(tmdbMetadataSyncService.syncExactByKeyword("福尔摩斯：基本演绎法"))
+        when(tmdbMetadataSyncService.syncSelectedCandidate(second))
                 .thenReturn(selectedMovie);
 
         String candidates = service.buildSearchReply("福尔摩斯", "user-1");
@@ -153,7 +157,7 @@ class QqBotServiceImplTest {
         assertTrue(candidates.contains("2. 剧集 福尔摩斯：基本演绎法 (2012)"));
         assertTrue(candidates.contains("直接回复序号即可，例如：1"));
         assertTrue(selected.contains("片名：福尔摩斯：基本演绎法"));
-        verify(tmdbMetadataSyncService).syncExactByKeyword("福尔摩斯：基本演绎法");
+        verify(tmdbMetadataSyncService).syncSelectedCandidate(second);
     }
 
     @Test
@@ -170,7 +174,7 @@ class QqBotServiceImplTest {
                 "test-mid",
                 null);
         when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of());
-        when(gyingSourceWorkflowService.searchCandidates("伦敦生活", 10))
+        when(gyingSourceWorkflowService.suggestCandidates("伦敦生活", 10))
                 .thenReturn(List.of(gyingCandidate));
         MovieMetadata selectedMovie = movie("gying_london_life", "伦敦生活", 2016);
         when(gyingSourceWorkflowService.ensureMovieMetadata("tv", "test-mid"))
@@ -232,7 +236,7 @@ class QqBotServiceImplTest {
                 "tv",
                 "wxLe",
                 null);
-        when(gyingSourceWorkflowService.searchCandidates("伦敦生活", 10))
+        when(gyingSourceWorkflowService.suggestCandidates("伦敦生活", 10))
                 .thenReturn(List.of(gyingMovie, gyingSeries));
         when(tmdbMetadataSyncService.searchCandidatesByKeyword("伦敦生活", 10))
                 .thenReturn(List.of());
@@ -315,19 +319,47 @@ class QqBotServiceImplTest {
     }
 
     @Test
-    void syncsMetadataWhenCompactKeywordOmitsChinesePunctuation() {
+    void compactKeywordOffersIdentityBeforeFetchingOnlyTheSelectedMovie() {
         MovieMetadata movie = movie("tmdb_movie_1275779", "蜘蛛侠：英雄无归", 2021);
+        MovieSearchCandidate selected = candidate(1275779L, "蜘蛛侠：英雄无归", 2021, 180);
         when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of());
-        when(tmdbMetadataSyncService.syncExactByKeyword("蜘蛛侠英雄无归")).thenReturn(movie);
-
+        when(tmdbMetadataSyncService.searchCandidatesByKeyword("蜘蛛侠英雄无归", 10)).thenReturn(List.of(selected));
+        when(tmdbMetadataSyncService.syncSelectedCandidate(selected)).thenReturn(movie);
         String reply = service.buildSearchReply("蜘蛛侠英雄无归", "compact-title-user");
-
         assertTrue(reply.contains("蜘蛛侠：英雄无归"));
-        verify(tmdbMetadataSyncService).syncExactByKeyword("蜘蛛侠英雄无归");
+        verify(tmdbMetadataSyncService, never()).syncExactByKeyword(anyString());
+        verify(tmdbMetadataSyncService, never()).syncSelectedCandidate(any());
+        assertTrue(service.buildSearchReply("1", "compact-title-user").contains("蜘蛛侠：英雄无归"));
+        verify(tmdbMetadataSyncService).syncSelectedCandidate(selected);
     }
 
     @Test
-    void rejectsBaiduProviderWithoutSearchingOrReturningThirdPartyLinks() {
+    void selectedTmdbDetailsFailureReturnsSafeReplyAndPreservesCandidateSelection() {
+        resourceHubProperties.setEnabled(true);
+        MovieSearchCandidate first = candidate(1L, "福尔摩斯先生", 2015, 140);
+        MovieSearchCandidate second = candidate(2L, "福尔摩斯：基本演绎法", 2012, 130);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of());
+        when(tmdbMetadataSyncService.searchCandidatesByKeyword("福尔摩斯", 10))
+                .thenReturn(List.of(first, second));
+        when(tmdbMetadataSyncService.syncSelectedCandidate(first))
+                .thenThrow(new IllegalStateException("TMDB request failed: https://example.test/?api_key=fixture-key"));
+        when(tmdbMetadataSyncService.syncSelectedCandidate(second))
+                .thenReturn(movie("tv_2", "福尔摩斯：基本演绎法", 2012));
+
+        service.buildSearchReply("福尔摩斯", "tmdb-failure-user");
+        String failedReply = service.buildSearchReply("1", "tmdb-failure-user");
+
+        assertTrue(failedReply.contains("所选候选无法建立可信影片元数据：福尔摩斯先生"));
+        assertTrue(failedReply.contains("请重新回复其他候选序号"));
+        assertFalse(failedReply.contains("fixture-key"));
+        verify(resourceDiscoveryService, never()).enqueue(any());
+        assertTrue(service.buildSearchReply("2", "tmdb-failure-user").contains("福尔摩斯：基本演绎法"));
+        verify(tmdbMetadataSyncService).syncSelectedCandidate(first);
+        verify(tmdbMetadataSyncService).syncSelectedCandidate(second);
+    }
+
+    @Test
+    void baiduProviderWithNoCandidateDoesNotReturnThirdPartyLinks() {
         MovieMetadata movie = movie("tv_112732", "哈哈哈哈哈", 2020);
         when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(movie));
         when(movieService.getById(movie.getId())).thenReturn(movie);
@@ -343,7 +375,8 @@ class QqBotServiceImplTest {
         service.buildSearchReply("哈哈哈哈哈", "user-3");
         String reply = service.buildSearchReply("百度 1", "user-3");
 
-        assertTrue(reply.contains("暂不支持百度网盘服务"));
+        assertTrue(reply.contains("百度"));
+        assertFalse(reply.contains("暂不支持百度网盘服务"));
         assertFalse(reply.contains("https://pan.baidu.com"));
         verify(panSouClient, org.mockito.Mockito.never())
                 .searchClouds(anyString(), eq(Set.of("BAIDU")), anyInt());
@@ -841,8 +874,8 @@ class QqBotServiceImplTest {
         String initial = service.buildSearchReply("没有夸克的影片", "no-quark-user");
         String requested = service.buildSearchReply("百度 1", "no-quark-user");
 
-        assertTrue(initial.contains("多次搜索后仍未找到可供选择的夸克或迅雷资源"));
-        assertTrue(requested.contains("暂不支持百度网盘服务"));
+        assertTrue(initial.contains("多次搜索后仍未找到可供选择的夸克、迅雷或百度资源"));
+        assertTrue(requested.contains("没有找到可供选择的资源"));
         assertFalse(initial.contains(baidu.getUrl()));
         assertFalse(requested.contains(baidu.getUrl()));
         verify(panSouClient, org.mockito.Mockito.never())
@@ -926,11 +959,13 @@ class QqBotServiceImplTest {
         quarkTask.setStatus("PENDING");
         when(quarkTransferTaskService.getOne(any(QueryWrapper.class), eq(false))).thenReturn(quarkTask);
         when(quarkTransferRunnerService.submitOne(quarkTask.getId()))
-                .thenThrow(new IllegalStateException("read quark share directory failed"));
+                .thenThrow(new IllegalStateException("好友已取消分享"));
 
         XunleiTransferTask xunleiTask = new XunleiTransferTask();
         xunleiTask.setId(902L);
-        xunleiTask.setStatus("PENDING");
+        xunleiTask.setStatus("SUCCEEDED");
+        xunleiTask.setShareUrl("https://pan.xunlei.com/s/valid-owned");
+        when(xunleiTransferTaskService.getById(xunleiTask.getId())).thenReturn(xunleiTask);
         when(xunleiTransferTaskService.getOne(any(QueryWrapper.class), eq(false))).thenReturn(xunleiTask);
         when(xunleiTransferRunnerService.submitOne(xunleiTask.getId())).thenReturn(successfulTransfer());
         ResourceLink ready = link(
@@ -987,6 +1022,228 @@ class QqBotServiceImplTest {
         assertTrue(nextPage.contains("迅雷候选 4"));
     }
 
+    @Test
+    void builtInAndConfiguredBlocklistStopsWebAndQqBeforeAnySearch() {
+        for (String key : List.of("web:blocked", "qq:blocked")) {
+            assertTrue(service.buildSearchReply("ＰＯＲＮ", key).contains("不支持的内容"));
+            qqBotProperties.setBlockedKeywords("禁搜测试");
+            assertTrue(service.buildSearchReply("禁 搜 测 试", key).contains("不支持的内容"));
+        }
+        org.mockito.Mockito.verifyNoInteractions(movieService, resourceLinkService, gyingSourceWorkflowService,
+                tmdbMetadataSyncService, panSouClient, resourceDiscoveryService, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test
+    void blocklistChangesInvalidateCachedLibraryContinuation() {
+        MovieMetadata local = movie("policy-cache", "缓存影片", 2024);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        when(movieService.getById(local.getId())).thenReturn(local);
+        ResourceLink saved = link("QUARK", "缓存影片资源", "https://pan.quark.cn/s/policy-fixture");
+        saved.setMovieId(local.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(saved));
+        assertTrue(service.buildSearchReply("缓存影片", "web:policy").contains("资源库已有资源"));
+        qqBotProperties.setBlockedKeywords("缓存影片");
+        assertTrue(service.buildSearchReply("资源", "web:policy").contains("不支持的内容"));
+        org.mockito.Mockito.verifyNoInteractions(resourceDiscoveryService, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test
+    void qqReturnsApprovedLibraryResourcesEvenWhenReleaseDateIsFuture() {
+        MovieMetadata local = movie("outbreak", "生化危机：爆发夜", 2099);
+        local.setReleaseDates("2099-10-05(中国大陆)"); local.setResourceStatus("TRAILER");
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        ResourceLink saved = link("QUARK", "爆发夜 已入库资源", "https://pan.quark.cn/s/outbreak-fixture");
+        saved.setMovieId(local.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(saved));
+        String reply = service.buildSearchReply("生化危机：爆发夜", "qq:outbreak");
+        assertTrue(reply.contains(saved.getUrl())); assertFalse(reply.contains("尚未上映"));
+        org.mockito.Mockito.verifyNoInteractions(tmdbMetadataSyncService, gyingSourceWorkflowService,
+                resourceDiscoveryService, panSouClient, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test
+    void regionalReleaseDateUsesEarliestValidDateNotFirstRegion() {
+        MovieMetadata local = movie("regions", "跨地区上映", 2026);
+        local.setReleaseDates("2099-10-05(中国大陆) / 2020-09-16(法国) / 2020-09-18(美国)");
+        assertEquals(false, org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "isUpcoming", local));
+        local.setReleaseDates("2099-10-05(中国大陆)");
+        assertEquals(true, org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "isUpcoming", local));
+    }
+
+    @Test
+    void readsCurrentSystemBlocklistForEveryRequestWithoutReloadOrRestart() {
+        var config = mock(com.gying.movie.service.ISysConfigService.class);
+        service.configureSearchLimits(config);
+        when(config.getConfigValue("qq.bot.blocked_keywords", "")).thenReturn("临时禁词甲", "临时禁词乙");
+        assertTrue(service.buildSearchReply("临时禁词甲", "web:live-config").contains("不支持的内容"));
+        assertTrue(service.buildSearchReply("临时禁词乙", "qq:live-config").contains("不支持的内容"));
+        verify(config, org.mockito.Mockito.times(2)).getConfigValue("qq.bot.blocked_keywords", "");
+        org.mockito.Mockito.verifyNoInteractions(movieService, resourceDiscoveryService, panSouClient);
+    }
+
+    @Test
+    void qqStaleTrailerStatusReturnsExistingResourcesBeforeExternalMovieCandidates() {
+        MovieMetadata local = movie("stale-trailer", "生化危机：爆发夜", 2026);
+        local.setReleaseDates("2099-10-05(中国大陆) / 2020-09-16(法国)");
+        local.setResourceStatus("TRAILER");
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        ResourceLink quark = link("QUARK", "已审核夸克资源", "https://pan.quark.cn/s/stale-fixture");
+        quark.setMovieId(local.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(quark));
+        String reply = service.buildSearchReply("生化危机：爆发夜", "qq:stale-trailer");
+        assertTrue(reply.contains(quark.getUrl())); assertFalse(reply.contains("尚未上映"));
+        org.mockito.Mockito.verifyNoInteractions(tmdbMetadataSyncService, gyingSourceWorkflowService,
+                resourceDiscoveryService, panSouClient, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+
+    @Test
+    void qqLibraryExcludesP2pAndCloudMetadataArchivesBeforeTheQueryLimit() {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("qq-disk-only", "网盘类型测试", 2099);
+        local.setResourceStatus("TRAILER");
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        java.util.ArrayList<ResourceLink> excluded = new java.util.ArrayList<>();
+        for (int i = 0; i < 60; i++) {
+            ResourceLink archive = link(i % 2 == 0 ? "QUARK" : "XUNLEI", "种子归档" + i,
+                    "https://pan.quark.cn/s/metadata-" + i);
+            archive.setMovieId(local.getId()); archive.setType("TORRENT");
+            archive.setSource("GYING_P2P_ARCHIVE"); excluded.add(archive);
+        }
+        ResourceLink magnet = link("P2P", "原始磁力", "magnet:?xt=urn:btih:qq-magnet");
+        magnet.setType("MAGNET"); excluded.add(magnet);
+        ResourceLink torrent = link("P2P", "原始种子", "https://example.test/qq.torrent");
+        torrent.setType("TORRENT"); excluded.add(torrent);
+        ResourceLink online = link("ONLINE", "在线播放", "https://example.test/online");
+        online.setType("ONLINE"); excluded.add(online);
+        excluded.add(link("QUARK", "错误类型磁力", "magnet:?xt=urn:btih:mislabeled"));
+        excluded.forEach(link -> link.setMovieId(local.getId()));
+        ResourceLink quark = link("QUARK", "已有夸克视频", "https://pan.quark.cn/s/qq-video");
+        ResourceLink xunlei = link("XUNLEI", "已有迅雷视频", "https://pan.xunlei.com/s/qq-video");
+        quark.setMovieId(local.getId()); xunlei.setMovieId(local.getId());
+        java.util.ArrayList<ResourceLink> rows = new java.util.ArrayList<>(excluded);
+        rows.add(quark); rows.add(xunlei);
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(rows);
+
+        String reply = service.buildSearchReply("网盘类型测试", "qq:disk-only");
+
+        assertTrue(reply.contains("资源库已有资源"));
+        assertTrue(reply.contains(quark.getUrl())); assertTrue(reply.contains(xunlei.getUrl()));
+        for (ResourceLink link : excluded) {
+            assertFalse(reply.contains(link.getUrl()), link.getName());
+            assertFalse(reply.contains(link.getName()), link.getName());
+        }
+        ArgumentCaptor<QueryWrapper> query = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(resourceLinkService).list(query.capture());
+        assertTrue(query.getValue().getSqlSegment().contains("type ="));
+        assertTrue(query.getValue().getParamNameValuePairs().containsValue("DISK"));
+        assertTrue(query.getValue().getSqlSegment().contains("LIMIT 50"));
+        org.mockito.Mockito.verifyNoInteractions(resourceDiscoveryService, panSouClient,
+                quarkTransferRunnerService, xunleiTransferRunnerService);
+        verify(resourceLinkService, never()).updateById(any());
+    }
+
+    @Test
+    void qqOwnedResourceCandidatesAlsoExcludeCloudHostedTorrents() {
+        MovieMetadata local = movie("qq-owned-disk", "自有网盘类型测试", 2024);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        ResourceLink video = link("QUARK", "自有网盘类型测试 1080P", "https://pan.quark.cn/s/owned-video");
+        video.setSource("RESOURCE_HUB"); video.setMovieId(local.getId());
+        ResourceLink archive = link("XUNLEI", "自有网盘类型测试 磁力种子", "https://pan.xunlei.com/s/owned-archive");
+        archive.setSource("RESOURCE_HUB"); archive.setType("TORRENT"); archive.setMovieId(local.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(archive, video));
+        when(panSouClient.checkLink(video.getUrl()))
+                .thenReturn(new LinkCheckResult(video.getUrl(), true, true, "ok"));
+
+        String reply = service.buildSearchReply("自有网盘类型测试", "qq:owned-disk");
+
+        assertTrue(reply.contains(video.getName())); assertTrue(reply.contains(video.getUrl()));
+        assertFalse(reply.contains(archive.getName())); assertFalse(reply.contains(archive.getUrl()));
+        verify(panSouClient, never()).checkLink(archive.getUrl());
+        org.mockito.Mockito.verifyNoInteractions(quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test
+    void qqBareResourceFollowupSearchesOtherVersionsAfterFutureDatedLibraryReply() {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("qq-library-more", "资源继续测试", 2099);
+        local.setResourceStatus("TRAILER");
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        when(movieService.getById(local.getId())).thenReturn(local);
+        ResourceLink saved = link("QUARK", "已入库版本", "https://pan.quark.cn/s/library-more");
+        saved.setMovieId(local.getId()); saved.setSource("MANUAL");
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(saved));
+        assertTrue(service.buildSearchReply("资源继续测试", "qq:library-more").contains(saved.getUrl()));
+        verify(resourceDiscoveryService, never()).enqueue(any());
+        when(resourceDiscoveryService.enqueue(any())).thenReturn(task(9910L));
+        ResourceDiscoveryRunResult found = new ResourceDiscoveryRunResult(); found.setDiscovered(1);
+        when(resourceDiscoveryService.runTask(9910L)).thenReturn(found);
+        ResourceDiscoveryResult alternative = discovery(9911L, local.getId(), "XUNLEI",
+                "资源继续测试 4K 中文字幕", "https://pan.xunlei.com/s/alternative");
+        when(discoveryResultService.list(any(QueryWrapper.class))).thenReturn(List.of(alternative));
+
+        String reply = service.buildSearchReply("资源", "qq:library-more");
+
+        assertTrue(reply.contains("资源继续测试 4K 中文字幕"));
+        assertFalse(reply.contains("资源库已有资源")); assertFalse(reply.contains("尚未上映"));
+        ArgumentCaptor<ResourceDiscoveryRequest> request = ArgumentCaptor.forClass(ResourceDiscoveryRequest.class);
+        verify(resourceDiscoveryService).enqueue(request.capture());
+        assertEquals(local.getId(), request.getValue().getMovieId());
+        assertEquals("资源继续测试 2099", request.getValue().getKeyword());
+        verify(resourceDiscoveryService, never()).ensureTransferTask(any());
+        org.mockito.Mockito.verifyNoInteractions(quarkTransferRunnerService, xunleiTransferRunnerService);
+        assertTrue(service.buildSearchReply("资源", "qq:another-user").contains("请先发送"));
+    }
+
+    @Test
+    void qqUpcomingMovieWithOnlyP2pArchivesDoesNotClaimVideoAvailability() {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("qq-upcoming-p2p", "仅种子测试", 2099);
+        local.setResourceStatus("TRAILER");
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        ResourceLink archive = link("QUARK", "磁力种子归档", "https://pan.quark.cn/s/only-metadata");
+        archive.setType("TORRENT"); archive.setMovieId(local.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(archive));
+
+        String reply = service.buildSearchReply("仅种子测试", "qq:upcoming-p2p");
+
+        assertTrue(reply.contains("尚未上映")); assertFalse(reply.contains("资源库已有资源"));
+        assertFalse(reply.contains(archive.getUrl()));
+        org.mockito.Mockito.verifyNoInteractions(resourceDiscoveryService, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test
+    void qqUpcomingContinuationRechecksThatTheLibraryVideoStillExists() {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("qq-library-revoked", "库内失效测试", 2099);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        when(movieService.getById(local.getId())).thenReturn(local);
+        ResourceLink saved = link("QUARK", "已有视频", "https://pan.quark.cn/s/revoked");
+        saved.setMovieId(local.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(saved));
+        assertTrue(service.buildSearchReply("库内失效测试", "qq:revoked").contains(saved.getUrl()));
+        saved.setLinkStatus("INVALID");
+
+        String reply = service.buildSearchReply("资源", "qq:revoked");
+
+        assertTrue(reply.contains("尚未上映")); assertFalse(reply.contains(saved.getUrl()));
+        org.mockito.Mockito.verifyNoInteractions(resourceDiscoveryService, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test
+    void qqLibraryContinuationStillHonorsChangedModerationPolicy() {
+        MovieMetadata local = movie("qq-library-policy", "库内策略测试", 2099);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        when(movieService.getById(local.getId())).thenReturn(local);
+        ResourceLink saved = link("QUARK", "已有视频", "https://pan.quark.cn/s/qq-policy");
+        saved.setMovieId(local.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(saved));
+        assertTrue(service.buildSearchReply("库内策略测试", "qq:policy").contains(saved.getUrl()));
+        qqBotProperties.setBlockedKeywords("库内策略测试");
+        assertTrue(service.buildSearchReply("资源", "qq:policy").contains("不支持的内容"));
+        org.mockito.Mockito.verifyNoInteractions(resourceDiscoveryService, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
     private MovieSearchCandidate candidate(Long tmdbId, String title, int year, int score) {
         return new MovieSearchCandidate(tmdbId, "tv", title, null, year, score);
     }
@@ -1000,7 +1257,7 @@ class QqBotServiceImplTest {
         ResourceLink manual = link("QUARK", "人工发布 4K", "https://pan.quark.cn/s/library-first");
         manual.setMovieId(local.getId()); manual.setSource("MANUAL"); manual.setCode("1234");
         ResourceLink magnet = link("P2P", "磁力版", "magnet:?xt=urn:btih:fixture");
-        magnet.setMovieId(local.getId());
+        magnet.setMovieId(local.getId()); magnet.setType("MAGNET");
         when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(manual, manual, magnet));
         String reply = service.buildSearchReply("库内优先测试", "web:201");
         assertTrue(reply.contains("资源库已有资源"));
@@ -1009,6 +1266,31 @@ class QqBotServiceImplTest {
         assertEquals(reply.indexOf(manual.getUrl()), reply.lastIndexOf(manual.getUrl()));
         org.mockito.Mockito.verifyNoInteractions(gyingSourceWorkflowService, tmdbMetadataSyncService,
                 resourceDiscoveryService, discoveryResultService, panSouClient, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test
+    void webLibraryHidesAccountTorrentLinksButKeepsMagnetsAndOwnArchives() {
+        MovieMetadata local = movie("account-torrent-web", "种子入口测试", 2024);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        ResourceLink account = link("P2P", "需账号种子", "https://www.xn--wcv59z.com/dbt/BT1");
+        account.setType("TORRENT"); account.setSource("GYING");
+        ResourceLink magnet = link("P2P", "可用磁力", "magnet:?xt=urn:btih:" + "a".repeat(40));
+        magnet.setType("MAGNET");
+        ResourceLink archive = link("QUARK", "磁力种子不含视频", "https://pan.quark.cn/s/p2p-archive");
+        archive.setType("TORRENT"); archive.setSource("GYING_P2P_ARCHIVE");
+        List<ResourceLink> rows = List.of(account, magnet, archive);
+        rows.forEach(link -> link.setMovieId(local.getId()));
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(rows);
+        String reply = service.buildSearchReply("种子入口测试", "web:account-torrent");
+        assertTrue(reply.contains("资源库已有资源"));
+        assertFalse(reply.contains(account.getUrl())); assertFalse(reply.contains(account.getName()));
+        assertTrue(reply.contains(magnet.getUrl())); assertTrue(reply.contains(archive.getUrl()));
+        var query = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(resourceLinkService).list(query.capture());
+        assertTrue(query.getValue().getSqlSegment().contains("NOT REGEXP"));
+        assertTrue(query.getValue().getParamNameValuePairs().containsValue("^https?://[^/]+/dbt(/|[?#]|$)"));
+        org.mockito.Mockito.verifyNoInteractions(resourceDiscoveryService, panSouClient,
+                quarkTransferRunnerService, xunleiTransferRunnerService);
     }
 
     @Test
@@ -1087,6 +1369,7 @@ class QqBotServiceImplTest {
     private ResourceLink link(String provider, String name, String url) {
         ResourceLink link = new ResourceLink();
         link.setProvider(provider);
+        link.setType("DISK");
         link.setName(name);
         link.setUrl(url);
         link.setStatus("ACTIVE");
@@ -1130,4 +1413,350 @@ class QqBotServiceImplTest {
         result.setErrors(List.of());
         return result;
     }
+
+    @Test
+    void qqReleasedMovieReturnsAllApprovedLibraryDisksBeforeAnyExternalWork() {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("88mD", "疯狂动物城", 2016);
+        local.setTitleEn("Zootopia"); local.setResourceStatus("AVAILABLE");
+        local.setReleaseDates("2016-03-04(中国大陆/美国)");
+        local.setTmdbId(null);
+        MovieMetadata sequel = movie("22B3", "疯狂动物城2", 2025);
+        sequel.setSeriesName("疯狂动物城"); sequel.setAliases("疯狂动物城/Zootopia 2");
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(sequel, local));
+        ResourceLink quark = link("QUARK", "第一部 4K", "https://pan.quark.cn/s/library-regression");
+        ResourceLink xunlei = link("XUNLEI", "第一部 1080P", "https://pan.xunlei.com/s/library-regression");
+        ResourceLink baidu = link("BAIDU", "第一部原盘", "https://pan.baidu.com/s/library-regression");
+        List<ResourceLink> links = List.of(quark, xunlei, baidu);
+        links.forEach(link -> { link.setMovieId(local.getId()); link.setSource("ADMIN_MANUAL"); });
+        baidu.setSource("USER");
+        var baiduTransfers = mock(BaiduTemporaryTransferService.class); service.configureBaiduSearch(baiduTransfers);
+        when(baiduTransfers.validateOwnedResource(baidu)).thenReturn(true);
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(links);
+
+        String reply = service.buildSearchReply("疯狂动物城", "qq:released-library");
+
+        assertTrue(reply.contains("资源库已有资源"));
+        links.forEach(link -> assertTrue(reply.contains(link.getUrl())));
+        verify(baiduTransfers).validateOwnedResource(baidu);
+        assertTrue(reply.contains("发送“资源”继续"));
+        assertFalse(reply.contains("请选择资源"));
+        org.mockito.Mockito.verifyNoInteractions(tmdbMetadataSyncService, gyingSourceWorkflowService,
+                resourceDiscoveryService, panSouClient, quarkTransferRunnerService, xunleiTransferRunnerService,
+                resourceHubPublishService, quarkShareService);
+    }
+
+    @Test
+    void qqReleasedLibraryOnlyDiscoversAlternativesAfterExplicitResourceContinuation() {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("released-more", "疯狂动物城", 2016);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        when(movieService.getById(local.getId())).thenReturn(local);
+        ResourceLink manual = link("QUARK", "已有视频", "https://pan.quark.cn/s/existing-regression");
+        manual.setMovieId(local.getId()); manual.setSource("ADMIN_MANUAL");
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(manual));
+        assertTrue(service.buildSearchReply("疯狂动物城", "qq:released-more").contains(manual.getUrl()));
+        verify(resourceDiscoveryService, never()).enqueue(any());
+        when(resourceDiscoveryService.enqueue(any())).thenReturn(task(9801L));
+        ResourceDiscoveryRunResult result = emptyDiscovery(9801L); result.setDiscovered(1);
+        when(resourceDiscoveryService.runTask(9801L)).thenReturn(result);
+        when(discoveryResultService.list(any(QueryWrapper.class))).thenReturn(List.of(discovery(
+                9802L, local.getId(), "QUARK", "疯狂动物城 2016 其他版本", "https://pan.quark.cn/s/alternative-regression")));
+
+        String reply = service.buildSearchReply("资源", "qq:released-more");
+
+        assertTrue(reply.contains("请选择资源")); assertTrue(reply.contains("其他版本"));
+        assertFalse(reply.contains("资源库已有资源（优先展示"));
+        verify(resourceDiscoveryService).enqueue(any());
+        org.mockito.Mockito.verifyNoInteractions(quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test
+    void emptyTransferDestinationIsNotMisreportedAsAnEmptyOriginalShareOrPublishedAgain() {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("empty-destination", "目标目录测试", 2016);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        when(resourceDiscoveryService.enqueue(any())).thenReturn(task(9811L));
+        ResourceDiscoveryRunResult found = emptyDiscovery(9811L); found.setDiscovered(1);
+        when(resourceDiscoveryService.runTask(9811L)).thenReturn(found);
+        ResourceDiscoveryResult choice = discovery(9812L, local.getId(), "QUARK", "目标目录测试 4K", "https://pan.quark.cn/s/empty-target");
+        when(discoveryResultService.list(any(QueryWrapper.class))).thenReturn(List.of(choice));
+        when(discoveryResultService.getById(choice.getId())).thenReturn(choice);
+        QuarkTransferTask transfer = new QuarkTransferTask();
+        transfer.setId(9813L); transfer.setStatus("PENDING");
+        transfer.setSavedPath("/GYing QQ Temp/quark-9813");
+        when(quarkTransferTaskService.getOne(any(QueryWrapper.class), eq(false))).thenReturn(transfer);
+        when(quarkTransferTaskService.getById(transfer.getId())).thenReturn(transfer);
+        when(quarkTransferRunnerService.submitOne(transfer.getId())).thenAnswer(invocation -> {
+            String error = "Saved Quark folder has no transferred media files: /GYing QQ Temp/quark-9813";
+            transfer.setStatus("FAILED"); transfer.setLastError(error);
+            QuarkTransferRunResult failed = new QuarkTransferRunResult();
+            failed.setFailed(1); failed.setErrors(List.of("task 9813 share: " + error));
+            return failed;
+        });
+        service.buildSearchReply("目标目录测试", "qq:empty-destination");
+        String reply = service.buildSearchReply("1", "qq:empty-destination");
+        assertTrue(reply.contains("本次未转入视频"));
+        assertFalse(reply.contains("分享内没有视频文件"));
+        assertFalse(reply.contains("Saved Quark")); assertFalse(reply.contains("/GYing QQ Temp"));
+        assertFalse(reply.contains("已转存到"));
+        assertTrue(reply.contains("继续回复其他资源序号"));
+        org.mockito.Mockito.verifyNoInteractions(quarkShareService, resourceHubPublishService);
+    }
+
+    @Test
+    void transferErrorsSeparateDestinationSourceAndUnresolvedMovieScopeWithoutLeakingDetails() {
+        for (String prefix : List.of("", "任务说明".repeat(60))) {
+            String destination = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "userFacingTransferError", prefix + "Saved Quark folder has no transferred media files: /private/path");
+            assertTrue(destination.contains("本次未转入视频"));
+            assertFalse(destination.contains("/private"));
+            String scope = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "userFacingTransferError", prefix + "Quark source target movie directory could not be identified");
+            assertTrue(scope.contains("未能确认目标影片子目录"));
+            assertFalse(scope.contains("分享内没有视频文件"));
+        }
+        String actualEmptySource = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                "userFacingTransferError", "Quark source has no video files");
+        assertTrue(actualEmptySource.contains("分享内没有视频文件"));
+        Boolean unavailableIsInvalid = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                "isInvalidShareError", "quark-auto-save share detail request failed");
+        assertFalse(unavailableIsInvalid);
+        String unknown = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                "userFacingTransferError", "provider failure: /private/path secret=not-for-qq");
+        assertFalse(unknown.contains("private")); assertFalse(unknown.contains("secret"));
+    }
+    @Test
+    void shareDirectoryErrorsPreferConcreteCausesOverTheFailedOperation() {
+        for (String prefix : List.of("task 2130: read Quark share directory failed: ", "任务说明".repeat(60))) {
+            String cancelled = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "userFacingTransferError", prefix + "好友已取消了分享");
+            assertEquals("该分享已失效，不可访问", cancelled);
+            String login = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "userFacingTransferError", prefix + "登录已失效");
+            assertTrue(login.contains("重新登录"));
+            assertFalse(login.contains("暂时无法读取分享目录"));
+            String violation = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "userFacingTransferError", prefix + "文件违规");
+            assertTrue(violation.contains("违规"));
+            String passcode = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "userFacingTransferError", prefix + "需要提取码");
+            assertTrue(passcode.contains("提取码"));
+        }
+        String unknown = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                "userFacingTransferError", "task 2130: read Quark share directory failed");
+        assertTrue(unknown.contains("具体原因尚未确认"));
+        assertFalse(unknown.contains("请稍后重试"));
+        Boolean invalid = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                "isInvalidShareError", "read Quark share directory failed: 好友已取消了分享");
+        assertTrue(invalid);
+    }
+
+    @Test
+    void qqGenuineSamePrimaryTitlesStillRequireYearConfirmation() {
+        MovieMetadata first = movie("same-2024", "同名影片测试", 2024);
+        MovieMetadata second = movie("same-2025", "同名影片测试", 2025);
+        ResourceLink firstLink = link("XUNLEI", "旧版", "https://pan.xunlei.com/s/old"); firstLink.setMovieId(first.getId());
+        ResourceLink secondLink = link("QUARK", "新版", "https://pan.quark.cn/s/new"); secondLink.setMovieId(second.getId());
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(first, second));
+        when(movieService.getById(second.getId())).thenReturn(second);
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(firstLink, secondLink));
+        String candidates = service.buildSearchReply("同名影片测试", "qq:203");
+        assertTrue(candidates.contains("请选择要搜索的影片"));
+        assertFalse(candidates.contains(firstLink.getUrl())); assertFalse(candidates.contains(secondLink.getUrl()));
+        String reply = service.buildSearchReply("2", "qq:203");
+        assertTrue(reply.contains(secondLink.getUrl())); assertFalse(reply.contains(firstLink.getUrl()));
+        org.mockito.Mockito.verifyNoInteractions(gyingSourceWorkflowService, tmdbMetadataSyncService, resourceDiscoveryService, panSouClient);
+    }
+
+    @Test
+    void qqLibraryCanStillResolveAnUnambiguousAliasWithoutAPrimaryTitleHit() {
+        MovieMetadata local = movie("zootopia-alias", "疯狂动物城", 2016);
+        local.setAliases("动物乌托邦/优兽大都会");
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        ResourceLink manual = link("QUARK", "第一部", "https://pan.quark.cn/s/alias-fixture");
+        manual.setMovieId(local.getId()); manual.setSource("ADMIN_MANUAL");
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(manual));
+        String reply = service.buildSearchReply("动物乌托邦", "qq:alias-priority");
+        assertTrue(reply.contains("资源库已有资源")); assertTrue(reply.contains(manual.getUrl()));
+        org.mockito.Mockito.verifyNoInteractions(resourceDiscoveryService, tmdbMetadataSyncService);
+    }
+
+    @Test
+    void qqShortFilmTitleBeforeSubtitleUsesExistingResourcesWithoutSearchingUpstreams() {
+        MovieMetadata avengers = movie("m3vj", "复仇者联盟2：奥创纪元", 2015);
+        avengers.setAliases("复仇者联盟2：奥创纪元/The Avengers 2"); avengers.setSeriesName("复仇者联盟");
+        MovieMetadata sequel = movie("avengers-3", "复仇者联盟3：无限战争", 2018); sequel.setSeriesName("复仇者联盟");
+        MovieMetadata unrelated = movie("tokyo", "东京复仇者", 2021);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(unrelated, sequel, avengers));
+        ResourceLink resource = link("QUARK", "奥创纪元", "https://pan.quark.cn/s/avengers-two");
+        resource.setMovieId(avengers.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(resource));
+
+        String reply = service.buildSearchReply("复仇者联盟2", "qq:avengers-short");
+
+        assertTrue(reply.contains("资源库已有资源")); assertTrue(reply.contains(resource.getUrl()));
+        assertTrue(reply.contains("复仇者联盟2：奥创纪元")); assertFalse(reply.contains("东京复仇者"));
+        assertFalse(reply.contains("请选择要搜索的影片"));
+        org.mockito.Mockito.verifyNoInteractions(gyingSourceWorkflowService, tmdbMetadataSyncService,
+                resourceDiscoveryService, panSouClient, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test
+    void qqSubtitleStemKeepsSequelDigitsAndDoesNotUseSharedSeriesOrSubstrings() {
+        MovieMetadata twenty = movie("avengers-twenty", "复仇者联盟20：未来篇", 2030);
+        twenty.setSeriesName("复仇者联盟");
+        MovieMetadata three = movie("avengers-three", "复仇者联盟3：无限战争", 2018);
+        three.setSeriesName("复仇者联盟");
+        for (MovieMetadata candidate : List.of(twenty, three)) {
+            Boolean match = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "isSubtitleStemMatch", candidate, "复仇者联盟2");
+            assertFalse(match);
+        }
+        MovieMetadata two = movie("avengers-two", "复仇者联盟2:奥创纪元", 2015);
+        Boolean exactStem = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                "isSubtitleStemMatch", two, "复仇者联盟2");
+        assertTrue(exactStem);
+        Boolean sharedPrefix = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                "isSubtitleStemMatch", two, "复仇者联盟");
+        assertFalse(sharedPrefix);
+    }
+
+    @Test
+    void qqShortSubtitleTitleWithMultipleYearsRequiresOnlyLocalConfirmation() {
+        MovieMetadata original = movie("subtitle-2024", "重生2：归来", 2024);
+        MovieMetadata remake = movie("subtitle-2025", "重生2：归来", 2025);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(original, remake));
+        ResourceLink resource = link("QUARK", "旧版", "https://pan.quark.cn/s/subtitle-original");
+        resource.setMovieId(original.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(resource));
+
+        String reply = service.buildSearchReply("重生2", "qq:subtitle-ambiguity");
+
+        assertTrue(reply.contains("请先确认年份或类型")); assertTrue(reply.contains("2024")); assertTrue(reply.contains("2025"));
+        assertFalse(reply.contains(resource.getUrl()));
+        org.mockito.Mockito.verifyNoInteractions(gyingSourceWorkflowService, tmdbMetadataSyncService,
+                resourceDiscoveryService, panSouClient);
+    }
+
+    @Test
+    void qqCredibleShortSubtitleTitleWithoutResourcesConfirmsLocallyBeforeUpstreamWork() {
+        MovieMetadata avengers = movie("m3vj", "复仇者联盟2：奥创纪元", 2015);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(avengers));
+
+        String reply = service.buildSearchReply("复仇者联盟2", "qq:subtitle-no-resource");
+
+        assertTrue(reply.contains("请先确认影片")); assertTrue(reply.contains("复仇者联盟2：奥创纪元"));
+        assertTrue(reply.contains("2015"));
+        org.mockito.Mockito.verifyNoInteractions(gyingSourceWorkflowService, tmdbMetadataSyncService,
+                resourceDiscoveryService, panSouClient, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test void libraryReplySeparatesVideoDisksMagnetsAndTorrentArchives() {
+        MovieMetadata local = movie("mixed-links", "分类资源影片", 2024);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        ResourceLink disk = link("QUARK", "正片", "https://pan.quark.cn/s/video");
+        ResourceLink magnet = link(null, "原始磁力", "magnet:?xt=urn:btih:fixture");
+        ResourceLink torrent = link("XUNLEI", "种子归档", "https://pan.xunlei.com/s/torrent");
+        disk.setType("DISK"); magnet.setType("MAGNET"); torrent.setType("TORRENT");
+        for (ResourceLink link : List.of(disk, magnet, torrent)) link.setMovieId(local.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(torrent, magnet, disk));
+        String reply = service.buildSearchReply("分类资源影片", "web:mixed-links");
+        assertTrue(reply.contains("网盘资源："));
+        assertTrue(reply.contains("磁力资源："));
+        assertTrue(reply.contains("种子资源（仅种子/磁力文件，不含视频）："));
+        assertTrue(reply.indexOf(disk.getUrl()) < reply.indexOf("磁力资源："));
+        assertTrue(reply.indexOf(magnet.getUrl()) > reply.indexOf("磁力资源："));
+        assertTrue(reply.indexOf(torrent.getUrl()) > reply.indexOf("种子资源（"));
+        assertFalse(reply.contains("原始磁力 [网盘]"));
+        org.mockito.Mockito.verifyNoInteractions(resourceDiscoveryService, tmdbMetadataSyncService, panSouClient);
+    }
+
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void baiduFilterOnlyListsCandidatesUntilASingleResourceIsSelected(boolean cleanupEnabled) {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("baidu-filter", "百度筛选测试", 2025);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        when(movieService.getById(local.getId())).thenReturn(local);
+        when(resourceDiscoveryService.enqueue(any())).thenReturn(task(11001L));
+        ResourceDiscoveryRunResult found = emptyDiscovery(11001L); found.setDiscovered(1);
+        when(resourceDiscoveryService.runTask(11001L)).thenReturn(found);
+        ResourceDiscoveryResult original = discovery(11002L, local.getId(), "BAIDU", "百度筛选测试 4K", "https://pan.baidu.com/s/1SourceCase");
+        when(discoveryResultService.list(any(QueryWrapper.class))).thenReturn(List.of(original));
+        var baidu = mock(BaiduTemporaryTransferService.class); service.configureBaiduSearch(baidu);
+        when(baidu.automaticCleanupEnabled()).thenReturn(cleanupEnabled);
+        ResourceLink owned = link("BAIDU", original.getTitle(), "https://pan.baidu.com/s/1OwnCase?pwd=abcd");
+        owned.setSource("BAIDU_TEMP");
+        when(baidu.select(original.getId(), "web:baidu-filter")).thenReturn(
+                new BaiduTemporaryTransferService.SelectionResult(owned, "SUCCEEDED", 11003L, java.time.LocalDateTime.of(2026, 11, 9, 21, 10)));
+        String initial = service.buildSearchReply(local.getTitleCn(), "web:baidu-filter");
+        String filtered = service.buildSearchReply("百度", "web:baidu-filter");
+        assertTrue(initial.contains(original.getTitle())); assertTrue(filtered.contains(original.getTitle()));
+        assertFalse(filtered.contains(original.getOriginalUrl()));
+        verify(baidu, never()).select(any(), anyString());
+        String selected = service.buildSearchReply("1", "web:baidu-filter");
+        assertTrue(selected.contains(owned.getUrl())); assertTrue(selected.contains("11-09 21:10"));
+        assertTrue(selected.contains("及时转存到自己的网盘"));
+        assertEquals(!cleanupEnabled, selected.contains("自动清理当前关闭"));
+        assertEquals(cleanupEnabled, selected.contains("11-09 21:10 自动清理"));
+        verify(baidu).select(original.getId(), "web:baidu-filter");
+        verify(resourceHubPublishService, never()).publishDiscovery(any());
+        org.mockito.Mockito.verifyNoInteractions(quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test void waitingBaiduSelectionKeepsTheSameCandidateAndDoesNotReturnTheThirdPartySource() {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("baidu-wait", "百度等待测试", 2025);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local)); when(movieService.getById(local.getId())).thenReturn(local);
+        when(resourceDiscoveryService.enqueue(any())).thenReturn(task(11011L));
+        ResourceDiscoveryRunResult found = emptyDiscovery(11011L); found.setDiscovered(1); when(resourceDiscoveryService.runTask(11011L)).thenReturn(found);
+        ResourceDiscoveryResult original = discovery(11012L, local.getId(), "BAIDU", "百度等待测试 1080P", "https://pan.baidu.com/s/1waitingSource");
+        when(discoveryResultService.list(any(QueryWrapper.class))).thenReturn(List.of(original));
+        var baidu = mock(BaiduTemporaryTransferService.class); service.configureBaiduSearch(baidu);
+        when(baidu.select(original.getId(), "qq:baidu-wait")).thenReturn(
+                new BaiduTemporaryTransferService.SelectionResult(null, "WAITING_SHARE", 11013L, null));
+        service.buildSearchReply(local.getTitleCn(), "qq:baidu-wait");
+        for (int i = 0; i < 2; i++) {
+            String reply = service.buildSearchReply("1", "qq:baidu-wait");
+            assertTrue(reply.contains("已提交，正在确认百度转存或分享")); assertFalse(reply.contains(original.getOriginalUrl()));
+            assertFalse(reply.contains("没有找到"));
+        }
+        verify(baidu, times(2)).select(original.getId(), "qq:baidu-wait");
+        verify(resourceHubPublishService, never()).publishDiscovery(any());
+    }
+
+    @Test void normalLibraryBaiduRequiresCurrentValidationAndNeverTrustsPublishedSourceOnFailure() {
+        MovieMetadata local = movie("baidu-library", "百度本库测试", 2025);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local)); when(movieService.getById(local.getId())).thenReturn(local);
+        ResourceLink stored = link("BAIDU", "百度本库测试 全季", "https://pan.baidu.com/s/1LibraryCase");
+        stored.setId(11101L); stored.setMovieId(local.getId()); stored.setSource("GYING_PUBLISHED");
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(stored));
+        var baidu = mock(BaiduTemporaryTransferService.class); service.configureBaiduSearch(baidu);
+        when(baidu.validateOwnedResource(stored)).thenReturn(true);
+        assertTrue(service.buildSearchReply(local.getTitleCn(), "web:baidu-library").contains(stored.getUrl()));
+        when(baidu.validateOwnedResource(stored)).thenThrow(new IllegalStateException("NETWORK_UNAVAILABLE"));
+        assertFalse(service.buildSearchReply(local.getTitleCn(), "web:baidu-library").contains(stored.getUrl()));
+        verify(panSouClient, never()).checkLink(stored.getUrl());
+        org.mockito.Mockito.verifyNoInteractions(quarkTransferTaskService, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test void baiduShareShortCodeCaseIsPreservedWhenDeduplicating() {
+        String first = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "resourceIdentity", "BAIDU", "https://pan.baidu.com/s/1AbC");
+        String second = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "resourceIdentity", "BAIDU", "https://pan.baidu.com/s/1abc");
+        assertFalse(first.equals(second));
+    }
+
+    @Test void temporaryBaiduLinksCannotEnterTheFormalLibraryOrOwnedCandidateList() {
+        MovieMetadata local = movie("baidu-hidden", "百度临时隔离测试", 2025);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local)); when(movieService.getById(local.getId())).thenReturn(local);
+        ResourceLink temporary = link("BAIDU", local.getTitleCn(), "https://pan.baidu.com/s/1TempHidden");
+        temporary.setId(11201L); temporary.setMovieId(local.getId()); temporary.setSource("BAIDU_TEMP");
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(temporary));
+        var baidu = mock(BaiduTemporaryTransferService.class); service.configureBaiduSearch(baidu);
+        assertFalse(service.buildSearchReply(local.getTitleCn(), "web:baidu-hidden").contains(temporary.getUrl()));
+        verify(baidu, never()).validateOwnedResource(any());
+    }
+
 }

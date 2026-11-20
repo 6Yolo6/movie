@@ -4,10 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.client.XunleiClient;
 import com.gying.movie.dto.QuarkTransferRunResult;
-import com.gying.movie.dto.ResourceHubMetadataSyncRequest;
 import com.gying.movie.dto.ResourceDiscoveryRunResult;
 import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.dto.ResourceHubWorkerResult;
+import com.gying.movie.dto.MetadataCrawlRange;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.dto.TmdbSyncResult;
 import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.entity.ResourceLink;
@@ -28,11 +29,13 @@ import com.gying.movie.service.IResourceHubWorkerService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.service.ITmdbMetadataSyncService;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.BaiduTemporaryScope;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
 
     private static final int MAX_TASK_LIMIT = 20;
+    private static final ObjectMapper CHECKPOINT_MAPPER = new ObjectMapper();
     private static final int MAX_QUARK_LIMIT = 20;
     private static final int MAX_PUBLISH_LIMIT = 100;
 
@@ -49,6 +53,8 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     private final IResourceHubTaskService taskService;
     private final ITmdbMetadataSyncService tmdbMetadataSyncService;
     private final IGyingMetadataSyncService gyingMetadataSyncService;
+    @Autowired(required = false)
+    private TvmazeMetadataSyncService tvmazeMetadataSyncService;
     private final IResourceDiscoveryService resourceDiscoveryService;
     private final IQuarkTransferRunnerService quarkTransferRunnerService;
     private final IXunleiTransferRunnerService xunleiTransferRunnerService;
@@ -60,6 +66,10 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     private final IXunleiTransferTaskService xunleiTransferTaskService;
     private final IResourceDiscoveryResultService discoveryResultService;
     private final XunleiClient xunleiClient;
+    @Autowired(required = false)
+    private com.gying.movie.service.IBaiduTransferTaskService baiduTransferTaskService;
+    @Autowired(required = false)
+    private com.gying.movie.service.IBaiduTransferRunnerService baiduTransferRunnerService;
 
     @Autowired
     public ResourceHubWorkerServiceImpl(
@@ -117,12 +127,15 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         try {
             enqueueTmdbAutoSyncTasks(result);
             enqueueGyingAutoSyncTasks(result);
+            if (tvmazeMetadataSyncService != null) {
+                try {
+                    if (tvmazeMetadataSyncService.enqueueAutomatic() != null)
+                        result.setMetadataSyncTasksCreated(result.getMetadataSyncTasksCreated() + 1);
+                } catch (Exception error) { addError(result, "TVmaze updates: " + error.getClass().getSimpleName()); }
+            }
             runDueTasks(result);
-            reconcileDiscoveredTransferTasks(result);
-            runXunleiTransfers(result);
-            runQuarkTransfers(result);
-            publishResources(result);
-            retryPendingGyingPublications(result);
+            // Scheduled collection is metadata/P2P only. Never drain legacy cloud queues.
+            // Weekly GYING charts use their own bounded, individually scheduled workflow.
         } finally {
             result.setFinishedAt(LocalDateTime.now());
             running.set(false);
@@ -150,6 +163,9 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             return;
         }
         List<String> sources = autoSyncSources(tmdb.getAutoSyncSources());
+        if (tmdb.isAutoSyncUpdatesOnly()) {
+            enqueueUpdates("TMDB", sources, tmdb.getAutoSyncIntervalHours(), result); return;
+        }
         if (sources.isEmpty() || hasActiveMetadataSyncTask(sources)) {
             return;
         }
@@ -158,16 +174,19 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         if (latestTask != null && latestTask.getCreatedAt() != null && !latestTask.getCreatedAt().isBefore(since)) {
             return;
         }
-        String source = nextAutoSyncSource(sources, latestTask == null ? null : latestTask.getKeyword());
-        try {
-            ResourceHubMetadataSyncRequest request = new ResourceHubMetadataSyncRequest();
-            request.setSource(source);
-            request.setPage(tmdb.getAutoSyncPage());
-            request.setMaxItems(tmdb.getAutoSyncMaxItems());
-            tmdbMetadataSyncService.enqueue(request);
-            result.setMetadataSyncTasksCreated(result.getMetadataSyncTasksCreated() + 1);
-        } catch (Exception e) {
-            addError(result, "tmdb auto sync " + source + ": " + e.getMessage());
+        String previousSource = latestTask == null ? null : latestTask.getKeyword();
+        for (int checked = 0; checked < sources.size(); checked++) {
+            String source = nextAutoSyncSource(sources, previousSource);
+            try {
+                if (tmdbMetadataSyncService.enqueueAutomatic(source) != null) {
+                    result.setMetadataSyncTasksCreated(result.getMetadataSyncTasksCreated() + 1);
+                    return;
+                }
+            } catch (Exception e) {
+                addError(result, "tmdb auto sync " + source + ": " + e.getMessage());
+                return;
+            }
+            previousSource = source;
         }
     }
 
@@ -186,6 +205,9 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
 
     @Override
     public Map<String, Object> retryDiscoveredTransfers(boolean force) {
+        if (!force) {
+            return skippedRetry(new LinkedHashMap<>(), "Automatic legacy transfers disabled; use weekly charts");
+        }
         resourceHubConfigService.reload();
         ResourceHubProperties.Worker worker = resourceHubProperties.getWorker();
         Map<String, Object> result = new LinkedHashMap<>();
@@ -204,14 +226,19 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                     result.put("reconcileError", trim(error.getMessage(), 500));
                 }
             }
+            List<String> runnableProviders = java.util.Arrays.stream(com.gying.movie.config.CloudDriveProvider.values())
+                    .map(Enum::name).filter(resourceHubProperties::isDriveTransferEnabled).toList();
+            if (runnableProviders.isEmpty()) return skippedRetry(result, "所有网盘转存均已关闭");
             List<ResourceDiscoveryResult> rawDiscoveries = discoveryResultService.list(new QueryWrapper<ResourceDiscoveryResult>()
+                    .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                     .eq("status", "DISCOVERED").isNull("resource_link_id")
-                    .in("provider", List.of("QUARK", "XUNLEI"))
+                    .in("provider", runnableProviders)
                     .orderByAsc("updated_at").last("LIMIT " + limit));
             Map<Long, ResourceDiscoveryResult> uniqueDiscoveries = new LinkedHashMap<>();
             if (rawDiscoveries != null) {
                 for (ResourceDiscoveryResult discovery : rawDiscoveries) {
-                    if (discovery != null && discovery.getId() != null) {
+                    if (discovery != null && !BaiduTemporaryScope.isTemporaryDiscovery(discovery)
+                            && discovery.getId() != null) {
                         uniqueDiscoveries.putIfAbsent(discovery.getId(), discovery);
                     }
                 }
@@ -231,6 +258,10 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                 item.put("discoveryResultId", discovery.getId());
                 try {
                     String provider = discovery.getProvider() == null ? "" : discovery.getProvider().toUpperCase();
+                    if (!resourceHubProperties.isDriveTransferEnabled(provider)) {
+                        skipped++; item.put("status", "SKIPPED"); item.put("reason", "该网盘转存已关闭");
+                        items.add(item); continue;
+                    }
                     boolean hasShare;
                     if ("XUNLEI".equals(provider)) {
                         if (xunleiTransferTaskService == null || xunleiTransferRunnerService == null) throw new IllegalStateException("Xunlei transfer service unavailable");
@@ -240,7 +271,37 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                         xunleiTransferRunnerService.submitOne(task.getId());
                         task = xunleiTransferTaskService.getById(task.getId());
                         hasShare = task != null && hasText(task.getShareUrl());
-                    } else {
+                    } else if ("BAIDU".equals(provider)) {
+                        if (baiduTransferTaskService == null || baiduTransferRunnerService == null) {
+                            throw new IllegalStateException("Baidu transfer service unavailable");
+                        }
+                        var task = findBaiduTransferTask(discovery);
+                        if (task == null) {
+                            skipped++; item.put("status", "SKIPPED"); item.put("reason", "No Baidu transfer task");
+                            items.add(item); continue;
+                        }
+                        if (java.util.Set.of("UNKNOWN", "ACTION_REQUIRED", "REVIEW_REQUIRED", "CANCELED").contains(task.getStatus())) {
+                            skipped++; item.put("status", "SKIPPED"); item.put("reason", "Baidu task requires review or account recovery");
+                            items.add(item); continue;
+                        }
+                        if (!resourceHubProperties.isDriveShareEnabled("BAIDU") || !resourceHubProperties.isDriveShareTransferEnabled("BAIDU")) {
+                            skipped++; item.put("status", "SKIPPED"); item.put("reason", "Baidu file collection or sharing disabled");
+                            items.add(item); continue;
+                        }
+                        if (hasText(task.getResponsePayload())) {
+                            var plan = CHECKPOINT_MAPPER.readValue(task.getResponsePayload(), com.gying.movie.client.BaiduWebClient.TransferPlan.class);
+                            if (!com.gying.movie.client.BaiduWebClient.matchesFilePolicy(plan, resourceHubProperties.isDriveVideoEnabled("BAIDU"),
+                                    resourceHubProperties.isDriveTorrentEnabled("BAIDU"))) {
+                                skipped++; item.put("status", "SKIPPED"); item.put("reason", "Baidu task does not match current file policy");
+                                items.add(item); continue;
+                            }
+                        }
+                        QuarkTransferRunResult checked = baiduTransferRunnerService.submitOne(task.getId());
+                        task = baiduTransferTaskService.getOne(new QueryWrapper<com.gying.movie.entity.BaiduTransferTask>()
+                                .eq("scope_key", BaiduTemporaryScope.PERMANENT).eq("id", task.getId()), false);
+                        hasShare = checked.getFailed() == 0 && BaiduTemporaryScope.isPermanent(task)
+                                && "SUCCEEDED".equals(task.getStatus()) && hasText(task.getShareUrl());
+                    } else if ("QUARK".equals(provider)) {
                         if (quarkTransferTaskService == null) throw new IllegalStateException("Quark transfer service unavailable");
                         QuarkTransferTask task = findQuarkTransferTask(discovery);
                         if (task == null) { skipped++; item.put("status", "SKIPPED"); item.put("reason", "No Quark transfer task"); items.add(item); continue; }
@@ -249,6 +310,10 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                         task = quarkTransferTaskService.getById(task.getId());
                         hasShare = task != null && hasText(task.getShareUrl());
                     }
+                    else {
+                        skipped++; item.put("status", "SKIPPED"); item.put("reason", "Unsupported transfer provider");
+                        items.add(item); continue;
+                    }
                     if (!hasShare) throw new IllegalStateException("Transfer did not create an own share");
                     ResourceHubPublishResult published = resourceHubPublishService.publishDiscovery(discovery.getId());
                     int saved = published.getPublished() + published.getUpdated();
@@ -256,7 +321,10 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                             published.getErrors().isEmpty() ? "Discovery publish failed" : published.getErrors().get(0));
                     if (gyingSourceWorkflowService != null && resourceLinkService != null) {
                         for (Long resourceId : published.getResourceIds()) {
-                            gyingSourceWorkflowService.publishResourceToGying(resourceLinkService.getById(resourceId));
+                            ResourceLink link = resourceLinkService.getById(resourceId);
+                            if (link != null && !BaiduTemporaryScope.RESOURCE_SOURCE.equalsIgnoreCase(link.getSource())) {
+                                gyingSourceWorkflowService.publishResourceToGying(link);
+                            }
                         }
                     }
                     item.put("status", "SUCCEEDED"); item.put("published", saved); succeeded++;
@@ -274,6 +342,20 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
 
     private Map<String, Object> skippedRetry(Map<String, Object> result, String reason) {
         result.put("status", "SKIPPED"); result.put("reason", reason); return result;
+    }
+
+    private com.gying.movie.entity.BaiduTransferTask findBaiduTransferTask(ResourceDiscoveryResult discovery) {
+        if (BaiduTemporaryScope.isTemporaryDiscovery(discovery)) return null;
+        String hash = hasText(discovery.getOriginalUrlHash()) ? discovery.getOriginalUrlHash()
+                : ResourceHubHashUtils.sha256(discovery.getOriginalUrl());
+        var task = baiduTransferTaskService.getOne(new QueryWrapper<com.gying.movie.entity.BaiduTransferTask>().eq("scope_key", BaiduTemporaryScope.PERMANENT)
+                .eq("discovery_result_id", discovery.getId()).orderByDesc("updated_at").last("LIMIT 1"), false);
+        if (BaiduTemporaryScope.isPermanent(task)) return task;
+        if (!hasText(discovery.getMovieId()) || !hasText(hash)) return null;
+        task = baiduTransferTaskService.getOne(new QueryWrapper<com.gying.movie.entity.BaiduTransferTask>().eq("scope_key", BaiduTemporaryScope.PERMANENT)
+                .eq("movie_id", discovery.getMovieId()).eq("original_url_hash", hash)
+                .orderByDesc("updated_at").last("LIMIT 1"), false);
+        return BaiduTemporaryScope.isPermanent(task) ? task : null;
     }
 
     private XunleiTransferTask findXunleiTransferTask(ResourceDiscoveryResult discovery) {
@@ -338,7 +420,11 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         if (!gying.isAutoSyncEnabled()) {
             return;
         }
-        List<String> sources = gyingAutoSyncSources(gying.getAutoSyncSources());
+        List<String> sources = gyingAutoSyncSources(gying.getAutoSyncSources()).stream()
+                .filter(source -> !gying.isAutoSyncSourcePaused(source)).toList();
+        if (gying.isAutoSyncUpdatesOnly()) {
+            enqueueUpdates("GYING", sources, gying.getAutoSyncIntervalHours(), result); return;
+        }
         if (sources.isEmpty() || hasActiveGyingMetadataSyncTask(sources)) {
             return;
         }
@@ -354,11 +440,34 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         }
         String source = nextAutoSyncSource(sources, latestTask == null ? null : latestTask.getKeyword());
         try {
-            gyingMetadataSyncService.enqueue(source, gying.getAutoSyncPage(), gying.getAutoSyncMaxItems());
+            gyingMetadataSyncService.enqueueAutomatic(source);
             result.setMetadataSyncTasksCreated(result.getMetadataSyncTasksCreated() + 1);
         } catch (Exception error) {
             addError(result, "gying auto sync " + source + ": " + error.getMessage());
         }
+    }
+
+    private void enqueueUpdates(String provider, List<String> sources, int configuredHours, ResourceHubWorkerResult result) {
+        if (sources.isEmpty()) return;
+        var active = updatesQuery(provider).in("status", List.of("PENDING", "RUNNING"));
+        if (taskService.count(active) > 0) return;
+        ResourceHubTask latest = taskService.getOne(updatesQuery(provider).orderByDesc("created_at")
+                .orderByDesc("id").last("LIMIT 1"), false);
+        LocalDateTime since = LocalDateTime.now().minusHours(Math.max(configuredHours, 24));
+        if (latest != null && latest.getCreatedAt() != null && !latest.getCreatedAt().isBefore(since)) return;
+        try {
+            ResourceHubTask task = "TMDB".equals(provider) ? tmdbMetadataSyncService.enqueueUpdates(sources)
+                    : gyingMetadataSyncService.enqueueUpdates(sources);
+            if (task != null) result.setMetadataSyncTasksCreated(result.getMetadataSyncTasksCreated() + 1);
+        } catch (Exception error) {
+            addError(result, provider + " updates: " + error.getClass().getSimpleName());
+        }
+    }
+
+    private QueryWrapper<ResourceHubTask> updatesQuery(String provider) {
+        return new QueryWrapper<ResourceHubTask>().eq("task_type", "METADATA_SYNC").eq("source", provider)
+                .eq("keyword", MetadataUpdatesCheckpoint.MODE)
+                .apply("JSON_UNQUOTE(JSON_EXTRACT(IF(JSON_VALID(payload), payload, '{}'), '$.crawl.mode')) = 'UPDATES'");
     }
 
     private boolean hasActiveGyingMetadataSyncTask(List<String> sources) {
@@ -416,7 +525,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         if (!hasText(raw)) {
             return List.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME", "CSCORE_MOVIE", "CSCORE_TV", "CSCORE_ANIME");
         }
-        List<String> supported = List.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME", "CSCORE_MOVIE", "CSCORE_TV", "CSCORE_ANIME");
+        List<String> supported = MetadataCrawlRange.sources("GYING");
         return List.of(raw.split(",")).stream()
                 .map(String::trim)
                 .filter(this::hasText)
@@ -427,10 +536,25 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     }
 
     private void runDueTasks(ResourceHubWorkerResult result) {
-        List<ResourceHubTask> tasks = taskService.list(new QueryWrapper<ResourceHubTask>()
+        var query = new QueryWrapper<ResourceHubTask>()
+                .eq("task_type", "METADATA_SYNC")
                 .eq("status", "PENDING")
-                .le("scheduled_at", LocalDateTime.now())
-                .orderByDesc("priority")
+                .le("scheduled_at", LocalDateTime.now());
+        // Keep disabled/mismatched automatic checkpoints queued; filter before the bounded LIMIT.
+        filterAutomaticModes(query, "TMDB", resourceHubProperties.getTmdb().isAutoSyncEnabled(),
+                resourceHubProperties.getTmdb().isAutoSyncUpdatesOnly(), !autoSyncSources(resourceHubProperties.getTmdb().getAutoSyncSources()).isEmpty());
+        filterAutomaticModes(query, "GYING", resourceHubProperties.getGying().isAutoSyncEnabled(),
+                resourceHubProperties.getGying().isAutoSyncUpdatesOnly(), gyingAutoSyncSources(resourceHubProperties.getGying().getAutoSyncSources()).stream()
+                        .anyMatch(source -> !resourceHubProperties.getGying().isAutoSyncSourcePaused(source)));
+        filterAutomaticModes(query, "TVMAZE", tvmazeMetadataSyncService != null && resourceHubProperties.getTvmaze().isAutoSyncEnabled(), true, true);
+        List<String> paused = MetadataCrawlRange.sources("GYING").stream()
+                .filter(resourceHubProperties.getGying()::isAutoSyncSourcePaused).toList();
+        if (!paused.isEmpty()) {
+            // Filter before LIMIT so a paused queue head cannot starve runnable metadata work.
+            query.and(allowed -> allowed.ne("source", "GYING").or().notIn("keyword", paused).or()
+                    .apply("COALESCE(JSON_UNQUOTE(JSON_EXTRACT(IF(JSON_VALID(payload), payload, '{}'), '$.crawl.mode')), '') <> 'RANGE'"));
+        }
+        List<ResourceHubTask> tasks = taskService.list(query.orderByDesc("priority")
                 .orderByAsc("scheduled_at")
                 .orderByAsc("created_at")
                 .last("LIMIT " + result.getTaskLimit()));
@@ -439,7 +563,19 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         }
     }
 
+    private void filterAutomaticModes(QueryWrapper<ResourceHubTask> query, String provider,
+            boolean enabled, boolean updatesOnly, boolean hasSources) {
+        String mode = "COALESCE(JSON_UNQUOTE(JSON_EXTRACT(IF(JSON_VALID(payload), payload, '{}'), '$.crawl.mode')), '')";
+        String condition = !enabled ? mode + " NOT IN ('RANGE', 'UPDATES')"
+                : updatesOnly ? mode + " <> 'RANGE'" : mode + " <> 'UPDATES'";
+        query.and(allowed -> allowed.ne("source", provider).or().apply(condition));
+        if (updatesOnly && !hasSources)
+            query.and(allowed -> allowed.ne("source", provider).or().apply(mode + " <> 'UPDATES'"));
+    }
+
     private void runTask(ResourceHubTask task, ResourceHubWorkerResult result) {
+        // A pause may arrive after the bounded runnable query; keep its queued checkpoint untouched.
+        if (pausedAutomaticTask(task)) return;
         ResourceHubWorkerResult.TaskResult taskResult = new ResourceHubWorkerResult.TaskResult();
         taskResult.setTaskId(task.getId());
         taskResult.setTaskType(task.getTaskType());
@@ -447,8 +583,9 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         result.setTasksProcessed(result.getTasksProcessed() + 1);
         try {
             if ("METADATA_SYNC".equalsIgnoreCase(task.getTaskType())) {
-                TmdbSyncResult syncResult = "GYING".equalsIgnoreCase(task.getSource())
-                        ? gyingMetadataSyncService.runTask(task.getId())
+                TmdbSyncResult syncResult = "TVMAZE".equalsIgnoreCase(task.getSource())
+                        ? tvmazeMetadataSyncService.runTask(task.getId())
+                        : "GYING".equalsIgnoreCase(task.getSource()) ? gyingMetadataSyncService.runTask(task.getId())
                         : tmdbMetadataSyncService.runTask(task.getId());
                 taskResult.setStatus(syncResult.getStatus());
                 if ("SUCCEEDED".equalsIgnoreCase(syncResult.getStatus())) {
@@ -479,6 +616,31 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             taskResult.setError(trim(e.getMessage(), 500));
             result.setTasksFailed(result.getTasksFailed() + 1);
             addError(result, "task " + task.getId() + ": " + e.getMessage());
+        }
+    }
+
+    private boolean pausedAutomaticTask(ResourceHubTask task) {
+        try {
+            String mode = task.getPayload() == null ? "" : CHECKPOINT_MAPPER.readTree(task.getPayload())
+                    .path("crawl").path("mode").asText();
+            if (!Set.of("RANGE", "UPDATES").contains(mode)) return false;
+            if ("TVMAZE".equalsIgnoreCase(task.getSource())) return tvmazeMetadataSyncService == null
+                    || !resourceHubProperties.getTvmaze().isAutoSyncEnabled();
+            if ("TMDB".equalsIgnoreCase(task.getSource())) {
+                var config = resourceHubProperties.getTmdb();
+                return !config.isAutoSyncEnabled() || "UPDATES".equals(mode) != config.isAutoSyncUpdatesOnly();
+            }
+            if ("GYING".equalsIgnoreCase(task.getSource())) {
+                var config = resourceHubProperties.getGying();
+                return !config.isAutoSyncEnabled() || "UPDATES".equals(mode) != config.isAutoSyncUpdatesOnly()
+                        || ("RANGE".equals(mode) && config.isAutoSyncSourcePaused(task.getKeyword()))
+                        || ("UPDATES".equals(mode) && gyingAutoSyncSources(config.getAutoSyncSources()).stream()
+                                .noneMatch(source -> !config.isAutoSyncSourcePaused(source)));
+            }
+            return false;
+        } catch (Exception invalid) {
+            // Invalid payloads still follow the existing task failure handling.
+            return false;
         }
     }
 
@@ -531,7 +693,17 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         for (Long resourceId : publishResult.getResourceIds()) {
             try {
                 ResourceLink link = resourceLinkService.getById(resourceId);
-                gyingSourceWorkflowService.publishResourceToGying(link);
+                if (link != null && BaiduTemporaryScope.RESOURCE_SOURCE.equalsIgnoreCase(link.getSource())) continue;
+                if (link != null && com.gying.movie.utils.SeasonSearchUtils.collectionSeasons(link.getName()).size() > 1) {
+                    try {
+                        gyingSourceWorkflowService.ensureRemainingSeasons(link.getMovieId(), 5);
+                    } catch (Exception ignored) {
+                        // Metadata enrichment is best-effort; the usable local share remains successful.
+                    }
+                }
+                if (link != null && !BaiduTemporaryScope.RESOURCE_SOURCE.equalsIgnoreCase(link.getSource())) {
+                    gyingSourceWorkflowService.publishResourceToGying(link);
+                }
             } catch (Exception ignored) {
                 // Local publication remains successful; next worker cycle can retry GYING.
             }
@@ -543,6 +715,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             return;
         }
         List<ResourceLink> links = resourceLinkService.list(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("source", "RESOURCE_HUB")
                 .eq("type", "DISK")
                 .eq("status", "ACTIVE")
@@ -553,7 +726,9 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                 .last("LIMIT " + result.getPublishLimit()));
         for (ResourceLink link : links) {
             try {
-                gyingSourceWorkflowService.publishResourceToGying(link);
+                if (link != null && !BaiduTemporaryScope.RESOURCE_SOURCE.equalsIgnoreCase(link.getSource())) {
+                    gyingSourceWorkflowService.publishResourceToGying(link);
+                }
             } catch (Exception e) {
                 addError(result, "GYING publish resource " + link.getId() + ": " + e.getMessage());
             }
@@ -568,6 +743,11 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     }
 
     private void failTask(ResourceHubTask task, String message) {
+        // UPDATES owns its state with CAS; a worker exception cannot overwrite a cancellation.
+        try {
+            if (task.getPayload() != null && "UPDATES".equals(CHECKPOINT_MAPPER.readTree(task.getPayload())
+                    .path("crawl").path("mode").asText())) return;
+        } catch (Exception invalid) { /* Existing invalid-task handling remains below. */ }
         LocalDateTime now = LocalDateTime.now();
         task.setStatus("FAILED");
         task.setAttempts(task.getAttempts() == null ? 1 : task.getAttempts() + 1);

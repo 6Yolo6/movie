@@ -38,6 +38,8 @@ import org.springframework.web.util.UriUtils;
 
 @Component
 public class XunleiClient {
+    private static final String TRANSFER_IMAGE_NAME = "救星小窝基地.jpg";
+    private static final String TRANSFER_IMAGE_SOURCE_FOLDER = "影视剧资源分享(先转存后再查看)";
     private static final Pattern SHARE_PATTERN = Pattern.compile("https?://[^/]+/s/([^/?#]+)(?:[/?#].*)?", Pattern.CASE_INSENSITIVE);
     private static final String CAPTCHA_URL = "https://xluser-ssl.xunlei.com/v1/shield/captcha/init";
     private static final String AUTH_TOKEN_URL = "https://xluser-ssl.xunlei.com/v1/auth/token";
@@ -120,6 +122,33 @@ public class XunleiClient {
     public record AuthorizationStatus(boolean configured, long expiresAt, boolean expired) {
     }
 
+    JsonNode p2pCreateFile(Map<String, Object> body) {
+        requireConfigured();
+        return request(HttpMethod.POST, "/files", body);
+    }
+
+    List<JsonNode> p2pChildren(String parent) { return listFolderChildren(parent); }
+
+    String p2pFolder(String preferredId, String fallbackPath) {
+        String parent;
+        if (hasText(preferredId)) {
+            if (!preferredId.matches("[A-Za-z0-9_-]+")) throw new IllegalArgumentException("Invalid Xunlei folder id");
+            parent = preferredId;
+        } else {
+            if (!hasText(fallbackPath) || "/".equals(fallbackPath)) throw new IllegalArgumentException("Movie folder required");
+            parent = ensureDirectory(fallbackPath).id();
+        }
+        if (parent.equals(findRestoreRootId())) throw new IllegalStateException("P2P files cannot be stored in restore root");
+        String name = "磁力种子";
+        String folder = findListedFolderId(parent, name);
+        if (hasText(folder)) return folder;
+        JsonNode created = request(HttpMethod.POST, "/files", Map.of("name", name, "parent_id", parent, "kind", "drive#folder"));
+        folder = firstText(created.path("id").asText(null), created.path("file").path("id").asText(null),
+                created.path("data").path("id").asText(null));
+        if (!hasText(folder)) throw new IllegalStateException("Xunlei P2P folder creation failed");
+        return folder;
+    }
+
     public RestoreResult restore(String shareUrl, String savePath) {
         requireConfigured();
         ShareInfo share = inspectShare(shareUrl);
@@ -131,10 +160,14 @@ public class XunleiClient {
             if (!group.pathSegments().isEmpty()) {
                 target = ensureDirectory(savePath + "/" + String.join("/", group.pathSegments()));
             }
-            if (directContentSummary(target.id()).videoCount() > 0) {
+            List<JsonNode> existing = listFolderChildren(target.id());
+            if (containsExpectedVideos(existing, group.fileNames())) {
                 placements.add(new RestorePlacement(null, target.id(), target.restoreRootId(), null, null,
                         group.fileNames(), startedAt, true, group.pathSegments()));
                 continue;
+            }
+            if (existing.stream().anyMatch(XunleiClient::isVideo)) {
+                throw new IllegalStateException("Xunlei destination contains a partial or different video set; review before restoring");
             }
             ShareInfo groupedShare = new ShareInfo(share.shareId(), share.passCode(), share.passCodeToken(),
                     group.fileIds(), group.fileNames(), List.of(group));
@@ -201,6 +234,18 @@ public class XunleiClient {
                 + " (folders=" + latest.folderCount() + ", files=" + latest.fileCount() + ")");
     }
 
+    public void awaitExpectedContent(String parentId, List<String> expectedNames) {
+        if (expectedNames == null || expectedNames.isEmpty()) {
+            throw new IllegalStateException("Xunlei restore plan has no expected video names");
+        }
+        int attempts = Math.max(1, properties.getXunlei().getPollAttempts());
+        for (int attempt = 0; attempt < attempts; attempt++) {
+            if (containsExpectedVideos(listFolderChildren(parentId), expectedNames)) return;
+            if (attempt + 1 < attempts) sleep(properties.getXunlei().getPollIntervalMs());
+        }
+        throw new IllegalStateException("Xunlei destination is missing expected restored videos");
+    }
+
     public ContentSummary contentSummary(String parentId) {
         return inspectContent(parentId);
     }
@@ -226,15 +271,38 @@ public class XunleiClient {
             String restoreFolderId,
             List<String> expectedNames,
             long restoreStartedAt) {
-        if (!hasText(restoreFolderId)) {
+        return awaitRestoredFiles(restoreFolderId, expectedNames, restoreStartedAt, null);
+    }
+
+    public RestoredSelection awaitRestoredFiles(String restoreFolderId, List<String> expectedNames,
+            long restoreStartedAt, String destinationId) {
+        if (!hasText(restoreFolderId) && !hasText(destinationId)) {
             throw new IllegalStateException("Xunlei restore response did not include restore folder id");
         }
         ResourceHubProperties.Xunlei x = properties.getXunlei();
         for (int attempt = 0; attempt < Math.max(1, x.getPollAttempts()); attempt++) {
             var children = objectMapper.createArrayNode();
-            listFolderChildren(restoreFolderId).forEach(children::add);
-            List<JsonNode> restored = selectRestoredFiles(
-                    children, expectedNames, restoreStartedAt);
+            List<JsonNode> alreadyPlaced = new ArrayList<>();
+            if (hasText(destinationId)) {
+                List<JsonNode> placed = listFolderChildren(destinationId);
+                placed.stream().filter(XunleiClient::isVideo)
+                        .filter(item -> expectedNames != null && expectedNames.contains(firstText(
+                                item.path("name").asText(null), item.path("file_name").asText(null))))
+                        .forEach(alreadyPlaced::add);
+                if (containsExpectedVideos(placed, expectedNames)) {
+                    List<String> ids = placed.stream().filter(XunleiClient::isVideo)
+                            .filter(item -> expectedNames.contains(firstText(item.path("name").asText(null),
+                                    item.path("file_name").asText(null))))
+                            .map(item -> item.path("id").asText()).toList();
+                    return new RestoredSelection(ids, new ContentSummary(0, ids.size(), ids.size()));
+                }
+            }
+            if (hasText(restoreFolderId)) listFolderChildren(restoreFolderId).forEach(children::add);
+            List<JsonNode> restored = new ArrayList<>(selectRestoredFiles(
+                    children, expectedNames, restoreStartedAt));
+            Set<String> selectedIds = new HashSet<>();
+            restored.forEach(item -> selectedIds.add(item.path("id").asText()));
+            alreadyPlaced.stream().filter(item -> selectedIds.add(item.path("id").asText())).forEach(restored::add);
             if (!restored.isEmpty()) {
                 int folders = 0;
                 int files = 0;
@@ -255,7 +323,7 @@ public class XunleiClient {
                         if (isVideo(item)) videos++;
                     }
                 }
-                if (!ids.isEmpty() && videos > 0) {
+                if (!ids.isEmpty() && videos > 0 && containsExpectedVideos(restored, expectedNames)) {
                     return new RestoredSelection(List.copyOf(ids), new ContentSummary(folders, files, videos));
                 }
             }
@@ -280,14 +348,81 @@ public class XunleiClient {
         if (ids.isEmpty() || !hasText(parentId)) {
             throw new IllegalArgumentException("Xunlei move requires file ids and a destination folder");
         }
-        for (int offset = 0; offset < ids.size(); offset += 100) {
+        Set<String> present = childIds(parentId);
+        List<String> missing = ids.stream().filter(id -> !present.contains(id)).toList();
+        for (int offset = 0; offset < missing.size(); offset += 100) {
             request(HttpMethod.POST, "/files:batchMove",
-                    movePayload(ids.subList(offset, Math.min(ids.size(), offset + 100)), parentId));
+                    movePayload(missing.subList(offset, Math.min(missing.size(), offset + 100)), parentId));
         }
+        // HTTP success can precede an asynchronous move; verify every restored id, not any old video.
+        int attempts = Math.max(1, properties.getXunlei().getPollAttempts());
+        for (int attempt = 0; attempt < attempts; attempt++) {
+            if (childIds(parentId).containsAll(ids)) return;
+            if (attempt + 1 < attempts) sleep(properties.getXunlei().getPollIntervalMs());
+        }
+        throw new IllegalStateException("Xunlei restored files are not all present in the destination folder");
+    }
+
+    private Set<String> childIds(String parentId) {
+        Set<String> ids = new HashSet<>();
+        for (JsonNode child : listFolderChildren(parentId)) {
+            String id = firstText(child.path("id").asText(null), child.path("file_id").asText(null));
+            if (hasText(id)) ids.add(id);
+        }
+        return ids;
+    }
+
+    static boolean containsExpectedVideos(List<JsonNode> children, List<String> expectedNames) {
+        if (expectedNames == null || expectedNames.isEmpty()) return false;
+        Set<String> names = new HashSet<>();
+        children.stream().filter(XunleiClient::isVideo).forEach(child -> names.add(firstTextStatic(
+                child.path("name").asText(null), child.path("file_name").asText(null))));
+        return names.containsAll(expectedNames);
     }
 
     static Map<String, Object> movePayload(List<String> fileIds, String parentId) {
         return Map.of("to", Map.of("parent_id", parentId), "ids", List.copyOf(fileIds));
+    }
+
+    /** Adds the account-owned image to the stable transfer folder before it is shared. */
+    public void ensureTransferImage(String parentId) {
+        if (!hasText(parentId)) {
+            throw new IllegalArgumentException("Xunlei transfer folder id is required");
+        }
+        if (hasText(findNamedChildId(parentId, TRANSFER_IMAGE_NAME, false))) return;
+        String sourceFolderId = findNamedChildId(findRestoreRootId(), TRANSFER_IMAGE_SOURCE_FOLDER, true);
+        if (!hasText(sourceFolderId)) {
+            throw new IllegalStateException("Xunlei transfer image source folder is missing: 我的转存/"
+                    + TRANSFER_IMAGE_SOURCE_FOLDER);
+        }
+        String sourceId = findNamedChildId(sourceFolderId, TRANSFER_IMAGE_NAME, false);
+        if (!hasText(sourceId)) {
+            throw new IllegalStateException("Xunlei transfer image is missing: 我的转存/"
+                    + TRANSFER_IMAGE_SOURCE_FOLDER + "/" + TRANSFER_IMAGE_NAME);
+        }
+        request(HttpMethod.POST, "/files:batchCopy",
+                Map.of("ids", List.of(sourceId), "to", Map.of("parent_id", parentId)));
+        int attempts = Math.max(properties.getXunlei().getPollAttempts(), 1);
+        for (int index = 0; index < attempts; index++) {
+            if (hasText(findNamedChildId(parentId, TRANSFER_IMAGE_NAME, false))) return;
+            if (index + 1 < attempts) sleep(properties.getXunlei().getPollIntervalMs());
+        }
+        throw new IllegalStateException("Xunlei transfer image was not copied to the destination: "
+                + TRANSFER_IMAGE_NAME);
+    }
+
+    private String findNamedChildId(String parentId, String name, boolean folder) {
+        for (JsonNode file : listFolderChildren(parentId)) {
+            String fileName = firstText(file.path("name").asText(null), file.path("file_name").asText(null),
+                    file.path("filename").asText(null), file.path("fileName").asText(null));
+            if (name.equals(fileName) && isFolder(file) == folder) {
+                String id = firstText(file.path("id").asText(null), file.path("file_id").asText(null),
+                        file.path("fileId").asText(null), file.path("fid").asText(null));
+                if (!hasText(id)) throw new IllegalStateException("Xunlei transfer image entry has no file id");
+                return id;
+            }
+        }
+        return null;
     }
 
     public String createShare(String parentId) {
@@ -645,8 +780,7 @@ public class XunleiClient {
         }
         for (String segment : path.trim().replaceFirst("^/+", "").split("/+")) {
             if (!hasText(segment)) continue;
-            JsonNode files = request(HttpMethod.GET, "/files?parent_id=" + parentId + "&limit=100", null);
-            String folderId = findChildFolderId(files, segment);
+            String folderId = findListedFolderId(parentId, segment);
             if (!hasText(folderId)) {
                 try {
                     JsonNode created = request(HttpMethod.POST, "/files",
@@ -657,9 +791,7 @@ public class XunleiClient {
                             created.path("data").path("id").asText(null));
                 } catch (IllegalStateException error) {
                     if (!isDuplicateFolderError(error)) throw error;
-                    JsonNode refreshed = request(HttpMethod.GET,
-                            "/files?parent_id=" + parentId + "&limit=100", null);
-                    folderId = findChildFolderId(refreshed, segment);
+                    folderId = findListedFolderId(parentId, segment);
                 }
             }
             if (!hasText(folderId)) {
@@ -692,15 +824,15 @@ public class XunleiClient {
         return error.getMessage() != null && error.getMessage().contains("file_duplicated_name");
     }
 
+    private String findListedFolderId(String parentId, String name) {
+        var files = objectMapper.createArrayNode();
+        listFolderChildren(parentId).forEach(files::add);
+        return findChildFolderId(objectMapper.createObjectNode().set("files", files), name);
+    }
+
     private String findRestoreRootId() {
-        JsonNode response = request(HttpMethod.GET,
-                "/files?parent_id=&usage=DISPLAY&limit=100", null);
-        for (JsonNode item : response.path("files")) {
-            if (isFolder(item) && "我的转存".equals(item.path("name").asText())) {
-                String id = item.path("id").asText(null);
-                if (hasText(id)) return id;
-            }
-        }
+        String id = findListedFolderId("", "我的转存");
+        if (hasText(id)) return id;
         throw new IllegalStateException("Xunlei system restore folder was not found");
     }
 
@@ -845,9 +977,7 @@ public class XunleiClient {
             if (!hasTextStatic(item.path("id").asText(null)) || !createdAfter(item, earliest)) continue;
             String normalized = normalizeFileName(name);
             boolean matches = expected.isEmpty() || expected.stream().anyMatch(value ->
-                    normalized.equals(value)
-                            || normalized.startsWith(value)
-                            || value.startsWith(normalized));
+                    normalized.equals(value));
             if (matches) result.add(item);
         }
         return List.copyOf(result);

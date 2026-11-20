@@ -1,0 +1,52 @@
+npm warn Unknown user config "electron_mirror". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> frontend@0.1.0 build
+> next build
+
+▲ Next.js 16.3.5 (Turbopack)
+✓ Running next.config.ts took 69ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 41s
+  Running TypeScript ...
+  Finished TypeScript in 42s ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/28) ...
+  Generating static pages using 11 workers (7/28)
+  Generating static pages using 11 workers (14/28)
+  Generating static pages using 11 workers (21/28)
+✓ Generating static pages using 11 workers (28/28) in 2.5s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /admin/audit
+├ ○ /admin/automation
+├ ○ /admin/comments
+├ ○ /admin/gying-source
+├ ○ /admin/monitoring
+├ ○ /admin/movies
+├ ○ /admin/reports
+├ ○ /admin/resource-hub
+├ ○ /admin/settings
+├ ○ /admin/users
+├ ○ /ai-assistant
+├ ○ /apple-icon.png
+├ ○ /devices
+├ ○ /favorites
+├ ○ /hot
+├ ○ /icon.svg
+├ ○ /invitations
+├ ○ /login
+├ ○ /messages
+├ ƒ /movie/[id]
+├ ○ /my-resources
+├ ○ /notifications
+├ ○ /profile
+├ ○ /register
+└ ○ /resource-search
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand

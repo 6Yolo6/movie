@@ -1,0 +1,190 @@
+# GYing AI 架构：从问题到可核查回答
+
+基础机制按2026-10-25源码整理，后续变更各保留来源日期；当前双后端身份/主题机制按本轮实际部署回执更新。版本、包 hash 与回退见[当前状态](current-project-status.md)和[发布台账](history/releases.md)。本文解释当前系统；历次测试结果见[评测手册](ai-evaluation.md)。
+
+## 1. 系统各层负责什么
+
+| 层 | 职责 | 事实来源 |
+| --- | --- | --- |
+| Next.js 网页 | 登录、提问、历史、任务轮询、候选和依据展示 | [AI 页面](../frontend/src/app/ai-assistant/page.tsx)、[API 客户端](../frontend/src/lib/api.ts) |
+| GYing backend | 身份与限流、确定性检索、偏好推荐、任务与服务端上下文 | [控制器](../backend/src/main/java/com/gying/movie/controller/AiAssistantController.java)、[队列](../backend/src/main/java/com/gying/movie/service/impl/AiAssistantService.java) |
+| 本机 Agent | 结构化条件抽取、语义召回、简介相关性核对、受控联网与回执 | 另一仓库 `local-ai-agent/backend/src/main/java/com/localai/agent/assistant/` |
+| Ollama | 运行模型；影视研究使用指令 4B，工作区聊天保留 1.7B；BGE-M3生成向量 | 本机配置及 Agent `OllamaService` |
+| MySQL | 影片身份、主创、评分、简介、审核资源与用户互动的业务来源 | [数据库](database.md)、[片库服务](../backend/src/main/java/com/gying/movie/service/impl/CatalogResearchService.java) |
+
+Agent 表示模型在受控流程中使用资料和工具完成任务。Harness 是包住执行的权限、预算、上下文、trace、租约和恢复机制。评测器是发送问题并检查结果的外部程序。三者职责分开，不能把模型输出、执行成功和回答正确混为一谈。
+
+```mermaid
+flowchart TD
+    U[登录网页] --> C[身份校验和限流]
+    C --> R[业务分流]
+    R --> T[明确片名 SQL 检索]
+    R --> P[简单泛推荐]
+    R --> Q[加密持久任务]
+    Q --> B[本机主动领取与续期]
+    B --> L[指令 4B 抽取查询计划]
+    L --> E[BGE-M3 语义候选]
+    L --> S[固定内部片库查询]
+    E --> S
+    S --> D[(MySQL 片库与 BM25)]
+    S --> V[简介依据核对]
+    V --> W[必要时固定 Bing 搜索]
+    W --> A[回答和实际依据]
+    V --> A
+    A --> K[先保存加密回执]
+    K --> Q
+    Q --> U
+    T --> D
+    P --> D
+```
+
+## 2. 网页提交和分流
+
+网页通过同域 `/api/ai/query` 提交 message、history、随机 requestKey 和未过期的 previousJobId。后端从已验证登录身份取得 userId，客户端不能自行指定用户。每次轮询也重新检查任务归属。当前网页每约 2.5 秒读任务状态，客户端等待上限约 250 秒。
+
+[CatalogAiService.answer](../backend/src/main/java/com/gying/movie/service/impl/CatalogAiService.java)仅直接处理两类首次问题：明确命中片库的片名、简单泛推荐。复杂条件、联网、详情和追问进入任务流程，不再由单个“推荐”字眼覆盖整句要求。单独的 `/api/ai/natural-search` 仍提供规则解析与 BM25 分页，它和新结构化研究路径不是同一个入口。
+
+普通标题检索由 SQL 计算完整数量并分页，使用参数绑定与 LIKE 通配符转义；1–2 字短片名要求完整身份匹配，避免任意字眼扩展成大量候选。模型不承担遍历片库和计算总数。
+
+## 3. 结构化计划如何执行
+
+本机 `MovieQueryPlanner` 使用受限 JSON Schema，抽取 intent、titles/seedTitle、主创及排除、年份、类型、评分来源、时长、数量、排序和上一轮范围。输出是数据，不是 SQL、URL 或动作指令。原问题和片库人物字段参与校验；不清楚的条件保留为待核验或澄清。
+
+查询示意：
+
+```json
+{"intent":"search","genresAll":["科幻"],"yearFrom":2011,"ratingSource":"douban","minRating":8,"excludedDirectors":["克里斯托弗·诺兰"],"limit":2}
+```
+
+这是解释格式的示例，不是某次实际模型输出。实际执行计划要看该次 queryPlan；小模型仍可能把“2010年之后”处理成包含2010的范围，人物子串也可能引入额外排除。确定性过滤能忠实执行计划，但不能自动证明计划理解了原问题。
+
+[CatalogResearchController](../backend/src/main/java/com/gying/movie/controller/CatalogResearchController.java)只接受固定内部接口、桥接认证和有界字段。网站任务的 job/lease 校验后，后端从本人上一轮成功结果构造上下文。[MovieQueryPlan](../backend/src/main/java/com/gying/movie/service/impl/MovieQueryPlan.java)执行范围继承；“第2部”对应服务端候选顺序，不能让模型编一个片库ID。受控本机直接查询允许空任务上下文，这不绕过桥接认证。
+
+候选的年份、分类、主创排除、明确评分来源等由[CatalogResearchService](../backend/src/main/java/com/gying/movie/service/impl/CatalogResearchService.java)核对实际元数据。缺失字段、演员是否主演/客串、奖项、内容镜头、地区版权等仍有数据契约限制；不能把未知写成满足。
+
+## 4. BM25、embedding 与融合
+
+| 环节 | 当前实现 | 作用与限制 |
+| --- | --- | --- |
+| BM25 | ICU 分词、倒排和片名/别名/主创/简介权重 | 对明确用词有效；词义近似和泛剧情会漏召回或误召回 |
+| embedding | BGE-M3、1024维归一 float32，公开元数据文件索引 | 用向量内积计算相似候选；相似分不是正确概率，不替代年份/人物过滤 |
+| 融合 | RRF按排名融合；每路有界候选 | 单路贡献约 `1/(60+rank)`，避免直接相加尺度不同的BM25与向量分 |
+| 相似影片特征 | 类型/主创等已有内容特征参与候选 | 补充参照片方向；题材接近不等于场景完全相同 |
+| 相关性核对 | 指令4B结合实际简介摘录筛选候选 | 可以减少明显偏题，仍有误判；与独立交叉编码器reranker不是一回事 |
+
+本机 `SemanticMovieIndex` 对向量逐条计算内积并保留前100个，是有界本机文件索引，没有部署专用向量数据库或ANN服务。服务端验证id、score和当前片库fingerprint，过滤已过期向量、明确硬条件和低相似分后再融合。
+
+索引包含公开影片元数据，不含用户、凭据或资源URL。文件绑定模型digest、维度和片库fingerprint；模型或格式不匹配拒绝使用。索引异常回退BM25，不放开硬条件。线上查询embedding使用CPU，避免4GB显存同时驻留第二份GPU模型；初始化可以在受监督空闲窗口另行构建。
+
+2026-10-25生效索引为11,272条；原10,432留出快照与11,220开发对照快照分别冻结。构建器复用digest隔离缓存、核对模型、保留旧文件并原子发布。常规定期增量调度尚未登记/验收；不要把一次增量构建说成持续自动更新。
+
+## 5. 推荐如何利用用户行为
+
+[CatalogRecommendationEngine](../backend/src/main/java/com/gying/movie/service/impl/CatalogRecommendationEngine.java)预计算不可变稀疏影片特征：类型权重0.50、导演0.15、演员0.10、分类0.10，年代/地区/语言各0.05，另有字段归一与类型IDF。这是可解释规则特征，不是训练出来的embedding。
+
+用户特征聚合最多100条收藏和100条近90天浏览：收藏权重3，浏览权重 `exp(-days/30)`，30天剩约36.8%，不是半衰期。收藏/已看排除；userId只用于读取本人行为，不作为影片语义特征。
+
+排序结合内容0.55、共同收藏0.20、评分0.15和热度0.10；共同收藏要求独立用户支持，冷用户使用评分/热度并说明原因，另有多样性重排。相关推荐以当前影片为种子。没有持久Feature Store、线上CTR实验或推荐模型训练。
+
+## 6. 什么时候真正联网
+
+本机 `GyingResearchService` 在明确联网、片库无候选或存在片库不能核验的条件时调用固定 `MovieSearchTools`。当前请求真实 Bing 搜索HTML，限制响应、来源域名及候选数量，然后检查条目身份和实际摘要。模型不能指定请求主机或执行搜索结果里的指令。
+
+来源链接用于引用，程序不会逐页抓取目标网页。2026-10-25《莫扎特传》实际搜索原始2条，排除同名TV1条并保留IMDb1条；这证明联网调用发生，不证明IMDb目标页剧情、平台版权或外部下载可用。旧原生工具的Wikipedia摘录路径保留兼容；不能再把它描述成当前研究唯一联网来源。
+
+有用的主题近似可以返回，但必须列出依据。没有足够资料时说明未知、澄清或保留已核实片库结果，不能为了凑够数量编影片。明确排除仍按条件处理，偏题候选需要质量复核。
+
+## 7. 租约、回执与恢复
+
+```mermaid
+sequenceDiagram
+    participant U as 网页
+    participant G as GYing队列
+    participant B as 本机桥接
+    participant M as 模型与资料
+    U->>G: 提交问题/requestKey/previousJobId
+    G-->>U: 202 PENDING/jobId
+    B->>G: claim(leaseProtocol=1)
+    G-->>B: RUNNING/attempt/lease/deadline
+    B->>B: 保存领取检查点
+    B->>M: 结构化查询
+    loop 执行期间约每5秒
+        B->>G: renew(jobId,lease)
+    end
+    M-->>B: answer/trace/queryPlan
+    B->>B: 先保存加密回执
+    B->>G: complete(jobId,lease,result)
+    G->>G: 校验并持久化终态
+    G-->>B: 确认
+    B->>B: 清除待确认回执
+    U->>G: 轮询本人任务
+    G-->>U: SUCCEEDED或FAILED及证据
+```
+
+| 机制 | 当前保证 | 边界 |
+| --- | --- | --- |
+| 提交幂等 | 同用户、同requestKey、同请求复用；换内容409 | 有保留窗口；用户重新提交会产生新key |
+| 队列容量 | 最多200条保留记录、8个未完成任务、一个RUNNING | 单实例、有界吞吐，未实现分布式队列 |
+| 租约 | 新协议45秒、约5秒续期，创建后240秒总上限 | 旧协议210秒；续期不允许无限执行 |
+| attempt | 可续期租约丢失最多再领取一次 | 新attempt可能再次推理，不承诺全局exactly-once |
+| 回执幂等 | 同lease同结果hash重复complete成功 | 过期lease、取消、矛盾回执409，不覆盖新状态 |
+| 本机恢复 | 完整result仅重传；只有领取检查点则报告中断 | 不从工具循环中间继续计算 |
+| 用户取消 | 本人DELETE使任务失败并拒绝旧回执 | 网页Abort不自动DELETE，已发模型请求不立即停止 |
+| 状态保留 | 未完成保存问题；终态移除问题/历史，结果约15分钟清理 | 临时状态不是长期审计库，备份密文另有保留周期 |
+
+| 状态配置 | 现役用途 |
+| --- | --- |
+| APP_AI_STATE_FILE / APP_AI_STATE_KEY_FILE | Movie队列文件与独立只读私有key；生产队列在backend-data专用ai-state子目录 |
+| LOCAL_AI_GYING_STATE_FILE / LOCAL_AI_GYING_STATE_KEY_FILE | 本机回执文件与独立key；.local/ai-state/bridge.bin与受限gying-state-key.bin不进Git |
+
+默认契约为空，未启用的环境不能凭文件存在推断持久化；配置只给其一会拒绝启动。当前生产已明确启用，恢复state需要对应key并核权限/目标origin。
+
+两侧AES-GCM状态文件使用独占写锁、随机nonce、受限权限与临时文件原子替换；写入失败、错误key或占用阻止继续。生产已经启用，两套key独立保存在仓库外。单文件写锁不是跨机器事务；应用回退保留新state/key，不恢复旧SQL覆盖数据。
+
+## 8. 预算、可用性与工具边界
+
+研究路径受原180秒总体执行预算；片库connect2秒、read/call30秒且不超过剩余deadline；联网有独立短时限。原生工具循环最多4次工具、6轮，4096上下文和保守字符估算会裁剪历史/证据，不能当作真实token usage。
+
+网站检查桥接heartbeat，短窗口无心跳会认为模型未连接。2026-10-25四本机服务消失与冷片库超过旧10秒read是两处独立可用性问题；现役受管启动器使用WMI独立隐藏宿主并校验实例，避免跟随调用方Job退出的风险。终止的唯一原因未完全确认，修复和真实验证见[可用性记录](history/releases.md#ai-availability-20261025)。
+
+工作区local模式仅允许四项只读工具；影视研究只访问固定业务接口。没有SQL执行、任意HTTP、写文件、转存或发布工具。旧MCP含命令/写入/外发能力，当前网页没有直接连接它；Spring AI MCP依赖存在不等于已经完成ChatClient迁移或只读影视MCP服务。
+
+## 9. 如何核查一次回答
+
+先看实际queryPlan是否表达原要求，再看候选身份、评分来源和简介。trace中的planning、retrieval、tool及耗时证明执行到了哪里；evidence中的queriedAt说明本次读库时间，NORMAL和validatedAt仅说明历史资源检查状态。最后单独判断回答是否忠于依据、是否对用户有用。
+
+本机TraceStore最多200条内存记录，重启不保留；网站临时加密结果和脱敏评测报告是另外两类证据。HTTP200、completed/SUCCEEDED、调用过工具、人工答对分别评估。持久usage、按用户成本账本、独立盲评、文档RAG和线上点击评价仍在[求职路线](ai-career-roadmap.md)中。
+
+## 10. 源码阅读顺序
+
+先读[网页](../frontend/src/app/ai-assistant/page.tsx) → [AiAssistantController](../backend/src/main/java/com/gying/movie/controller/AiAssistantController.java) → [CatalogAiService](../backend/src/main/java/com/gying/movie/service/impl/CatalogAiService.java) → [AiAssistantService](../backend/src/main/java/com/gying/movie/service/impl/AiAssistantService.java) → [CatalogResearchService](../backend/src/main/java/com/gying/movie/service/impl/CatalogResearchService.java)。
+
+另一仓库对应顺序为 `GyingBridge → AssistantService.runForJob → MovieQueryPlanner → GyingResearchService → SemanticMovieIndex/GyingCatalogClient/MovieSearchTools → 加密回执`。本机检出为 `D:/ai/local-ai-agent`，路径是这台主机的事实，不是仓库通用安装要求。
+
+## 11. 2026-11-03 未部署的正文与卡片候选
+
+现役版本见当前状态，本段只描述候选。Agent新增catalogRows，将筛选后的真实候选按原顺序列入正文，指定评分来源从对应字段读；缺分写暂无，原始对白与剧集时长口径仍注明未核验。网页已有evidence卡片，本轮只补0/null/undefined和缺genres时独立展示评分/时长/资源，未改Movie后端或桥接契约。
+
+143项Java、隔离前端构建/固定镜像和8组页面fixture通过；最终四问模型满足3/部分有用1。另完成现役旧版本网站USER15/15 API开发题，机械15通过/0失败；模型诊断满足3/部分1/澄清2/未满足5/缺证4，三维完整13、真人0。短期test设备会话已撤销并恢复禁用，这轮不覆盖密码登录/浏览器，也不能验证候选已生效。当时门禁仍失败，Agent4396…/frontend7ad6…未部署；后续用户限定授权查询修复双后端，Agent055f…已上线，前端7ad6…候选保持未部署。机制取舍与原文证据见[质量讲解](ai-answer-quality-guide.md)及[本轮验证](evaluation/answer-quality-20261103/README.md)。
+
+## 12. 2026-11-03 主题、角色与可信历史修复
+
+本段描述后续已上线的查询修复，验证单独保存在[查询质量修复](evaluation/query-quality-20261103/README.md)。Planner按原句区分作者、演员、导演，恢复正向主题并处理明确撤回的偏好；用户说类型不变时保留上一轮类型。Movie恢复片库人物时也检查作者语境和数字边界，避免另一层重新把作者姓氏或“150分钟”里的“50分”变成演员过滤。原作关联字段仍缺失，不能由姓名匹配推导改编关系。
+
+服务端Job保存已校验的previousJobId，沿同用户、成功且未过期任务回溯。context的queryPlan/candidateIds/candidates仍指最新轮，candidateHistory保存最多三轮旧候选，合计四轮；每轮最多30项，仅公开ID、片名、年份。有效期从各轮完成时间起900秒计算，总context上限10000个Java字符。最新候选超预算时从尾部裁剪，必要时移除queryPlan；更早轮次无法整轮加入时停止回溯并保持historyComplete=false。旧检查点缺少链路来源时保留最新候选，但不冒称知道对话起点。
+
+“最开始列表第一部”只从完整可信链中取第一轮身份，再核对本轮序号、片名、ID和版本年份；不一致或缺失则澄清。客户端history只用于对话理解，不能提供可信ID。claim与runningContext重新回溯，历史详情在实际查询前再核有效期；复制历史不会延长它的TTL。提交幂等指纹绑定稳定的已校验原输入和previousJobId，执行context单独刷新，旧祖先过期不会把同一次重试误判为新问题；旧hash版本保留兼容核对。
+
+语义候选复核由服务端锁定完整非偏好核心主题，明确偏好独立；偏好子句后的其他核心要求继续保留。模型逐项返回supported/unknown/contradicted及独立引文。必需项须为supported，且引文长4–60个Java字符、逐字来自本次展示的简介前300个Java字符；未知或冲突不进入主题清单。软偏好的supported/contradicted同样需要自己的有效引文，否则按未知提示；unknown可以没有引文，未知或不符不作硬性排除。最多复核8个候选、每批最多4个，保留原顺序和原deadline；使用同一模型阶段。格式、要求完整性和引文来源可以确定性检查，语义蕴含仍依赖模型判断，真实引文不等于主题已证实。
+
+模型观测所用候选的离线构建为Movie899项中869通过、30项环境跳过，Agent173项全部通过，两侧verify/compile均exit0。一次隔离真实模型观测为10场景15轮、15次completed，各轮只提交一次；使用2026-10-31分页采集的12822条公开快照，非数据库原子快照。dev-v3-01与dev-v3-10第二轮仍出现核心主题误判，说明真实引文和合法合同仍不足以证明主题正确；最终逐条质量诊断单独记录于[查询质量证据](evaluation/query-quality-20261103/README.md)。这次隔离观测不代替生产队列、同用户历史归属、租约、浏览器及真人验收。随后21:12 Agent055f…、21:47 Movief2b7361b…/1b8a09d5…上线，[网站4轮](evaluation/query-quality-20261103/website-contract-validation.json)沿新USER任务链验证年份替换、首轮身份和矛盾澄清，机械4通过；900秒TTL逻辑、跨owner和伪造身份隔离由既有回归覆盖；生产自然过期待观察。网站模型满足2/未满足1/缺证1、真人0，电影身份仍不足，第一阶段未完成；[部署/回退边界](evaluation/query-quality-20261103/deployment.md)另记。
+
+15轮模型报告仍绑定原观测候选Movie4f73846f…/Agent055f1bdc…。审查后Movie另补同一无标点句中作者与同人主演/执导的逐次姓名匹配边界，新增构建与回归单独记录于[审查后构建](evaluation/query-quality-20261103/movie-reviewed-build.json)。这次边界修复未重跑模型，原15轮不能当作最终Movie源码已经执行的观测。
+
+## 2026-11-04 电影身份与主题证据（双后端已上线）
+
+11月4日电影身份与主题候选代码已完成：Movie973项942通过/31环境跳过、Agent202/202、verify/compile与真实SQL12/12通过。最终定向7/7 completed，模型复核满足3/部分有用1/证据不足2/未满足1、事实null4、真人0；音乐三轮保留条件与较早列表指代，版本身份和影院核心主题仍缺证，影院第二轮另有文学摘录偏题。本轮获用户“可上线”限定授权，Movie backend于2026-11-04 22:39:17、Agent backend于2026-11-04 22:42:34（Asia/Shanghai）按先Movie后Agent顺序上线；实际image/JAR、受管身份、真实入口与独立只读复核通过。安全58 PASS/11 FAIL/1 UNKNOWN及G01–G11仍未关闭，第一阶段未完成。 [电影身份与主题候选](evaluation/identity-theme-20261104/README.md)。Movie从现有tmdb_type与summary公开投影生成mediaIdentity，filmIdentityRequired独立于mv/ac分类，随服务端queryPlan继承；不迁移真实数据库。Agent保守筛身份后用不含片名/评分/首轮判断的实际简介反证复核完整主题。片名回填保持全部条件、额外召回20与复核8的预算和用户limit；只有真实本地核对后因缺证为空的可用结论，才在补充联网失败时保留partial completed及错误trace。未知并不等于不存在。
+
+旧快照无tmdbType但8244条有season；裸季号不得单独证剧集。详情保留受限公共来源/季字段并重新生成身份，保留未知。新字段进入任务历史后旧Movie不能直接解析；本次已先Movie再Agent上线，新的停止窗口检查点认证通过。应用回退保持当前SQL/state/key；回退旧Movie前先比较持久化filmIdentityRequired历史，并在候选写入者正常停止后再次核对。新增或竞态历史阻断旧版启动，必要时恢复当前候选保持运行。这些保护由已审查助手与回归验证，不称生产竞态注入；不恢复旧dump或数据。旧Agent055f…直接拷贝queryPlan，传输能保留新字段，恢复旧Agent应用通常无需回退Movie，但会失去本轮电影身份与第二主题审查机制。
+
+原七轮仍为部署前隔离开发观测，7/7 completed不等于7条满足；模型诊断满足3/部分有用1/证据不足2/未满足1、事实null4、真人0保持。本次上线后只读GET与入口检查没有模型推理或新USER任务，网站USER、跨owner、自然TTL、真实浏览器、主题回答和真人质量仍未验。 [部署验收](evaluation/identity-theme-20261104/deployment.md)。

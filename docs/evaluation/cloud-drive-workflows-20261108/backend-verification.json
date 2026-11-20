@@ -1,0 +1,85 @@
+{
+  "date": "2026-11-08",
+  "timeZone": "Asia/Shanghai",
+  "command": "python -X utf8 tools/tests/query_boundaries_mysql.py --run --full-suite",
+  "runId": "dae1cd96a89a",
+  "startedAt": "2026-11-08T13:57:38.029870+00:00",
+  "completedAt": "2026-11-08T14:03:56.799606+00:00",
+  "exitCode": 0,
+  "mavenExitCode": 0,
+  "totals": {
+    "tests": 1038,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 1037
+  },
+  "requiredRealSqlVerified": true,
+  "realSqlClasses": {
+    "CatalogAiMySqlTest": {
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "MonitoringServiceMySqlTest": {
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "QueryBoundaryMySqlTest": {
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "separateCompile": {
+    "command": "mvn -q -DskipTests compile",
+    "javaRelease": 17,
+    "verified": true
+  },
+  "sourceFiles": 360,
+  "allSourceHashesMatched": true,
+  "sourceManifest": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-dae1cd96a89a\\sources.json",
+  "sourceManifestSha256": "a9bb3192c6ea596a8dcf1cee1c3a276729b6d58d3e6cfcc971ca0d9b151d4c48",
+  "resultPath": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-dae1cd96a89a\\result.json",
+  "resultSha256": "83bbe95db5af538d48bf3fe9107cb7742bb8a855c20ec88fa39378d057772b39",
+  "logPath": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-dae1cd96a89a\\maven.log",
+  "isolated": {
+    "productionChanged": false,
+    "productionMounts": [],
+    "hostPorts": [],
+    "network": "Only temporary MySQL loopback; no external network",
+    "mysqlData": "Disposable tmpfs",
+    "offlineMavenCache": true
+  },
+  "fixtureCleanup": [
+    {
+      "id": "bcaf44b275c0546fba4a1daaa0955135a0d251132f3a84bf93ef6f7a11de324e",
+      "removed": true
+    },
+    {
+      "id": "5b938dfe2538af97bca5e652f67fbc159f1fb9b570d83eaab31805a53e66c00c",
+      "removed": true
+    }
+  ],
+  "skippedReason": "Redis-dependent environment test; real SQL tests not skipped",
+  "retainedEarlierFailures": [
+    {
+      "stage": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-9cfd0556b5fe",
+      "reason": "Test compilation: missing assertThrows static import, fixed before final run"
+    },
+    {
+      "stage": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-540d86ac0f72",
+      "reason": "Response-only metadata routed to JsonAnySetter by Jackson, fixed before final run",
+      "totals": {
+        "tests": 1038,
+        "passed": 1036,
+        "errors": 1,
+        "skipped": 1
+      }
+    }
+  ]
+}

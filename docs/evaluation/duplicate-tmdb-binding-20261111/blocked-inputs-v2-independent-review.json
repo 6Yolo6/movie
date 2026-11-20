@@ -1,0 +1,153 @@
+{
+  "status": "PASS",
+  "at": "2026-11-11T06:50:29.688913+00:00",
+  "reviewer": "review_data_helpers",
+  "reviewType": "INDEPENDENT_STATIC_FROZEN_CHAIN_MOCK_AND_LOCAL_INPUT_ONLY",
+  "binding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\blocked-inputs-v2-binding.json",
+    "sha256": "a2d2dbf5281736a2f0fa0c64a36497ef515891c37f852dc167c675ced66963a9"
+  },
+  "wrapper": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\VerifyBlockedInputsV2.py",
+    "sha256": "78af22e5308b84fb55b30ef10dcdac8cdc75f326fd58ee9cbdd5999517bf3114"
+  },
+  "sourceHelpers": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\VerifyBlocked.py",
+      "sha256": "6dd461319dd876c33c74aea8397a648068bfbb01b7386189d039ea0be7a2bc42"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMerge.py",
+      "sha256": "377a6525234a7a55931e51ada638f52985c4f97032a03bc47ed26d208b6e3412"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerify.py",
+      "sha256": "b92efd33cd11d682c5bcdbc8efb641dc7265cd92f5b96b284ef0e8f71655404e"
+    }
+  ],
+  "frozenInputs": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\stage-plan.json",
+      "sha256": "1559cfa56d77efeabbcbbd84a861c53cbe17d67d974bb0d3a588d1f940e29014"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\prepared.json",
+      "sha256": "fc0189345c29505f08b899a745a0b0e9163782b623bf6d86b88d04e5627c5707"
+    }
+  ],
+  "offlineTests": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\blocked-inputs-v2-offline-tests.json",
+    "sha256": "fa001f320d447a81b4cc7025d3875f6c7d4523793064db30a7386ead49f380c2"
+  },
+  "testsFile": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\VerifyBlockedInputsV2Tests.py",
+    "sha256": "7fd69c1fa3e968e9457e7eb32a58880b24a70823033add1b8b6880b7091f2111"
+  },
+  "allFrozenReferencesChecked": true,
+  "independentTests": {
+    "testsRun": 33,
+    "failures": 0,
+    "errors": 0,
+    "runtimeAndChildFailClosedOutsideMocks": true
+  },
+  "localPrimaryInputAuthentication": [
+    {
+      "batch": 1,
+      "blockedPairCount": 2,
+      "inputReferences": [
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\journal-primary-preview-attempt-reserved.json",
+          "sha256": "5140423df2fbacc522e2bc0fec569b27ecc95029ecad72ebd4b390ab1827cd79"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\journal-primary-preview-response-recorded.json",
+          "sha256": "125ae100922582b898e10b94e8122a8ded0f7e9216205ae3e7930874f71c4b54"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-preimage.json",
+          "sha256": "992b2f525f2c9b92931f4360b33c5a7b9e13affa4440783a6e3258095ff07072"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-preview-request.json",
+          "sha256": "482e6af7ddaf94577bf1e22f80bd19e27b8e700bc39abf01362f08c4e642c2da"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-preview-response-proof.json",
+          "sha256": "ed11a5676c885105577d49a45355178f4d8ac2950d3a1ebcd021c98d3413977f"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-preview-response.json",
+          "sha256": "a866b8779d1eb5f042e74e3507b80c1b4ce817ac908b9aa5b72f67d078228466"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-rows-before.json.age",
+          "sha256": "1f0cdb6f80f3304d33b79fb2a47d7226c53a42d3d1e592d4b72fd85a0975ed30"
+        }
+      ],
+      "fullInputBytesAndRequestJournalResponseDataDigestChecked": true,
+      "strictBooleanEligibilityChecked": true,
+      "decryptExecuted": false,
+      "liveIoExecuted": false,
+      "localEvidenceWrittenToExternalBatch": false,
+      "rawApiEnvelopeHashRecomputed": false
+    },
+    {
+      "batch": 2,
+      "blockedPairCount": 1,
+      "inputReferences": [
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\journal-primary-preview-attempt-reserved.json",
+          "sha256": "fc431270595b8d83ad332e2b9cf0542bdf2d4373ea8761e7db27683fb840f707"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\journal-primary-preview-response-recorded.json",
+          "sha256": "9591db2e4ee3633440e61648aa97b10e5608c4f2affc5b89e999494c22315c74"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\primary-preimage.json",
+          "sha256": "b656fd5fe07f3692ae4bb33284e705c5993ddef1cb4bdf1607b38a0211099e37"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\primary-preview-request.json",
+          "sha256": "1f60fefe23e831e7baa2b5b4dfa6ca869cf69d6d51913c4fe136a57f2f66dc29"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\primary-preview-response-proof.json",
+          "sha256": "450e8a9a1410787062dbbb6723c2712c772072312f0e48ab2146fcdd12da5441"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\primary-preview-response.json",
+          "sha256": "d198e4b7651b28d7537702066342c3597da35cfe54f41b3feb7769e16be6145b"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\primary-rows-before.json.age",
+          "sha256": "fac9bde4cca99b0a868eb8b7a4bb4d0a147334590c83a7face397d8f9c5b77d4"
+        }
+      ],
+      "fullInputBytesAndRequestJournalResponseDataDigestChecked": true,
+      "strictBooleanEligibilityChecked": true,
+      "decryptExecuted": false,
+      "liveIoExecuted": false,
+      "localEvidenceWrittenToExternalBatch": false,
+      "rawApiEnvelopeHashRecomputed": false
+    }
+  ],
+  "checks": {
+    "onlyFrozenReadOnlyChildCalled": true,
+    "sevenPrimaryInputsSealedCreateOnceBeforeProductionChild": true,
+    "fullBindingsAndInputHashesRecheckedAfterChild": true,
+    "strictBoolAndBlockerConsistency": true,
+    "exactCanonicalResponseDigestAndJournalReference": true,
+    "exactRequestAckChronology": true,
+    "fullBlockedPairAndPreimageAndHelperAndRowEqualityReceipt": true,
+    "defaultImportNoIo": true,
+    "noPostSqlWriteReplayRestoreOrCloudAction": true,
+    "projectionAndHubMatchPreviouslyIndependentlyReviewed": true
+  },
+  "productionIoCalls": 0,
+  "productionPosts": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0,
+  "gitActions": 0,
+  "productionBlockedRetentionVerifiedByThisReview": false
+}

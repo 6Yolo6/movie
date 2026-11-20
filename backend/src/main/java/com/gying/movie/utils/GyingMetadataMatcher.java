@@ -28,8 +28,8 @@ public final class GyingMetadataMatcher {
             return new MatchEvidence(0, false, List.of("TYPE_MISMATCH"));
         }
 
-        Integer sourceSeason = source.season();
-        Integer movieSeason = movie.getSeason();
+        Integer sourceSeason = validSeason(source.season());
+        Integer movieSeason = validSeason(movie.getSeason());
         if (!"mv".equalsIgnoreCase(source.typeCode())
                 && sourceSeason != null && movieSeason != null) {
             if (!sourceSeason.equals(movieSeason)) {
@@ -67,6 +67,11 @@ public final class GyingMetadataMatcher {
                 || reasons.contains("DIRECTOR")
                 || reasons.contains("ACTOR");
         return new MatchEvidence(Math.min(score, 100), score >= 75 && hasAnchor, List.copyOf(reasons));
+    }
+
+    /** Historical title digits (e.g. 1566) must never be a season anchor. */
+    public static Integer validSeason(Integer season) {
+        return season != null && season >= 1 && season <= 99 ? season : null;
     }
 
     public static boolean typeCompatible(String category, String typeCode) {

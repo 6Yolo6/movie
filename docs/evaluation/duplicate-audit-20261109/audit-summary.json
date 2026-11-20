@@ -1,0 +1,179 @@
+{
+  "date": "2026-11-09",
+  "scope": "production read-only audit; no merge or deletion",
+  "counts": {
+    "activeMovies": 15293,
+    "identityDuplicateGroups": 0,
+    "identityDuplicateRecords": 0,
+    "reviewedNameCandidateGroups": 92,
+    "reviewedNameCandidateRecords": 184,
+    "reviewedPotentialExcessRecords": 92,
+    "reviewedPrimaryTitleGroups": 87,
+    "reviewedAliasOnlyGroups": 5,
+    "quarantinedGroups": 6,
+    "candidateCategories": {
+      "tv": 41,
+      "mv": 51
+    },
+    "candidateGroupsWithCastOrDirectorSupport": 86,
+    "candidateGroupsWithResourcesOnBoth": 4,
+    "candidateGroupsWithExactlyOneResourceRecord": 77,
+    "metadataIdentityTmdbMismatchRecords": 194,
+    "metadataIdentityTmdbMismatchRows": 221
+  },
+  "mobland": {
+    "movieIds": [
+      "1YKW",
+      "tmdb_tv_247718"
+    ],
+    "movies": [
+      {
+        "id": "1YKW",
+        "titleCn": "黑帮领地 第一季",
+        "titleEn": " MobLand Season 1",
+        "seriesName": "黑帮领地",
+        "season": 1,
+        "year": 2025,
+        "category": "tv",
+        "tmdbId": null,
+        "tmdbType": null,
+        "effectiveSeason": 1,
+        "resources": {
+          "total": 8,
+          "active": 8,
+          "normal": 8,
+          "movieId": "1YKW",
+          "section": "resources",
+          "unknown": 0,
+          "trailers": 0,
+          "providers": "P2P,QUARK,XUNLEI"
+        },
+        "identities": [
+          {
+            "id": 1651,
+            "season": 1,
+            "source": "GYING",
+            "movieId": "1YKW",
+            "section": "identity",
+            "confidence": 100.0,
+            "externalId": "1YKW",
+            "sourceType": "tv",
+            "matchMethod": "STRICT_METADATA",
+            "matchStatus": "AUTO"
+          }
+        ]
+      },
+      {
+        "id": "tmdb_tv_247718",
+        "titleCn": "MobLand",
+        "titleEn": "MobLand",
+        "seriesName": "MobLand",
+        "season": 1,
+        "year": 2025,
+        "category": "tv",
+        "tmdbId": 247718,
+        "tmdbType": "tv",
+        "effectiveSeason": 1,
+        "resources": {
+          "total": 0,
+          "active": 0,
+          "normal": 0
+        },
+        "identities": [
+          {
+            "id": 2951,
+            "season": 1,
+            "source": "TMDB",
+            "movieId": "tmdb_tv_247718",
+            "section": "identity",
+            "confidence": 100.0,
+            "externalId": "247718",
+            "sourceType": "tv",
+            "matchMethod": "TMDB_API",
+            "matchStatus": "CONFIRMED"
+          }
+        ]
+      }
+    ],
+    "pairs": [
+      {
+        "ids": [
+          "1YKW",
+          "tmdb_tv_247718"
+        ],
+        "matchingPrimaryNames": [
+          "mobland"
+        ],
+        "matchingAliasOrSeriesNames": [
+          "mobland",
+          "黑帮领地"
+        ],
+        "sameCategory": true,
+        "sameYear": true,
+        "sameSeason": true,
+        "sharedActors": [
+          "劳拉·普沃",
+          "帕迪·康斯戴恩",
+          "汤姆·哈迪",
+          "琼安·弗洛加特",
+          "皮尔斯·布鲁斯南"
+        ],
+        "sharedDirectors": [
+          "盖·里奇"
+        ],
+        "conflictingKnownTmdbIds": false,
+        "primaryMatch": true
+      }
+    ],
+    "hasConflictingKnownTmdbIds": false
+  },
+  "evidence": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-audit-20261109\\snapshot.json",
+      "sha256": "57aa89eb5a4d62bb11dc42246bcfdf9a159585d840d057ed0334cc46af59f7f1"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-audit-20261109\\final-report.json",
+      "sha256": "c0fa75caf2d46320fa6f39e9961de34446dd27245dd49d5b8a283a4548df4d68"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-audit-20261109\\candidates.csv",
+      "sha256": "275c0a2d79d5656807df6cac2e62be9bb64e8c7d416e81fc06c6b7e124c218d9"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-audit-20261109\\scanner-reproduction.json",
+      "sha256": "fc83345ff289082296568a3378b9695211368a329d992069a5c5b339ae3e1a21"
+    }
+  ],
+  "productionMutationPerformed": false,
+  "scannerModified": false,
+  "limitations": [
+    "名称候选尚需审核，不能直接视为可合并记录",
+    "同类别、年份、季是保守边界；跨 ac 分类、缺年份/季另存原始 analysis.json 不计总数",
+    "电影 metadata.season 常是续集序号，TMDB movie 身份季号统一0；电影合集 series_name 不作为匹配依据",
+    "严格身份重复0不等于库里没有重复，GYING记录常没有相同TMDB来源身份"
+  ],
+  "scannerReproduction": [
+    {
+      "at": "2026-11-09 18:06:10.000000",
+      "section": "scannerSummary",
+      "latest100Hits": 0,
+      "latest200Hits": 0,
+      "inspectedTmdbRecords": 200
+    },
+    {
+      "rank": 7989,
+      "section": "moblandRank",
+      "tmdbRecords": 8702
+    },
+    {
+      "section": "moblandComparison",
+      "candidateId": "1YKW",
+      "seriesMatch": false,
+      "aliasesMatch": null,
+      "titleCnMatch": false,
+      "titleEnMatch": false,
+      "selectedTitle": "MobLand"
+    }
+  ]
+}

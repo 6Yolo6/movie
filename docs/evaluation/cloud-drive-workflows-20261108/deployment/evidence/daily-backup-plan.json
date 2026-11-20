@@ -1,0 +1,28 @@
+{
+  "preparedAt": "2026-11-08T14:12:20.232465+00:00",
+  "status": "applied",
+  "addition": {
+    "name": "cloud-drive-workflows-runtime-20261108",
+    "path": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\candidate.json"
+  },
+  "originalSha256": "f7d4affcc944b4e89a7cb2c91dd8ae38d86cf99f7fd7ba151e92df518b3cb1cb",
+  "proposedSha256": "fc6d939876d837fb841f74a14197e7c81b61d0ffe5a303f6f65666d92b5b07af",
+  "oldConfigurationCheckpoint": {
+    "directory": "G:\\gying-backups\\cloud-drive-workflows-daily-backup-config-20261108-20261108T141219.897864Z",
+    "archive": "G:\\gying-backups\\cloud-drive-workflows-daily-backup-config-20261108-20261108T141219.897864Z\\backup-config-before.tar.age",
+    "archiveSha256": "c64125da5fec9aacf4bbbbec6cab5267e12c2d41d12fa2fdc4cef9088c6f3d74",
+    "authenticated": true,
+    "exactOriginalContentVerified": true
+  },
+  "differenceKeys": [
+    "paths"
+  ],
+  "productionConfigurationWritten": true,
+  "dryRun": {
+    "exitCode": 0,
+    "newOverlayIncluded": true,
+    "artifactCount": 31,
+    "backupExecuted": false
+  },
+  "appliedAt": "2026-11-08T14:34:28.035877+00:00"
+}

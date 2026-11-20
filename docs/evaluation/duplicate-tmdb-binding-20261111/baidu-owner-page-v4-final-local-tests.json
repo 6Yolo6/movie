@@ -1,0 +1,251 @@
+{
+  "version": 4,
+  "status": "PASS",
+  "createdAt": "2026-11-11T12:59:12.473865+00:00",
+  "sourceSha256": {
+    "ReconcileBaiduOwnerPageReadOnlyV4.java": "b40d82c597f049e0c270637e1627cec9bbe84e8fd2a5a4dfc5b8156427d98e40",
+    "CompileReconcilerOwnerPageV4.py": "cb165e463fdf845906f18d3bf07155efe1651a3428b678bab4aec2ae13759498",
+    "PostReconcileOwnerPageV4.py": "e855561349c64067c14eb3cea9bb2d8e8f9f85e4c7ca37ee45403238f4ccf583",
+    "OwnerPageV4Binding.py": "b8ff40915eb0f7d232cca62bfba0431d09e7746f1ae51f9573c57c0d6e5314b9"
+  },
+  "frozenBeforeBugProbe": false,
+  "javaSourcePath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\ReconcileBaiduOwnerPageReadOnlyV4.java",
+  "bindingSourcePath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\OwnerPageV4Binding.py",
+  "testSourceSha256": {
+    "OwnerPageSchemaMocksV4.java": "165a9164dbe66786eb2ab4648675a519bd50c0517cd3f954da7f3cc8a589adf3",
+    "test_owner_page_v4_pipeline.py": "3b000174dd3ce53910b6e4386473988d53dfe899f317c4ddfb624667fb277027"
+  },
+  "javaCompilation": {
+    "release": 17,
+    "exit": 0,
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "oldCompilerReceipt": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-parse-diagnostic-v31-build-attempts\\233b292ec6fb44ab845f9ca4f07fb488\\compile-completed.json",
+      "sha256": "4b7d5b0684c50ff1d771fdb59170816f55766413fcac17e4da54c0167d63e02e"
+    },
+    "oldArtifactsVerified": 541
+  },
+  "productionDockerCommands": 0,
+  "productionApiRequests": 0,
+  "productionSqlQueries": 0,
+  "cloudWrites": 0,
+  "directSqlWrites": 0,
+  "manualPostRequests": 0,
+  "settingsPutRequests": 0,
+  "actualPageSchemaObserved": false,
+  "ownerProofAccepted": false,
+  "officialReconciliationVerified": false,
+  "fullOldSuitesExecuted": false,
+  "javaMocks": {
+    "exit": 0,
+    "stdoutSha256": "060a858d7b6cac01ab4702081a0953ecb8f05afeaaf95681c13b19c2a8c6a34e",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "result": {
+      "targetResults": [
+        {
+          "case": "actual-var-locals-try-prefix",
+          "expectedAccepted": true,
+          "pass": true,
+          "gate": "NONE",
+          "actualAccepted": true
+        },
+        {
+          "case": "division-before-regex-fake-only",
+          "expectedAccepted": false,
+          "pass": true,
+          "gate": "PAGE_SHARE_CANDIDATE_NOT_UNIQUE",
+          "actualAccepted": false
+        },
+        {
+          "case": "division-before-regex-plus-real",
+          "expectedAccepted": true,
+          "pass": true,
+          "gate": "NONE",
+          "actualAccepted": true
+        },
+        {
+          "case": "html-open-line-comment-fake-only",
+          "expectedAccepted": false,
+          "pass": true,
+          "gate": "PAGE_SHARE_CANDIDATE_NOT_UNIQUE",
+          "actualAccepted": false
+        },
+        {
+          "case": "html-open-line-comment-plus-real",
+          "expectedAccepted": true,
+          "pass": true,
+          "gate": "NONE",
+          "actualAccepted": true
+        },
+        {
+          "case": "html-close-line-comment-fake-only",
+          "expectedAccepted": false,
+          "pass": true,
+          "gate": "PAGE_SHARE_CANDIDATE_NOT_UNIQUE",
+          "actualAccepted": false
+        },
+        {
+          "case": "html-close-line-comment-plus-real",
+          "expectedAccepted": true,
+          "pass": true,
+          "gate": "NONE",
+          "actualAccepted": true
+        },
+        {
+          "case": "html-close-nbsp-line-comment-fake-only",
+          "expectedAccepted": false,
+          "pass": true,
+          "gate": "PAGE_SHARE_CANDIDATE_NOT_UNIQUE",
+          "actualAccepted": false
+        },
+        {
+          "case": "html-close-nbsp-line-comment-plus-real",
+          "expectedAccepted": true,
+          "pass": true,
+          "gate": "NONE",
+          "actualAccepted": true
+        },
+        {
+          "case": "html-close-bom-line-comment-fake-only",
+          "expectedAccepted": false,
+          "pass": true,
+          "gate": "PAGE_SHARE_CANDIDATE_NOT_UNIQUE",
+          "actualAccepted": false
+        },
+        {
+          "case": "html-close-bom-line-comment-plus-real",
+          "expectedAccepted": true,
+          "pass": true,
+          "gate": "NONE",
+          "actualAccepted": true
+        }
+      ],
+      "sqlWrites": 0,
+      "status": "PASS",
+      "tests": 174,
+      "targetFailures": 0,
+      "cloudWrites": 0,
+      "safeProof": {
+        "version": 4,
+        "source": "TRY_BODY_JSON",
+        "parserMode": "STRICT_JSON",
+        "sessionUidCanonical": true,
+        "recordAliases": {
+          "uid": {
+            "matchesExpected": false,
+            "integer": false,
+            "text": false,
+            "canonicalDigits": false,
+            "present": false,
+            "jsonType": "MISSING"
+          },
+          "uk": {
+            "matchesExpected": false,
+            "integer": false,
+            "text": false,
+            "canonicalDigits": false,
+            "present": false,
+            "jsonType": "MISSING"
+          }
+        },
+        "recordShareId": {
+          "matchesExpected": true,
+          "integer": true,
+          "text": false,
+          "canonicalDigits": true,
+          "present": true,
+          "jsonType": "NUMBER"
+        },
+        "pageOwner": {
+          "matchesExpected": true,
+          "integer": false,
+          "text": true,
+          "canonicalDigits": true,
+          "present": true,
+          "jsonType": "STRING"
+        },
+        "pageShareId": {
+          "matchesExpected": true,
+          "integer": true,
+          "text": false,
+          "canonicalDigits": true,
+          "present": true,
+          "jsonType": "NUMBER"
+        },
+        "pageLoginState": {
+          "jsonType": "NUMBER",
+          "integer": true,
+          "recognizedState": true,
+          "present": true
+        },
+        "recordAliasesConsistent": true,
+        "pageCriticalAliasesConsistent": true,
+        "sameObjectOwnerAndId": true,
+        "ownerMatchesCurrentSession": true,
+        "shareIdMatchesOwnRecord": true,
+        "serverAccountBeforeAndAfterVerified": true,
+        "transport": {
+          "redirectCount": 0,
+          "finalTargetClass": "SHARE",
+          "sameOriginAllHops": true,
+          "mediaType": "HTML",
+          "boundShareIdentityAllHops": true,
+          "utf8Valid": true,
+          "responseBytes": 98,
+          "responseSha256": "37ff49f9331873ed8fb0a43110131ae1650106d9e13ec0605a5b50cf66859158"
+        },
+        "inventory": {
+          "strictDuplicateDetection": true,
+          "strictTrailingDetection": true,
+          "scriptInventoryComplete": true,
+          "rootFieldsInspectedComplete": true,
+          "scriptCount": 1,
+          "inertParsing": true,
+          "candidateInventoryComplete": true,
+          "candidateCount": 1,
+          "rootFieldCount": 3,
+          "shareCandidateCount": 1,
+          "scriptHashes": [
+            {
+              "sha256": "4ce5e663ba0e66fb3e6a3ba62858ae2c91f77280c8856d38b0eb5e55ea40720f",
+              "bytes": 81,
+              "index": 0
+            }
+          ]
+        },
+        "candidate": {
+          "sha256": "1fe21c80a6ad6c587939f4848e78297e3abbe81cac6e5f41265d8167b4bd2277",
+          "scriptIndex": 0,
+          "bytes": 56,
+          "source": "TRY_BODY_JSON"
+        },
+        "failure": {
+          "column": 0,
+          "stage": "NONE",
+          "reason": "NONE",
+          "lexemeKind": "NONE",
+          "coordinateSpace": "CANDIDATE_UTF16",
+          "line": 0
+        }
+      },
+      "productionApiRequests": 0
+    }
+  },
+  "javaDefault": {
+    "exit": 0,
+    "result": {
+      "mode": "no-I/O plan",
+      "cloudWrites": 0,
+      "springStarted": false,
+      "sqlOpened": false
+    }
+  },
+  "pythonMocks": {
+    "tests": 21,
+    "failures": 0,
+    "errors": 0
+  },
+  "oldFrozenArtifactBytesRetained": true,
+  "completedAt": "2026-11-11T12:59:17.431500+00:00"
+}

@@ -1,0 +1,16 @@
+{
+  "status": "STOPPED_PRESERVE_CURRENT_STATE_NO_RETRY",
+  "at": "2026-11-15T09:02:14.006516+00:00",
+  "command": "emit-preimage",
+  "errorType": "RuntimeError",
+  "gate": null,
+  "reservations": [
+    "deployment-reservation.json"
+  ],
+  "configurationOutcomeUnknown": false,
+  "unknownPutStages": [],
+  "automaticRetry": false,
+  "automaticRestore": false,
+  "directSqlWrites": 0,
+  "manualCloudRequests": 0
+}

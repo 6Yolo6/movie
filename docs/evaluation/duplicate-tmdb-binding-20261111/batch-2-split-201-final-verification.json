@@ -1,0 +1,71 @@
+{
+  "status": "PASS",
+  "pairs": 10,
+  "historyRows": 56,
+  "movedReferences": 36,
+  "favoriteDeletes": 0,
+  "favoriteHistoryRows": 0,
+  "exactRowDeltasVerified": true,
+  "exactHistoryCoverageVerified": true,
+  "historyFingerprintSha256FormatVerified": true,
+  "historyOriginalFingerprintRecomputed": false,
+  "nativeJsonPayloadCompatible": true,
+  "sourceMetadataPreserved": true,
+  "targetOnlyTmdbBindingAndResourceStatusChanged": true,
+  "sourceIdentityOnlyMovieIdMoved": true,
+  "afterSha256": "3788679e70f21de6a0994a14259582dd9073224d0dc77d3e80e206eac6df1428",
+  "legacyResourceUpdateAtRows": 0,
+  "legacyUpdateAtNarrowMergeWindowVerified": true,
+  "at": "2026-11-11T07:20:52.296439+00:00",
+  "reviewId": "ce0e731b-083b-4713-bf56-d99d9e562af3",
+  "idempotencyKey": "08a36099-c391-4bba-95c7-2e69096b8a43",
+  "batch": 201,
+  "protectedBaiduAndConfigurationUnchanged": true,
+  "allThirteenContainerGenerationsUnchanged": true,
+  "cloudActions": 0,
+  "operatorDirectSqlWrites": 0,
+  "readOnlyRecoveryVerification": false,
+  "automaticReplay": false,
+  "legacyResourceSchemaClockAndTriggerVerified": true,
+  "legacyUpdateWindow": {
+    "requestAt": "2026-11-11T07:20:37.476741+00:00",
+    "completedAt": "2026-11-11 07:20:42.811424",
+    "ackAt": "2026-11-11T07:20:42.823533+00:00",
+    "offsetSeconds": 28800,
+    "precisionSeconds": 1
+  },
+  "verifierBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v4-binding.json",
+    "sha256": "de37382a454a06b5d2b24b62b0b95d3406405f40571e1c750045f26b2bebdb33"
+  },
+  "parentBatch": 2,
+  "generation": "batch2-split-v7",
+  "previewPosts": 1,
+  "mergePosts": 1,
+  "newCandidatePairs": 0,
+  "blockedPairs": 0,
+  "permanentOriginalBlockedPairCount": 1,
+  "originalBodyAndKeyNeverReused": true,
+  "oldMaterialsRetained": true,
+  "splitPlan": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\split-plan.json",
+    "sha256": "61c351ddc6dd384caf2998a28c280b65a633edc8b1e6161dd3437040c295f889"
+  },
+  "splitBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v7-binding.json",
+    "sha256": "3d6dc081547fcc0694aee8f658c71afe1d8f0f4a1479b43093e29efb74bda00e"
+  },
+  "originalObserver": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\unused-expired-observation-4b13f5e8de0940bd84f2e1db9ba084c6.json",
+    "sha256": "dfe60a595c51553d3d67857ce89588a13438c40d67a2d583b0f04f246c17c9d3"
+  },
+  "idleAfter": {
+    "at": "2026-11-11T07:20:58.410123+00:00",
+    "phase": "After new B2 child exact verification",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  }
+}

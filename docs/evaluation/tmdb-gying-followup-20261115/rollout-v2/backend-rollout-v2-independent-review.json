@@ -1,0 +1,53 @@
+{
+  "status": "PASS",
+  "scope": "LOCAL_HELPER_DIFF_AND_OFFLINE_TESTS_ONLY",
+  "atUtc": "2026-11-15T11:36:03.053373+00:00",
+  "helpers": {
+    "backend": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\BackendRollout.py",
+      "sha256": "af8e31955379458b9382c9c4cf47917eddfcbad16695cc37e95071413b4812a1"
+    },
+    "declarations": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\FollowUpDeclarations.py",
+      "sha256": "e1ec332a24c6274f9b77655adc53b26236c26d8fd5d0900320b1f95df7aa53c8"
+    }
+  },
+  "tests": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\independent-offline-tests.json",
+    "sha256": "628e8dda4d7d3e4f3e4bd9718ff814f0a12a87be925a53e67ad1cff9e89a7fd8"
+  },
+  "serializationRootCauseEvidence": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\deployment-v1-serialization-independent-review.json",
+    "sha256": "7db1a1270ff92a8eb0bf3b9773542f89c793727bfb595399c0eff469621b330f"
+  },
+  "minimalDiff": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\minimal-helper-diff.txt",
+    "sha256": "20865dcee1ae26a429aa37dbc7115457052ae0023e09f48a29dd857731880e5c"
+  },
+  "checks": {
+    "v1BackendPreserved": true,
+    "v1DeclarationsPreserved": true,
+    "v2BackendExactlyOneEncodingParameterDelta": true,
+    "v2DeclarationsExactlyThreeFixedShaAndRelocationDeltas": true,
+    "rawByteShaArchiveGateUnchanged": true,
+    "originalReleasePathFullyCoveredByDailyAddition": true,
+    "sameOriginalReleasePathDifferentNameRejected": true,
+    "matchingAdditionNameDifferentPathRejected": true,
+    "newV2HelpersMustBeFrozenByNewPlan": true,
+    "unicodeActualEmitTarRawShaMatchesCanonicalDigest": true,
+    "legacyUnicodeEncodingStillRejected": true,
+    "asciiBytesUnchanged": true,
+    "zeroRuntimeIoPlansVerified": true,
+    "singleActivationAndNoRetryGuardsUnchanged": true,
+    "independentOffline28TestsPassed": true,
+    "frozenInputsUnchangedThroughTests": true
+  },
+  "productionPrepareInvoked": false,
+  "executeInvoked": false,
+  "productionMutationPerformed": false,
+  "sourceGetRepeated": false,
+  "mavenInvoked": false,
+  "liveCheckpointOrDeployGateValidated": false,
+  "v1ExecuteRetryPermitted": false,
+  "v2RequiresNewPreparedPlanAndAuthenticatedCheckpoint": true
+}

@@ -17,6 +17,14 @@ public class MovieMetadataServiceImpl extends ServiceImpl<MovieMetadataMapper, M
     @Autowired
     private MovieMetadataMapper movieMetadataMapper;
 
+    @Autowired(required = false)
+    private MovieMergeAliasResolver mergeAliases;
+
+    @Override
+    public MovieMetadata getById(java.io.Serializable id) {
+        return super.getById(mergeAliases == null ? id : mergeAliases.resolve(String.valueOf(id)));
+    }
+
     @Override
     public MovieMetadata getMovieWithResources(String id) {
         return this.getById(id);

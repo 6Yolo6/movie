@@ -1,0 +1,63 @@
+{
+  "version": 6,
+  "at": "2026-11-11T06:48:01.152761+00:00",
+  "status": "DERIVED_OFFLINE_ONLY",
+  "scope": {
+    "mutationBatches": [
+      3,
+      4
+    ],
+    "pristineUnreservedBatchesOnly": true,
+    "frozenV4RunAndVerifier": true,
+    "maxPreviewPostsPerBatch": 2,
+    "maxMergePostsPerBatch": 1,
+    "maxExactIdleReadOnlyWaitSeconds": 120,
+    "sharedIdleDeadlinePerExecution": true,
+    "onlyNativeExactIdleGateWaited": true,
+    "automaticRequestRetry": false,
+    "automaticRestore": false,
+    "operatorDirectSqlWrites": 0,
+    "cloudActions": 0
+  },
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchIdleMergeV6.py",
+      "sha256": "e2eca4318acb5c784e99db0166166abd96e2a23ed1c35416cec8d6f18f5bef9a"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMergeV4.py",
+      "sha256": "b346f82f4548cc9e491424df5c2f985850cd33ff3d28669aee2e3b743bfdfbfb"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerifyV4.py",
+      "sha256": "c2938ba847727afe1bf727733a0af1d5aa99a71aab38c30d781cb99e344c4f28"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchPresendResume.py",
+      "sha256": "da75b6cdeab288b9689e4a25ec8118720d1ffab270bb61abcb28ce5ff9dc4266"
+    }
+  ],
+  "previousBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v4-binding.json",
+    "sha256": "de37382a454a06b5d2b24b62b0b95d3406405f40571e1c750045f26b2bebdb33"
+  },
+  "tests": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v6-tests.json",
+    "sha256": "b03ea716ccc6d73ed72e49d7c2c6c4ab1c2f569eff3ecfc2fb02524fab0ce1ca"
+  },
+  "testFile": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchIdleOfflineTestsV6.py",
+    "sha256": "b5961b4f2af13ed1ca29a6ca69bcf3b45741704ce1dfb8d580d2113a147eee3c"
+  },
+  "sourceControlFlowUnmodified": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMergeV2.py",
+    "sha256": "2e42955e32eee229c6c24c34884d12b06258cc3a713cfef38ce53b85a1c968a5"
+  },
+  "nativeIdleProxy": "originalIdle plus exact native GateError bridge",
+  "sharedBudgetPerExecution": true,
+  "pristineBatchesOnly": [
+    3,
+    4
+  ],
+  "productionPosts": 0
+}

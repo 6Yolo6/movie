@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "releasePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110",
+  "status": "prepared-offline-not-executed",
+  "originals": [
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\Runtime.py",
+      "sha256": "44e27bfe60af9f342b06843b0b5567e8a372707f4d09c3905a206d5df4a32ea7"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\Preflight.py",
+      "sha256": "2e4c9aa2db9a7e8b4b59326ddf7eaa58633bb90f779eefa65df00d9e4bf89200"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\ProbeMinioConfiguredRead.py",
+      "sha256": "c883b2a0b8ae21ffbfeccb5444de306223986a646a0a6f1e32cbd7952e1eb5b4"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\Ops.py",
+      "sha256": "c2811050250b83df69080657591db52cfe4e1d309d78821303f828dcbab5d11f"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\VerifiedOps.py",
+      "sha256": "7b4ded0c9b6ae8e439dcd971260a4f068f5f8ce9c9b0539ea8d05a953b88a237"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\PostVerified.py",
+      "sha256": "14dba2baa1f09c70dc85b80930151977e0c81d743dfaf4712145bbb4e51ed050"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\DailyCoverageVerified.py",
+      "sha256": "c2ebcdbf61f882c7dea4e2f6610b264d7efda223cc24224c0d7d5927269d8145"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\FinalReadOnly.py",
+      "sha256": "f5a5c95813bc5c3d63133e740e4e138fe9c70189479baaae4c16bb69ffafe9e1"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\HostPinCompleteV2.py",
+      "sha256": "8438a9d19d0288df24e21305856e67336e12f2a53cd07b08dcf06eae195590be"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\AcceptanceVerified.py",
+      "sha256": "898c15eea4834e4153bb034e97533af58a07c50db0365f320c488aeb8688884d"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\OfflineTests.py",
+      "sha256": "ee8e8bc14895a1018c53cd1351cb59646b35398b05aa3baa1161551ba2cbcd05"
+    }
+  ],
+  "files": [
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\AcceptanceReadOnly.py",
+      "sha256": "0121d3522be1a16f86bbeef2df08d18dd4128127e6d42a416343278903fba362"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\BackendReadOnly.py",
+      "sha256": "bad59412f38c32423c6ee77e6d20d2b7b7085069c9d738925e6cbe54843d6be6"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\BuildBackendImage.py",
+      "sha256": "f162732060462ac31f38998e7ae0a9415915cf2dbd0f2e25ee95087651381376"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\DailyCoverageVerified.py",
+      "sha256": "70b91bb57b8231a15734fb0c09eb8843d343a276142e43f5486ae3d0b30c4903"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\FinalReadOnly.py",
+      "sha256": "f5a5c95813bc5c3d63133e740e4e138fe9c70189479baaae4c16bb69ffafe9e1"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\HostArchiveIntegrity.py",
+      "sha256": "48edc4cfa0370a2ef09b096a9626e9a7867ece01f99b1c2c7753620407bf15c8"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\NextCandidateReadOnly.py",
+      "sha256": "341d1215f548ad828456a3219c4486f58d164ef1f836c47289841417f9177e72"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\OfflineTests.py",
+      "sha256": "25daeb2c4dae871f67ca20fe942f38b058c4dbd24c6442e6c68380e36b5afadf"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\Ops.py",
+      "sha256": "575d8d44f8211f6f3c8ab7339e433bbfd65ad2415a95e41b03c488a12e9fd7f7"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\PostVerified.py",
+      "sha256": "03d1448c40b5be2be93b0f3abd17b40be57bf137cebd958c73458cbf850b66e4"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\Preflight.py",
+      "sha256": "d4691717d2c9e489a97bebecb8df5ea210046ec05472285201cca600f20c23fe"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\ProbeMinioConfiguredRead.py",
+      "sha256": "c883b2a0b8ae21ffbfeccb5444de306223986a646a0a6f1e32cbd7952e1eb5b4"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\Runtime.py",
+      "sha256": "a159e3ac27df90948ee4b664317aee6e63f149823a29f61fce86a67ee9c3ab04"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\SealRuntimeInputs.py",
+      "sha256": "5bedf47645e47e0d94766d7af2ee4ad6a9ad5703457bee9263fc712202980344"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\VerifiedOps.py",
+      "sha256": "a93fb1c23bef1cc534c78e676a24c3459e814d37bcb366dd835641320554295e"
+    }
+  ],
+  "runtimeCommandsExecuted": 0,
+  "productionOrProviderCommandsExecuted": 0,
+  "historicalBindingsOrReportsCopied": false,
+  "rootOwnedFilesPreserved": [
+    "BuildBackendImage.py",
+    "ops-before.md",
+    "NextCandidateReadOnly.py"
+  ],
+  "verification": "Fresh Runtime/Ops/Post/Daily with full Config preservation; original V2 delta/member primitives only; new GET-only backend acceptance",
+  "reviewCorrections": [
+    "Complete current Compose environment and every modeled old Config field compared before TERM; depends_on pre-TERM gate",
+    "Authenticated GET last_seen_at routine side effect disclosed; zero writes scoped to operator-issued direct SQL",
+    "Native entire original Compose service hash must equal authenticated old Config label before TERM; covers HostConfig-only resource/port/volume/network model changes"
+  ]
+}

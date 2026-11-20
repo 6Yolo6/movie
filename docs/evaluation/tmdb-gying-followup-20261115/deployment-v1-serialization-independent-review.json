@@ -1,0 +1,26 @@
+{
+  "status": "PASS_ROOT_CAUSE_DEMONSTRATED",
+  "observedAtUtc": "2026-11-15T11:32:18.452786+00:00",
+  "preparedCanonicalUtf8Sha256": "e86a336b5b392989ecdc31c3021f036553795ca9f25137f48900f29dbb426a5e",
+  "archivedDefaultAsciiSha256": "df240270e6aedcbe8529757c569c8ef599d71d81c48f3eebd321761552c1bdde",
+  "checkpointManifest": {
+    "path": "G:\\gying-backups\\tmdb-gying-predeploy-20261115-20261115T112539.423532Z\\manifest.json",
+    "sha256": "34dd3411e0ebb1e7aa9b0b0c848ebc5779d4386c184b8e779edbc879184a1f7d"
+  },
+  "runtimeCiphertext": {
+    "path": "G:\\gying-backups\\tmdb-gying-predeploy-20261115-20261115T112539.423532Z\\runtime-preimage.tar.age",
+    "sha256": "06838c2f81b949fd3f1b2d7eb09b342fa93180eff68bce50047ba6df0f99aa33"
+  },
+  "checks": {
+    "authenticatedScanCompleted": true,
+    "archiveEqualsCurrentDefaultAsciiBytes": true,
+    "parsedArchiveEqualsCurrentModel": true,
+    "parsedArchiveCanonicalEqualsPrepared": true,
+    "currentCanonicalEqualsPrepared": true,
+    "memberDigestMatchesCapturedBytes": true,
+    "serializationBytesDiffer": true
+  },
+  "rawContentOrSecretsPrintedOrPersisted": false,
+  "productionMutationPerformed": false,
+  "executeRetried": false
+}

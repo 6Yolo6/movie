@@ -1,0 +1,69 @@
+{
+  "version": 4,
+  "status": "PASS",
+  "createdAt": "2026-11-11T13:02:23.298191+00:00",
+  "reviewer": "independent-static-review/audit_v4_binding",
+  "sourceSha256": {
+    "ReconcileBaiduOwnerPageReadOnlyV4.java": "b40d82c597f049e0c270637e1627cec9bbe84e8fd2a5a4dfc5b8156427d98e40",
+    "CompileReconcilerOwnerPageV4.py": "cb165e463fdf845906f18d3bf07155efe1651a3428b678bab4aec2ae13759498",
+    "PostReconcileOwnerPageV4.py": "e855561349c64067c14eb3cea9bb2d8e8f9f85e4c7ca37ee45403238f4ccf583",
+    "OwnerPageV4Binding.py": "b8ff40915eb0f7d232cca62bfba0431d09e7746f1ae51f9573c57c0d6e5314b9"
+  },
+  "testSourceSha256": {
+    "OwnerPageSchemaMocksV4.java": "165a9164dbe66786eb2ab4648675a519bd50c0517cd3f954da7f3cc8a589adf3",
+    "test_owner_page_v4_pipeline.py": "3b000174dd3ce53910b6e4386473988d53dfe899f317c4ddfb624667fb277027"
+  },
+  "offlineTests": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-page-v4-local-tests\\e15bfbdfaa55475280a0e3015df53c73\\owner-page-v4-local-tests.json",
+    "sha256": "31670b0c1aa6572eb3e930a7229a45ba8b820edc0b8392d69bf1dc77690cb25f"
+  },
+  "derivation": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-page-v4-final-local-derivation-3ea779140c974bcca987bb322a5efde1.json",
+    "sha256": "44b7aafaf3d2713be59a298142d4ce3bf31ce519d0026c5248cd08531338b4fb"
+  },
+  "scope": "Final V4 candidate source/AST and local evidence review. Existing whole Java review reused; only final lexer and safe-schema corrections independently reviewed here. No helpers imported or tests rerun.",
+  "reviewBasis": {
+    "previousWholeJavaReviewer": "/root/review_data_helpers",
+    "previousWholeJavaSourceSha256": "3d57a0bf5848a46b10ea2338bca7d0397b3887dae977c73d71dfaf906bdc34da",
+    "reuseAuthorizedByRoot": true,
+    "finalJavaOnlyReviewedLexerDeltaFromPreviousWholeSource": true
+  },
+  "checks": {
+    "exactFinalFourSourcesAndTwoTests": true,
+    "sameSuiteJava174Python21PassReceipt": true,
+    "all11TargetRegressionsPassIncludingActualTryPrefixAndFakeOnlyPlusRealPairs": true,
+    "divisionTokenCannotMisclassifyFollowingRegex": true,
+    "htmlLikeLineCommentsSkipped": true,
+    "nbspAndBomWhitespaceIncludedInLineStart": true,
+    "fixedFailureReasonEnumRejectsRawOwnerText": true,
+    "strictIntegerProofAndBindingVersion": true,
+    "scriptSumWithinResponseAndCandidateWithinSelectedScript": true,
+    "numericMissingTypeMatchFactsConsistent": true,
+    "mandatorySameRootOwnerAndShareIdAndStrictRecognizedLoginState": true,
+    "loginStateZeroOrOneIsStructureOnlyNotAccountProof": true,
+    "compilerAndPostInverseNamesRecoverExactV2Bytes": true,
+    "postContextInitSqlSuccessExactOriginalAst": true,
+    "fullCurrentCompiledInventoryHashSizeAndCopiedSourceRequiredByBinding": true,
+    "originalV2FullFileChainAndV3GetTransportReusedFromPreviouslyReviewedSource": true,
+    "beforeFixFailureAndSourcePreservationReferencesVerified": true,
+    "localReferenceHashesVerified": 45
+  },
+  "productionDockerCommands": 0,
+  "productionApiRequests": 0,
+  "productionSqlQueries": 0,
+  "cloudWrites": 0,
+  "directSqlWrites": 0,
+  "manualPostRequests": 0,
+  "settingsPutRequests": 0,
+  "helpersImported": false,
+  "testsExecutedByReviewer": false,
+  "fullOldSuitesExecuted": false,
+  "actualOwnerSchemaObserved": false,
+  "officialReconciliationVerified": false,
+  "productionExecutionAllowed": false,
+  "limits": [
+    "This PASS binds final reviewed candidate source bytes; fresh offline compilation and genuine official full-file reconciliation are still required.",
+    "Synthetic owner proof tests do not prove actual account ownership or authorize scheduler restoration.",
+    "Original UNKNOWN and STOP evidence remains historical evidence and was not changed."
+  ]
+}

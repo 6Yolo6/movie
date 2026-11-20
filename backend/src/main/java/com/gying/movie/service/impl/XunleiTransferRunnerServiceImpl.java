@@ -1,6 +1,9 @@
 package com.gying.movie.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
+import java.util.ArrayList;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.gying.movie.client.XunleiClient;
 import com.gying.movie.config.ResourceHubProperties;
@@ -26,6 +29,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerService {
     private static final int MAX_TRANSFER_ATTEMPTS = 3;
+    private static final ObjectMapper RESTORE_MAPPER = new ObjectMapper();
     private final ResourceHubProperties properties;
     private final XunleiClient client;
     private final IXunleiTransferTaskService taskService;
@@ -44,14 +48,20 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
 
     @Override public QuarkTransferRunResult submitPending(int limit) {
         QuarkTransferRunResult result = new QuarkTransferRunResult();
+        if (!properties.isDriveShareTransferEnabled("XUNLEI")) return result;
         if (!client.isConfigured()) return result;
         List<String> statuses = properties.getXunlei().isShareEnabled()
                 ? List.of("PENDING", "FAILED", "WAITING_SHARE")
                 : List.of("PENDING", "FAILED");
         List<XunleiTransferTask> tasks = taskService.list(new QueryWrapper<XunleiTransferTask>()
                 .in("status", statuses)
-                .orderByAsc("created_at")
-                .last("LIMIT 200"));
+                // Filter BEFORE LIMIT: capped historical failures must never hide fresh tasks.
+                .and(query -> query.ne("status", "FAILED")
+                        .or(retry -> retry.isNull("attempts").or().lt("attempts", MAX_TRANSFER_ATTEMPTS)))
+                // A failed share attempt moves to the back instead of monopolizing every cycle.
+                .orderByAsc("updated_at", "id")
+                .last("LIMIT " + Math.min(Math.max(limit, 1), 20)));
+        if (tasks == null) return result;
         tasks.stream()
                 .filter(task -> !hasReachedRetryLimit(task))
                 .limit(Math.min(Math.max(limit, 1), 20))
@@ -60,6 +70,10 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
     }
 
     @Override public QuarkTransferRunResult submitOne(Long taskId) {
+        if (!properties.isDriveShareTransferEnabled("XUNLEI")) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.CONFLICT, "迅雷转存已关闭");
+        }
         XunleiTransferTask task = taskService.getById(taskId);
         if (task == null) throw new IllegalArgumentException("Xunlei transfer task not found");
         QuarkTransferRunResult result = new QuarkTransferRunResult(); result.setTaskId(taskId);
@@ -96,7 +110,8 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
                 result.setSkipped(result.getSkipped() + 1);
                 return;
             }
-            if ("WAITING_SHARE".equalsIgnoreCase(task.getStatus()) && task.getSavedPath() != null) {
+            XunleiClient.RestoreResult pendingRestore = readPendingRestore(task.getResponsePayload());
+            if (pendingRestore == null && "WAITING_SHARE".equalsIgnoreCase(task.getStatus()) && task.getSavedPath() != null) {
                 List<XunleiClient.RestoreRecovery> recoveries = client.extractRestoreRecoveries(task.getResponsePayload());
                 if (recoveries == null || recoveries.isEmpty()) {
                     List<String> legacyIds = client.extractRestoredFileIds(task.getResponsePayload());
@@ -104,11 +119,12 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
                 }
                 for (XunleiClient.RestoreRecovery recovery : recoveries) {
                     String parentId = recovery.parentId() == null ? task.getSavedPath() : recovery.parentId();
-                    if (hasNoDirectVideos(parentId) && !recovery.fileIds().isEmpty()) {
+                    if (!recovery.fileIds().isEmpty()) {
                         client.moveFiles(recovery.fileIds(), parentId);
                     }
                 }
                 client.awaitContent(task.getSavedPath());
+                client.ensureTransferImage(task.getSavedPath());
                 String share = existingMovieFolderShare(task);
                 if (share == null) share = client.createShare(task.getSavedPath());
                 if (share == null) {
@@ -137,51 +153,55 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
                     task.setOriginalUrlHash(ResourceHubHashUtils.sha256(sourceUrl));
                 }
             }
-            XunleiClient.RestoreResult restore = client.restore(sourceUrl, transferPath(task, discovery));
-            task.setResponsePayload(restore.response()); task.setStatus("SUBMITTED"); task.setSavedPath(restore.parentId()); task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task);
+            XunleiClient.RestoreResult restore = pendingRestore != null ? pendingRestore
+                    : client.restore(sourceUrl, transferPath(task, discovery));
+            List<XunleiClient.RestoreRecovery> recoveries = pendingRestore == null ? new ArrayList<>()
+                    : readRecoveries(task.getResponsePayload());
+            persistRestoreProgress(task, restore, recoveries);
             List<XunleiClient.RestorePlacement> placements = restore.placements().isEmpty()
                     ? List.of(new XunleiClient.RestorePlacement(restore.taskId(), restore.parentId(), restore.restoredFileId(),
                             restore.response(), restore.restoredFileId(), restore.expectedNames(), restore.startedAt(), restore.reused(), List.of()))
                     : restore.placements();
-            List<XunleiClient.RestoreRecovery> recoveries = new java.util.ArrayList<>();
             boolean failed = false;
             for (XunleiClient.RestorePlacement placement : placements) {
                 XunleiClient.RestoreStatus status = placement.reused()
                         ? new XunleiClient.RestoreStatus(true, "REUSED", null)
                         : client.await(placement.taskId());
                 if (!status.success()) {
-                    task.setStatus("FAILED"); task.setLastError("Xunlei restore " + status.status());
+                    task.setStatus("WAITING_SHARE"); task.setLastError("Xunlei restore " + status.status());
                     failed = true;
                     break;
                 }
-                if (!placement.reused() && hasNoDirectVideos(placement.parentId())) {
+                if (!placement.reused()) {
                     List<String> restoredIds = new java.util.ArrayList<>();
-                    restoredIds.addAll(client.extractRestoredFileIds(placement.response()));
+                    recoveries.stream().filter(r -> placement.parentId().equals(r.parentId()))
+                            .flatMap(r -> r.fileIds().stream()).distinct().forEach(restoredIds::add);
+                    client.extractRestoredFileIds(placement.response()).stream()
+                            .filter(id -> !restoredIds.contains(id)).forEach(restoredIds::add);
                     client.extractRestoredFileIds(status.response()).stream()
                             .filter(id -> !restoredIds.contains(id)).forEach(restoredIds::add);
                     if (restoredIds.isEmpty()) {
                         XunleiClient.RestoredSelection selected = client.awaitRestoredFiles(
-                                placement.restoredFileId(), placement.expectedNames(), placement.startedAt());
+                                placement.restoredFileId(), placement.expectedNames(), placement.startedAt(), placement.parentId());
                         restoredIds.addAll(selected.fileIds());
                     }
                     if (!restoredIds.isEmpty()) {
-                        recoveries.add(new XunleiClient.RestoreRecovery(placement.parentId(), restoredIds));
-                        task.setResponsePayload(recoveries.size() == 1
-                                ? client.restoredFileIdsPayload(restoredIds)
-                                : client.restoreRecoveryPayload(recoveries));
-                        task.setStatus("WAITING_SHARE"); task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task);
+                        recoveries.removeIf(r -> placement.parentId().equals(r.parentId()));
+                        recoveries.add(new XunleiClient.RestoreRecovery(placement.parentId(), List.copyOf(restoredIds)));
+                        persistRestoreProgress(task, restore, recoveries);
                         client.moveFiles(restoredIds, placement.parentId());
                     }
                 }
-                client.awaitContent(placement.parentId());
+                client.awaitExpectedContent(placement.parentId(), placement.expectedNames());
             }
             if (failed) {
                 result.setFailed(result.getFailed() + 1);
             } else {
                 task.setStatus("WAITING_SHARE");
-                if (!recoveries.isEmpty()) task.setResponsePayload(client.restoreRecoveryPayload(recoveries));
+                // Keep the full plan until sharing succeeds; retries verify every group again.
                 task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task);
                 client.awaitContent(restore.parentId());
+                client.ensureTransferImage(restore.parentId());
                 String share = existingMovieFolderShare(task);
                 if (share == null) share = client.createShare(restore.parentId());
                 if (share != null) { task.setShareUrl(share); task.setShareUrlHash(ResourceHubHashUtils.sha256(share)); task.setStatus("SUCCEEDED"); task.setLastError(null); updatePublishedLink(task); result.setSubmitted(result.getSubmitted() + 1); } else { task.setLastError("Xunlei restore succeeded but share API did not return a URL"); result.setFailed(result.getFailed() + 1); if (result.getErrors().size() < 10) result.getErrors().add(task.getLastError()); }
@@ -198,11 +218,34 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
                 && task.getAttempts() >= MAX_TRANSFER_ATTEMPTS;
     }
 
-    private boolean hasNoDirectVideos(String parentId) {
-        XunleiClient.ContentSummary direct = client.directContentSummary(parentId);
-        if (direct != null) return direct.videoCount() == 0;
-        XunleiClient.ContentSummary recursive = client.contentSummary(parentId);
-        return recursive == null || recursive.videoCount() == 0;
+    private XunleiClient.RestoreResult readPendingRestore(String payload) throws Exception {
+        if (payload == null || payload.isBlank()) return null;
+        com.fasterxml.jackson.databind.JsonNode value;
+        try { value = RESTORE_MAPPER.readTree(payload).path("pending_restore"); }
+        catch (com.fasterxml.jackson.core.JsonProcessingException ignored) { return null; }
+        return value.isMissingNode() ? null : RESTORE_MAPPER.treeToValue(value, XunleiClient.RestoreResult.class);
+    }
+
+    private List<XunleiClient.RestoreRecovery> readRecoveries(String payload) throws Exception {
+        List<XunleiClient.RestoreRecovery> result = new ArrayList<>();
+        if (payload == null || payload.isBlank()) return result;
+        com.fasterxml.jackson.databind.JsonNode value;
+        try { value = RESTORE_MAPPER.readTree(payload).path("restore_recoveries"); }
+        catch (com.fasterxml.jackson.core.JsonProcessingException ignored) { return result; }
+        for (var item : value) {
+            List<String> ids = new ArrayList<>(); item.path("file_ids").forEach(id -> ids.add(id.asText()));
+            result.add(new XunleiClient.RestoreRecovery(item.path("parent_id").asText(), ids));
+        }
+        return result;
+    }
+
+    private void persistRestoreProgress(XunleiTransferTask task, XunleiClient.RestoreResult restore,
+            List<XunleiClient.RestoreRecovery> recoveries) throws Exception {
+        task.setResponsePayload(RESTORE_MAPPER.writeValueAsString(Map.of("pending_restore", restore,
+                "restore_recoveries", recoveries.stream().map(r -> Map.of(
+                        "parent_id", r.parentId(), "file_ids", r.fileIds())).toList())));
+        task.setStatus("WAITING_SHARE"); task.setSavedPath(restore.parentId()); task.setUpdatedAt(LocalDateTime.now());
+        if (!taskService.updateById(task)) throw new IllegalStateException("Xunlei restore progress was not persisted");
     }
 
     private void clearLastError(Long taskId) {

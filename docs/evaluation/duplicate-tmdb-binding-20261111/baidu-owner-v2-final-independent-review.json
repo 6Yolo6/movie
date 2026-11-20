@@ -1,0 +1,120 @@
+{
+  "version": 2,
+  "status": "PASS",
+  "createdAt": "2026-11-11T11:08:47.187064+00:00",
+  "reviewer": "independent review_data_helpers child",
+  "scope": "Pure local source bytes, AST, inverse minimal-diff and sealed mock/derivation review; no helper or fixture execution",
+  "sourceSha256": {
+    "ReconcileBaiduOwnerReadOnlyV2.java": "b165a31c13d51a9d87189a43cf87d969aa488957c3d2c8a23bb51f35655ded8c",
+    "CompileReconcilerOwnerV2.py": "13301696a2b3157f18b3e90ef8d066453518ef3e94c3dcf415f6959e023dcc51",
+    "PostReconcileOwnerV2.py": "a5e966c6564ffc4318808545d1ebca74bf8bd47e7261b77824544d49289df1df",
+    "OwnerV2Binding.py": "e451162cc55d9177b86733c4e581e143f7fe494fb1f0f2fa7eec9669a23ec459"
+  },
+  "sources": {
+    "ReconcileBaiduOwnerReadOnlyV2.java": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\ReconcileBaiduOwnerReadOnlyV2.java",
+      "sha256": "b165a31c13d51a9d87189a43cf87d969aa488957c3d2c8a23bb51f35655ded8c",
+      "bytes": 23074
+    },
+    "CompileReconcilerOwnerV2.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileReconcilerOwnerV2.py",
+      "sha256": "13301696a2b3157f18b3e90ef8d066453518ef3e94c3dcf415f6959e023dcc51",
+      "bytes": 8172
+    },
+    "PostReconcileOwnerV2.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostReconcileOwnerV2.py",
+      "sha256": "a5e966c6564ffc4318808545d1ebca74bf8bd47e7261b77824544d49289df1df",
+      "bytes": 16238
+    },
+    "OwnerV2Binding.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\OwnerV2Binding.py",
+      "sha256": "e451162cc55d9177b86733c4e581e143f7fe494fb1f0f2fa7eec9669a23ec459",
+      "bytes": 9112
+    }
+  },
+  "testSourceSha256": {
+    "OwnerSchemaMocksV2.java": "d1b1d06fc7f6c67ccbae831f09d8c81e212e0cf639e353a67d0f0a68e5382bb3",
+    "test_owner_v2_pipeline.py": "eedb7b5abb1bc5d0065c8da27a91a23c8149440f6da3b451e4e1440122a9cc88"
+  },
+  "offlineTests": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-v2-local-tests\\31fa1e34ea494f7e828e9eb3aabd2046\\owner-v2-local-tests.json",
+    "sha256": "93e571fd66b6ff2a0b4daf67d954562441edb06c915416f98d767952ee92a84d",
+    "bytes": 2403
+  },
+  "derivation": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-v2-local-derivation-3b201e191b6d44189ee6bb5038ba1dcf.json",
+    "sha256": "a47e6761aac2bc54d1a7632372b2d3df50fd8dcd3e014bd920d3068c05e20af6",
+    "bytes": 16012
+  },
+  "productionOwnerSource": {
+    "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\client\\BaiduWebClient.java",
+    "sha256": "8716bd852bf4b55c42a7d8cfac84663293ee0c57b6c95dc679ca39642b1a6dc3",
+    "bytes": 74021
+  },
+  "localChecks": {
+    "allFourCurrentSourcesExactlyMatchRecordedLocalTestsAndDerivation": true,
+    "frozenOriginalInputCount": 13,
+    "allFrozenOriginalBytesRetained": true,
+    "planBoundInputCount": 12,
+    "allPlanBoundInputBytesRetained": true,
+    "allTwoTestSourcesExactlyMatchPassedMockReceipt": true,
+    "originalJavaExactlyReconstructedIncludingOriginalCRLFBytes": true,
+    "originalJavaReconstructedSha256": "6094c1dba7da05331e7c0e1d8ef90c007a2f3576b55a4dda63727e87cf7e76b6",
+    "unchangedCompilerFunctionOrClassAsts": 5,
+    "unchangedPostFunctionOrClassAsts": 7,
+    "unchangedPostContextMethodAsts": 3,
+    "derivationDiffChunksIndependentlyHashChecked": 23
+  },
+  "strictOwnerSchema": {
+    "ukOrUidRequired": true,
+    "presentAliasesRequireCanonicalPositiveIntegerTextOrIntegralJson": true,
+    "booleansFloatNullEmptyNegativeZeroLeadingZeroWhitespaceAndOver30DigitsStop": true,
+    "allPresentAliasesMustMatchCurrentSession": true,
+    "twoPresentAliasesMustAgree": true,
+    "realAccountMismatchStillStops": true,
+    "missingAliasRequiresMissingNodeAndAllValueFactsFalse": true,
+    "comparisonFactsRequireBothPresentLegalAliases": true,
+    "safeKeysTypesCountsAndOptionalAliasEnumChecked": true,
+    "providerOwnerValuesNotPrintedOrWritten": true
+  },
+  "reviewedBoundaries": {
+    "javaOutsideNewOwnerProofAndSafeDiagnosticOutputUnchanged": true,
+    "sourceAndCloudWriteRejectionsRetained": true,
+    "allSourceAndOfficialGetAllowlistsRetained": true,
+    "childPayloadManifestJarFileContentIdDirectoryShareAndSessionGatesRetained": true,
+    "compilerExactImagesNetworkNoneNoProductionMountsNoCredentialsAndOwnedCleanupRetained": true,
+    "postExactCompilerArtifactInventoryBackendReadonlyMountsAndOwnedCleanupRetained": true,
+    "generationBytesCheckedBeforeAndAfterCompileAndOfficialGets": true,
+    "oldCycleAuthorizationOriginalManualUnknownAndOriginalOfficialStopNotEdited": true
+  },
+  "recordedAuthorLocalTests": {
+    "javaOwnerMocks": 27,
+    "pythonMocks": 21,
+    "javaRelease": 17,
+    "status": "PASS",
+    "rerunByThisReviewer": false
+  },
+  "closedReviewFinding": {
+    "initialCandidateBindingSha256": "e0f90df5efb83b001769b242a10ff1822f5a89b9db16e01c3c7f81a026c77596",
+    "finalBindingSourceSha256": "e451162cc55d9177b86733c4e581e143f7fe494fb1f0f2fa7eec9669a23ec459",
+    "finding": "Absent owner alias could previously carry contradictory value facts in the pure sanitizer.",
+    "resolution": "Explicit absent/present node consistency, alias comparison consistency and safe optional enum/boolean gates, with four additional negative local mocks."
+  },
+  "findings": [],
+  "actualOwnerSchemaObserved": false,
+  "officialReconciliationVerified": false,
+  "naturalSchedulerRestored": false,
+  "reviewerProductionApiRequests": 0,
+  "reviewerProductionSqlQueries": 0,
+  "reviewerProductionDockerCommands": 0,
+  "reviewerRuntimeImports": 0,
+  "reviewerHelperExecutions": 0,
+  "reviewerFixtureExecutions": 0,
+  "reviewerTestExecutions": 0,
+  "reviewerDecryptionCalls": 0,
+  "limits": [
+    "The 48 mocks are existing author-local executions, not actual official provider results.",
+    "A fresh root-controlled offline compilation and subsequent genuine GET-only owner/file/share reconciliation remain necessary.",
+    "This static PASS neither reinterprets original STOP/UNKNOWN receipts nor authorizes replay or scheduler restoration."
+  ]
+}

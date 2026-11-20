@@ -1,0 +1,319 @@
+{
+  "status": "PASS",
+  "releasePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110",
+  "dependenciesSha256": "ae1340586fae548b1c152b05f5edefb9a51f369feee188edcc4d0f90ee525594",
+  "reviewedAt": "2026-11-10T15:05:45.276095+00:00",
+  "reviewer": "independent checkpoint_final_review agent",
+  "reviewScope": "Offline static/failure-path review of the final frozen release helpers and immutable primitive closure; no runtime/production acceptance claim",
+  "blockingFindings": [],
+  "scopePlan": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\scope-plan.json",
+    "sha256": "0e4cad1ce501a6b8221b19f0598232b16a893a298b09a92a3e81e49e1405d3c7"
+  },
+  "reviewedDependencyFiles": [
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\resources\\db\\migration_movie_duplicate_merge.sql",
+      "sha256": "90f9eab757b12030f183ee23cca216d617344e8ce302a5c39160614a50503777"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\resources\\db\\migration_movie_duplicate_merge_guard_metadata.sql",
+      "sha256": "25d8057618c20080429ebd08fac583c906ccb7617c622eef2053327b00aada1b"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\resources\\db\\migration_movie_duplicate_merge_triggers.sql",
+      "sha256": "d47e7c789b7ed87483f94b51f225c65657f6804a2e34f1d2beb8099348110d90"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\tools\\maintenance\\weekly_restart.py",
+      "sha256": "3223c5c1cfe9eb53e5db2854a4dc1abc397d447ead8a7c27013ed48c7eff2de9"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\tools\\security\\backup.py",
+      "sha256": "0acd0c65a9b24bd7f5c6d2d1bb78602ab963ac3d9802e3294fbd40f7b11ec1c8"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\tools\\security\\verify_backup.py",
+      "sha256": "e6c890db3512d6848b93dd1ce6d3ea7410bb344f945aa3296397a3fd5441810a"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\AcceptanceReadOnly.py",
+      "sha256": "0121d3522be1a16f86bbeef2df08d18dd4128127e6d42a416343278903fba362"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\BackendReadOnly.py",
+      "sha256": "bad59412f38c32423c6ee77e6d20d2b7b7085069c9d738925e6cbe54843d6be6"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\BuildBackendImage.py",
+      "sha256": "f162732060462ac31f38998e7ae0a9415915cf2dbd0f2e25ee95087651381376"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\DailyCoverageVerified.py",
+      "sha256": "70b91bb57b8231a15734fb0c09eb8843d343a276142e43f5486ae3d0b30c4903"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\FinalReadOnly.py",
+      "sha256": "f5a5c95813bc5c3d63133e740e4e138fe9c70189479baaae4c16bb69ffafe9e1"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\HostArchiveIntegrity.py",
+      "sha256": "48edc4cfa0370a2ef09b096a9626e9a7867ece01f99b1c2c7753620407bf15c8"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\NextCandidateReadOnly.py",
+      "sha256": "341d1215f548ad828456a3219c4486f58d164ef1f836c47289841417f9177e72"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\OfflineTests.py",
+      "sha256": "25daeb2c4dae871f67ca20fe942f38b058c4dbd24c6442e6c68380e36b5afadf"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\Ops.py",
+      "sha256": "575d8d44f8211f6f3c8ab7339e433bbfd65ad2415a95e41b03c488a12e9fd7f7"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\PostVerified.py",
+      "sha256": "03d1448c40b5be2be93b0f3abd17b40be57bf137cebd958c73458cbf850b66e4"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\Preflight.py",
+      "sha256": "d4691717d2c9e489a97bebecb8df5ea210046ec05472285201cca600f20c23fe"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\ProbeMinioConfiguredRead.py",
+      "sha256": "c883b2a0b8ae21ffbfeccb5444de306223986a646a0a6f1e32cbd7952e1eb5b4"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\README.md",
+      "sha256": "a9fb139aa3998504afb8f297ffd94a67c9488a3b66f6ddf14bf3fbd7396807ac"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\Runtime.py",
+      "sha256": "a159e3ac27df90948ee4b664317aee6e63f149823a29f61fce86a67ee9c3ab04"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\SealRuntimeInputs.py",
+      "sha256": "5bedf47645e47e0d94766d7af2ee4ad6a9ad5703457bee9263fc712202980344"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\VerifiedOps.py",
+      "sha256": "a93fb1c23bef1cc534c78e676a24c3459e814d37bcb366dd835641320554295e"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\ops-before.md",
+      "sha256": "db01a7572ec9b63c383a20cd566d9a3dd535d9f890ba91873230d6ae7e8b5164"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\scope-plan.json",
+      "sha256": "0e4cad1ce501a6b8221b19f0598232b16a893a298b09a92a3e81e49e1405d3c7"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-runtime-merge-metadata-20261110\\verification\\BaiduNextCandidateReadOnlyInternalEntry20261110.py",
+      "sha256": "50f6844c45f2354ccd6d8bf608203ba13923b0ca16ef4c1607bcdac76afdc26d"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-id-compat-20261110\\backup-audit\\AuditCheckpoint.py",
+      "sha256": "943341cc51ff757f9c79a215240c79f3644a24a7388f99f4efdec5f2bef3e9fa"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-id-compat-20261110\\backup-audit\\Common.py",
+      "sha256": "4f4a95242318dfac86d08ed08924238ff0fb3f3e67dab6b7991f91b7419e758d"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-id-compat-20261110\\backup-audit\\HostCheckpoint.py",
+      "sha256": "79cc75a7e4fd04dced1160f4fa5abf4fc73fd7665b2547c3a2d09972e8528d45"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-id-compat-20261110\\backup-audit\\HostWindowsState.ps1",
+      "sha256": "f26dcde0cb9a5c3658fcde174861a544c54c9f3d36f693e748d28fc1cb74e20c"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-id-compat-20261110\\backup-audit\\ReadAiStateCounts.js",
+      "sha256": "08b8d3ecc92d80c0f48e64e8b4cb644a9c9f9d9e4ef83634b3ef7359172a2b9c"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-id-compat-20261110\\backup-audit\\VerifyBaiduSessionArchive.py",
+      "sha256": "9a0ddb96ecac570362fb643492128d4412e87fd06169e360e779107ab9deeeff"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-id-compat-20261110\\host\\HostConfigAtomicExplicitModules20261110.ps1",
+      "sha256": "48b952f12cd5b15fee59cc125eb5e18b19722f4005d1f88fda0e02ea34213c70"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-id-compat-20261110\\verification\\UpdateDailyBackupCoverage.py",
+      "sha256": "86def0e8193a5c2166b3f65bfc4f01c6e0f60e13964743c5cfde2fe4a0e2a359"
+    }
+  ],
+  "finalHelpers": {
+    "AcceptanceReadOnly.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\AcceptanceReadOnly.py",
+      "sha256": "0121d3522be1a16f86bbeef2df08d18dd4128127e6d42a416343278903fba362"
+    },
+    "BackendReadOnly.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\BackendReadOnly.py",
+      "sha256": "bad59412f38c32423c6ee77e6d20d2b7b7085069c9d738925e6cbe54843d6be6"
+    },
+    "BuildBackendImage.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\BuildBackendImage.py",
+      "sha256": "f162732060462ac31f38998e7ae0a9415915cf2dbd0f2e25ee95087651381376"
+    },
+    "DailyCoverageVerified.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\DailyCoverageVerified.py",
+      "sha256": "70b91bb57b8231a15734fb0c09eb8843d343a276142e43f5486ae3d0b30c4903"
+    },
+    "FinalReadOnly.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\FinalReadOnly.py",
+      "sha256": "f5a5c95813bc5c3d63133e740e4e138fe9c70189479baaae4c16bb69ffafe9e1"
+    },
+    "HostArchiveIntegrity.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\HostArchiveIntegrity.py",
+      "sha256": "48edc4cfa0370a2ef09b096a9626e9a7867ece01f99b1c2c7753620407bf15c8"
+    },
+    "NextCandidateReadOnly.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\NextCandidateReadOnly.py",
+      "sha256": "341d1215f548ad828456a3219c4486f58d164ef1f836c47289841417f9177e72"
+    },
+    "OfflineTests.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\OfflineTests.py",
+      "sha256": "25daeb2c4dae871f67ca20fe942f38b058c4dbd24c6442e6c68380e36b5afadf"
+    },
+    "Ops.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\Ops.py",
+      "sha256": "575d8d44f8211f6f3c8ab7339e433bbfd65ad2415a95e41b03c488a12e9fd7f7"
+    },
+    "PostVerified.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\PostVerified.py",
+      "sha256": "03d1448c40b5be2be93b0f3abd17b40be57bf137cebd958c73458cbf850b66e4"
+    },
+    "Preflight.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\Preflight.py",
+      "sha256": "d4691717d2c9e489a97bebecb8df5ea210046ec05472285201cca600f20c23fe"
+    },
+    "ProbeMinioConfiguredRead.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\ProbeMinioConfiguredRead.py",
+      "sha256": "c883b2a0b8ae21ffbfeccb5444de306223986a646a0a6f1e32cbd7952e1eb5b4"
+    },
+    "Runtime.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\Runtime.py",
+      "sha256": "a159e3ac27df90948ee4b664317aee6e63f149823a29f61fce86a67ee9c3ab04"
+    },
+    "SealRuntimeInputs.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\SealRuntimeInputs.py",
+      "sha256": "5bedf47645e47e0d94766d7af2ee4ad6a9ad5703457bee9263fc712202980344"
+    },
+    "VerifiedOps.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\VerifiedOps.py",
+      "sha256": "a93fb1c23bef1cc534c78e676a24c3459e814d37bcb366dd835641320554295e"
+    }
+  },
+  "offlineValidation": {
+    "independentMockTests": 30,
+    "independentMockPassed": 30,
+    "independentMockFailures": 0,
+    "exit": 0,
+    "allRuntimeAndProcessAccessMocked": true,
+    "astFilesParsed": 15,
+    "rootOfflineReport": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\root-offline-tests.json",
+      "sha256": "49baa90e3296c87b987256d53530827f0adb1265302758e14e869f0767761f1c"
+    }
+  },
+  "sourceBinding": {
+    "sourceCommit": "2f282d26525b3ce64c5c854a7c237c61dc85b142",
+    "sourceManifest": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\backend-source-manifest.json",
+      "sha256": "a15df5e569067eb8b75a607a66914cf36739df71f9aa681bd4d8621f78b84642"
+    },
+    "sourceFiles": 416,
+    "currentSourceBytesMatch": true,
+    "main": {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\service\\impl\\P2pArchiveTaskService.java",
+      "sha256": "3690ce2523e7f82a29e262ca9fd533ab253a481b8bd58bb65a952b0eacd04722"
+    },
+    "test": {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\test\\java\\com\\gying\\movie\\service\\impl\\P2pArchiveTaskServiceTest.java",
+      "sha256": "333a6e4ce415c976207bba28649d20ff1fee4b503087b71e185ec1404f14539a"
+    },
+    "suite": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\suite-final.json",
+      "sha256": "12d520a873f3018976a8a5182545867639bc945645509d441122179c39279242"
+    },
+    "fullSuiteTotals": {
+      "tests": 1443,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "passed": 1442
+    },
+    "archiveTests": 76,
+    "realMergeSqlTests": 24,
+    "compileVerified": true,
+    "requiredSqlVerified": true,
+    "buildReport": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\backend-build-raw.json",
+      "sha256": "430351a1b19c2ad9eb39e06bc1d3ee6ceeb69206fd14ebfd1447afcfed4aa3d2"
+    },
+    "candidateBackendImage": "sha256:5b5530ed328738aca237776200825b71041002fd4cd5304286efc2e53855386d",
+    "candidateJarSha256": "ce41205a599890bf53314b214e5db0515d5e61584a0a54845487a0cc509c8cc0",
+    "packageTestsRerun": false
+  },
+  "checks": [
+    "Fresh dependencies, scope and source/suite/build binding are exact; historical completion or approval bindings are not used.",
+    "The complete old Docker Config, original Env sequence and all original labels enter in-memory tar-to-age encryption and authenticated streaming reads; reports retain hashes and field names.",
+    "Prepare and immediate pre-TERM checks require the native entire original Compose backend config hash to equal the authenticated old generated config-hash; memory, published ports/host IP, volumes and networks drift fails before TERM.",
+    "Pre-TERM modeling checks the image-default plus resolved Compose Env union, all 17 old Config fields, image/User/Cmd/Entrypoint/working directory/ports, noninteractive options and no dependencies; negative mocks show zero TERM/activation on failure.",
+    "Live verification preserves unique complete Env values, all 17 Config fields, HostConfig/network/mount semantics, every baked/custom label and all generated labels including exact replacement, native config-hash and platform image descriptor.",
+    "Backup/dependency failures stop before TERM; normal stop and seven fresh authenticated archives precede exactly one backend-only activation. Failures preserve current state and do not auto-retry or restore.",
+    "Original PAUSED revision-63 parent, three attempts-one UNKNOWN children, complete protected rows/sys_config and unrelated twelve generations are guarded; no fourth film cycle or scheduler restoration is authorized.",
+    "Host pin performs one reserved image-only CAS with authenticated exact preimage and owner/group/DACL retention; post archives require complete host content plus checkpoint-state/task XML/ACL/profile, queue/key authentication and Baidu vault permissions.",
+    "Daily coverage preserves every old field and appends exactly this release, 44 to 45 artifacts, via one reserved CAS, authenticated original config, native dry-runs and ACL verification. Natural/full backup remains unverified.",
+    "Acceptance permits only anonymous entry GETs and the two exact existing-device backend GETs. Operator direct SQL writes are zero; possible routine login_device.last_seen_at touches are disclosed. Raw Config/Env/credentials/JWT/source URLs and response bodies are excluded from reports.",
+    "NextCandidate uses the bound four-placeholder Java SELECT and optional bounded exact source GET only; the latest embedded fetch disables proxies and redirects, passes the internal token by stdin, and calls only the immutable safe summarize projection."
+  ],
+  "nextCandidateReview": {
+    "helper": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\NextCandidateReadOnly.py",
+      "sha256": "341d1215f548ad828456a3219c4486f58d164ef1f836c47289841417f9177e72"
+    },
+    "projection": {
+      "path": "E:\\gying-tools\\releases\\baidu-runtime-merge-metadata-20261110\\verification\\BaiduNextCandidateReadOnlyInternalEntry20261110.py",
+      "sha256": "50f6844c45f2354ccd6d8bf608203ba13923b0ca16ef4c1607bcdac76afdc26d"
+    },
+    "noRedirectVerified": true,
+    "fixedLoopbackSourceHostAndPort": "127.0.0.1:8091",
+    "method": "GET",
+    "oldProjectionProbeCalled": false,
+    "providerCloudRequests": 0,
+    "archiveRunRequests": 0,
+    "rawUrlsOrTokenReported": false
+  },
+  "retainedFailureEvidence": {
+    "suite-first.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\suite-first.json",
+      "sha256": "512b462a29851773db728a0cbeaed50e390ba2190013d77daf80032d80693164"
+    },
+    "regression-red.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\regression-red.json",
+      "sha256": "3543bdeaef289d5f5d6d349cbae00ce637c9f19c85260654dba726056ca914b1"
+    },
+    "green-infrastructure-failure.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\green-infrastructure-failure.json",
+      "sha256": "6261c49bcee43919d2784e236c9d09f858426e8a281c8424214fa75a6234161a"
+    }
+  },
+  "actionsDuringReview": {
+    "productionCommandsExecuted": 0,
+    "productionSqlRequests": 0,
+    "providerRequests": 0,
+    "httpRequests": 0,
+    "productionWrites": 0,
+    "sourceFilesWritten": 0,
+    "serviceActivations": 0,
+    "hostConfigurationCas": 0,
+    "dailyConfigurationCas": 0
+  },
+  "limits": [
+    "This receipt authorizes no external content publication, UNKNOWN replay, restored scheduling, SQL restore, credential rotation or extra activation/CAS.",
+    "Static review and mock/full-suite evidence do not establish successful real Baidu archive or production deployment."
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "status": "INDEPENDENT_CANDIDATE_REVIEW_PASS",
+  "createdAt": "2026-11-11T11:23:33.890665+00:00",
+  "generation": "resolved-natural-generation-1",
+  "scope": "Candidate-only pure local static review; no executable binding and no actual official PASS",
+  "scriptSha256": "662a2743705d4faab586f4aad1fbdd4644f4428652a33340c989d047343d6057",
+  "testScriptSha256": "2630470f5119b32362f6d42392316452d3ad8353bd5ceb8c70811c578c03df40",
+  "script": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\RestoreResolvedNaturalOnce.py",
+    "sha256": "662a2743705d4faab586f4aad1fbdd4644f4428652a33340c989d047343d6057",
+    "bytes": 37287
+  },
+  "testSource": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\TestRestoreResolvedNaturalOffline.py",
+    "sha256": "2630470f5119b32362f6d42392316452d3ad8353bd5ceb8c70811c578c03df40",
+    "bytes": 44735
+  },
+  "references": {
+    "original67Tests": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\restore-natural-offline-tests-58b4f0b1cc03422d91e0b3aa9b429997.json",
+      "sha256": "fb31ca626c5f5654fc7b8cb4aa892653fb7d3c928952335d94808b8bce17b127",
+      "bytes": 8088
+    },
+    "oldSourcesPreserved": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\restore-natural-original-67-source-snapshots-46153b9e45214e87bf17a199a85675a5.json",
+      "sha256": "ba93a1bd0ae398e68c2465a26f2c492ea891d59c6d201ebc22976161537f3e6a",
+      "bytes": 693
+    },
+    "beforeFixTests": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\restore-natural-late-ledger-before-fix-b234d7f4ac394f289b6e497b3c32c3a1.json",
+      "sha256": "05a2c0d0a8c6818ec0aaa332e415b374a2f639a358354dfbe15939c710943bfb",
+      "bytes": 8543
+    },
+    "afterFixTests": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\restore-natural-offline-tests-58fda0e5db2d4abdb7b556873082e06a.json",
+      "sha256": "d774a12a2bea0dce47caf1a0619a02e46b642b60a25e142e4688f823e8c28fa2",
+      "bytes": 8447
+    }
+  },
+  "checks": {
+    "original67SourcesPreservedExactly": true,
+    "original67TestsRetained": true,
+    "newLateForeignArtifactTestsFailAgainstFrozen67Source": 3,
+    "all70AuthorMockTestsPassAgainstFinalSource": true,
+    "newTopLevelFunctionOnlyCheckRestoreLedger": true,
+    "onlyThreeExistingFunctionsChangedForLateLedgerGate": [
+      "check_bundle_bytes",
+      "execute",
+      "no_previous_restore"
+    ],
+    "otherTopLevelFunctionAndClassAstsUnchanged": 21,
+    "newLedgerScanBeforeIntentEachPollAndBeforeAcceptedTerminal": true,
+    "onlyOriginalManual1And2PlusExactSelfIntentAllowed": true,
+    "exactSelfIntentPathShaRequired": true,
+    "lateForeignIntentReceiptStopRequireOneProtectivePause": true,
+    "noAutomaticPauseRetryOrEnableReplay": true,
+    "wholeOldUnknownAnd17650RowsUnselectedScopesRuntimeRetained": true,
+    "strictOwnerV2CompiledSourcesBindingAndCompleteArtifactBytesRequired": true,
+    "newBindingReviewSourceTerminalOfficialAndTestBytesRecheckedBeforeEnableAndBeforeAccepted": true
+  },
+  "reviewedBehavior": {
+    "oneEnableTrue10MinutesOneItem": true,
+    "atMostOneProtectiveFalsePutOnAnyUncertainty": true,
+    "noManualRunPostRouteInFacade": true,
+    "nextNaturalIdentity49R7yROnly": true,
+    "oneNaturalCycleObservedWithSuccessOrNormalSkipOnly": true,
+    "successOrNormalSkipKeepsAuthorizedScheduleEnabled": true,
+    "originalTransportUnknownAndPostAckNotRewritten": true,
+    "originalStopOrAnyOtherGenerationIntentReceiptStopNeverBypassed": true
+  },
+  "closedFinding": {
+    "oldSourceSha256": "1ca6538b82d2a11e01a3877e7bb09e2addf817ab0cd622e5cb52aa716e6502fd",
+    "finding": "The 67-pass candidate only checked original and own STOP at late byte gates, so a later foreign generation intent/receipt/STOP could evade terminal acceptance protection.",
+    "resolution": "A shared ledger scan permits only old manual1/2 and the exact self intent hash; invoked before intent, every poll and before acceptance.",
+    "actualLocalBeforeFixFailures": 3,
+    "afterFixTests": 70
+  },
+  "actualOfficialOwnerV2Status": "STOPPED",
+  "actualOfficialOwnerV2Gate": "OWN_SHARE_OWNER_MISSING",
+  "officialReconciliationVerified": false,
+  "executableBindingExists": false,
+  "naturalExecuted": false,
+  "schedulerRestored": false,
+  "findings": [],
+  "reviewerRuntimeImports": 0,
+  "reviewerHelperExecutions": 0,
+  "reviewerFixtureExecutions": 0,
+  "reviewerTestExecutions": 0,
+  "reviewerProductionApiRequests": 0,
+  "reviewerProductionSqlQueries": 0,
+  "reviewerDockerCommands": 0,
+  "reviewerDecryptionCalls": 0,
+  "limits": [
+    "This candidate review cannot replace the later exact frozen-binding independent review required by load_reviewed.",
+    "Current actual Owner V2 STOP is rejected by validate_official; no executable binding is created.",
+    "The 70 mock results are author's local synthetic executions, not real scheduler or provider results.",
+    "Any future official generation requires a separately reviewed exact source and compiled receipt chain."
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "status": "LOCAL_SOURCE_REVIEW_PASS",
+  "createdAt": "2026-11-11T13:25:07.192189+00:00",
+  "reviewScope": "LOCAL_STATIC_EXACT_SOURCE_CHAIN_AND_MOCK_TESTS_ONLY",
+  "sourceCopyAuthorReview": true,
+  "sourceSha256": {
+    "RestoreResolvedNaturalOwnerPageV5Once.py": "85a32a1275e37158110b16f8ab2254b290879fc16e65d6f60ae80bcc595a91c6",
+    "TestRestoreResolvedNaturalOwnerPageV5Offline.py": "9a5c870b0cc288574cb0df7e68c6ee2559b12e3ad1f868e41ac06da3065e9fb0",
+    "ReconcileBaiduOwnerPageReadOnlyV5.java": "2bc74bc6581b357d000774849320f12158f9ba801d39e84146e95813820e4f62",
+    "CompileReconcilerOwnerPageV5.py": "add80457752c53e74d5434cbbe0c609a35f97cea43dd6c144be6849a8492dc67",
+    "PostReconcileOwnerPageV5.py": "4dee4a1bd6064d887edcacd92eda17b5c066755739bef1a62de5659e8726efe0",
+    "OwnerPageV5Binding.py": "07e2aae30614a3376049747176796d310460a7bbe14d945f0f1a9542c25050cb"
+  },
+  "scriptSha256": "85a32a1275e37158110b16f8ab2254b290879fc16e65d6f60ae80bcc595a91c6",
+  "testScriptSha256": "9a5c870b0cc288574cb0df7e68c6ee2559b12e3ad1f868e41ac06da3065e9fb0",
+  "offlineTestReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\restore-natural-owner-page-v5-final-offline-tests-20261111.json",
+    "sha256": "c3a4437f267df01334041306a0b5f0885fe79523c8d0b5398871e96cfb63d9aa"
+  },
+  "offlineTestReceiptSha256": "c3a4437f267df01334041306a0b5f0885fe79523c8d0b5398871e96cfb63d9aa",
+  "sourceDerivation": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\restore-natural-owner-page-v5-final-source-preservation-9a9dbb0543dd4b54b446efa78462af60\\derivation.json",
+    "sha256": "1715b65558d7dd318ae3df375ae3fc3ede74cfae1837e5ba6b35a16c5c45c546"
+  },
+  "tests": 79,
+  "failures": 0,
+  "errors": 0,
+  "generation": "resolved-natural-generation-1",
+  "scopeRetained": true,
+  "enableReplayBlocked": true,
+  "singleProtectivePauseRetained": true,
+  "immediateBeforeEqualsTerminalRetained": true,
+  "v5CurrentAccountStrictProofDelegationRequired": true,
+  "noLegacyOfficialGenerationFallback": true,
+  "beforeEnableFullInventoryRequired": true,
+  "everyPollAndFinalFullInventoryRequired": true,
+  "originalV4SourcesRetained": true,
+  "originalTransportUnknownPreserved": true,
+  "productionExecuted": false,
+  "credentialsRead": false,
+  "runtimeDockerRequests": 0,
+  "sqlRequests": 0,
+  "sourceRequests": 0,
+  "cloudRequests": 0,
+  "manualPostRequests": 0,
+  "settingsPutRequests": 0,
+  "finalExecutableBindingReviewed": false,
+  "actualOfficialPassObserved": false
+}

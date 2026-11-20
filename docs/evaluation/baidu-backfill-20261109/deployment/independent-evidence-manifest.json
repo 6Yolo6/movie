@@ -1,0 +1,37 @@
+{
+  "scope": "post-deployment readonly projections; credentials not included",
+  "files": [
+    {
+      "name": "independent-production-identity-after.json",
+      "sha256": "cd66921fbb3967f2bbc23c86ab9405e6b8786f9f03200e995105edb1cfadf604"
+    },
+    {
+      "name": "independent-entrypoints-after.json",
+      "sha256": "786a08af9fc09cc57294a2f777402348f2a0a2d255d1431fa02f4b42c44e8196"
+    },
+    {
+      "name": "independent-baidu-backfill-post-login-checkpoint.json",
+      "sha256": "3a425b98b61a97c653432cf237eb1acaf71a6a4bbe335ca9a686aaca1b6207cd"
+    },
+    {
+      "name": "independent-baidu-enabled-restoration-v2.json",
+      "sha256": "45ef1946070fe95a873e55fcf3ada91bdc9c331a5543615348254e9ccd2b6867"
+    },
+    {
+      "name": "independent-baidu-enabled-restoration-post-readonly.json",
+      "sha256": "5acb3bb1dbb9041077da3e90d3674a371fe47e74f7f37fd7ade892a6bf6d438d"
+    },
+    {
+      "name": "independent-baidu-enabled-default-xml-proof.json",
+      "sha256": "877854f949c7683f20901ba0c62276df703618adc6c44001185cabcb4b070b63"
+    },
+    {
+      "name": "independent-strict-idle-tests.json",
+      "sha256": "ade6ae1c69fb3fc2d7ce521ff74cf984aacea70d6b4440c6d4fc97162df4aa89"
+    },
+    {
+      "name": "independent-enabled-restore-v2-tests.json",
+      "sha256": "1deaa80f8a079f8f863d6c395c477ba0a03a1fd5c65b24182f87ab0c7cf59f91"
+    }
+  ]
+}

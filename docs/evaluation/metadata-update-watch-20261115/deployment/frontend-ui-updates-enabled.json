@@ -1,0 +1,1893 @@
+{
+  "startedAt": "2026-11-15T09:40:39.951Z",
+  "sourceCommit": "1adbc336cdadefa48be40ff37082a6de840fbd41",
+  "phase": "updates-enabled",
+  "receiptSha256": "f4012609550995006bd90cfe976931b8c22b7440b36147e3c1306ba1deb058a7",
+  "candidateImage": "sha256:caa3874078be0a41da0ffb23c09d91d9fd8a01e9f041edcee470b7c9a28bb204",
+  "frontendProofSha256": "2e4fb181334e7607a2f02966967e8879251caf96ce2b1490dc7f9665f6b1adaa",
+  "artifactManifestSha256": "c0a19779040759d00be4e9dff7c98e2b602f662aa79250884321f86eba3d8091",
+  "sourceManifestSha256": "b332679737d75f6d3d7c26dc5669f8e04c7af37ec869e0426ddaa2c750e5c75a",
+  "auth": {
+    "existingDeviceReused": true,
+    "newLogins": 0,
+    "newDevices": 0,
+    "tokenInMemoryOnly": true,
+    "routineLastSeenTouchMayOccur": true
+  },
+  "scenarios": [
+    {
+      "lang": "zh",
+      "width": 1440,
+      "theme": "light",
+      "passed": true,
+      "sourceOptionCount": 12,
+      "switches": [
+        {
+          "provider": "tmdb",
+          "checked": true,
+          "localizedLabelVerified": true
+        },
+        {
+          "provider": "gying",
+          "checked": true,
+          "localizedLabelVerified": true
+        }
+      ],
+      "limits": [
+        {
+          "id": "tmdbAutoSyncRanges_TRENDING_MOVIE_DAY_startPage",
+          "max": 500,
+          "value": 100,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_TRENDING_MOVIE_DAY_endPage",
+          "max": 500,
+          "value": 150,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_TRENDING_TV_DAY_startPage",
+          "max": 500,
+          "value": 100,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_TRENDING_TV_DAY_endPage",
+          "max": 500,
+          "value": 150,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_UPCOMING_MOVIE_startPage",
+          "max": 500,
+          "value": 100,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_UPCOMING_MOVIE_endPage",
+          "max": 500,
+          "value": 150,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_MOVIE_startPage",
+          "max": 50,
+          "value": 1,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_MOVIE_endPage",
+          "max": 50,
+          "value": 2,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_TV_startPage",
+          "max": 50,
+          "value": 1,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_TV_endPage",
+          "max": 50,
+          "value": 2,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_ANIME_startPage",
+          "max": 50,
+          "value": 1,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_ANIME_endPage",
+          "max": 50,
+          "value": 2,
+          "disabled": true
+        }
+      ],
+      "reloadVerified": true,
+      "retainedProgressVerified": true,
+      "overflow": {
+        "viewport": 1440,
+        "documentWidth": 1440
+      },
+      "screenshotFiles": [
+        "updates-enabled-zh-1440-light-tmdb-updates-only-settings.png",
+        "updates-enabled-zh-1440-light-tmdb-crawl-ranges.png",
+        "updates-enabled-zh-1440-light-gying-updates-only-settings.png",
+        "updates-enabled-zh-1440-light-gying-crawl-ranges.png"
+      ]
+    },
+    {
+      "lang": "en",
+      "width": 1440,
+      "theme": "dark",
+      "passed": true,
+      "sourceOptionCount": 12,
+      "switches": [
+        {
+          "provider": "tmdb",
+          "checked": true,
+          "localizedLabelVerified": true
+        },
+        {
+          "provider": "gying",
+          "checked": true,
+          "localizedLabelVerified": true
+        }
+      ],
+      "limits": [
+        {
+          "id": "tmdbAutoSyncRanges_TRENDING_MOVIE_DAY_startPage",
+          "max": 500,
+          "value": 100,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_TRENDING_MOVIE_DAY_endPage",
+          "max": 500,
+          "value": 150,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_TRENDING_TV_DAY_startPage",
+          "max": 500,
+          "value": 100,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_TRENDING_TV_DAY_endPage",
+          "max": 500,
+          "value": 150,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_UPCOMING_MOVIE_startPage",
+          "max": 500,
+          "value": 100,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_UPCOMING_MOVIE_endPage",
+          "max": 500,
+          "value": 150,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_MOVIE_startPage",
+          "max": 50,
+          "value": 1,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_MOVIE_endPage",
+          "max": 50,
+          "value": 2,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_TV_startPage",
+          "max": 50,
+          "value": 1,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_TV_endPage",
+          "max": 50,
+          "value": 2,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_ANIME_startPage",
+          "max": 50,
+          "value": 1,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_ANIME_endPage",
+          "max": 50,
+          "value": 2,
+          "disabled": true
+        }
+      ],
+      "reloadVerified": true,
+      "retainedProgressVerified": true,
+      "overflow": {
+        "viewport": 1440,
+        "documentWidth": 1440
+      },
+      "screenshotFiles": [
+        "updates-enabled-en-1440-dark-tmdb-updates-only-settings.png",
+        "updates-enabled-en-1440-dark-tmdb-crawl-ranges.png",
+        "updates-enabled-en-1440-dark-gying-updates-only-settings.png",
+        "updates-enabled-en-1440-dark-gying-crawl-ranges.png"
+      ]
+    },
+    {
+      "lang": "zh",
+      "width": 390,
+      "theme": "dark",
+      "passed": true,
+      "sourceOptionCount": 12,
+      "switches": [
+        {
+          "provider": "tmdb",
+          "checked": true,
+          "localizedLabelVerified": true
+        },
+        {
+          "provider": "gying",
+          "checked": true,
+          "localizedLabelVerified": true
+        }
+      ],
+      "limits": [
+        {
+          "id": "tmdbAutoSyncRanges_TRENDING_MOVIE_DAY_startPage",
+          "max": 500,
+          "value": 100,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_TRENDING_MOVIE_DAY_endPage",
+          "max": 500,
+          "value": 150,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_TRENDING_TV_DAY_startPage",
+          "max": 500,
+          "value": 100,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_TRENDING_TV_DAY_endPage",
+          "max": 500,
+          "value": 150,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_UPCOMING_MOVIE_startPage",
+          "max": 500,
+          "value": 100,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_UPCOMING_MOVIE_endPage",
+          "max": 500,
+          "value": 150,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_MOVIE_startPage",
+          "max": 50,
+          "value": 1,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_MOVIE_endPage",
+          "max": 50,
+          "value": 2,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_TV_startPage",
+          "max": 50,
+          "value": 1,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_TV_endPage",
+          "max": 50,
+          "value": 2,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_ANIME_startPage",
+          "max": 50,
+          "value": 1,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_ANIME_endPage",
+          "max": 50,
+          "value": 2,
+          "disabled": true
+        }
+      ],
+      "reloadVerified": true,
+      "retainedProgressVerified": true,
+      "overflow": {
+        "viewport": 390,
+        "documentWidth": 390
+      },
+      "screenshotFiles": [
+        "updates-enabled-zh-390-dark-tmdb-updates-only-settings.png",
+        "updates-enabled-zh-390-dark-tmdb-crawl-ranges.png",
+        "updates-enabled-zh-390-dark-gying-updates-only-settings.png",
+        "updates-enabled-zh-390-dark-gying-crawl-ranges.png"
+      ]
+    },
+    {
+      "lang": "en",
+      "width": 390,
+      "theme": "light",
+      "passed": true,
+      "sourceOptionCount": 12,
+      "switches": [
+        {
+          "provider": "tmdb",
+          "checked": true,
+          "localizedLabelVerified": true
+        },
+        {
+          "provider": "gying",
+          "checked": true,
+          "localizedLabelVerified": true
+        }
+      ],
+      "limits": [
+        {
+          "id": "tmdbAutoSyncRanges_TRENDING_MOVIE_DAY_startPage",
+          "max": 500,
+          "value": 100,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_TRENDING_MOVIE_DAY_endPage",
+          "max": 500,
+          "value": 150,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_TRENDING_TV_DAY_startPage",
+          "max": 500,
+          "value": 100,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_TRENDING_TV_DAY_endPage",
+          "max": 500,
+          "value": 150,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_UPCOMING_MOVIE_startPage",
+          "max": 500,
+          "value": 100,
+          "disabled": true
+        },
+        {
+          "id": "tmdbAutoSyncRanges_UPCOMING_MOVIE_endPage",
+          "max": 500,
+          "value": 150,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_MOVIE_startPage",
+          "max": 50,
+          "value": 1,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_MOVIE_endPage",
+          "max": 50,
+          "value": 2,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_TV_startPage",
+          "max": 50,
+          "value": 1,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_TV_endPage",
+          "max": 50,
+          "value": 2,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_ANIME_startPage",
+          "max": 50,
+          "value": 1,
+          "disabled": true
+        },
+        {
+          "id": "gyingAutoSyncRanges_TIME_ANIME_endPage",
+          "max": 50,
+          "value": 2,
+          "disabled": true
+        }
+      ],
+      "reloadVerified": true,
+      "retainedProgressVerified": true,
+      "overflow": {
+        "viewport": 390,
+        "documentWidth": 390
+      },
+      "screenshotFiles": [
+        "updates-enabled-en-390-light-tmdb-updates-only-settings.png",
+        "updates-enabled-en-390-light-tmdb-crawl-ranges.png",
+        "updates-enabled-en-390-light-gying-updates-only-settings.png",
+        "updates-enabled-en-390-light-gying-crawl-ranges.png"
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/1100-7d3b0fc67e1a7057.js",
+      "artifactPath": ".next/static/chunks/1100-7d3b0fc67e1a7057.js",
+      "httpStatus": 200,
+      "bytes": 11553,
+      "sha256": "25881c7f1509baa05c2c61d623faa348ff7c90d9edd6d32995180d6342ba0aa2",
+      "expectedSha256": "25881c7f1509baa05c2c61d623faa348ff7c90d9edd6d32995180d6342ba0aa2",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/1100-7d3b0fc67e1a7057.js",
+      "artifactPath": ".next/static/chunks/1100-7d3b0fc67e1a7057.js",
+      "httpStatus": 200,
+      "bytes": 11553,
+      "sha256": "25881c7f1509baa05c2c61d623faa348ff7c90d9edd6d32995180d6342ba0aa2",
+      "expectedSha256": "25881c7f1509baa05c2c61d623faa348ff7c90d9edd6d32995180d6342ba0aa2",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/1209-3a2fa82f28ba3792.js",
+      "artifactPath": ".next/static/chunks/1209-3a2fa82f28ba3792.js",
+      "httpStatus": 200,
+      "bytes": 14028,
+      "sha256": "f2dfe55477b6dee41e6734e41f4a0db9a69a61cb6b8a9a850b44bde919e2d07e",
+      "expectedSha256": "f2dfe55477b6dee41e6734e41f4a0db9a69a61cb6b8a9a850b44bde919e2d07e",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/1209-3a2fa82f28ba3792.js",
+      "artifactPath": ".next/static/chunks/1209-3a2fa82f28ba3792.js",
+      "httpStatus": 200,
+      "bytes": 14028,
+      "sha256": "f2dfe55477b6dee41e6734e41f4a0db9a69a61cb6b8a9a850b44bde919e2d07e",
+      "expectedSha256": "f2dfe55477b6dee41e6734e41f4a0db9a69a61cb6b8a9a850b44bde919e2d07e",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/1478-17b90b3f262033b5.js",
+      "artifactPath": ".next/static/chunks/1478-17b90b3f262033b5.js",
+      "httpStatus": 200,
+      "bytes": 158548,
+      "sha256": "5f92ded49b7a76738aafc55e2692526f98d9a246284d102c944b6aba200bebe6",
+      "expectedSha256": "5f92ded49b7a76738aafc55e2692526f98d9a246284d102c944b6aba200bebe6",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/1478-17b90b3f262033b5.js",
+      "artifactPath": ".next/static/chunks/1478-17b90b3f262033b5.js",
+      "httpStatus": 200,
+      "bytes": 158548,
+      "sha256": "5f92ded49b7a76738aafc55e2692526f98d9a246284d102c944b6aba200bebe6",
+      "expectedSha256": "5f92ded49b7a76738aafc55e2692526f98d9a246284d102c944b6aba200bebe6",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/1630-b46fd5ab448cb3ab.js",
+      "artifactPath": ".next/static/chunks/1630-b46fd5ab448cb3ab.js",
+      "httpStatus": 200,
+      "bytes": 73041,
+      "sha256": "a3312e4c9d98a9bb17ef65db4d334e3bdf152cb41c0c712adffd388a4acc83fb",
+      "expectedSha256": "a3312e4c9d98a9bb17ef65db4d334e3bdf152cb41c0c712adffd388a4acc83fb",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/1630-b46fd5ab448cb3ab.js",
+      "artifactPath": ".next/static/chunks/1630-b46fd5ab448cb3ab.js",
+      "httpStatus": 200,
+      "bytes": 73041,
+      "sha256": "a3312e4c9d98a9bb17ef65db4d334e3bdf152cb41c0c712adffd388a4acc83fb",
+      "expectedSha256": "a3312e4c9d98a9bb17ef65db4d334e3bdf152cb41c0c712adffd388a4acc83fb",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/2579-f516b5c442bcf559.js",
+      "artifactPath": ".next/static/chunks/2579-f516b5c442bcf559.js",
+      "httpStatus": 200,
+      "bytes": 14919,
+      "sha256": "3d4e4f0dd327b57ef034ec31d45837ec8137debd4ece782fdbe86d8bbd54dea5",
+      "expectedSha256": "3d4e4f0dd327b57ef034ec31d45837ec8137debd4ece782fdbe86d8bbd54dea5",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/2579-f516b5c442bcf559.js",
+      "artifactPath": ".next/static/chunks/2579-f516b5c442bcf559.js",
+      "httpStatus": 200,
+      "bytes": 14919,
+      "sha256": "3d4e4f0dd327b57ef034ec31d45837ec8137debd4ece782fdbe86d8bbd54dea5",
+      "expectedSha256": "3d4e4f0dd327b57ef034ec31d45837ec8137debd4ece782fdbe86d8bbd54dea5",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/2772-0c33873257120e9b.js",
+      "artifactPath": ".next/static/chunks/2772-0c33873257120e9b.js",
+      "httpStatus": 200,
+      "bytes": 8777,
+      "sha256": "4d906629757da75f0ec88117998978f6d23ab3818a7838c924e17da8b9e224f6",
+      "expectedSha256": "4d906629757da75f0ec88117998978f6d23ab3818a7838c924e17da8b9e224f6",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/2772-0c33873257120e9b.js",
+      "artifactPath": ".next/static/chunks/2772-0c33873257120e9b.js",
+      "httpStatus": 200,
+      "bytes": 8777,
+      "sha256": "4d906629757da75f0ec88117998978f6d23ab3818a7838c924e17da8b9e224f6",
+      "expectedSha256": "4d906629757da75f0ec88117998978f6d23ab3818a7838c924e17da8b9e224f6",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/3050-1c1e0425f902b8e2.js",
+      "artifactPath": ".next/static/chunks/3050-1c1e0425f902b8e2.js",
+      "httpStatus": 200,
+      "bytes": 18913,
+      "sha256": "d71071ea6d5346b889885070e85db1bef622dc5e6f0261061a6a82603aab1b2b",
+      "expectedSha256": "d71071ea6d5346b889885070e85db1bef622dc5e6f0261061a6a82603aab1b2b",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/3050-1c1e0425f902b8e2.js",
+      "artifactPath": ".next/static/chunks/3050-1c1e0425f902b8e2.js",
+      "httpStatus": 200,
+      "bytes": 18913,
+      "sha256": "d71071ea6d5346b889885070e85db1bef622dc5e6f0261061a6a82603aab1b2b",
+      "expectedSha256": "d71071ea6d5346b889885070e85db1bef622dc5e6f0261061a6a82603aab1b2b",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/3105-c92d22f20da3c112.js",
+      "artifactPath": ".next/static/chunks/3105-c92d22f20da3c112.js",
+      "httpStatus": 200,
+      "bytes": 21361,
+      "sha256": "85cbe68d11f082edcf0735b8969b22d970069b4b2c7b936b8c0a82f885efcba4",
+      "expectedSha256": "85cbe68d11f082edcf0735b8969b22d970069b4b2c7b936b8c0a82f885efcba4",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/3105-c92d22f20da3c112.js",
+      "artifactPath": ".next/static/chunks/3105-c92d22f20da3c112.js",
+      "httpStatus": 200,
+      "bytes": 21361,
+      "sha256": "85cbe68d11f082edcf0735b8969b22d970069b4b2c7b936b8c0a82f885efcba4",
+      "expectedSha256": "85cbe68d11f082edcf0735b8969b22d970069b4b2c7b936b8c0a82f885efcba4",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/3549-0962241baa87ed46.js",
+      "artifactPath": ".next/static/chunks/3549-0962241baa87ed46.js",
+      "httpStatus": 200,
+      "bytes": 8663,
+      "sha256": "fc0ce797174801b705eb0a999a27385133f57874193c4c36d9a5486331ab4bba",
+      "expectedSha256": "fc0ce797174801b705eb0a999a27385133f57874193c4c36d9a5486331ab4bba",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/3549-0962241baa87ed46.js",
+      "artifactPath": ".next/static/chunks/3549-0962241baa87ed46.js",
+      "httpStatus": 200,
+      "bytes": 8663,
+      "sha256": "fc0ce797174801b705eb0a999a27385133f57874193c4c36d9a5486331ab4bba",
+      "expectedSha256": "fc0ce797174801b705eb0a999a27385133f57874193c4c36d9a5486331ab4bba",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/435-0fe3f35f047667c8.js",
+      "artifactPath": ".next/static/chunks/435-0fe3f35f047667c8.js",
+      "httpStatus": 200,
+      "bytes": 9682,
+      "sha256": "8e4af7a5f8bffc6005db739d7685bfeb869d356735b4c69f8865154cb551233a",
+      "expectedSha256": "8e4af7a5f8bffc6005db739d7685bfeb869d356735b4c69f8865154cb551233a",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/435-0fe3f35f047667c8.js",
+      "artifactPath": ".next/static/chunks/435-0fe3f35f047667c8.js",
+      "httpStatus": 200,
+      "bytes": 9682,
+      "sha256": "8e4af7a5f8bffc6005db739d7685bfeb869d356735b4c69f8865154cb551233a",
+      "expectedSha256": "8e4af7a5f8bffc6005db739d7685bfeb869d356735b4c69f8865154cb551233a",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/4363-249883aa97dfc5fe.js",
+      "artifactPath": ".next/static/chunks/4363-249883aa97dfc5fe.js",
+      "httpStatus": 200,
+      "bytes": 507395,
+      "sha256": "23ab9771ad76ea8854bd3573d0da0d61712e4bf8d15cf1e9eb91b7f833d8ea5d",
+      "expectedSha256": "23ab9771ad76ea8854bd3573d0da0d61712e4bf8d15cf1e9eb91b7f833d8ea5d",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/4363-249883aa97dfc5fe.js",
+      "artifactPath": ".next/static/chunks/4363-249883aa97dfc5fe.js",
+      "httpStatus": 200,
+      "bytes": 507395,
+      "sha256": "23ab9771ad76ea8854bd3573d0da0d61712e4bf8d15cf1e9eb91b7f833d8ea5d",
+      "expectedSha256": "23ab9771ad76ea8854bd3573d0da0d61712e4bf8d15cf1e9eb91b7f833d8ea5d",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/4529-28f80cf642f6a514.js",
+      "artifactPath": ".next/static/chunks/4529-28f80cf642f6a514.js",
+      "httpStatus": 200,
+      "bytes": 22187,
+      "sha256": "12c178e5632d4914d60395929a07cc315b14d100ab5d0a3a32ca5543f841448f",
+      "expectedSha256": "12c178e5632d4914d60395929a07cc315b14d100ab5d0a3a32ca5543f841448f",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/4529-28f80cf642f6a514.js",
+      "artifactPath": ".next/static/chunks/4529-28f80cf642f6a514.js",
+      "httpStatus": 200,
+      "bytes": 22187,
+      "sha256": "12c178e5632d4914d60395929a07cc315b14d100ab5d0a3a32ca5543f841448f",
+      "expectedSha256": "12c178e5632d4914d60395929a07cc315b14d100ab5d0a3a32ca5543f841448f",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/4bd1b696-76ad6294ab2ef6f8.js",
+      "artifactPath": ".next/static/chunks/4bd1b696-76ad6294ab2ef6f8.js",
+      "httpStatus": 200,
+      "bytes": 201060,
+      "sha256": "079b0ac5da61714a638c84ed6d8794cc54b80f80fa1908ab2e4da1b1481acd95",
+      "expectedSha256": "079b0ac5da61714a638c84ed6d8794cc54b80f80fa1908ab2e4da1b1481acd95",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/4bd1b696-76ad6294ab2ef6f8.js",
+      "artifactPath": ".next/static/chunks/4bd1b696-76ad6294ab2ef6f8.js",
+      "httpStatus": 200,
+      "bytes": 201060,
+      "sha256": "079b0ac5da61714a638c84ed6d8794cc54b80f80fa1908ab2e4da1b1481acd95",
+      "expectedSha256": "079b0ac5da61714a638c84ed6d8794cc54b80f80fa1908ab2e4da1b1481acd95",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/5056-0b2f8567fd60f49d.js",
+      "artifactPath": ".next/static/chunks/5056-0b2f8567fd60f49d.js",
+      "httpStatus": 200,
+      "bytes": 19280,
+      "sha256": "fe920cf4c68ab916f7ef6e57d30d64d831cc3fbeed85a129d497d9c3f0a738b4",
+      "expectedSha256": "fe920cf4c68ab916f7ef6e57d30d64d831cc3fbeed85a129d497d9c3f0a738b4",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/5056-0b2f8567fd60f49d.js",
+      "artifactPath": ".next/static/chunks/5056-0b2f8567fd60f49d.js",
+      "httpStatus": 200,
+      "bytes": 19280,
+      "sha256": "fe920cf4c68ab916f7ef6e57d30d64d831cc3fbeed85a129d497d9c3f0a738b4",
+      "expectedSha256": "fe920cf4c68ab916f7ef6e57d30d64d831cc3fbeed85a129d497d9c3f0a738b4",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/5382-9dc525e6f3e2171a.js",
+      "artifactPath": ".next/static/chunks/5382-9dc525e6f3e2171a.js",
+      "httpStatus": 200,
+      "bytes": 8039,
+      "sha256": "02d6271612a02d0a7a2ee0e11aee366ad09eab408a4cbdf3702534b8f7329313",
+      "expectedSha256": "02d6271612a02d0a7a2ee0e11aee366ad09eab408a4cbdf3702534b8f7329313",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/5382-9dc525e6f3e2171a.js",
+      "artifactPath": ".next/static/chunks/5382-9dc525e6f3e2171a.js",
+      "httpStatus": 200,
+      "bytes": 8039,
+      "sha256": "02d6271612a02d0a7a2ee0e11aee366ad09eab408a4cbdf3702534b8f7329313",
+      "expectedSha256": "02d6271612a02d0a7a2ee0e11aee366ad09eab408a4cbdf3702534b8f7329313",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/5494-081c6db081bb4399.js",
+      "artifactPath": ".next/static/chunks/5494-081c6db081bb4399.js",
+      "httpStatus": 200,
+      "bytes": 29576,
+      "sha256": "4824863bd8ed5b76480146dfb0461f6f59190eb73505e35e6d8621accfc12436",
+      "expectedSha256": "4824863bd8ed5b76480146dfb0461f6f59190eb73505e35e6d8621accfc12436",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/5494-081c6db081bb4399.js",
+      "artifactPath": ".next/static/chunks/5494-081c6db081bb4399.js",
+      "httpStatus": 200,
+      "bytes": 29576,
+      "sha256": "4824863bd8ed5b76480146dfb0461f6f59190eb73505e35e6d8621accfc12436",
+      "expectedSha256": "4824863bd8ed5b76480146dfb0461f6f59190eb73505e35e6d8621accfc12436",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/5740-48abe06fb4b9c253.js",
+      "artifactPath": ".next/static/chunks/5740-48abe06fb4b9c253.js",
+      "httpStatus": 200,
+      "bytes": 63330,
+      "sha256": "003e1fdcbeb9bb22cb55be6bc6d6c281c8c44bb72e164f8606c51b974571e9c1",
+      "expectedSha256": "003e1fdcbeb9bb22cb55be6bc6d6c281c8c44bb72e164f8606c51b974571e9c1",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/5740-48abe06fb4b9c253.js",
+      "artifactPath": ".next/static/chunks/5740-48abe06fb4b9c253.js",
+      "httpStatus": 200,
+      "bytes": 63330,
+      "sha256": "003e1fdcbeb9bb22cb55be6bc6d6c281c8c44bb72e164f8606c51b974571e9c1",
+      "expectedSha256": "003e1fdcbeb9bb22cb55be6bc6d6c281c8c44bb72e164f8606c51b974571e9c1",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/5905-99da254b0ab62799.js",
+      "artifactPath": ".next/static/chunks/5905-99da254b0ab62799.js",
+      "httpStatus": 200,
+      "bytes": 15136,
+      "sha256": "af5ebe2e223db3a80e0dd2f9c1e6f7c4ad149f910c675d8cce2195607c6962d4",
+      "expectedSha256": "af5ebe2e223db3a80e0dd2f9c1e6f7c4ad149f910c675d8cce2195607c6962d4",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/5905-99da254b0ab62799.js",
+      "artifactPath": ".next/static/chunks/5905-99da254b0ab62799.js",
+      "httpStatus": 200,
+      "bytes": 15136,
+      "sha256": "af5ebe2e223db3a80e0dd2f9c1e6f7c4ad149f910c675d8cce2195607c6962d4",
+      "expectedSha256": "af5ebe2e223db3a80e0dd2f9c1e6f7c4ad149f910c675d8cce2195607c6962d4",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/6463-c5599511d4d3962d.js",
+      "artifactPath": ".next/static/chunks/6463-c5599511d4d3962d.js",
+      "httpStatus": 200,
+      "bytes": 9065,
+      "sha256": "b7e96c2c65356e0780b402415ef36214c624bd5d363a189279eeeee94f73accf",
+      "expectedSha256": "b7e96c2c65356e0780b402415ef36214c624bd5d363a189279eeeee94f73accf",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/6463-c5599511d4d3962d.js",
+      "artifactPath": ".next/static/chunks/6463-c5599511d4d3962d.js",
+      "httpStatus": 200,
+      "bytes": 9065,
+      "sha256": "b7e96c2c65356e0780b402415ef36214c624bd5d363a189279eeeee94f73accf",
+      "expectedSha256": "b7e96c2c65356e0780b402415ef36214c624bd5d363a189279eeeee94f73accf",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/6464-00487f86d0f3b85b.js",
+      "artifactPath": ".next/static/chunks/6464-00487f86d0f3b85b.js",
+      "httpStatus": 200,
+      "bytes": 17051,
+      "sha256": "b7a253d2298a6cd6539d53ae0973c32e626237372ce8802929e7bd0fd06f854b",
+      "expectedSha256": "b7a253d2298a6cd6539d53ae0973c32e626237372ce8802929e7bd0fd06f854b",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/6464-00487f86d0f3b85b.js",
+      "artifactPath": ".next/static/chunks/6464-00487f86d0f3b85b.js",
+      "httpStatus": 200,
+      "bytes": 17051,
+      "sha256": "b7a253d2298a6cd6539d53ae0973c32e626237372ce8802929e7bd0fd06f854b",
+      "expectedSha256": "b7a253d2298a6cd6539d53ae0973c32e626237372ce8802929e7bd0fd06f854b",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/6646-78025471954e5c5c.js",
+      "artifactPath": ".next/static/chunks/6646-78025471954e5c5c.js",
+      "httpStatus": 200,
+      "bytes": 21957,
+      "sha256": "64bb6da79cc54568f126d2be0e54ee22bc8d16729dac7b748d8f43b1fc7fd913",
+      "expectedSha256": "64bb6da79cc54568f126d2be0e54ee22bc8d16729dac7b748d8f43b1fc7fd913",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/6646-78025471954e5c5c.js",
+      "artifactPath": ".next/static/chunks/6646-78025471954e5c5c.js",
+      "httpStatus": 200,
+      "bytes": 21957,
+      "sha256": "64bb6da79cc54568f126d2be0e54ee22bc8d16729dac7b748d8f43b1fc7fd913",
+      "expectedSha256": "64bb6da79cc54568f126d2be0e54ee22bc8d16729dac7b748d8f43b1fc7fd913",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/6902-8e596972d52b3756.js",
+      "artifactPath": ".next/static/chunks/6902-8e596972d52b3756.js",
+      "httpStatus": 200,
+      "bytes": 28088,
+      "sha256": "60def6c62f831d3220a48d065e594a223e8155d1de3fe2dccd7152ba9b7599d5",
+      "expectedSha256": "60def6c62f831d3220a48d065e594a223e8155d1de3fe2dccd7152ba9b7599d5",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/6902-8e596972d52b3756.js",
+      "artifactPath": ".next/static/chunks/6902-8e596972d52b3756.js",
+      "httpStatus": 200,
+      "bytes": 28088,
+      "sha256": "60def6c62f831d3220a48d065e594a223e8155d1de3fe2dccd7152ba9b7599d5",
+      "expectedSha256": "60def6c62f831d3220a48d065e594a223e8155d1de3fe2dccd7152ba9b7599d5",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/7130-79512b0f4b2229e4.js",
+      "artifactPath": ".next/static/chunks/7130-79512b0f4b2229e4.js",
+      "httpStatus": 200,
+      "bytes": 24584,
+      "sha256": "de4c4a4e7b253e046e56879d2a8881822509a615c6e3c24d0c2eb5e1152a2404",
+      "expectedSha256": "de4c4a4e7b253e046e56879d2a8881822509a615c6e3c24d0c2eb5e1152a2404",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/7130-79512b0f4b2229e4.js",
+      "artifactPath": ".next/static/chunks/7130-79512b0f4b2229e4.js",
+      "httpStatus": 200,
+      "bytes": 24584,
+      "sha256": "de4c4a4e7b253e046e56879d2a8881822509a615c6e3c24d0c2eb5e1152a2404",
+      "expectedSha256": "de4c4a4e7b253e046e56879d2a8881822509a615c6e3c24d0c2eb5e1152a2404",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/7226-c562b51be2ca534c.js",
+      "artifactPath": ".next/static/chunks/7226-c562b51be2ca534c.js",
+      "httpStatus": 200,
+      "bytes": 52082,
+      "sha256": "611015e59ec01574fd35323635b453005f743f980debfdbbb894ac88bbdd3e9d",
+      "expectedSha256": "611015e59ec01574fd35323635b453005f743f980debfdbbb894ac88bbdd3e9d",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/7226-c562b51be2ca534c.js",
+      "artifactPath": ".next/static/chunks/7226-c562b51be2ca534c.js",
+      "httpStatus": 200,
+      "bytes": 52082,
+      "sha256": "611015e59ec01574fd35323635b453005f743f980debfdbbb894ac88bbdd3e9d",
+      "expectedSha256": "611015e59ec01574fd35323635b453005f743f980debfdbbb894ac88bbdd3e9d",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/7444-6feb96f4751940b3.js",
+      "artifactPath": ".next/static/chunks/7444-6feb96f4751940b3.js",
+      "httpStatus": 200,
+      "bytes": 3864,
+      "sha256": "0ae0ef8f5070e183d0ad7e4106a4c028c80be84945c30748593c72f665a71ea6",
+      "expectedSha256": "0ae0ef8f5070e183d0ad7e4106a4c028c80be84945c30748593c72f665a71ea6",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/7444-6feb96f4751940b3.js",
+      "artifactPath": ".next/static/chunks/7444-6feb96f4751940b3.js",
+      "httpStatus": 200,
+      "bytes": 3864,
+      "sha256": "0ae0ef8f5070e183d0ad7e4106a4c028c80be84945c30748593c72f665a71ea6",
+      "expectedSha256": "0ae0ef8f5070e183d0ad7e4106a4c028c80be84945c30748593c72f665a71ea6",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/76-7fdbe2be1c44078e.js",
+      "artifactPath": ".next/static/chunks/76-7fdbe2be1c44078e.js",
+      "httpStatus": 200,
+      "bytes": 302214,
+      "sha256": "7a198bcb7347c1bb26cb826927fd1c98311d019904696d2dcc6936bb346894bd",
+      "expectedSha256": "7a198bcb7347c1bb26cb826927fd1c98311d019904696d2dcc6936bb346894bd",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/76-7fdbe2be1c44078e.js",
+      "artifactPath": ".next/static/chunks/76-7fdbe2be1c44078e.js",
+      "httpStatus": 200,
+      "bytes": 302214,
+      "sha256": "7a198bcb7347c1bb26cb826927fd1c98311d019904696d2dcc6936bb346894bd",
+      "expectedSha256": "7a198bcb7347c1bb26cb826927fd1c98311d019904696d2dcc6936bb346894bd",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/763-d8183e664734e2cf.js",
+      "artifactPath": ".next/static/chunks/763-d8183e664734e2cf.js",
+      "httpStatus": 200,
+      "bytes": 41846,
+      "sha256": "49994dd73a1dd803d3416cf71739921197b5660ded2f13f029741bc6e0292af2",
+      "expectedSha256": "49994dd73a1dd803d3416cf71739921197b5660ded2f13f029741bc6e0292af2",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/763-d8183e664734e2cf.js",
+      "artifactPath": ".next/static/chunks/763-d8183e664734e2cf.js",
+      "httpStatus": 200,
+      "bytes": 41846,
+      "sha256": "49994dd73a1dd803d3416cf71739921197b5660ded2f13f029741bc6e0292af2",
+      "expectedSha256": "49994dd73a1dd803d3416cf71739921197b5660ded2f13f029741bc6e0292af2",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/7713-186f892e6c368265.js",
+      "artifactPath": ".next/static/chunks/7713-186f892e6c368265.js",
+      "httpStatus": 200,
+      "bytes": 8385,
+      "sha256": "2d5d291b2139806aef9fbc817ab97458cda242b6b3167dc632456dedbe75325d",
+      "expectedSha256": "2d5d291b2139806aef9fbc817ab97458cda242b6b3167dc632456dedbe75325d",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/7713-186f892e6c368265.js",
+      "artifactPath": ".next/static/chunks/7713-186f892e6c368265.js",
+      "httpStatus": 200,
+      "bytes": 8385,
+      "sha256": "2d5d291b2139806aef9fbc817ab97458cda242b6b3167dc632456dedbe75325d",
+      "expectedSha256": "2d5d291b2139806aef9fbc817ab97458cda242b6b3167dc632456dedbe75325d",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/7727-6863cc38a7632129.js",
+      "artifactPath": ".next/static/chunks/7727-6863cc38a7632129.js",
+      "httpStatus": 200,
+      "bytes": 32124,
+      "sha256": "7028408044e33bfc375688f24b8e87060833acfb76187d5b3affa97c107a9c2d",
+      "expectedSha256": "7028408044e33bfc375688f24b8e87060833acfb76187d5b3affa97c107a9c2d",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/7727-6863cc38a7632129.js",
+      "artifactPath": ".next/static/chunks/7727-6863cc38a7632129.js",
+      "httpStatus": 200,
+      "bytes": 32124,
+      "sha256": "7028408044e33bfc375688f24b8e87060833acfb76187d5b3affa97c107a9c2d",
+      "expectedSha256": "7028408044e33bfc375688f24b8e87060833acfb76187d5b3affa97c107a9c2d",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/794-e697cf13acf7c961.js",
+      "artifactPath": ".next/static/chunks/794-e697cf13acf7c961.js",
+      "httpStatus": 200,
+      "bytes": 17611,
+      "sha256": "6a4d2f5fd45eeddffab2c18118149be8892034ecee0850c4596a63578bfbf54f",
+      "expectedSha256": "6a4d2f5fd45eeddffab2c18118149be8892034ecee0850c4596a63578bfbf54f",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/794-e697cf13acf7c961.js",
+      "artifactPath": ".next/static/chunks/794-e697cf13acf7c961.js",
+      "httpStatus": 200,
+      "bytes": 17611,
+      "sha256": "6a4d2f5fd45eeddffab2c18118149be8892034ecee0850c4596a63578bfbf54f",
+      "expectedSha256": "6a4d2f5fd45eeddffab2c18118149be8892034ecee0850c4596a63578bfbf54f",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/8088-6548b48eda861cd6.js",
+      "artifactPath": ".next/static/chunks/8088-6548b48eda861cd6.js",
+      "httpStatus": 200,
+      "bytes": 6474,
+      "sha256": "53b12a53781301f192bb40cc588536fefad27de2477a88e0d97b5723d8777546",
+      "expectedSha256": "53b12a53781301f192bb40cc588536fefad27de2477a88e0d97b5723d8777546",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/8088-6548b48eda861cd6.js",
+      "artifactPath": ".next/static/chunks/8088-6548b48eda861cd6.js",
+      "httpStatus": 200,
+      "bytes": 6474,
+      "sha256": "53b12a53781301f192bb40cc588536fefad27de2477a88e0d97b5723d8777546",
+      "expectedSha256": "53b12a53781301f192bb40cc588536fefad27de2477a88e0d97b5723d8777546",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/8435-49e37505d2ebc2ae.js",
+      "artifactPath": ".next/static/chunks/8435-49e37505d2ebc2ae.js",
+      "httpStatus": 200,
+      "bytes": 23755,
+      "sha256": "4dae655b2aca4d162cc23658a5be1019060dcd08d577a2d9a76a46d681ffbd67",
+      "expectedSha256": "4dae655b2aca4d162cc23658a5be1019060dcd08d577a2d9a76a46d681ffbd67",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/8435-49e37505d2ebc2ae.js",
+      "artifactPath": ".next/static/chunks/8435-49e37505d2ebc2ae.js",
+      "httpStatus": 200,
+      "bytes": 23755,
+      "sha256": "4dae655b2aca4d162cc23658a5be1019060dcd08d577a2d9a76a46d681ffbd67",
+      "expectedSha256": "4dae655b2aca4d162cc23658a5be1019060dcd08d577a2d9a76a46d681ffbd67",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/8474-5bcec552a1af712a.js",
+      "artifactPath": ".next/static/chunks/8474-5bcec552a1af712a.js",
+      "httpStatus": 200,
+      "bytes": 17762,
+      "sha256": "8a5b8508016dfb72e2b4adbc8d10848d23f1e038fc8b4c96194307a71f4b669d",
+      "expectedSha256": "8a5b8508016dfb72e2b4adbc8d10848d23f1e038fc8b4c96194307a71f4b669d",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/8474-5bcec552a1af712a.js",
+      "artifactPath": ".next/static/chunks/8474-5bcec552a1af712a.js",
+      "httpStatus": 200,
+      "bytes": 17762,
+      "sha256": "8a5b8508016dfb72e2b4adbc8d10848d23f1e038fc8b4c96194307a71f4b669d",
+      "expectedSha256": "8a5b8508016dfb72e2b4adbc8d10848d23f1e038fc8b4c96194307a71f4b669d",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/852-5b55ab1b974b9ffa.js",
+      "artifactPath": ".next/static/chunks/852-5b55ab1b974b9ffa.js",
+      "httpStatus": 200,
+      "bytes": 8256,
+      "sha256": "a3aed7921aeda9ea7bee46313393b9b73ee89d30f5a606cfb785c9d381038e2b",
+      "expectedSha256": "a3aed7921aeda9ea7bee46313393b9b73ee89d30f5a606cfb785c9d381038e2b",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/852-5b55ab1b974b9ffa.js",
+      "artifactPath": ".next/static/chunks/852-5b55ab1b974b9ffa.js",
+      "httpStatus": 200,
+      "bytes": 8256,
+      "sha256": "a3aed7921aeda9ea7bee46313393b9b73ee89d30f5a606cfb785c9d381038e2b",
+      "expectedSha256": "a3aed7921aeda9ea7bee46313393b9b73ee89d30f5a606cfb785c9d381038e2b",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/8522-0d80c1ddd56615cc.js",
+      "artifactPath": ".next/static/chunks/8522-0d80c1ddd56615cc.js",
+      "httpStatus": 200,
+      "bytes": 41102,
+      "sha256": "2f6515c4f4e230ede1f45dc33e756a2dc7037f32218b73eae574faa5b2565c57",
+      "expectedSha256": "2f6515c4f4e230ede1f45dc33e756a2dc7037f32218b73eae574faa5b2565c57",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/8522-0d80c1ddd56615cc.js",
+      "artifactPath": ".next/static/chunks/8522-0d80c1ddd56615cc.js",
+      "httpStatus": 200,
+      "bytes": 41102,
+      "sha256": "2f6515c4f4e230ede1f45dc33e756a2dc7037f32218b73eae574faa5b2565c57",
+      "expectedSha256": "2f6515c4f4e230ede1f45dc33e756a2dc7037f32218b73eae574faa5b2565c57",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/8537-c6f78000d01e3e61.js",
+      "artifactPath": ".next/static/chunks/8537-c6f78000d01e3e61.js",
+      "httpStatus": 200,
+      "bytes": 19477,
+      "sha256": "dd5b22cf0b708d3b1a01f479c97056d4435335fd7b2cc8bf1ed8c9b460105726",
+      "expectedSha256": "dd5b22cf0b708d3b1a01f479c97056d4435335fd7b2cc8bf1ed8c9b460105726",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/8537-c6f78000d01e3e61.js",
+      "artifactPath": ".next/static/chunks/8537-c6f78000d01e3e61.js",
+      "httpStatus": 200,
+      "bytes": 19477,
+      "sha256": "dd5b22cf0b708d3b1a01f479c97056d4435335fd7b2cc8bf1ed8c9b460105726",
+      "expectedSha256": "dd5b22cf0b708d3b1a01f479c97056d4435335fd7b2cc8bf1ed8c9b460105726",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/9165-20bafd5c72e11f39.js",
+      "artifactPath": ".next/static/chunks/9165-20bafd5c72e11f39.js",
+      "httpStatus": 200,
+      "bytes": 39523,
+      "sha256": "7c43a8d1fc2535970708f9cdf932b819ea6e91df78855ea132ffe374cea87d1f",
+      "expectedSha256": "7c43a8d1fc2535970708f9cdf932b819ea6e91df78855ea132ffe374cea87d1f",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/9165-20bafd5c72e11f39.js",
+      "artifactPath": ".next/static/chunks/9165-20bafd5c72e11f39.js",
+      "httpStatus": 200,
+      "bytes": 39523,
+      "sha256": "7c43a8d1fc2535970708f9cdf932b819ea6e91df78855ea132ffe374cea87d1f",
+      "expectedSha256": "7c43a8d1fc2535970708f9cdf932b819ea6e91df78855ea132ffe374cea87d1f",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/9826-280011571452d075.js",
+      "artifactPath": ".next/static/chunks/9826-280011571452d075.js",
+      "httpStatus": 200,
+      "bytes": 241397,
+      "sha256": "2514769ca0588e8b18df3d7b6e00585ad31b6a8d6376f70cb6412ceecf6476f9",
+      "expectedSha256": "2514769ca0588e8b18df3d7b6e00585ad31b6a8d6376f70cb6412ceecf6476f9",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/9826-280011571452d075.js",
+      "artifactPath": ".next/static/chunks/9826-280011571452d075.js",
+      "httpStatus": 200,
+      "bytes": 241397,
+      "sha256": "2514769ca0588e8b18df3d7b6e00585ad31b6a8d6376f70cb6412ceecf6476f9",
+      "expectedSha256": "2514769ca0588e8b18df3d7b6e00585ad31b6a8d6376f70cb6412ceecf6476f9",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/app/admin/resource-hub/page-1fc8de6a0798476e.js",
+      "artifactPath": ".next/static/chunks/app/admin/resource-hub/page-1fc8de6a0798476e.js",
+      "httpStatus": 200,
+      "bytes": 91890,
+      "sha256": "2fac05e3337354e76374e81d92b03e194efc850e7862ed232d02f9cb2aeb4ebc",
+      "expectedSha256": "2fac05e3337354e76374e81d92b03e194efc850e7862ed232d02f9cb2aeb4ebc",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/app/admin/resource-hub/page-1fc8de6a0798476e.js",
+      "artifactPath": ".next/static/chunks/app/admin/resource-hub/page-1fc8de6a0798476e.js",
+      "httpStatus": 200,
+      "bytes": 91890,
+      "sha256": "2fac05e3337354e76374e81d92b03e194efc850e7862ed232d02f9cb2aeb4ebc",
+      "expectedSha256": "2fac05e3337354e76374e81d92b03e194efc850e7862ed232d02f9cb2aeb4ebc",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/app/hot/page-47cad4fb86533cee.js",
+      "artifactPath": ".next/static/chunks/app/hot/page-47cad4fb86533cee.js",
+      "httpStatus": 200,
+      "bytes": 11248,
+      "sha256": "e1c8b5384e42c1b1b56965a41313da17ca2d8e9a908c1b4c0abb1362a8d84cbb",
+      "expectedSha256": "e1c8b5384e42c1b1b56965a41313da17ca2d8e9a908c1b4c0abb1362a8d84cbb",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/app/hot/page-47cad4fb86533cee.js",
+      "artifactPath": ".next/static/chunks/app/hot/page-47cad4fb86533cee.js",
+      "httpStatus": 200,
+      "bytes": 11248,
+      "sha256": "e1c8b5384e42c1b1b56965a41313da17ca2d8e9a908c1b4c0abb1362a8d84cbb",
+      "expectedSha256": "e1c8b5384e42c1b1b56965a41313da17ca2d8e9a908c1b4c0abb1362a8d84cbb",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/app/layout-c96da659dc3be576.js",
+      "artifactPath": ".next/static/chunks/app/layout-c96da659dc3be576.js",
+      "httpStatus": 200,
+      "bytes": 181288,
+      "sha256": "b662d46af96a2e16d6cf1bb5aaa9b8364336eaabd82db82a7c849450f7b8beb3",
+      "expectedSha256": "b662d46af96a2e16d6cf1bb5aaa9b8364336eaabd82db82a7c849450f7b8beb3",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/app/layout-c96da659dc3be576.js",
+      "artifactPath": ".next/static/chunks/app/layout-c96da659dc3be576.js",
+      "httpStatus": 200,
+      "bytes": 181288,
+      "sha256": "b662d46af96a2e16d6cf1bb5aaa9b8364336eaabd82db82a7c849450f7b8beb3",
+      "expectedSha256": "b662d46af96a2e16d6cf1bb5aaa9b8364336eaabd82db82a7c849450f7b8beb3",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/app/messages/page-ea3db789b3025f3e.js",
+      "artifactPath": ".next/static/chunks/app/messages/page-ea3db789b3025f3e.js",
+      "httpStatus": 200,
+      "bytes": 4072,
+      "sha256": "37edff0fe23167b621dcfcf78f94326eb62116b507d00a70e875cb1b0b81c8c6",
+      "expectedSha256": "37edff0fe23167b621dcfcf78f94326eb62116b507d00a70e875cb1b0b81c8c6",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/app/messages/page-ea3db789b3025f3e.js",
+      "artifactPath": ".next/static/chunks/app/messages/page-ea3db789b3025f3e.js",
+      "httpStatus": 200,
+      "bytes": 4072,
+      "sha256": "37edff0fe23167b621dcfcf78f94326eb62116b507d00a70e875cb1b0b81c8c6",
+      "expectedSha256": "37edff0fe23167b621dcfcf78f94326eb62116b507d00a70e875cb1b0b81c8c6",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/app/notifications/page-b30d9a62d9875d00.js",
+      "artifactPath": ".next/static/chunks/app/notifications/page-b30d9a62d9875d00.js",
+      "httpStatus": 200,
+      "bytes": 7284,
+      "sha256": "e7f3ea27b13055292bd6efebfb9f3b4047c232018748a15fcc91a9e685198fed",
+      "expectedSha256": "e7f3ea27b13055292bd6efebfb9f3b4047c232018748a15fcc91a9e685198fed",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/app/notifications/page-b30d9a62d9875d00.js",
+      "artifactPath": ".next/static/chunks/app/notifications/page-b30d9a62d9875d00.js",
+      "httpStatus": 200,
+      "bytes": 7284,
+      "sha256": "e7f3ea27b13055292bd6efebfb9f3b4047c232018748a15fcc91a9e685198fed",
+      "expectedSha256": "e7f3ea27b13055292bd6efebfb9f3b4047c232018748a15fcc91a9e685198fed",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/app/page-c500336a2de165fc.js",
+      "artifactPath": ".next/static/chunks/app/page-c500336a2de165fc.js",
+      "httpStatus": 200,
+      "bytes": 22044,
+      "sha256": "67528c04505019c181e8d190567e8ebc80ae129d178b999f02a1fe4c532daa05",
+      "expectedSha256": "67528c04505019c181e8d190567e8ebc80ae129d178b999f02a1fe4c532daa05",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/app/page-c500336a2de165fc.js",
+      "artifactPath": ".next/static/chunks/app/page-c500336a2de165fc.js",
+      "httpStatus": 200,
+      "bytes": 22044,
+      "sha256": "67528c04505019c181e8d190567e8ebc80ae129d178b999f02a1fe4c532daa05",
+      "expectedSha256": "67528c04505019c181e8d190567e8ebc80ae129d178b999f02a1fe4c532daa05",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/main-app-967596b6d7ddfaf2.js",
+      "artifactPath": ".next/static/chunks/main-app-967596b6d7ddfaf2.js",
+      "httpStatus": 200,
+      "bytes": 529,
+      "sha256": "f44fe6960e506130737e95ac5b5910d29ffc9cd089238049fced5600fa8b55b3",
+      "expectedSha256": "f44fe6960e506130737e95ac5b5910d29ffc9cd089238049fced5600fa8b55b3",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/main-app-967596b6d7ddfaf2.js",
+      "artifactPath": ".next/static/chunks/main-app-967596b6d7ddfaf2.js",
+      "httpStatus": 200,
+      "bytes": 529,
+      "sha256": "f44fe6960e506130737e95ac5b5910d29ffc9cd089238049fced5600fa8b55b3",
+      "expectedSha256": "f44fe6960e506130737e95ac5b5910d29ffc9cd089238049fced5600fa8b55b3",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/chunks/webpack-020da05478238f4d.js",
+      "artifactPath": ".next/static/chunks/webpack-020da05478238f4d.js",
+      "httpStatus": 200,
+      "bytes": 3439,
+      "sha256": "20c464ab9e6b9f3c2d9d08f2e10e4918718858fc2eff45c000121f3548fea726",
+      "expectedSha256": "20c464ab9e6b9f3c2d9d08f2e10e4918718858fc2eff45c000121f3548fea726",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/chunks/webpack-020da05478238f4d.js",
+      "artifactPath": ".next/static/chunks/webpack-020da05478238f4d.js",
+      "httpStatus": 200,
+      "bytes": 3439,
+      "sha256": "20c464ab9e6b9f3c2d9d08f2e10e4918718858fc2eff45c000121f3548fea726",
+      "expectedSha256": "20c464ab9e6b9f3c2d9d08f2e10e4918718858fc2eff45c000121f3548fea726",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/_next/static/css/724fcb282bc95a30.css",
+      "artifactPath": ".next/static/css/724fcb282bc95a30.css",
+      "httpStatus": 200,
+      "bytes": 73547,
+      "sha256": "474e37e6ae80857c42cbdb5b72690495b3023092a452ffbca67d0a3d89d3e2cc",
+      "expectedSha256": "474e37e6ae80857c42cbdb5b72690495b3023092a452ffbca67d0a3d89d3e2cc",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/_next/static/css/724fcb282bc95a30.css",
+      "artifactPath": ".next/static/css/724fcb282bc95a30.css",
+      "httpStatus": 200,
+      "bytes": 73547,
+      "sha256": "474e37e6ae80857c42cbdb5b72690495b3023092a452ffbca67d0a3d89d3e2cc",
+      "expectedSha256": "474e37e6ae80857c42cbdb5b72690495b3023092a452ffbca67d0a3d89d3e2cc",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/locales/en/common.json",
+      "artifactPath": "public/locales/en/common.json",
+      "httpStatus": 200,
+      "bytes": 89441,
+      "sha256": "c656fa82cb016c72dd8b62dc7a5b9d2cacedc3a01c0aab1e69dda39813410e10",
+      "expectedSha256": "c656fa82cb016c72dd8b62dc7a5b9d2cacedc3a01c0aab1e69dda39813410e10",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/locales/en/common.json",
+      "artifactPath": "public/locales/en/common.json",
+      "httpStatus": 200,
+      "bytes": 89441,
+      "sha256": "c656fa82cb016c72dd8b62dc7a5b9d2cacedc3a01c0aab1e69dda39813410e10",
+      "expectedSha256": "c656fa82cb016c72dd8b62dc7a5b9d2cacedc3a01c0aab1e69dda39813410e10",
+      "passed": true
+    },
+    {
+      "origin": "local",
+      "path": "/locales/zh/common.json",
+      "artifactPath": "public/locales/zh/common.json",
+      "httpStatus": 200,
+      "bytes": 86611,
+      "sha256": "90baaca8ef7f3cac615d54912acb9d3ddb51fd140ec2f34d5cbe0966e020c646",
+      "expectedSha256": "90baaca8ef7f3cac615d54912acb9d3ddb51fd140ec2f34d5cbe0966e020c646",
+      "passed": true
+    },
+    {
+      "origin": "public",
+      "path": "/locales/zh/common.json",
+      "artifactPath": "public/locales/zh/common.json",
+      "httpStatus": 200,
+      "bytes": 86611,
+      "sha256": "90baaca8ef7f3cac615d54912acb9d3ddb51fd140ec2f34d5cbe0966e020c646",
+      "expectedSha256": "90baaca8ef7f3cac615d54912acb9d3ddb51fd140ec2f34d5cbe0966e020c646",
+      "passed": true
+    }
+  ],
+  "blockedNonGetRequests": [
+    {
+      "scenario": "updates-enabled-zh-1440-light",
+      "method": "POST",
+      "path": "/api/monitoring/page-view",
+      "forwarded": false
+    },
+    {
+      "scenario": "updates-enabled-zh-1440-light",
+      "method": "POST",
+      "path": "/api/monitoring/page-view",
+      "forwarded": false
+    },
+    {
+      "scenario": "updates-enabled-en-1440-dark",
+      "method": "POST",
+      "path": "/api/monitoring/page-view",
+      "forwarded": false
+    },
+    {
+      "scenario": "updates-enabled-en-1440-dark",
+      "method": "POST",
+      "path": "/api/monitoring/page-view",
+      "forwarded": false
+    },
+    {
+      "scenario": "updates-enabled-zh-390-dark",
+      "method": "POST",
+      "path": "/api/monitoring/page-view",
+      "forwarded": false
+    },
+    {
+      "scenario": "updates-enabled-zh-390-dark",
+      "method": "POST",
+      "path": "/api/monitoring/page-view",
+      "forwarded": false
+    },
+    {
+      "scenario": "updates-enabled-en-390-light",
+      "method": "POST",
+      "path": "/api/monitoring/page-view",
+      "forwarded": false
+    },
+    {
+      "scenario": "updates-enabled-en-390-light",
+      "method": "POST",
+      "path": "/api/monitoring/page-view",
+      "forwarded": false
+    }
+  ],
+  "blockedNonGetApiRequests": [
+    {
+      "scenario": "updates-enabled-zh-1440-light",
+      "method": "POST",
+      "path": "/api/monitoring/page-view",
+      "forwarded": false
+    },
+    {
+      "scenario": "updates-enabled-zh-1440-light",
+      "method": "POST",
+      "path": "/api/monitoring/page-view",
+      "forwarded": false
+    },
+    {
+      "scenario": "updates-enabled-en-1440-dark",
+      "method": "POST",
+      "path": "/api/monitoring/page-view",
+      "forwarded": false
+    },
+    {
+      "scenario": "updates-enabled-en-1440-dark",
+      "method": "POST",
+      "path": "/api/monitoring/page-view",
+      "forwarded": false
+    },
+    {
+      "scenario": "updates-enabled-zh-390-dark",
+      "method": "POST",
+      "path": "/api/monitoring/page-view",
+      "forwarded": false
+    },
+    {
+      "scenario": "updates-enabled-zh-390-dark",
+      "method": "POST",
+      "path": "/api/monitoring/page-view",
+      "forwarded": false
+    },
+    {
+      "scenario": "updates-enabled-en-390-light",
+      "method": "POST",
+      "path": "/api/monitoring/page-view",
+      "forwarded": false
+    },
+    {
+      "scenario": "updates-enabled-en-390-light",
+      "method": "POST",
+      "path": "/api/monitoring/page-view",
+      "forwarded": false
+    }
+  ],
+  "actualApiGetRequests": [
+    {
+      "scenario": "updates-enabled-zh-1440-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/config",
+      "httpStatus": 200,
+      "directRead": true
+    },
+    {
+      "scenario": "updates-enabled-zh-1440-light",
+      "method": "GET",
+      "path": "/api/notifications/unread-count"
+    },
+    {
+      "scenario": "updates-enabled-zh-1440-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/overview"
+    },
+    {
+      "scenario": "updates-enabled-zh-1440-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/tasks"
+    },
+    {
+      "scenario": "updates-enabled-zh-1440-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/discoveries"
+    },
+    {
+      "scenario": "updates-enabled-zh-1440-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/missing-resources"
+    },
+    {
+      "scenario": "updates-enabled-zh-1440-light",
+      "method": "GET",
+      "path": "/api/notifications/unread-count"
+    },
+    {
+      "scenario": "updates-enabled-zh-1440-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/overview"
+    },
+    {
+      "scenario": "updates-enabled-zh-1440-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/tasks"
+    },
+    {
+      "scenario": "updates-enabled-zh-1440-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/discoveries"
+    },
+    {
+      "scenario": "updates-enabled-zh-1440-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/missing-resources"
+    },
+    {
+      "scenario": "updates-enabled-zh-1440-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/config",
+      "httpStatus": 200,
+      "directRead": true
+    },
+    {
+      "scenario": "updates-enabled-en-1440-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/config",
+      "httpStatus": 200,
+      "directRead": true
+    },
+    {
+      "scenario": "updates-enabled-en-1440-dark",
+      "method": "GET",
+      "path": "/api/notifications/unread-count"
+    },
+    {
+      "scenario": "updates-enabled-en-1440-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/overview"
+    },
+    {
+      "scenario": "updates-enabled-en-1440-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/tasks"
+    },
+    {
+      "scenario": "updates-enabled-en-1440-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/discoveries"
+    },
+    {
+      "scenario": "updates-enabled-en-1440-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/missing-resources"
+    },
+    {
+      "scenario": "updates-enabled-en-1440-dark",
+      "method": "GET",
+      "path": "/api/notifications/unread-count"
+    },
+    {
+      "scenario": "updates-enabled-en-1440-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/overview"
+    },
+    {
+      "scenario": "updates-enabled-en-1440-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/tasks"
+    },
+    {
+      "scenario": "updates-enabled-en-1440-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/discoveries"
+    },
+    {
+      "scenario": "updates-enabled-en-1440-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/missing-resources"
+    },
+    {
+      "scenario": "updates-enabled-en-1440-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/config",
+      "httpStatus": 200,
+      "directRead": true
+    },
+    {
+      "scenario": "updates-enabled-zh-390-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/config",
+      "httpStatus": 200,
+      "directRead": true
+    },
+    {
+      "scenario": "updates-enabled-zh-390-dark",
+      "method": "GET",
+      "path": "/api/notifications/unread-count"
+    },
+    {
+      "scenario": "updates-enabled-zh-390-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/overview"
+    },
+    {
+      "scenario": "updates-enabled-zh-390-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/tasks"
+    },
+    {
+      "scenario": "updates-enabled-zh-390-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/discoveries"
+    },
+    {
+      "scenario": "updates-enabled-zh-390-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/missing-resources"
+    },
+    {
+      "scenario": "updates-enabled-zh-390-dark",
+      "method": "GET",
+      "path": "/api/notifications/unread-count"
+    },
+    {
+      "scenario": "updates-enabled-zh-390-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/overview"
+    },
+    {
+      "scenario": "updates-enabled-zh-390-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/tasks"
+    },
+    {
+      "scenario": "updates-enabled-zh-390-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/discoveries"
+    },
+    {
+      "scenario": "updates-enabled-zh-390-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/missing-resources"
+    },
+    {
+      "scenario": "updates-enabled-zh-390-dark",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/config",
+      "httpStatus": 200,
+      "directRead": true
+    },
+    {
+      "scenario": "updates-enabled-en-390-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/config",
+      "httpStatus": 200,
+      "directRead": true
+    },
+    {
+      "scenario": "updates-enabled-en-390-light",
+      "method": "GET",
+      "path": "/api/notifications/unread-count"
+    },
+    {
+      "scenario": "updates-enabled-en-390-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/overview"
+    },
+    {
+      "scenario": "updates-enabled-en-390-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/tasks"
+    },
+    {
+      "scenario": "updates-enabled-en-390-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/discoveries"
+    },
+    {
+      "scenario": "updates-enabled-en-390-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/missing-resources"
+    },
+    {
+      "scenario": "updates-enabled-en-390-light",
+      "method": "GET",
+      "path": "/api/notifications/unread-count"
+    },
+    {
+      "scenario": "updates-enabled-en-390-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/overview"
+    },
+    {
+      "scenario": "updates-enabled-en-390-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/tasks"
+    },
+    {
+      "scenario": "updates-enabled-en-390-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/discoveries"
+    },
+    {
+      "scenario": "updates-enabled-en-390-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/missing-resources"
+    },
+    {
+      "scenario": "updates-enabled-en-390-light",
+      "method": "GET",
+      "path": "/api/admin/resource-hub/config",
+      "httpStatus": 200,
+      "directRead": true
+    }
+  ],
+  "pageErrors": [],
+  "allPagesConfigAndAssetsFromLive": true,
+  "productionConfigurationWrites": 0,
+  "providerWrites": 0,
+  "extraDockerContainers": 0,
+  "browserMode": "headless ephemeral contexts",
+  "scriptSha256": "447dbcad859da9ed770e0744158b99a3e9ccde27008b18b7fd89dff650db76b7",
+  "rangeBaseline": {
+    "gyingAutoSyncPausedSources": {
+      "CSCORE_TV": true,
+      "CSCORE_MOVIE": true,
+      "TIME_TV": false,
+      "CSCORE_ANIME": true,
+      "HITS_TV": false,
+      "HITS_MOVIE": false,
+      "TIME_MOVIE": false,
+      "HITS_ANIME": false,
+      "SCORE_MOVIE": false,
+      "TIME_ANIME": false,
+      "SCORE_ANIME": false,
+      "SCORE_TV": false
+    },
+    "gyingAutoSyncPage": 11,
+    "gyingAutoSyncEndPage": 50,
+    "gyingAutoSyncRanges": {
+      "HITS_MOVIE": {
+        "startPage": 1,
+        "endPage": 2
+      },
+      "HITS_TV": {
+        "startPage": 1,
+        "endPage": 2
+      },
+      "HITS_ANIME": {
+        "startPage": 1,
+        "endPage": 2
+      },
+      "CSCORE_MOVIE": {
+        "startPage": 11,
+        "endPage": 50
+      },
+      "CSCORE_TV": {
+        "startPage": 11,
+        "endPage": 50
+      },
+      "CSCORE_ANIME": {
+        "startPage": 11,
+        "endPage": 50
+      },
+      "TIME_MOVIE": {
+        "startPage": 1,
+        "endPage": 2
+      },
+      "TIME_TV": {
+        "startPage": 1,
+        "endPage": 2
+      },
+      "TIME_ANIME": {
+        "startPage": 1,
+        "endPage": 2
+      },
+      "SCORE_MOVIE": {
+        "startPage": 11,
+        "endPage": 50
+      },
+      "SCORE_TV": {
+        "startPage": 11,
+        "endPage": 50
+      },
+      "SCORE_ANIME": {
+        "startPage": 11,
+        "endPage": 50
+      }
+    },
+    "tmdbAutoSyncPage": 100,
+    "tmdbAutoSyncEndPage": 150,
+    "tmdbAutoSyncRanges": {
+      "TRENDING_MOVIE_DAY": {
+        "startPage": 100,
+        "endPage": 150
+      },
+      "TRENDING_TV_DAY": {
+        "startPage": 100,
+        "endPage": 150
+      },
+      "POPULAR_MOVIE": {
+        "startPage": 100,
+        "endPage": 150
+      },
+      "POPULAR_TV": {
+        "startPage": 100,
+        "endPage": 150
+      },
+      "TOP_RATED_MOVIE": {
+        "startPage": 500,
+        "endPage": 500
+      },
+      "TOP_RATED_TV": {
+        "startPage": 360,
+        "endPage": 500
+      },
+      "UPCOMING_MOVIE": {
+        "startPage": 100,
+        "endPage": 150
+      }
+    }
+  },
+  "controlBaselineSha256": "4006b3586db64affb1ba06694d785ed0b0f0c9ccc8674abf8ebd979b6f7e8542",
+  "passed": true,
+  "status": "passed",
+  "scenariosPassed": 4,
+  "sourceOptionsVerified": 12,
+  "actualAssetGetRequests": 98,
+  "completedAt": "2026-11-15T09:41:46.857Z"
+}

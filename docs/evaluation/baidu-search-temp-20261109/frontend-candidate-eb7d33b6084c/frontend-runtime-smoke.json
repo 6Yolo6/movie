@@ -1,0 +1,52 @@
+{
+  "at": "2026-11-09T12:49:01.240542+00:00",
+  "candidateImageId": "sha256:e083baeef9394fffda0887a41223da2d1bf679005d9ad9b81e4848ae3cd6dbe4",
+  "isolatedNetwork": "none",
+  "readOnlyContainer": true,
+  "portsMapped": false,
+  "productionMounts": false,
+  "smoke": {
+    "results": [
+      {
+        "route": "/",
+        "status": 200,
+        "htmlBytes": 67816,
+        "assetCount": 37
+      },
+      {
+        "route": "/resource-search",
+        "status": 200,
+        "htmlBytes": 60887,
+        "assetCount": 38
+      },
+      {
+        "route": "/admin/settings",
+        "status": 200,
+        "htmlBytes": 68853,
+        "assetCount": 37
+      }
+    ],
+    "node": "v22.23.4",
+    "uid": 1001,
+    "features": {
+      "pan.baidu.com": true,
+      "百度网盘 App": true,
+      "按网盘筛选资源": true,
+      "data-command": true,
+      "resource-links-": true,
+      "/api/resource-search/query": true,
+      "/api/resource-search/jobs/": true,
+      "qq.bot.transfer_cleanup.baidu_root": true,
+      "qq.bot.transfer_cleanup.baidu_mode": true
+    }
+  },
+  "content": {
+    "allHashesMatch": true,
+    "fileCount": 375
+  },
+  "temporarySmokeContainerRemoved": true,
+  "effectiveImageEnvUnchanged": true,
+  "nativeDependenciesInherited": true,
+  "productionFrontendUnchanged": true,
+  "deployed": false
+}

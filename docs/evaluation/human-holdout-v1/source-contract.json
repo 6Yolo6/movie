@@ -1,0 +1,50 @@
+[
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/AiAssistantController.java",
+    "sha256": "5eecc80089ab1151889e5aef9fafd75f0a909d447129d2054b7b0253e55e0bd4",
+    "matchesDeployedSource": true
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/AiAssistantService.java",
+    "sha256": "9e4791e7524e383710a29147622e6de55e7fc1c0a14a8888ef62ca67c44d88d0",
+    "matchesDeployedSource": true
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/CatalogAiService.java",
+    "sha256": "99f791c77bc6f1aebad1c894dbcf5177c7a991da1e6dd01a8351f9d669e54623",
+    "matchesDeployedSource": true
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/NaturalMovieQuery.java",
+    "sha256": "7ff795637dc03b888108f88f731fe940e1407bfb09146a79499099b227adc699",
+    "matchesDeployedSource": true
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/CatalogTextIndex.java",
+    "sha256": "c2a2c2ed0293c8c414c001af975f816c3fbcdfc9034a19e977e281b12c9c1cda",
+    "matchesDeployedSource": true
+  },
+  {
+    "path": "frontend/src/app/ai-assistant/page.tsx",
+    "sha256": "18cf65fc7345c0fe543f33be252df26c2eb824875026e8f2e84d6a3c50a9c066",
+    "matchesDeployedSource": true
+  },
+  {
+    "repository": "local-ai-agent",
+    "path": "backend/src/main/java/com/localai/agent/assistant/AssistantService.java",
+    "sha256": "06d799e756aa8f49623da97371bc221d4abfd552b5e0b5704a3d38282a686e15",
+    "matchesDeployedSource": true
+  },
+  {
+    "repository": "local-ai-agent",
+    "path": "backend/src/main/java/com/localai/agent/assistant/GyingBridge.java",
+    "sha256": "d0862537a3b1c193ca3da027df1dc8b09ca26bb5236c63454b422e5d3e8c8274",
+    "matchesDeployedSource": true
+  },
+  {
+    "repository": "local-ai-agent",
+    "path": "backend/src/main/java/com/localai/agent/assistant/GyingTools.java",
+    "sha256": "4fb7e24dd154613810e5c635e054015b765af630896d84d29e10544350ddd54f",
+    "matchesDeployedSource": true
+  }
+]

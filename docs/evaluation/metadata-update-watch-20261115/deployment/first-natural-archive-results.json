@@ -1,0 +1,78 @@
+{
+  "observedAt": "2026-11-15T09:48:21.678850+00:00",
+  "sourceCommit": "1adbc336cdadefa48be40ff37082a6de840fbd41",
+  "tasks": [
+    {
+      "id": 18066,
+      "source": "QUARK",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "stage": "COMPLETE",
+      "fileCount": 2,
+      "totalBytes": 37342,
+      "uploadedFileCheckpoints": 2,
+      "uploadedTorrentFileCheckpoints": 1
+    },
+    {
+      "id": 18067,
+      "source": "BAIDU",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "stage": "COMPLETE",
+      "fileCount": 2,
+      "totalBytes": 37342,
+      "uploadedFileCheckpoints": 2,
+      "uploadedTorrentFileCheckpoints": 1
+    },
+    {
+      "id": 18068,
+      "source": "QUARK",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "stage": "COMPLETE",
+      "fileCount": 4,
+      "totalBytes": 92385,
+      "uploadedFileCheckpoints": 4,
+      "uploadedTorrentFileCheckpoints": 2
+    },
+    {
+      "id": 18069,
+      "source": "BAIDU",
+      "status": "FAILED",
+      "attempts": 1,
+      "stage": "UPLOAD_TORRENT",
+      "fileCount": null,
+      "totalBytes": null,
+      "uploadedFileCheckpoints": 2,
+      "uploadedTorrentFileCheckpoints": 0
+    },
+    {
+      "id": 18070,
+      "source": "QUARK",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "stage": "COMPLETE",
+      "fileCount": 2,
+      "totalBytes": 21567,
+      "uploadedFileCheckpoints": 2,
+      "uploadedTorrentFileCheckpoints": 1
+    },
+    {
+      "id": 18071,
+      "source": "BAIDU",
+      "status": "SUCCEEDED",
+      "attempts": 1,
+      "stage": "COMPLETE",
+      "fileCount": 2,
+      "totalBytes": 21567,
+      "uploadedFileCheckpoints": 2,
+      "uploadedTorrentFileCheckpoints": 1
+    }
+  ],
+  "productionWrites": 0,
+  "manualRetries": 0,
+  "providerRequests": 0,
+  "taskRowsAndUploadCheckpointsObservedOnly": true,
+  "remoteContentHashesOrShareDirectoriesSeparatelyVerified": false,
+  "namesAndFileIdsOrShareUrlsWritten": false
+}

@@ -1,0 +1,53 @@
+{
+  "status": "deployed-local-verification-passed",
+  "startedAt": "2026-11-08T17:19:21.223950+00:00",
+  "completedAt": "2026-11-08T17:22:22.776504+00:00",
+  "affected": [
+    "backend",
+    "frontend"
+  ],
+  "deploymentPerformed": true,
+  "schemaChanged": false,
+  "liveDataStateKeyRetained": true,
+  "candidateImages": {
+    "backend": "sha256:dc9fd40464ac78c9f0b691ac90e97ad313e4c69f0154b34e606569297909c3f2",
+    "frontend": "sha256:4b40a2912d93a1b53abb53383a99d71c7fb6f041ef3cb9d8d6d85386534463b0"
+  },
+  "backendJarSha256": "5469438057b9dc1f1455258bbc13c5ab01d47902cd85b3b44dd8184481401547",
+  "sourceBound": true,
+  "effectiveComposeAndRuntimePreserved": true,
+  "TERMReceipts": {
+    "backend": {
+      "id": "794d154927d1f2a1aab3b030c8528f37e9355682dc56f675326d882e262aeee9",
+      "image": "sha256:ef4cdaf146d4af070968ca058fe159aa3f1ddf397d60ea6e1c2789fc8c1c002f",
+      "exitCode": 143,
+      "finishedAt": "2026-11-08T17:21:05.912891466Z"
+    },
+    "frontend": {
+      "id": "bc07d150c0399499323a9b2c8b738ea658f6f8dfe0ac2dc28448fada9cdc1cb2",
+      "image": "sha256:fb2baa912bf471e40cc060b581c34bf8080200fe867573d96dd182a13e861a3e",
+      "exitCode": 143,
+      "finishedAt": "2026-11-08T17:22:11.097406544Z"
+    }
+  },
+  "finalCheckpoint": "G:\\gying-backups\\baidu-backfill-20261109-20261108T172112.304097Z",
+  "actualJarVerified": true,
+  "localEntriesVerified": true,
+  "unaffectedContainersPreserved": true,
+  "dailyBackupOverlayIncluded": true,
+  "securityException": {
+    "acceptedByCurrentUserAuthorization": true,
+    "scanSummary": {
+      "PASS": 58,
+      "FAIL": 11,
+      "UNKNOWN": 1
+    },
+    "gateLedgerStillOpen": true,
+    "authorizationSha256": "c9638fd69ea536710da0f2c875bd0ab10569e00a2eef6eb292cbf0675eff1caa"
+  },
+  "readinessExitCode": 0,
+  "sourceCommit": "1a9ff55fb6f8c573d4413a625fc00d9e964e29d0",
+  "originalReceiptSha256": "91c7e0592bd79970db7fe78defea3e997914baf7e6dd4e9434e72fcf9357b7c6",
+  "publicVerificationEvidence": "../frontend-admin-verification/frontend-admin-summary.json",
+  "externalWritesPerformed": false
+}

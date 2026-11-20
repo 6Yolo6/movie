@@ -1,0 +1,701 @@
+{
+  "date": "2026-10-22",
+  "timezone": "Asia/Shanghai",
+  "scope": "candidate code only; no production replacement or key provisioning",
+  "gying_full_suite": {
+    "test_summary": {
+      "totals": {
+        "tests": 695,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1,
+        "passed": 694
+      },
+      "classes": {
+        "GyingSourceClientTest": {
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "P2pCloudArchiveClientTest": {
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "PanSouApiClientTest": {
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "PanSouClientTest": {
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "QuarkAutoSaveClientTest": {
+          "tests": 23,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "QuarkShareClientTest": {
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "QuarkTransferImageTest": {
+          "tests": 9,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "TmdbClientTest": {
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "XunleiClientTest": {
+          "tests": 25,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "XunleiPlacementTest": {
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "XunleiTokenPersistenceTest": {
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "XunleiTransferImageTest": {
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "AiAssistantControllerTest": {
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "AuthControllerEmailTest": {
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "AuthControllerNicknameTest": {
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "CommentControllerSecurityTest": {
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "FavoriteControllerTest": {
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "MonitoringControllerTest": {
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "MovieControllerReadTest": {
+          "tests": 12,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "NotificationControllerTest": {
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "QqBotSecurityTest": {
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "ResourceHubAdminControllerRetryTest": {
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "ResourceLinkControllerBindingTest": {
+          "tests": 20,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "SocialPublishingAdminControllerTest": {
+          "tests": 7,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "SysConfigControllerSecurityTest": {
+          "tests": 9,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "UserManagementControllerTest": {
+          "tests": 14,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "WebResourceSearchControllerTest": {
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "UserFavoriteMapperTest": {
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "ApiSecurityFilterTest": {
+          "tests": 9,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "ClientIpResolverTest": {
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "ExceptionSafetyTest": {
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "ProductionSecurityValidatorTest": {
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "RedisRateLimiterIntegrationTest": {
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 1
+        },
+        "RedisRateLimiterTest": {
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "AiAssistantRecoveryTest": {
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "AiAssistantServiceTest": {
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "CatalogAiMySqlTest": {
+          "tests": 9,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "CatalogAiServiceTest": {
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "CatalogEvaluationTest": {
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "CatalogRecommendationEngineTest": {
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "CommentDisplayNicknameTest": {
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "CommentPaginationTest": {
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "GyingMetadataItemRetryServiceTest": {
+          "tests": 9,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "GyingMetadataSyncServiceImplTest": {
+          "tests": 11,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "GyingSourceWorkflowServiceTest": {
+          "tests": 48,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "GyingWeeklyTransferServiceTest": {
+          "tests": 7,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "GyingWeeklyTransferSettingsTest": {
+          "tests": 11,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "MetadataCrawlPlannerTest": {
+          "tests": 17,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "MetadataCrawlRecoveryTest": {
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "MonitoringServiceAccessIdentityTest": {
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "MonitoringServiceEventTest": {
+          "tests": 12,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "MonitoringServiceHotKeywordsTest": {
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "MonitoringServiceLogPageTest": {
+          "tests": 25,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "MonitoringServiceMySqlTest": {
+          "tests": 7,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "MonitoringServiceOverviewTest": {
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "MonitoringServiceSocialStatusTest": {
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "MovieCollectionCompletionTest": {
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "NaturalMovieQueryTest": {
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "P2pArchiveTaskServiceTest": {
+          "tests": 13,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "QqAutomationConfigSecurityTest": {
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "QqBotServiceImplTest": {
+          "tests": 53,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "QqTransferCleanupServiceTest": {
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "QuarkShareServiceImplTest": {
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "QuarkTransferRunnerServiceImplTest": {
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "QueryBoundaryMySqlTest": {
+          "tests": 7,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "RegistrationServiceTest": {
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "ResourceDiscoveryServiceImplTest": {
+          "tests": 14,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "ResourceHubConfigServiceImplTest": {
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "ResourceHubPublishServiceImplTest": {
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "ResourceHubWorkerServiceImplTest": {
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "ResourceLinkServiceImplTest": {
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "ResourceLinkVisibilityTest": {
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "SeasonMetadataCompletionTest": {
+          "tests": 11,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "SocialPublishingServiceTest": {
+          "tests": 11,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "SysUserEmailChangeTest": {
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "SysUserNicknameTest": {
+          "tests": 13,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "TmdbMetadataCrawlTest": {
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "XunleiTransferRunnerServiceImplTest": {
+          "tests": 18,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "PrivateFileWriterTest": {
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "GyingMetadataMatcherTest": {
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "MovieSearchCandidateUtilsTest": {
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "MovieTitleMatcherTest": {
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "ObfuscatedTitleMatcherTest": {
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "PosterUrlUtilsTest": {
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "QqResourcePreferenceParserTest": {
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "ResourceTitleMatcherTest": {
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "SanitizerTest": {
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "SearchKeywordPolicyTest": {
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "SeasonSearchUtilsTest": {
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      },
+      "required_sql_verified": true
+    },
+    "cleanup": [
+      {
+        "id": "343e7a32c2f542cac2943b20444393440deb7635419933a9f1af2858d3a69113",
+        "removed": true
+      },
+      {
+        "id": "a02b451cac3f17b34b499816e7201dd9b538de898d9fd3eed8929ac10663c94f",
+        "removed": true
+      }
+    ]
+  },
+  "gying_final_targeted": {
+    "totals": {
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 16
+    },
+    "classes": {
+      "AiAssistantControllerTest": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "AiAssistantRecoveryTest": {
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "AiAssistantServiceTest": {
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "local_agent_verify": {
+    "totals": {
+      "tests": 60,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 60
+    },
+    "classes": {
+      "AssistantServiceTest": {
+        "tests": 18,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "GyingBridgeRecoveryTest": {
+        "tests": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "GyingBridgeTest": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "GyingToolsTest": {
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "MovieWebToolsTest": {
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ReadOnlyToolsTest": {
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "LocalLifecycleTest": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "OllamaServiceTest": {
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "evaluator_offline_tests": {
+    "tests": 18,
+    "passed": 18
+  },
+  "production_security": {
+    "PASS": 59,
+    "FAIL": 11,
+    "UNKNOWN": 0,
+    "replacement": "blocked"
+  },
+  "artifacts": {
+    "movie-backend.jar": "8828019fcb0de2849eff8dc6ec02acba0f9f4c9ba6e7e2451f865670a8922047",
+    "local-ai-agent.jar": "2bd021c614de620fe594c0096dc892313f221093c1f18ee37bed8a414865e815"
+  },
+  "release_directory": "E:/gying-tools/releases/ai-reliability-20261022",
+  "limits": [
+    "no real model in recovery fixtures",
+    "no website-account end-to-end",
+    "no production restart fault injection",
+    "no tool-loop intermediate checkpoint",
+    "single process writer per file",
+    "15 minute completed payload retention; no physical erasure guarantee"
+  ],
+  "sources": {
+    "gying/backend/src/main/java/com/gying/movie/service/impl/AiAssistantService.java": "9e4791e7524e383710a29147622e6de55e7fc1c0a14a8888ef62ca67c44d88d0",
+    "gying/backend/src/main/java/com/gying/movie/utils/EncryptedAiState.java": "1fa4b5715e45756bb3d51e5c8ef6381bb959788bccd2ebe19720542fa2240ad7",
+    "gying/backend/src/main/java/com/gying/movie/controller/AiAssistantController.java": "5eecc80089ab1151889e5aef9fafd75f0a909d447129d2054b7b0253e55e0bd4",
+    "gying/backend/src/test/java/com/gying/movie/service/impl/AiAssistantRecoveryTest.java": "cc7eca344d33b1dbfb3fe983e0b084ff6407f3c3b80e8d83d055264fd167631b",
+    "local-agent/backend/src/main/java/com/localai/agent/assistant/GyingBridge.java": "d0862537a3b1c193ca3da027df1dc8b09ca26bb5236c63454b422e5d3e8c8274",
+    "local-agent/backend/src/main/java/com/localai/agent/assistant/EncryptedAiState.java": "8302d4b706d096eed25c2699a61351545be4a3bd327407943579c7f700619313",
+    "local-agent/backend/src/test/java/com/localai/agent/assistant/GyingBridgeRecoveryTest.java": "a11cce97b93578a19329bf96390c02dfbc71156de85cc587bf13696a0f3c7bdb"
+  },
+  "candidate_image": {
+    "tag": "gying-ai-reliability-backend:20261022",
+    "id": "sha256:81d6bd4c41161cab085c1732975e245a2613919cba172139a26d0334b499dd15"
+  },
+  "existing_runtime_probes": [
+    {
+      "entry": "http://127.0.0.1/",
+      "status": 200
+    },
+    {
+      "entry": "http://127.0.0.1/api/movies/list?page=1&size=1",
+      "status": 200
+    },
+    {
+      "entry": "http://127.0.0.1:5000/api/health",
+      "status": 200
+    }
+  ]
+}

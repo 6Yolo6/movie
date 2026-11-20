@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-11-03T14:30:15.397550+00:00",
+  "commit": "065b7cede875e345dde7032f97b69427928e84e6",
+  "codeCommit": "d24e08f3bee346b3f5795b4774865dbb01a06af8",
+  "files": 352,
+  "completeGitInventoryAndContentVerified": true,
+  "normalization": "CRLF to LF only",
+  "imageId": "sha256:6bee2a1d65a7114c05dcffed559bab9bbf1791751b855ba5c44a75ef2dcd471e",
+  "jarSha256": "f805f0655d8acf134b58c85908cbaef84302e16ac0b38675c197c4b9489d68b4",
+  "sourceSha256": "8b046e86c8552cd27aeed4ae637f0715f596787b0f2e34f90cb9a3e237fb951f"
+}

@@ -1,0 +1,217 @@
+{
+  "version": 3,
+  "status": "DERIVED_OFFLINE_VERIFIED",
+  "at": "2026-11-11T06:10:44.168327+00:00",
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMergeV2.py",
+      "sha256": "2e42955e32eee229c6c24c34884d12b06258cc3a713cfef38ce53b85a1c968a5"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerifyV2.py",
+      "sha256": "61c8022c91586517faa173a2af7e3b81d78833f7d85bf9f421524ea1763a4230"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchPresendResume.py",
+      "sha256": "da75b6cdeab288b9689e4a25ec8118720d1ffab270bb61abcb28ce5ff9dc4266"
+    }
+  ],
+  "priorAttemptInputs": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\resume-failure-99bb91258df645abaad0abb167ebd925.json",
+      "sha256": "5c1165874e384675fe373283f59629b4506c4c67a8888e00f7da2fb006c7f640"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\resume-preview-reservation.json",
+      "sha256": "c54f084a62da5eb272859171d9256af5cceb9633db43cc883c495269be19b392"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\resume-primary-readonly-verification.json",
+      "sha256": "db08ec203889d4c2a0dac0b94a951ca7ded56c57f369c37a185c0e510e7d6d5b"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\resume-blocked-primary.json",
+      "sha256": "35183fce47bd5588287498004b146cdf5851922fe3f7b0478f2fcc661c59ce69"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\subset-preimage.json",
+      "sha256": "53df435cd41f2b48019030b6f4741c3b7e9931d03d3f8738c398ca2611a5a632"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\subset-rows-before.json.age",
+      "sha256": "f8c23cca69329525ff3945e6001a616f6cfd9c66479b093a3c8ec76e9a751e24"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\subset-preview-authentication.json",
+      "sha256": "809e73beee004c1c0f9a5956ecf1460fb41451560f0ebbc9e3eea5ef2a0fedf5"
+    }
+  ],
+  "previousBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v2-binding.json",
+    "sha256": "edb8540f998a22eac3ca8723f1f949b14ace6fe87f2ee3d048920c638d63dfab"
+  },
+  "testFile": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchPresendOfflineTests.py",
+    "sha256": "2eaaa44261e260d09436b5a08fa03a79f16165c858c43ddb490382a09c2ddc6f"
+  },
+  "tests": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v3-tests-final.json",
+    "sha256": "054ab5f510e9bd7d5357d6db46108e0af6d45fd50ee3cb46905300fe2b12aafa"
+  },
+  "scope": {
+    "batch": 1,
+    "provenBeforeSendFailureOnly": true,
+    "originalPrimaryPreviewReissued": false,
+    "oldBlockedReviewMergeAllowed": false,
+    "originalEligiblePairs": 18,
+    "maxTotalPreviewPostsPerBatch": 2,
+    "maxNewPreviewPosts": 1,
+    "maxMergePosts": 1,
+    "automaticRequestRetry": false,
+    "automaticRestore": false,
+    "maxReadOnlyIdleWaitSeconds": 120,
+    "waitOnlyExactOriginalIdleGate": true
+  },
+  "reason": "V2 stopped on exact native idle gate after subset preimage/authentication and before subset request reservation. No subset POST or merge was attempted; original budget remains 1 remaining preview and 1 merge.",
+  "preservedDependencies": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMerge.py",
+      "sha256": "377a6525234a7a55931e51ada638f52985c4f97032a03bc47ed26d208b6e3412"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerify.py",
+      "sha256": "b92efd33cd11d682c5bcdbc8efb641dc7265cd92f5b96b284ef0e8f71655404e"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMergeV2.py",
+      "sha256": "2e42955e32eee229c6c24c34884d12b06258cc3a713cfef38ce53b85a1c968a5"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerifyV2.py",
+      "sha256": "61c8022c91586517faa173a2af7e3b81d78833f7d85bf9f421524ea1763a4230"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\stage-plan.json",
+      "sha256": "1559cfa56d77efeabbcbbd84a861c53cbe17d67d974bb0d3a588d1f940e29014"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\prepared.json",
+      "sha256": "fc0189345c29505f08b899a745a0b0e9163782b623bf6d86b88d04e5627c5707"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\frozen-offline.json",
+      "sha256": "edab16cfd50f1d09fae3d2549ff0647f3073e93507f596a5ebd7eb126cd044e2"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\offline-tests.json",
+      "sha256": "a4ae94b0c87f9a70cd53930b12c5c3e983d3dd2ad20f1de7239907a967ea0fdb"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchOfflineTests.py",
+      "sha256": "b9b26e2b48861a36e629ed840691813dfe27289dcbbd00d1b2d99ecfd4cab55d"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\README.txt",
+      "sha256": "23eb9a1a3848b7d9e136ced4eb4ac46d375a688ef15535b18f29a62471f3c00d"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\failure.json",
+      "sha256": "7e428c122573adbd3583d2adbdecfa95e2c07df2d649f788b9e420757b642ee0"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\reservation.json",
+      "sha256": "37743fec47bbe65563d694b75b2c58b420bf6ee5ffdbf3932845d59e35f4ed79"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-preimage.json",
+      "sha256": "992b2f525f2c9b92931f4360b33c5a7b9e13affa4440783a6e3258095ff07072"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-rows-before.json.age",
+      "sha256": "1f0cdb6f80f3304d33b79fb2a47d7226c53a42d3d1e592d4b72fd85a0975ed30"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-preview-authentication.json",
+      "sha256": "809e73beee004c1c0f9a5956ecf1460fb41451560f0ebbc9e3eea5ef2a0fedf5"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-preview-request.json",
+      "sha256": "482e6af7ddaf94577bf1e22f80bd19e27b8e700bc39abf01362f08c4e642c2da"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-preview-response-proof.json",
+      "sha256": "ed11a5676c885105577d49a45355178f4d8ac2950d3a1ebcd021c98d3413977f"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-preview-response.json",
+      "sha256": "a866b8779d1eb5f042e74e3507b80c1b4ce817ac908b9aa5b72f67d078228466"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\journal-fresh-primary-preimage.json",
+      "sha256": "98a343388e68a9a0e8c1642fac4a39186217cdbfdebcbeb250a3f3358bb844fd"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\journal-primary-preview-attempt-reserved.json",
+      "sha256": "5140423df2fbacc522e2bc0fec569b27ecc95029ecad72ebd4b390ab1827cd79"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\journal-primary-preview-response-recorded.json",
+      "sha256": "125ae100922582b898e10b94e8122a8ded0f7e9216205ae3e7930874f71c4b54"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v2-binding.json",
+      "sha256": "edb8540f998a22eac3ca8723f1f949b14ace6fe87f2ee3d048920c638d63dfab"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v2-offline-review.json",
+      "sha256": "79cc840aa2081e4ab396c959c1b19ae7b63a36bfa9263ffb6a51f8c6fe7f9dcd"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v2-derivation.json",
+      "sha256": "4f4a09bd9d9e2b54caa4dd77757ecc435ad079b5007f84c56b2602f90574db06"
+    }
+  ],
+  "oldAttempt": {
+    "failure": {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\resume-failure-99bb91258df645abaad0abb167ebd925.json",
+      "sha256": "5c1165874e384675fe373283f59629b4506c4c67a8888e00f7da2fb006c7f640"
+    },
+    "failureAt": "2026-11-11T06:00:58.586154+00:00",
+    "subsetPostReserved": false,
+    "mergePostReserved": false,
+    "subsetRequestFiles": 0,
+    "newRequestAttemptJournals": 0,
+    "unknownOutcomeFiles": 0,
+    "oldSubsetCiphertextDigestVerified": true,
+    "oldActorAndExistingDeviceProofVerified": true,
+    "runtimeAuthenticatedDecryptionAndSnapshotEqualityStillRequired": true,
+    "priorAdditionalMaterials": 7,
+    "oldFilesRewritten": 0
+  },
+  "implementation": {
+    "newPreimageName": "subset-presend",
+    "newPreviewTag": "subset-presend-preview",
+    "mergeTag": "merge",
+    "genericReadOnlyMergeVerifierCompatible": true,
+    "noPriorRequestCheckBeforeReservationAndImmediatelyBeforePreview": true,
+    "captureAndProvenanceAndImmediateStateChecks": true,
+    "freshAuthSameActorAndExistingDevice300Seconds": true,
+    "newReviewActorPlanImpactExpiryValidatedByFrozenV2": true,
+    "newReviewMustDifferFromOldPrimary": true,
+    "unknownOutcomesNeverReplay": true,
+    "readOnlyWaitBudgetSeconds": 120,
+    "waitOnlyExactNativeIdleGate": true,
+    "singleSharedWaitDeadline": true,
+    "otherGateStopsImmediately": true,
+    "readonlyFunctionsNoPostAst": true,
+    "runHasExactlyTwoPostCallSites": true,
+    "defaultAndUnarmedDirectExecutionPassed": true,
+    "v2HelpersAndAllBoundMaterialsUnmodified": true
+  },
+  "blockedRetentionFollowup": "Root must verify complete blocked-pair projection against primary preimage before and after merge using independent VerifyBlocked.py.",
+  "productionPosts": 0,
+  "runtimeIo": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0,
+  "gitActions": 0
+}

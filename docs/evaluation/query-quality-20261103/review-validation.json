@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-11-03T12:48:49.868483+00:00",
+  "reviewProtocol": "catalog-answer-diagnostic-model-review-v1",
+  "originalReportByteHashMatchesArchive": true,
+  "reportByteSha256": "1cc71feaf6c557bd5639c4a8aa47026b888817f5b3ef3e75877324997946d50c",
+  "rowCount": 15,
+  "uniqueIdentities": 15,
+  "all15AnswerUtf8HashesMatch": true,
+  "reviewRetainsAllRows": true,
+  "scoreValuesValid": true,
+  "verdictCounts": {
+    "未满足": 4,
+    "部分有用": 2,
+    "有效澄清": 2,
+    "满足": 5,
+    "证据不足": 2
+  },
+  "fullThreeDimensionReviews": 12,
+  "sensitiveKeyAudit": {
+    "actualSecretsFound": 0,
+    "onlySensitiveNamedField": "movieHarness.tokenFile",
+    "fieldContainsPathOnly": true,
+    "fixtureTokenContentsReadOrCopied": false
+  },
+  "qualityReviewV2Used": false,
+  "noInferenceExecutedByReviewer": true,
+  "newHumanReviews": 0,
+  "limits": "Custom v1 binding/structure validation, not quality_review.py v2 or production quality acceptance.",
+  "credentialValuePatternHits": {
+    "jwt": 0,
+    "bearerValue": 0,
+    "privateKey": 0,
+    "providerApiKey": 0
+  }
+}

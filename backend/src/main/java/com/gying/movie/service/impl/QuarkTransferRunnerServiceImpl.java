@@ -136,7 +136,8 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
                         movie.getTitleCn(),
                         movie.getTitleEn(),
                         movie.getAliases(),
-                        movie.getYear());
+                        movie.getYear(),
+                        discovery == null ? null : discovery.getTitle());
                 transferShareUrl = selection.shareUrl();
                 recursiveTransfer = selection.recursive();
             }
@@ -156,11 +157,12 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
 
             task.setSavedPath(savePath);
             boolean qqTemporary = QqTransferMarker.isTemporary(task.getRequestPayload());
-            if (qqTemporary && !resourceHubProperties.getQuark().isRunImmediately()) {
-                throw new IllegalStateException("QQ temporary Quark transfer requires immediate execution");
+            boolean oneShot = qqTemporary || isWeeklyOneShot(task.getRequestPayload());
+            if (oneShot && !resourceHubProperties.getQuark().isRunImmediately()) {
+                throw new IllegalStateException("One-shot Quark transfer requires immediate execution");
             }
             JsonNode response = null;
-            if (!alreadySubmitted && !qqTemporary) {
+            if (!alreadySubmitted && !oneShot) {
                 response = quarkAutoSaveClient.addTask(requestPayload);
                 task.setResponsePayload(writeResponsePayload(response, null));
             }
@@ -224,6 +226,7 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
     }
 
     private void enqueuePansouFallback(QuarkTransferTask transferTask) {
+        if (isWeeklyOneShot(transferTask.getRequestPayload())) return;
         if (transferTask.getDiscoveryResultId() == null) {
             return;
         }
@@ -282,11 +285,18 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
             }
         }
         Map<String, Object> payload = quarkAutoSaveClient.buildTaskPayload(taskName, shareUrl, savePath, updateSubdir);
+        if (isWeeklyOneShot(task.getRequestPayload())) payload.put("origin", "GYING_WEEKLY_ONE_SHOT");
         if (QqTransferMarker.isTemporary(task.getRequestPayload())) {
             payload.put("origin", QqTransferMarker.ORIGIN);
             payload.put("targetPath", QqTransferMarker.targetPath(task.getRequestPayload()));
         }
         return payload;
+    }
+
+    private boolean isWeeklyOneShot(String payload) {
+        if (payload == null || payload.isBlank()) return false;
+        try { return "GYING_WEEKLY_ONE_SHOT".equals(objectMapper.readTree(payload).path("origin").asText()); }
+        catch (Exception ignored) { return false; }
     }
 
     private void removeEmptyRunWeek(Map<String, Object> payload) {
@@ -326,6 +336,9 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
     }
 
     private String buildSavePath(MovieMetadata movie, QuarkTransferTask task) {
+        if (task != null && task.getSavedPath() != null && !task.getSavedPath().isBlank()) {
+            return task.getSavedPath();
+        }
         String temporaryPath = task == null ? null : QqTransferMarker.targetPath(task.getRequestPayload());
         if (QqTransferMarker.isTemporary(task == null ? null : task.getRequestPayload())
                 && temporaryPath != null && !temporaryPath.isBlank()) {
@@ -415,6 +428,9 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
     }
 
     private void ensureEnabled() {
+        if (!resourceHubProperties.isDriveShareTransferEnabled("QUARK")) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "夸克转存已关闭");
+        }
         if (!resourceHubProperties.isEnabled()) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Resource Hub is disabled");
         }

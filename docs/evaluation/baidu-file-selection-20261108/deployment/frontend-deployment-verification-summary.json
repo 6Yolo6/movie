@@ -1,0 +1,70 @@
+{
+  "checkedAt": "2026-11-08T16:45:15.287544+00:00",
+  "frontendAcceptanceStatus": "passed",
+  "scope": "actual administrator layout and readonly drive/global business policy, deployed artifact binding",
+  "backendImageId": "sha256:ef4cdaf146d4af070968ca058fe159aa3f1ddf397d60ea6e1c2789fc8c1c002f",
+  "frontendImageId": "sha256:fb2baa912bf471e40cc060b581c34bf8080200fe867573d96dd182a13e861a3e",
+  "browserScenariosPassed": 8,
+  "viewports": [
+    1280,
+    390
+  ],
+  "languages": [
+    "zh",
+    "en"
+  ],
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "pageErrors": 0,
+  "horizontalOverflowScenarios": 0,
+  "videoAndTorrentDraftsIndependent": true,
+  "baiduFileAndWorkflowDefaultsRemainDisabled": true,
+  "sessionUiMatchesActualApi": true,
+  "sessionStatesObserved": [
+    "FAILED",
+    "WAITING_SCAN"
+  ],
+  "baiduAccountConnectedVerified": false,
+  "configurationWriteRequestsSent": 0,
+  "transfersOrPublishingRequestsSent": 0,
+  "newProductionDevicesCreated": 0,
+  "sourceFileCount": 77,
+  "sourceHashesMatchAtVerificationComplete": true,
+  "sourceProofAt": "2026-11-08T16:44:03.874637+00:00",
+  "newFrontendDevelopmentReleasedAfterSourceProof": true,
+  "publicAndLocalDependencyAssetsPerOrigin": 41,
+  "publicAndLocalAssetSha256Matches": true,
+  "publicHtmlMatchesCandidate": true,
+  "businessFlagsPreservedDuringReadonlyFollowup": true,
+  "structuredConfigRowsRechecked": 36,
+  "structuredConfigRowsPreservedDuringFollowup": true,
+  "firstCompleteTableComparison": {
+    "status": "unknown",
+    "originalWrapperStatus": "failed",
+    "originalGate": "Resource Hub persisted configuration unchanged",
+    "originalFailureRetained": true,
+    "initialBeforeRowValuesNotRetained": true,
+    "specificInitialChangedKeysOrCauseEstablished": false,
+    "treatedAsNormalMetadataProgress": false
+  },
+  "evidence": [
+    {
+      "path": "docs/evaluation/baidu-file-selection-20261108/deployment/frontend-session-live-admin-ui.json",
+      "sha256": "85b96ad3259e76fbd7fb51af88e35ef59bff69efba3a8aea86e596fcd1ebd684"
+    },
+    {
+      "path": "docs/evaluation/baidu-file-selection-20261108/deployment/frontend-session-live-admin-verification.json",
+      "sha256": "bca758f8ccad3df5284da2ef9571428691916374b1d85ef5e453a5af57a281c4"
+    },
+    {
+      "path": "docs/evaluation/baidu-file-selection-20261108/deployment/frontend-session-public-baidu-assets.json",
+      "sha256": "74120582f9a0fecb8b32165ba69b883063f58deb66a3361199ac81a62c8ddde7"
+    },
+    {
+      "path": "docs/evaluation/baidu-file-selection-20261108/deployment/frontend-readonly-drive-policy-followup.json",
+      "sha256": "8b0eef19e05394514a8e397ec2d697202b511b77291f3e21375d130ce0ef7eda"
+    }
+  ]
+}

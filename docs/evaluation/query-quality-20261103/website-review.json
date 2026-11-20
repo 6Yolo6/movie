@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "reportSha256": "f027788aaf70e9968ec1830885554ab06cb2324dce7878480cec8249076273fc",
+  "reviewer": {
+    "kind": "model",
+    "name": "Codex inspect_ai_work with independent review_candidate_quality semantic review"
+  },
+  "reviews": [
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "409631f82099f2597d4f8797305165fca3028bb9602a59ca63bfa64772aaef08",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 1
+      },
+      "failureCategories": [
+        "candidates",
+        "facts"
+      ],
+      "hardConstraints": "unknown",
+      "outcome": "unhelpful",
+      "notes": "缺证。年份2008/2004、片长43/97<=110、最多两部及音乐字段均由本次记录支持，正文列出两部和年份。放牛班的春天简介支持音乐剧情电影；电台司令:彩虹里简介只称录音棚现场录像，mv和纪录/音乐字段不能单独核定电影身份。用户未限定剧情长片，因此也不据现场录像断言不是电影。整轮音乐电影硬条件仍缺身份依据，不能计完全满足；factuality=null针对未知电影身份，不把已核对的年份和时长改成未知。"
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 2,
+      "answerSha256": "59f070c322b1270e34a69b7f2de4d4ef316fb18f0262b3fd849d4149219bbb6c",
+      "scores": {
+        "factuality": null,
+        "grounding": 1,
+        "usefulness": 1
+      },
+      "failureCategories": [
+        "candidates",
+        "facts"
+      ],
+      "hardConstraints": "violated",
+      "outcome": "unhelpful",
+      "notes": "未满足。yearFrom=2015替换旧区间且旧yearTo已移除，音乐、maxRuntime110及limit2保持；新正文列出RAYE2024/80分钟和坂本龙一:杰作2023/103分钟。后者音乐纪录电影线索有用；RAYE简介明确写电视特辑节目，与mv电影字段冲突，正文仍无保留将其列为合条件音乐电影，未标明身份疑点。条件核对与候选呈现违反要求，不能凭数值过滤通过计整轮满足；电影身份没有权威外部复验，factuality仍为null而非猜测0分。"
+    },
+    {
+      "caseId": "dev-v3-06",
+      "repetition": 1,
+      "turn": 3,
+      "answerSha256": "a304dc4578d9839f8d9fdcb7d873b4eb5163fb2db5c11c677a50a0a3f4488878",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "failureCategories": [],
+      "hardConstraints": "satisfied",
+      "outcome": "exact",
+      "notes": "满足（片库资料口径）。第一轮实际首片是1MeM/电台司令:彩虹里，第二轮首片是za3R/RAYE。第三轮previousJobId接第二轮job，但queryPlan.movieId和getMovieDetails均回到1MeM；正文首句明确本次片库返回导演David Barnard，与第一轮候选和本次详情directors一致。分数针对可核对的旧列表身份及明确归属片库的导演字段，不把外部导演真实性或附加的长篇乐队简介当作独立事实验收。正文附加简介冗长且截断，未影响首句答出导演。"
+    },
+    {
+      "caseId": "dev-v3-09",
+      "repetition": 1,
+      "turn": 1,
+      "answerSha256": "0aedb2e9bd5fe52d2afd484637c5b27cf752aa667d8732b3596c5f0f459a0e74",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "failureCategories": [],
+      "hardConstraints": "notApplicable",
+      "outcome": "clarification",
+      "notes": "满足可行性判断。正文明确同一片长不能同时>=150且<=100，并用150>100解释矛盾、询问修改哪项；本次intent=clarify且无候选，没有截短、拆集或自行放宽。计划人物角色数组为空，未出现50分等数字误识别。本轮完成的是算术冲突解释与澄清，不是检索到一部可行影片。"
+    }
+  ]
+}

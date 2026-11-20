@@ -29,6 +29,9 @@ public class QqBotController {
         this.qqBotService = qqBotService;
     }
 
+    @org.springframework.beans.factory.annotation.Autowired(required=false)
+    private com.gying.movie.service.impl.AiAssistantService aiAssistant;
+
     @GetMapping("/health")
     public Map<String, Object> health() {
         return Map.of("status", "ok");
@@ -46,6 +49,20 @@ public class QqBotController {
         }
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", "ok");
+        if (aiAssistant != null && keyword.startsWith("自然语言：")) {
+            String question=keyword.substring(5).trim();
+            String interpreted=String.valueOf(aiAssistant.interpret(question).getOrDefault("keyword",""));
+            if(interpreted.isBlank()) {
+                result.put("reply","未识别到明确片名，请用“搜/找 片名”，或重新描述影片。请选择单个影片和资源，不支持批量转存。");
+                return result;
+            }
+            String raw=question.toLowerCase(java.util.Locale.ROOT).replaceAll("[\\p{P}\\s]","");
+            String extracted=interpreted.toLowerCase(java.util.Locale.ROOT).replaceAll("[\\p{P}\\s]","");
+            if(!raw.contains(extracted) || question.matches("(?s).*(?:批量|全部|所有|删除|执行|发布|转存|https?://|magnet:).*")) {
+                result.put("reply","请指定单部影片，不支持批量操作。"); return result;
+            }
+            keyword=interpreted;
+        }
         result.put("reply", qqBotService.buildSearchReply(keyword, userKey));
         return result;
     }

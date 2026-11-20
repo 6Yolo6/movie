@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "reportedAt": "2026-11-10T13:21:36.441018+00:00",
+  "command": "python -B E:/gying-tools/releases/mobland-merge-compat-20261110/HostPinCompletionOfflineTests.py",
+  "tests": 6,
+  "failures": 0,
+  "exitCode": 0,
+  "pythonAstSyntax": "PASS",
+  "sourceBoundary": "One frozen P.capture call, no apply/atomic_replace/set_security/temporary call",
+  "productionMutations": 0,
+  "productionHelperExecuted": false,
+  "helper": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\HostPinComplete.py",
+    "sha256": "8004953db32f5ffcde726a88c4baffe3c0c1fe0e3ffb48ac7ea6a56878ad25ca"
+  },
+  "testSource": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\HostPinCompletionOfflineTests.py",
+    "sha256": "ad725a42afe886d97b9b33a82268a151d431553ace7c2f8edb24918a4ef405d8"
+  }
+}

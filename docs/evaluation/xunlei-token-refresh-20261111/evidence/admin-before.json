@@ -1,0 +1,38 @@
+{
+  "checkedAt": "2026-11-11T15:01:35.348836+00:00",
+  "status": "ADMIN_READONLY_VERIFIED",
+  "xunlei": {
+    "xunleiAuthorizationConfigured": true,
+    "xunleiAuthorizationExpiresAt": "2026-11-09T10:33:15Z",
+    "xunleiAuthorizationExpired": true,
+    "xunleiEnabled": null
+  },
+  "baidu": {
+    "enabled": true,
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "status": "PENDING",
+    "blockedReason": null
+  },
+  "entry": {
+    "path": "/api/admin/resource-hub/config",
+    "method": "GET",
+    "attempts": 1,
+    "httpStatus": 200,
+    "bytes": 4328,
+    "dataSha256": "eab2c5b2afb056f4e325fc151f8ee2c45d284f8a142f1b77dd8e7c9f271da15b",
+    "responseBodyWritten": false
+  },
+  "authentication": {
+    "existingDeviceReused": true,
+    "newDeviceCreated": false,
+    "loginPerformed": false,
+    "jwtLifetimeSeconds": 300,
+    "deviceJtiSha256": "9533d9842c86a9222029bc78cee1c1c943aabc26f3be942e63e73e464e7016b5"
+  },
+  "containerCount": 13,
+  "generationsSha256": "50d7443c175fdcfe6b4969528ca99efa66e857fe2fdaa472430ce181a898edff",
+  "driveWrites": 0,
+  "settingsWrites": 0,
+  "responseBodyWritten": false
+}

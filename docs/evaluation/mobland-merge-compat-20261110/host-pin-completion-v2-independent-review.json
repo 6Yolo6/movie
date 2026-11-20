@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "reviewedAt": "2026-11-10T13:56:49.225098+00:00",
+  "binding": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-completion-v2-binding.json",
+    "sha256": "743ec62f36f6a950665412d2b315910ed792905a3ca862c456be382dc2ae5398"
+  },
+  "helper": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\HostPinCompleteV2.py",
+    "sha256": "8438a9d19d0288df24e21305856e67336e12f2a53cd07b08dcf06eae195590be"
+  },
+  "reviewScope": "Independent exact V1-to-V2 source diff, all frozen V2 references, exact Ops.py checkpoint-state bytes, first completion failure chain, checkpoint-only boundaries, and isolated offline tests",
+  "checks": {
+    "originalCheckpointStateExactBytes": 57,
+    "originalCheckpointStateSha256": "f34dc92b34b588e71dd8af7a7e580bc45623451ca645501200e571ac1ed8e7b3",
+    "unexpectedArchiveMembersRejected": true,
+    "alteredCheckpointStateRejected": true,
+    "firstCompletionFailureFrozenAndPreserved": true,
+    "originalV1InputChainRetained": true,
+    "singleFrozenCaptureCall": true,
+    "additionalHostConfigurationCasAttempts": 0,
+    "additionalServiceActivations": 0,
+    "productionMergeAuthorized": false,
+    "exclusiveCreateReservationAndPostPlanRetained": true,
+    "preAndPostCaptureVerificationRetained": true,
+    "observedReservationBeforeReview": false,
+    "observedPostPlanBeforeReview": false,
+    "allFrozenReferencesHashMatched": true
+  },
+  "offlineVerification": {
+    "command": "python -X utf8 -B E:/gying-tools/releases/mobland-merge-compat-20261110/HostPinCompletionV2OfflineTests.py",
+    "tests": 10,
+    "failures": 0,
+    "exitCode": 0,
+    "productionHelperExecuted": false,
+    "productionMutations": 0
+  },
+  "limitations": [
+    "Complete/current/inputs/capture and their failure injection were not executed; runtime success requires the unchanged locked live gates and authenticated capture checks.",
+    "This review approves the exact frozen checkpoint-only continuation and does not certify production completion."
+  ]
+}

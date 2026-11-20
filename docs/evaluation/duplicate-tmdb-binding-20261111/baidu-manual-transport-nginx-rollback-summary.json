@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "status": "MANUAL_TRANSPORT_504_AND_GIT_HEAD_ROLLBACK_CAPTURE_VERIFIED",
+  "sourceReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\receipt.json",
+    "sha256": "e8be1ea000b10dd07fde15eea0c6fbf82d234a3780a992629dc3f080f1eb9d22",
+    "bytes": 8783,
+    "status": "ROLLBACK_AND_TRANSPORT_READ_ONLY_CAPTURED",
+    "createdAt": "2026-11-11T10:30:20.791441+00:00"
+  },
+  "gitHeadAtCapture": "284e1b68ad27be4f53dcf2192933478a76d5633f",
+  "manualTransport": [
+    {
+      "manualOrdinal": 1,
+      "timestamp": "2026-11-11T10:11:34+00:00",
+      "status": 200,
+      "durationSeconds": 1.007
+    },
+    {
+      "manualOrdinal": 2,
+      "timestamp": "2026-11-11T10:13:59+00:00",
+      "status": 504,
+      "durationSeconds": 30.032
+    }
+  ],
+  "originalProxyRoute": {
+    "path": "/api/admin/resource-hub/baidu/backfill/run",
+    "gitHeadMatchedLocation": "/api/",
+    "proxyHeadersReadTimeoutSeconds": 30,
+    "proxyHeadersReadTimeoutFromGitHeadBackup": true
+  },
+  "diagnosis": {
+    "manual2GatewayResponseWas504": true,
+    "manual2ElapsedNearOriginalThirtySecondProxyReadTimeout": true,
+    "underlyingNewChild17650SucceededSeparatelyObserved": true,
+    "gatewayTimeoutDoesNotProveProviderArchiveFailure": true,
+    "exactActiveMemoryConfigAtFailureNotCaptured": true,
+    "earlierTimestampRegexSummaryNotRewritten": true
+  },
+  "rollbackFiles": [
+    {
+      "repoPath": "nginx/nginx.conf",
+      "containerPath": "/etc/nginx/conf.d/default.conf",
+      "originalPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\nginx.conf.original",
+      "originalSha256": "a331053f5d868937e6e73474390265bd69c2d873e2b7e1e2cbd21b4b741f1771",
+      "mountedPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\nginx.conf.mounted-at-capture",
+      "mountedSha256": "20111b6a8f2fe40e301011e52de85245f1232f49af3d0628d72835bcf60ac1f8",
+      "mountedEqualsGitHead": false,
+      "originalBytes": 3636,
+      "mountedBytes": 3952,
+      "gitHeadOriginalBackupExact": true
+    },
+    {
+      "repoPath": "nginx/nginx-main.conf",
+      "containerPath": "/etc/nginx/nginx.conf",
+      "originalPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\nginx-main.conf.original",
+      "originalSha256": "33499924b5c4fefaf12860877f735d51fca99b1ef8bdb245ea2d973dc5a41269",
+      "mountedPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\nginx-main.conf.mounted-at-capture",
+      "mountedSha256": "33499924b5c4fefaf12860877f735d51fca99b1ef8bdb245ea2d973dc5a41269",
+      "mountedEqualsGitHead": true,
+      "originalBytes": 723,
+      "mountedBytes": 723,
+      "gitHeadOriginalBackupExact": true
+    },
+    {
+      "repoPath": "nginx/proxy-headers.conf",
+      "containerPath": "/etc/nginx/proxy-headers.conf",
+      "originalPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\proxy-headers.conf.original",
+      "originalSha256": "845fb4f966290c8626bce9916c00611485f5ffea063f65c90a0ef7a939f1a499",
+      "mountedPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\proxy-headers.conf.mounted-at-capture",
+      "mountedSha256": "845fb4f966290c8626bce9916c00611485f5ffea063f65c90a0ef7a939f1a499",
+      "mountedEqualsGitHead": true,
+      "originalBytes": 380,
+      "mountedBytes": 380,
+      "gitHeadOriginalBackupExact": true
+    }
+  ],
+  "configurationBackupIsGitHead": true,
+  "localEditAlreadyPresentAtCapture": true,
+  "activeConfigNotDumped": true,
+  "mountedNginxConfAtCaptureEqualsGitHead": false,
+  "captureIsPreChangeMountedConfigBackup": false,
+  "allThirteenGenerationIdentifiersRetainedAtCapture": true,
+  "allContainerCount": 13,
+  "generationIdentifiersSha256": "c17fdab23722762a18eec182e09faa9751b3501f164e381d60c06e1ba94b15f7",
+  "nginxIdSha256": "9b3ee194ddc88a98c40321d7476316b342d41b71f28462589dfd44a52107f0f4",
+  "captureProductionWrites": 0,
+  "captureCloudWrites": 0,
+  "captureScriptSha256": "e6136e2140f9f9c439d335a8178be650e9294b901875af01c7e7f2ec8bd6ce79",
+  "captureStdoutSha256": "c1dc1da29cf4e501448f7509f6a9ce9eed387193d87e20eeaa3f5d154ac847a2",
+  "rawLogsWritten": false,
+  "rollbackPlan": "Restore original nginx.conf bytes to the same existing bind source, nginx -t, nginx -s reload; only after verifying current candidate hash.",
+  "rollbackFilesAndRawContainerMaterialsRemainOutsideRepository": true,
+  "fullBusinessRowsProviderUrlsAndCredentialValuesWritten": false,
+  "reviewMethod": "Local receipt and saved file hashes, exact Git object backup comparison, original route directive inspection and normalized generation comparison only",
+  "reviewProductionApiRequests": 0,
+  "reviewProductionSqlQueries": 0,
+  "reviewDockerRequests": 0,
+  "nginxTestReloadOrDeploymentPerformedByThisReview": false,
+  "officialReconciliationVerifiedByThisReview": false,
+  "naturalRestoredByThisReview": false,
+  "gitActions": 0
+}

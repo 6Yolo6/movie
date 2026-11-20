@@ -1,0 +1,53 @@
+{
+  "validatedAt": "2026-11-03T15:16:06.119639+00:00",
+  "codeCommit": "d24e08f3bee346b3f5795b4774865dbb01a06af8",
+  "deploymentSourceCommit": "065b7cede875e345dde7032f97b69427928e84e6",
+  "imageId": "sha256:6bee2a1d65a7114c05dcffed559bab9bbf1791751b855ba5c44a75ef2dcd471e",
+  "jarSha256": "f805f0655d8acf134b58c85908cbaef84302e16ac0b38675c197c4b9489d68b4",
+  "tests": {
+    "tests": 940,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 939
+  },
+  "compileVerified": true,
+  "realDirectoryProbes": 2,
+  "singleRealTaskRetried": 2177,
+  "collectionTask2176Unchanged": true,
+  "discoveryId": 9339,
+  "resourceId": 1579,
+  "ownShareVideoBytes": 46357645187,
+  "ownShareVideoCount": 1,
+  "firstMovieAbsent": true,
+  "resourceStatus": "ACTIVE/NORMAL/approved",
+  "qqReplyRepairedSharePresent": true,
+  "qqAuditStatus": "LIBRARY_RESOURCE",
+  "qqMessagesSent": 0,
+  "externalContentPublished": false,
+  "entrypoints": 15,
+  "entrypointsFinalPassed": true,
+  "publicViaExistingProxy": "http://127.0.0.1:7897",
+  "failedTransportAttemptsRetained": true,
+  "finalCheckpoint": "G:\\gying-backups\\qq-prada-transfer-20261103-20261103T150327.259056Z",
+  "fiveAgeAuthenticated": true,
+  "dailyBackupOverlayApplied": true,
+  "dailyBackupFullNaturalRunVerified": false,
+  "naturalQqCleanupVerified": false,
+  "securityScan": {
+    "PASS": 58,
+    "FAIL": 11,
+    "UNKNOWN": 1
+  },
+  "securityRiskGatesClosed": false,
+  "deliveryChecks": {
+    "manifestEntriesVerified": 18,
+    "localLinksVerified": 103,
+    "privateValuesCompared": 98,
+    "privateValueMatches": 0,
+    "workingTreeSecretFindings": 0,
+    "diffCheckPassed": true,
+    "independentQaPassed": true,
+    "unrelatedWorkingTreeChangesExcluded": true
+  }
+}

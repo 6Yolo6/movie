@@ -1,0 +1,85 @@
+{
+  "status": "PASS",
+  "at": "2026-11-11T07:18:24.812269+00:00",
+  "reviewer": "review_data_helpers",
+  "reviewType": "INDEPENDENT_SAVED_REAL_READ_ONLY_PREPARATION_AND_PLAN_CHAIN",
+  "revisionBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v7-binding.json",
+    "sha256": "3d6dc081547fcc0694aee8f658c71afe1d8f0f4a1479b43093e29efb74bda00e"
+  },
+  "actualSplitPlan": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\split-plan.json",
+    "sha256": "61c351ddc6dd384caf2998a28c280b65a633edc8b1e6161dd3437040c295f889"
+  },
+  "actualReadOnlyPreparation": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\preparation.json",
+    "sha256": "38de6438b959b26ba6dc2751dda16ff96bed22e74c073d970c58f5a266ccacca"
+  },
+  "requiredRealObserver": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\unused-expired-observation-4b13f5e8de0940bd84f2e1db9ba084c6.json",
+    "sha256": "dfe60a595c51553d3d67857ce89588a13438c40d67a2d583b0f04f246c17c9d3"
+  },
+  "originalStage": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\stage-plan.json",
+    "sha256": "1559cfa56d77efeabbcbbd84a861c53cbe17d67d974bb0d3a588d1f940e29014"
+  },
+  "originalPrepared": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\prepared.json",
+    "sha256": "fc0189345c29505f08b899a745a0b0e9163782b623bf6d86b88d04e5627c5707"
+  },
+  "scope": {
+    "parentBatch": 2,
+    "generation": "batch2-split-v7",
+    "subbatchIds": [
+      201,
+      202
+    ],
+    "subbatchSizes": [
+      10,
+      9
+    ],
+    "originalAuthorizedRemainingPairs": 73,
+    "newCandidatePairs": 0,
+    "originalEligiblePairs": 19,
+    "originalBlockedPairsPermanentlyExcluded": 1,
+    "realUnusedExpiredObserverPassRequired": true,
+    "maxPreviewPostsPerSubbatch": 2,
+    "maxMergePostsPerSubbatch": 1,
+    "allFreshPreviewPairsMustBeEligible": true,
+    "oldBodiesAndKeysNeverReused": true,
+    "newAuthenticatedAgePerSubbatch": true,
+    "maxExactIdleReadOnlyWaitSeconds": 120,
+    "sharedIdleDeadlinePerExecution": true,
+    "verifierVersion": 4,
+    "automaticRequestRetry": false,
+    "automaticRestore": false,
+    "cloudActions": 0,
+    "operatorDirectSqlWrites": 0
+  },
+  "subbatchIds": [
+    201,
+    202
+  ],
+  "subbatchPairCounts": [
+    10,
+    9
+  ],
+  "eligiblePairCount": 19,
+  "permanentBlockedPairCount": 1,
+  "allPlanReferencesAndExactReconstructedPlanPassed": true,
+  "orderedDisjointOriginalNineteenCoverage": true,
+  "noNewCandidate": true,
+  "originalTwentyAndNineteenRequestBodiesPreserved": true,
+  "originalReviewKeyAndPreimagesUnchanged": true,
+  "preparationFullStateHashesMatchActualObserver": true,
+  "newGenerationBaselineOriginalBytesIdentical": true,
+  "planAndPreparationBothExplicitShaChecked": true,
+  "freshMergePostsVerifiedByThisReview": 0,
+  "productionRuntimeIo": 0,
+  "productionPosts": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0,
+  "gitActions": 0,
+  "localDecryptionExecuted": false,
+  "productionSubbatchMutationNotYetVerified": true
+}

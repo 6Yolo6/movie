@@ -1,0 +1,287 @@
+{
+  "status": "OFFLINE_TESTS_PASS",
+  "createdAt": "2026-11-11T11:11:42.136180+00:00",
+  "scriptSha256": "1ca6538b82d2a11e01a3877e7bb09e2addf817ab0cd622e5cb52aa716e6502fd",
+  "testScriptSha256": "3d9ccfc2e30b4ee68f50f6e3f9fe965e26284778a928bb992b8235cc627841ff",
+  "tests": 67,
+  "failures": 0,
+  "errors": 0,
+  "productionModulesImported": false,
+  "credentialsRead": false,
+  "runtimeDockerRequests": 0,
+  "sqlRequests": 0,
+  "sourceRequests": 0,
+  "cloudRequests": 0,
+  "productionMutations": 0,
+  "mockAuthorizationIsSyntheticAndNeverUsable": true,
+  "results": [
+    {
+      "test": "__main__.Tests.test_before_drift_is_stopped_before_enable",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_binding_missing_official_pass_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_binding_unknown_reference_drift_rejected_before_runtime",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_binding_unreviewed_new_bytes_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_binding_widened_scope_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_changed_next_is_stopped_before_enable",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_default_has_no_file_reads_or_runtime",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_deferred_unknown_drift_is_paused",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_enable_unknown_actual_true_preserves_unknown_and_pauses",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_fully_bound_synthetic_offline_shape_is_accepted_without_runtime",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_future_manual_intent_blocks",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_helper_source_drift_after_enable_pauses_once",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_identity50_is_paused",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_invalid_enable_ack_is_unknown_and_paused",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_metadata_drift_is_paused",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_missing_review_rejected_before_runtime",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_multiple_children_counted_and_paused",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_narrow_context_rejects_enable_replay",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_narrow_context_rejects_integer_enabled",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_narrow_context_rejects_pause_before_enable_and_repeat",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_narrow_context_rejects_post_before_delegate",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_narrow_context_rejects_widened_settings",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_new_binding_drift_stops_before_enable",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_new_generation_intent_without_natural_name_blocks",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_new_generation_receipt_blocks",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_new_generation_stop_blocks",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_new_official_generation_cannot_use_legacy_gate",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_new_review_drift_stops_before_enable",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_not_started_pauses_without_second_enable",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_not_terminal_pauses_once",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_official_complete_proof_is_accepted",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_official_duplicate_file_proof_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_official_receipt_drift_after_enable_pauses_once",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_official_without_actual_content_proof_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_official_without_retained_generations_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_official_wrong_content_hash_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_official_wrong_resolver_receipt_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_old_natural_intent_blocks",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_original_stop_is_preserved_and_blocks",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_other_new_generation_intent_blocks",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_owner_v2_class_drift_is_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_owner_v2_complete_compiled_chain_requires_strict_owner",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_owner_v2_jar_drift_is_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_owner_v2_owner_mismatch_is_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_owner_v2_source_drift_is_rejected_before_import",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_owner_v2_wrong_compiler_lineage_is_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_owner_v2_wrong_generation_receipt_is_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_pause_unknown_is_preserved_without_retry",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_receipt_persistence_error_protectively_pauses",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_repeat_execute_does_not_send_enable_twice",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_reserved_intent_drift_after_enable_pauses_once",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_runtime_drift_is_paused",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_settings_drift_is_paused",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_skip_keeps_schedule_enabled_once",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_source_budget_drift_stops_before_enable",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_success_and_unknown_whole_row_drift_is_paused",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_success_keeps_schedule_enabled_once",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_terminal_cannot_fabricate_original_post_ack",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_terminal_exact_readonly_proof_accepted",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_terminal_final_snapshot_drift_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_terminal_mutating_resolver_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_terminal_unknown_flag_cannot_be_cleared",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_terminal_wrong_success_payload_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_unknown_child_payload_drift_is_paused",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_unknown_natural_child_is_counted_and_paused",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_unselected_success_scope_drift_is_paused",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Tests.test_write_is_create_once",
+      "status": "PASS"
+    }
+  ]
+}

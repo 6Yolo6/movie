@@ -1,0 +1,67 @@
+{
+  "status": "PASS",
+  "at": "2026-11-11T07:25:27.226494+00:00",
+  "reviewer": "review_data_helpers",
+  "reviewType": "INDEPENDENT_STATIC_AST_HISTORY_PROOF_AND_OFFLINE_SYNTHETIC_PROCESS",
+  "helper": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BindMergedV2.py",
+    "sha256": "647f4c1a09a96c630ac5674112f680ab20fffde6e9be8853076e9cf1830c5b2c"
+  },
+  "source": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BindMerged.py",
+    "sha256": "642c57dce96302d973010ec5e4b14860b6a4830aeed354faae72d062e268e599"
+  },
+  "offlineReview": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\bind-merged-v2-offline-review.json",
+    "sha256": "4b75b567c7c72e3fdb9c86a79bccecb1130311c215188479611b5d3e070e061e"
+  },
+  "derivation": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\bind-merged-v2-derivation.json",
+    "sha256": "74653e645ab86e0d65111670084278c4381f2ea1a6fa751271c6c376fadafafe"
+  },
+  "realReadOnlySchemaOrderEvidence": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\bind-merged-v2-readonly-schema-order.json",
+    "sha256": "81c9596e904199a524706d848b808671a78dc185cb90ab5839e77629a78887bd"
+  },
+  "diagnosticTestsFile": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BindMergedV2DiagnosticTests.py",
+    "sha256": "ba04e6be45bc3f551ca400f8fa5747185d17cb0af870db27fd64728669c451d9"
+  },
+  "preservedAstFunctionCount": 20,
+  "allProtectedOriginalFileHashesPassed": true,
+  "historicalMergeProof": {
+    "reviewId": "65efad8f-e6ea-4250-bfcf-15b824163e32",
+    "idempotencyKey": "ba13b8c1-7fa3-40b9-b69a-102c45348ca3",
+    "historyRows": 21,
+    "resultSha256": "8864f7723141e9f738a9b4363c8a33b952654b5695ca2a761fc846c5a2edf7e5",
+    "verificationSha256": "f8bfcd5f1b8da18481cb2cb249d402ffab7e726f61d8b7372d238cfa8f6d779d"
+  },
+  "independentTests": {
+    "originalSelfTests": 11,
+    "diagnosticProcessTests": 2,
+    "failures": 0,
+    "errors": 0,
+    "onlySyntheticPythonChildrenAllowed": true,
+    "syntheticChildProcessCount": 4,
+    "productionRoutesFailClosed": true
+  },
+  "checks": {
+    "bothHistoryTablesUseCompleteCompositePrimaryKeyOrder": true,
+    "oldIdSort1054FailuresAndNewSortPassesRetained": true,
+    "onlyOneCanonicalTmdbIdAndTypeUpdate": true,
+    "updatedAtAndAllOtherRelevantRowsRemainExact": true,
+    "historicalSingleMergeOnlyNoRemergeOrIdentityWrite": true,
+    "sameConnectionSerializableCompleteRowsAndRangeLocksThroughUpdateCommit": true,
+    "singleRowCasCountAndFullExpectedAfterRequiredBeforeCommit": true,
+    "postCommitNewConnectionExactDeltaAndPhysicalRuntimeChecked": true,
+    "createOncePrepareApplyReservationAndUnknownCommitNoRetryRestore": true,
+    "numericDiagnosticsAndHashesOnlyNoRawSqlStderrOrCredentials": true,
+    "readOnlyVerifyAcceptsOnlyExactBeforeOrApprovedAfter": true
+  },
+  "productionRuntimeIo": 0,
+  "productionPosts": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0,
+  "gitActions": 0,
+  "productionBindingResultVerifiedByThisReview": false
+}

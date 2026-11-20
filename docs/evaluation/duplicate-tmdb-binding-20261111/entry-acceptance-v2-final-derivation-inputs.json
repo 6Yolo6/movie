@@ -1,0 +1,58 @@
+{
+  "status": "READY_FOR_FINAL_V7_BINDING_AND_INDEPENDENT_REVIEW",
+  "scope": {
+    "parentBatch": 2,
+    "generation": "batch2-split-v7",
+    "subbatches": [
+      201,
+      202
+    ],
+    "pairCounts": [
+      10,
+      9
+    ],
+    "actualMergedPairs": 19,
+    "originalBlockedPairs": 1,
+    "allSubbatchPairsRequired": true,
+    "currentDatabaseSuccessRequired": true,
+    "originalEntryHttpAndFinalGuardsPreserved": true,
+    "maximumActualMergedPairs": 74,
+    "postRequests": 0,
+    "operatorDirectSqlWrites": 0,
+    "cloudActions": 0
+  },
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceV2.py",
+      "sha256": "61a3fe371d45175a27046398978f60293bbb98acbadd4c955fca161652b23797"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptance.py",
+      "sha256": "f8d371647ea0ba69f13f70d9e636657b08d47f8c248b1130ca605006335f6ea1"
+    }
+  ],
+  "tests": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-acceptance-v2-tests-complete.json",
+    "sha256": "4c686bb06c7ff72305315fdd53b251f642d5e78cbd6d678669a35d6d6dc0c966"
+  },
+  "testSources": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceV2Tests.py",
+      "sha256": "90990438aa282ee6aca1c79deaf29b34be782bdd1552c76304836ca128e7250e"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceV2TestsFinal.py",
+      "sha256": "d6102116c0ed2d72b4bd1397ae9287ebd7555e8ed98d9e67d710c4bff9fb4a65"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceV2TestsComplete.py",
+      "sha256": "795d5f8b948910b01fd1a8bfc4a1647be0b59a88c469220cf3c58b2bcc7d28b1"
+    }
+  ],
+  "previousV7BindingExpectedPath": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v7-binding.json",
+  "productionPosts": 0,
+  "productionGets": 0,
+  "wrapperOnly": true,
+  "originalEntryUnmodified": true,
+  "entryBindingNotYetCreated": true
+}

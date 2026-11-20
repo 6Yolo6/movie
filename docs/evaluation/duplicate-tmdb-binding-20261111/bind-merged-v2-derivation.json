@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "at": "2026-11-11T05:37:20.392457+00:00",
+  "source": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BindMerged.py",
+    "sha256": "642c57dce96302d973010ec5e4b14860b6a4830aeed354faae72d062e268e599"
+  },
+  "derived": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BindMergedV2.py",
+    "sha256": "647f4c1a09a96c630ac5674112f680ab20fffde6e9be8853076e9cf1830c5b2c"
+  },
+  "changes": [
+    "Explicit complete composite primary-key ordering for the two merge history tables",
+    "Bounded numeric MySQL errno/sqlstate plus stderr byte count/SHA and last SQL byte count/SHA on connection failures; raw SQL and stderr never emitted"
+  ],
+  "credentialParserTlsOptionsTransactionLocksSingleUpdateCasRetryRestoreUnchanged": true,
+  "protectedOriginalFiles": {
+    "BatchMerge.py": "377a6525234a7a55931e51ada638f52985c4f97032a03bc47ed26d208b6e3412",
+    "BatchOfflineTests.py": "b9b26e2b48861a36e629ed840691813dfe27289dcbbd00d1b2d99ecfd4cab55d",
+    "BatchVerify.py": "b92efd33cd11d682c5bcdbc8efb641dc7265cd92f5b96b284ef0e8f71655404e",
+    "BindMerged.py": "642c57dce96302d973010ec5e4b14860b6a4830aeed354faae72d062e268e599",
+    "frozen-offline.json": "edab16cfd50f1d09fae3d2549ff0647f3073e93507f596a5ebd7eb126cd044e2",
+    "mobland-binding-original-prepare-failure.json": "7d44a7953ff0efcc71bd822431af5a5f1edc65f14619c91d9f25ba611e5e2b03",
+    "offline-tests.json": "a4ae94b0c87f9a70cd53930b12c5c3e983d3dd2ad20f1de7239907a967ea0fdb",
+    "README.txt": "23eb9a1a3848b7d9e136ced4eb4ac46d375a688ef15535b18f29a62471f3c00d",
+    "stage-plan.json": "1559cfa56d77efeabbcbbd84a861c53cbe17d67d974bb0d3a588d1f940e29014"
+  },
+  "protectedOriginalFilesUnchanged": true,
+  "productionDataWrites": 0,
+  "cloudActions": 0,
+  "containerCreates": 0,
+  "gitActions": 0
+}

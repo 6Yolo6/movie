@@ -1,0 +1,46 @@
+{
+  "at": "2026-11-08T15:40:48.581038+00:00",
+  "candidateImageId": "sha256:fb2baa912bf471e40cc060b581c34bf8080200fe867573d96dd182a13e861a3e",
+  "isolatedNetwork": "none",
+  "readOnlyContainer": true,
+  "portsMapped": false,
+  "productionMounts": false,
+  "smoke": {
+    "results": [
+      {
+        "route": "/",
+        "status": 200,
+        "htmlBytes": 67802,
+        "assetCount": 37
+      },
+      {
+        "route": "/admin/resource-hub",
+        "status": 200,
+        "htmlBytes": 61539,
+        "assetCount": 38
+      }
+    ],
+    "node": "v22.23.4",
+    "uid": 1001,
+    "features": {
+      "baidu-account-connection": true,
+      "baidu-login-state": true,
+      "baidu-start-login": true,
+      "videoEnabled": true,
+      "torrentEnabled": true,
+      "/api/admin/resource-hub/baidu/session": true,
+      "/api/admin/resource-hub/baidu/login": true,
+      "drive-workflow-settings": true,
+      "/api/admin/resource-hub/transfers/run": true
+    }
+  },
+  "content": {
+    "allHashesMatch": true,
+    "fileCount": 375
+  },
+  "temporarySmokeContainerRemoved": true,
+  "effectiveImageEnvUnchanged": true,
+  "nativeDependenciesInherited": true,
+  "productionFrontendUnchanged": true,
+  "deployed": false
+}

@@ -1,0 +1,39 @@
+{
+  "startedAt": "2026-11-15T08:52:25.171175+00:00",
+  "completedAt": "2026-11-15T08:55:12.221213+00:00",
+  "exit": 0,
+  "build_passed": true,
+  "typescript_passed": true,
+  "tests_passed": true,
+  "lint_passed": true,
+  "frontendTests": 8,
+  "testsLintObservation": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\frontend\\frontend-tests-lint-observation.json",
+    "sha256": "0ba3e364120de58ee63d3585562b7d5169f3aa018e9976c4f7613b3d0199fe86"
+  },
+  "typescriptVerification": "Next production build TypeScript check",
+  "buildLog": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\frontend\\frontend-build-webpack.log",
+    "sha256": "51ffd6c0606abc72bed9bd6488fb5f095a83bc1b5501a061795fb4d4689dfd31"
+  },
+  "bundler": "webpack",
+  "initialTurbopackFailure": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\frontend\\frontend-validation-initial-turbopack.json",
+    "sha256": "ad3399831565d8deb5373da637d81a59490eb397cc7438b35b5cef03d5a2307b"
+  },
+  "buildSourcePreimage": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\frontend\\build-source-preimage.json",
+    "sha256": "be77365f6ebfb22e3b7e778a513e961d420bf1393beb376ed8d567ab1e1a5320"
+  },
+  "sourceFilesUnchangedDuringBuild": true,
+  "environmentOverrideKeys": [
+    "NODE_OPTIONS",
+    "NEXT_TELEMETRY_DISABLED",
+    "UV_THREADPOOL_SIZE",
+    "CIRCLE_NODE_TOTAL",
+    "RAYON_NUM_THREADS"
+  ],
+  "environmentScope": "subprocess only",
+  "productionServicesStartedOrStopped": false,
+  "production_build_html_sha256": "948d5d6d9a7519a5ea1a83dd24cad89825ced987ae8e4a244f46b6a04657c8c9"
+}

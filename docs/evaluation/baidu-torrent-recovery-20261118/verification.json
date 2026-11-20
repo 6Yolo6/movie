@@ -1,0 +1,192 @@
+{
+  "observedAt": "2026-11-18T05:17:49.221692+00:00",
+  "source": {
+    "id": "8dff9e95910efb85d85de6296e70d5e89628423fb0cdba65c97b01815fb770d4",
+    "image": "sha256:f24203be8b93f2d64b0bfeec6069e13a1b072cd03ae667edc98f45f60bb083ed",
+    "startedAt": "2026-11-18T05:05:58.60108994Z",
+    "sourceSha256": "f9ab692a261cc92ef4f30fd01bac6b03605f9467245f80d2504e1ad31e8a42fc",
+    "overrideSha256": "e96c1b3df5084d972346d9dab2bd9c743fc668afe69c9af24592dfe2cdd8bb76",
+    "envAndHostConfigPreserved": true,
+    "composeFiles": [
+      "D:\\gying-movie\\movie\\docker-compose.prod.yml",
+      "E:\\gying-tools\\releases\\resource-search-p2p-20261019\\deploy.json"
+    ]
+  },
+  "tests": {
+    "passed": 61,
+    "network": "none",
+    "currentImageDependencies": true
+  },
+  "cause": {
+    "originalBytes": 45802,
+    "trailingHex": "0a",
+    "normalizedBytes": 45801,
+    "infoHash": "28e41aa7ae59ba18ff9806fc5b9e3e468841141b",
+    "normalizedSha256": "5bec890cbfd0acc0dec4b216f726c262627ffe4c11fd043d57a4a0802dd9385f"
+  },
+  "recovery": {
+    "childId": 17761,
+    "attemptsBefore": 3,
+    "maxAttemptsBefore": 3,
+    "maxAttemptsAfter": 4,
+    "directSqlRowsUpdated": 1,
+    "priorFailureAuditPreserved": true
+  },
+  "manualResult": {
+    "taskId": 17583,
+    "enabled": false,
+    "status": "PAUSED",
+    "phase": "GYING_TORRENTS",
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "processed": 102,
+    "succeeded": 83,
+    "skipped": 19,
+    "failed": 2,
+    "blockedReason": null,
+    "currentMovieId": null,
+    "currentChildId": null,
+    "currentAction": "IDLE",
+    "currentChildStatus": null,
+    "lastResult": "TORRENTS_ARCHIVED",
+    "nextRunAt": null,
+    "deferredCount": 3,
+    "revision": 3072
+  },
+  "currentChild": {
+    "id": 17761,
+    "stage": "COMPLETE",
+    "status": "SUCCEEDED",
+    "attempts": 4,
+    "fileCount": 2,
+    "startedAt": "2026-11-18 13:07:53.000000",
+    "finishedAt": "2026-11-18 13:08:18.000000",
+    "totalBytes": 45961,
+    "maxAttempts": 4,
+    "uploadedNames": [
+      "1080P_中文字幕_28e41aa7ae59.txt",
+      "1080P_中文字幕_28e41aa7ae59.torrent"
+    ],
+    "resourceLinkId": 28729
+  },
+  "official": {
+    "status": "read-only-reconciled",
+    "fileCount": 2,
+    "totalBytes": 45961,
+    "files": [
+      {
+        "expectedMd5": "19725768eab2ca0df0070bfc9defa809",
+        "actualContentVerifiedByCandidateClient": true,
+        "fileIdMatchesCheckpoint": true,
+        "expectedBytes": 160,
+        "nameSha256": "949d38d32775e5d3521d2fd06219bdb349b7a3763105a77203b3139d8badbfe9",
+        "expectedSha256": "cb1a70a8b3d2bfd1a934cd7cde415b372cc9311ea50dfed8d94c2e320a6fc27f",
+        "fileIdSha256": "fb7fa64e7cc9cccbb0e78eebeac3cee6ae0bc78d8c6a944dda40a170821309df",
+        "upstreamMd5Sha256": "4f1b8b01474bfc76298ae2e34113c7228575aa2105256c7ed9a545e6609daa7e"
+      },
+      {
+        "expectedMd5": "46a10dbaf37e338b634d0f609b53c760",
+        "actualContentVerifiedByCandidateClient": true,
+        "fileIdMatchesCheckpoint": true,
+        "expectedBytes": 45801,
+        "nameSha256": "41bdc06dcb68da7e657b5a8a537af9638e81ff10789f5689ede32d9a3e91c69d",
+        "expectedSha256": "5bec890cbfd0acc0dec4b216f726c262627ffe4c11fd043d57a4a0802dd9385f",
+        "fileIdSha256": "98e8050755996127a74575b8ed8a3250459bc0687d86230394fa0a9377e65840",
+        "upstreamMd5Sha256": "3bcf8fe788a7453e1ba6ddf4afe11d3f30796854d6ede4f5c31d106bc2358b81"
+      }
+    ],
+    "ownShareMatchesAccountAndDirectory": true,
+    "cloudWrites": 0,
+    "sessionPairUnchanged": true,
+    "cloudGetRequests": 36,
+    "sourceGetRequests": 1
+  },
+  "firstNaturalResult": {
+    "taskId": 17583,
+    "enabled": true,
+    "status": "PENDING",
+    "phase": "GYING_TORRENTS",
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "processed": 103,
+    "succeeded": 84,
+    "skipped": 19,
+    "failed": 2,
+    "blockedReason": null,
+    "currentMovieId": null,
+    "currentChildId": null,
+    "currentAction": "IDLE",
+    "currentChildStatus": null,
+    "lastResult": "TORRENTS_ARCHIVED",
+    "nextRunAt": "2026-11-18T13:24:50",
+    "deferredCount": 3,
+    "revision": 3077
+  },
+  "firstNaturalChild": {
+    "id": 18125,
+    "movieId": "BR83",
+    "status": "SUCCEEDED",
+    "attempts": 1,
+    "fileCount": 4,
+    "totalBytes": 255864,
+    "startedAt": "2026-11-18T13:14:14+08:00",
+    "finishedAt": "2026-11-18T13:14:50+08:00"
+  },
+  "protectedRowsUnchanged": 5,
+  "otherContainersUnchanged": 9,
+  "entries": [
+    {
+      "origin": "http://127.0.0.1",
+      "status": 200,
+      "movieId": "W7ea",
+      "resourceId": 28729,
+      "baiduTorrentVisible": true
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "status": 200,
+      "movieId": "W7ea",
+      "resourceId": 28729,
+      "baiduTorrentVisible": true
+    }
+  ],
+  "logs": [
+    {
+      "container": "gying-movie-gying-source-1",
+      "since": "2026-11-18T05:05:58.60108994Z",
+      "bytes": 319,
+      "lines": 7,
+      "errors": 0,
+      "exceptions": 0,
+      "oom": 0,
+      "restartCount": 0
+    },
+    {
+      "container": "gying-movie-backend-1",
+      "since": "2026-11-18T05:05:58.60108994Z",
+      "bytes": 0,
+      "lines": 0,
+      "errors": 0,
+      "exceptions": 0,
+      "oom": 0,
+      "restartCount": 0
+    }
+  ],
+  "backup": {
+    "directory": "G:\\gying-backups\\baidu-torrent-recovery-20261118\\20261118T050311.273793Z",
+    "encryptedArtifacts": 3,
+    "fullAuthentication": true,
+    "restoreExecuted": false
+  },
+  "dailyBackup": {
+    "existingDailyBackupCoversSourceOverride": false,
+    "dailyConfigurationChanged": false,
+    "thisWindowOverrideEncryptedAndAuthenticated": true,
+    "coverageExpanded": false
+  },
+  "firstDeploymentAttempt": {
+    "rolledBack": true,
+    "reason": "empty DNS list versus null representation",
+    "effectiveConfigurationPreserved": true
+  }
+}

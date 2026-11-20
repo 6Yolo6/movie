@@ -1,0 +1,104 @@
+{
+  "capturedAt": "2026-11-14T18:29:47.640428+08:00",
+  "status": "READ_ONLY_GET_AUDIT",
+  "pageClamping": [
+    {
+      "typeCode": "mv",
+      "sort": "time",
+      "page50Count": 48,
+      "page51Count": 48,
+      "page51Equals50": true,
+      "firstLastPage": [
+        "智能女佣",
+        "复仇军师",
+        "怒奔"
+      ],
+      "httpStatuses": [
+        200,
+        200
+      ]
+    },
+    {
+      "typeCode": "mv",
+      "sort": "cscore",
+      "page50Count": 48,
+      "page51Count": 48,
+      "page51Equals50": true,
+      "firstLastPage": [
+        "银河护卫队：假日特辑",
+        "名侦探柯南：银翼的魔术师",
+        "乡愁"
+      ],
+      "httpStatuses": [
+        200,
+        200
+      ]
+    },
+    {
+      "typeCode": "tv",
+      "sort": "time",
+      "page50Count": 48,
+      "page51Count": 48,
+      "page51Equals50": true,
+      "firstLastPage": [
+        "案发厨房 第三季",
+        "小娘惹之翡翠山",
+        "大儒朱熹"
+      ],
+      "httpStatuses": [
+        200,
+        200
+      ]
+    },
+    {
+      "typeCode": "tv",
+      "sort": "cscore",
+      "page50Count": 48,
+      "page51Count": 48,
+      "page51Equals50": true,
+      "firstLastPage": [
+        "探长薇拉 第一季",
+        "金字塔游戏",
+        "可卡因教母格丽塞尔达"
+      ],
+      "httpStatuses": [
+        200,
+        200
+      ]
+    },
+    {
+      "typeCode": "ac",
+      "sort": "time",
+      "page50Count": 48,
+      "page51Count": 48,
+      "page51Equals50": true,
+      "firstLastPage": [
+        "悠哉日常大王 第三季",
+        "极主夫道",
+        "机甲拳击"
+      ],
+      "httpStatuses": [
+        200,
+        200
+      ]
+    },
+    {
+      "typeCode": "ac",
+      "sort": "cscore",
+      "page50Count": 48,
+      "page51Count": 48,
+      "page51Equals50": true,
+      "firstLastPage": [
+        "高达创形者 再起 第二季",
+        "完美世界 第三季",
+        "星蝶公主 第二季"
+      ],
+      "httpStatuses": [
+        200,
+        200
+      ]
+    }
+  ],
+  "fullReport": "boundary-pages.json",
+  "fullReportSha256": "cf856a7e83a64142d8ea562870b2c837287ffa67b0dbab7f90b1d08b11d4b18d"
+}

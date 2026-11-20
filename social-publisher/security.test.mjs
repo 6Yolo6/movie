@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { authenticated, validateConfiguration } from './security.mjs';
@@ -16,4 +17,12 @@ test('production integration credentials are required and root is forbidden', ()
   assert.throws(() => validateConfiguration({}));
   assert.throws(() => validateConfiguration({ SOCIAL_PUBLISHER_TOKEN: 'x'.repeat(32), DB_USER: 'root', DB_PASSWORD: 'fixture' }));
   assert.doesNotThrow(() => validateConfiguration({ SOCIAL_PUBLISHER_TOKEN: 'x'.repeat(32), DB_USER: 'gying_social', DB_PASSWORD: 'fixture' }));
+});
+
+
+test('the production image includes publication state and provider boundary modules', () => {
+  const dockerfile = readFileSync(new URL('./Dockerfile', import.meta.url), 'utf8');
+  for (const name of ['publish-task.mjs', 'publish-qq.mjs']) {
+    assert.ok(dockerfile.split('\n').some(line => line.startsWith('COPY ') && line.includes(name)));
+  }
 });

@@ -1,0 +1,38 @@
+{
+  "status": "stopped",
+  "startedAt": "2026-11-03T14:28:09.136242+00:00",
+  "affected": [
+    "backend"
+  ],
+  "deploymentPerformed": false,
+  "schemaChanged": false,
+  "liveDataStateKeyRetained": true,
+  "publicVerificationPerformed": false,
+  "securityException": {
+    "acceptedByCurrentUserAuthorization": true,
+    "scanSummary": {
+      "PASS": 58,
+      "FAIL": 11,
+      "UNKNOWN": 1
+    },
+    "gateLedgerStillOpen": true,
+    "authorizationSha256": "f129eae90c3666b744bac4eeb1ee1a85eecc7638948c9b78263e8ccdf58490ea"
+  },
+  "candidateImages": {
+    "backend": "sha256:6bee2a1d65a7114c05dcffed559bab9bbf1791751b855ba5c44a75ef2dcd471e"
+  },
+  "backendJarSha256": "f805f0655d8acf134b58c85908cbaef84302e16ac0b38675c197c4b9489d68b4",
+  "sourceBound": true,
+  "effectiveComposeAndRuntimePreserved": true,
+  "stopSignalProofs": {
+    "backend": {
+      "signal": "SIGTERM",
+      "pid1": "java",
+      "receiver": "handler"
+    }
+  },
+  "preparatoryCheckpoint": "G:\\gying-backups\\qq-prada-transfer-20261103-20261103T142059.049763Z",
+  "finalStoppedCheckpointRequired": true,
+  "failureGate": "Reviewed Git commit binding",
+  "phase": "Stopped before further action"
+}

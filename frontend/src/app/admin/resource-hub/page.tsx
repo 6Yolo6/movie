@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Alert,
@@ -39,9 +39,18 @@ import type { ColumnsType } from 'antd/es/table';
 import { useTranslation } from 'react-i18next';
 import { api, readApiError } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
+import MetadataCrawlRanges from '@/components/admin/MetadataCrawlRanges';
+import DriveWorkflowSettings from '@/components/admin/DriveWorkflowSettings';
+import DuplicateMovieScanner from '@/components/admin/DuplicateMovieScanner';
+import {
+    baiduBackfillSettings, baiduBackfillStatus, baiduSessionStatus, canConfigureCloudDrive, cloudDriveWorkflowUpdate,
+    type BaiduBackfillDeferRequest, type BaiduBackfillSettings, type BaiduBackfillStatus, type BaiduSessionStatus, type CloudDriveProvider,
+    type CloudDriveTransferResult, type CloudDriveWorkflow, type CloudDriveWorkflowUpdate,
+} from '@/lib/cloudDriveWorkflows';
 
 const { Title, Text } = Typography;
 const MISSING_RESOURCE_BATCH_LIMIT = 20;
+const subscribeToHydration = () => () => {};
 
 interface ApiEnvelope<T> {
     code?: string;
@@ -49,7 +58,35 @@ interface ApiEnvelope<T> {
     data?: T;
 }
 
+interface MetadataCrawlProgress {
+    provider: string;
+    source: string;
+    startPage: number;
+    endPage: number;
+    nextPage: number;
+    nextItem: number;
+    status: string;
+    taskId?: number | null;
+    observedTotalPages?: number | null;
+    availability?: 'EMPTY_RANGE' | 'RANGE_EXHAUSTED' | 'AVAILABLE';
+    nextCheckAt?: string | null;
+}
+
+interface WeeklyTransferSchedule {
+    typeCode: 'mv' | 'tv' | 'ac';
+    enabled: boolean;
+    intervalDays: number;
+    maxItems: number;
+    nextRunAt?: string;
+    lastRunAt?: string;
+    lastStatus?: string;
+    lastTaskId?: number;
+}
+
 interface ResourceHubConfig {
+    driveWorkflows?: CloudDriveWorkflow[];
+    weeklyTransferSchedules?: WeeklyTransferSchedule[];
+    metadataCrawlProgress?: MetadataCrawlProgress[];
     xunleiAuthorizationConfigured: boolean;
     xunleiAuthorizationExpiresAt?: string | null;
     xunleiAuthorizationExpired?: boolean;
@@ -58,8 +95,11 @@ interface ResourceHubConfig {
     autoApprove: boolean;
     tmdbConfigured: boolean;
     tmdbAutoSyncEnabled: boolean;
+    tmdbAutoSyncUpdatesOnly?: boolean;
     tmdbAutoSyncSources: string;
+    tmdbAutoSyncRanges?: Record<string, { startPage: number; endPage: number }>;
     tmdbAutoSyncPage: number;
+    tmdbAutoSyncEndPage: number;
     tmdbAutoSyncMaxItems: number;
     tmdbAutoSyncIntervalHours: number;
     tmdbAutoDiscoveryEnabled: boolean;
@@ -67,10 +107,22 @@ interface ResourceHubConfig {
     tmdbDiscoveryCooldownHours: number;
     gyingDiscoveryEnabled: boolean;
     gyingAutoSyncEnabled: boolean;
+    gyingAutoSyncUpdatesOnly?: boolean;
     gyingAutoSyncSources: string;
+    gyingAutoSyncPausedSources?: Record<string, boolean>;
+    gyingAutoSyncRanges?: Record<string, { startPage: number; endPage: number }>;
     gyingAutoSyncPage: number;
+    gyingAutoSyncEndPage: number;
     gyingAutoSyncMaxItems: number;
     gyingAutoSyncIntervalHours: number;
+    tvmazeAutoSyncEnabled?: boolean;
+    tvmazeAutoSyncMaxItems?: number;
+    tvmazeAutoSyncIntervalHours?: number;
+    tvmazeSyncProgress?: {
+        taskId: number; status: string; checkedAt?: string; window?: string;
+        attempted: number; processed: number; skipped: number; pending: number;
+        deferred: number; exhausted: number; coverageGap: boolean;
+    } | null;
     workerEnabled: boolean;
     workerFixedDelayMs: number;
     workerTaskLimit: number;
@@ -82,7 +134,7 @@ interface ResourceHubConfig {
     discoveredRetryCron: string;
 }
 
-type ResourceHubConfigFormValues = Omit<ResourceHubConfig, 'tmdbAutoSyncSources' | 'gyingAutoSyncSources'> & {
+type ResourceHubConfigFormValues = Omit<ResourceHubConfig, 'tmdbAutoSyncSources' | 'gyingAutoSyncSources' | 'driveWorkflows'> & {
     tmdbAutoSyncSources: string[];
     gyingAutoSyncSources: string[];
 };
@@ -150,6 +202,7 @@ interface ResourceHubTask {
     lastError?: string;
     scheduledAt?: string;
     createdAt?: string;
+    payload?: string | null;
 }
 
 interface DiscoveryResult {
@@ -246,9 +299,12 @@ const TMDB_SOURCE_KEYS = [
     'UPCOMING_MOVIE',
 ];
 
-const GYING_SOURCE_KEYS = ['HITS_MOVIE', 'HITS_TV', 'HITS_ANIME', 'CSCORE_MOVIE', 'CSCORE_TV', 'CSCORE_ANIME'];
+const GYING_SOURCE_KEYS = [
+    'HITS_MOVIE', 'HITS_TV', 'HITS_ANIME', 'CSCORE_MOVIE', 'CSCORE_TV', 'CSCORE_ANIME',
+    'TIME_MOVIE', 'TIME_TV', 'TIME_ANIME', 'SCORE_MOVIE', 'SCORE_TV', 'SCORE_ANIME',
+];
 
-const TASK_TYPE_OPTIONS = ['METADATA_SYNC', 'RESOURCE_DISCOVERY'];
+const TASK_TYPE_OPTIONS = ['METADATA_SYNC', 'RESOURCE_DISCOVERY', 'WEEKLY_TRANSFER'];
 const TASK_STATUS_OPTIONS = ['PENDING', 'RUNNING', 'SUCCEEDED', 'FAILED', 'CANCELED'];
 const DISCOVERY_STATUS_OPTIONS = ['DISCOVERED', 'SAVED', 'DUPLICATE', 'IGNORED', 'FAILED'];
 
@@ -263,7 +319,62 @@ function formatDate(value?: string) {
     return value ? new Date(value).toLocaleString() : '-';
 }
 
+function formatCrawlCheckDate(value?: string | null) {
+    if (!value) return '-';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '-' : date.toLocaleString(undefined, { timeZone: 'Asia/Shanghai' });
+}
+
+function completedCrawlAvailability(task: ResourceHubTask) {
+    if (task.taskType !== 'METADATA_SYNC' || task.source !== 'TMDB' || task.status !== 'SUCCEEDED' || task.lastError || !task.payload) return undefined;
+    try {
+        const payload: unknown = JSON.parse(task.payload);
+        if (!payload || typeof payload !== 'object' || Array.isArray(payload) || !('crawl' in payload)) return undefined;
+        const crawl = payload.crawl;
+        if (!crawl || typeof crawl !== 'object' || Array.isArray(crawl)
+            || !('mode' in crawl) || crawl.mode !== 'RANGE' || !('availability' in crawl)) return undefined;
+        return crawl.availability === 'EMPTY_RANGE' || crawl.availability === 'RANGE_EXHAUSTED' ? crawl.availability : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+function MetadataUpdatesOnlySettings({ provider }: { provider: 'tmdb' | 'gying' }) {
+    const { t } = useTranslation();
+    const updatesOnly = Boolean(Form.useWatch(`${provider}AutoSyncUpdatesOnly`));
+    const enabled = Boolean(Form.useWatch(`${provider}AutoSyncEnabled`));
+    const hours = Math.max(24, Number(Form.useWatch(`${provider}AutoSyncIntervalHours`)) || 24);
+    const limit = Math.min(10, Math.max(1, Number(Form.useWatch(`${provider}AutoSyncMaxItems`)) || 10));
+    return <div data-testid={`${provider}-updates-only-settings`}>
+        <Form.Item name={`${provider}AutoSyncUpdatesOnly`} valuePropName="checked"
+            label={t('resourceHubUpdatesOnlySwitch', { provider: provider.toUpperCase() })}
+            extra={t('resourceHubUpdatesOnlyHelp')}>
+            <Switch data-testid={`${provider}-updates-only-switch`}
+                aria-label={t('resourceHubUpdatesOnlySwitch', { provider: provider.toUpperCase() })} />
+        </Form.Item>
+        {updatesOnly && <Alert className="mb-4" type={enabled ? 'info' : 'warning'} showIcon
+            title={t(enabled ? 'resourceHubUpdatesOnlyMode' : 'resourceHubUpdatesOnlyPaused')}
+            description={<>
+                <div>{enabled ? t('resourceHubUpdatesOnlySchedule', { hours, limit }) : t('resourceHubUpdatesOnlyPausedHelp')}</div>
+                <div>{t('resourceHubFullCrawlRangesRetainedHelp')}</div>
+            </>} />}
+    </div>;
+}
+
+function MetadataSyncIntervalHelp({ provider }: { provider: 'tmdb' | 'gying' }) {
+    const { t } = useTranslation();
+    const updatesOnly = Boolean(Form.useWatch(`${provider}AutoSyncUpdatesOnly`));
+    return <Text type="secondary">{t(updatesOnly ? 'resourceHubUpdatesOnlyIntervalHelp'
+        : provider === 'tmdb' ? 'resourceHubSyncIntervalHelp' : 'resourceHubGyingSyncHelp')}</Text>;
+}
+
+function providerUpdatesOnly(config: ResourceHubConfig | undefined, provider: string) {
+    return provider === 'TMDB' ? Boolean(config?.tmdbAutoSyncUpdatesOnly)
+        : provider === 'GYING' && Boolean(config?.gyingAutoSyncUpdatesOnly);
+}
+
 export default function ResourceHubAdminPage() {
+    const hydrated = useSyncExternalStore(subscribeToHydration, () => true, () => false);
     const { user, token } = useAuthStore();
     const router = useRouter();
     const { message } = App.useApp();
@@ -276,6 +387,8 @@ export default function ResourceHubAdminPage() {
     const [overview, setOverview] = useState<Overview | null>(null);
     const [loading, setLoading] = useState(true);
     const [savingConfig, setSavingConfig] = useState(false);
+    const [pausingGyingSource, setPausingGyingSource] = useState<string | null>(null);
+    const gyingPausePending = useRef(false);
     const [runningAction, setRunningAction] = useState<string | null>(null);
     const [tasks, setTasks] = useState<ResourceHubTask[]>([]);
     const [tasksLoading, setTasksLoading] = useState(false);
@@ -301,7 +414,6 @@ export default function ResourceHubAdminPage() {
     const [missingSortOrder, setMissingSortOrder] = useState<'asc' | 'desc'>('desc');
     const [selectedMissingIds, setSelectedMissingIds] = useState<React.Key[]>([]);
     const [publishLimit, setPublishLimit] = useState(20);
-    const [quarkLimit, setQuarkLimit] = useState(5);
     const [invalidChecks, setInvalidChecks] = useState<InvalidResourceCheck[]>([]);
     const [invalidChecksLoading, setInvalidChecksLoading] = useState(false);
 
@@ -333,15 +445,39 @@ export default function ResourceHubAdminPage() {
         return unwrap<T>(await res.json());
     }, [authHeaders, t]);
 
-    const normalizeConfigForm = (config: ResourceHubConfig): ResourceHubConfigFormValues => ({
-        ...config,
-        tmdbAutoSyncSources: config.tmdbAutoSyncSources
-            ? config.tmdbAutoSyncSources.split(',').map((item) => item.trim()).filter(Boolean)
-            : [],
-        gyingAutoSyncSources: config.gyingAutoSyncSources
-            ? config.gyingAutoSyncSources.split(',').map((item) => item.trim()).filter(Boolean)
-            : [],
-    });
+    const normalizeConfigForm = (config: ResourceHubConfig): ResourceHubConfigFormValues => {
+        const fields = { ...config };
+        delete fields.driveWorkflows;
+        return {
+            ...fields,
+            tmdbAutoSyncUpdatesOnly: config.tmdbAutoSyncUpdatesOnly ?? false,
+            gyingAutoSyncUpdatesOnly: config.gyingAutoSyncUpdatesOnly ?? false,
+            tvmazeAutoSyncEnabled: config.tvmazeAutoSyncEnabled ?? false,
+            tvmazeAutoSyncMaxItems: config.tvmazeAutoSyncMaxItems ?? 10,
+            tvmazeAutoSyncIntervalHours: config.tvmazeAutoSyncIntervalHours ?? 24,
+            weeklyTransferSchedules: config.weeklyTransferSchedules || ['mv', 'tv', 'ac'].map(typeCode => ({
+                typeCode: typeCode as WeeklyTransferSchedule['typeCode'], enabled: false, intervalDays: 7, maxItems: 5,
+            })),
+            tmdbAutoSyncEndPage: config.tmdbAutoSyncEndPage ?? config.tmdbAutoSyncPage,
+            tmdbAutoSyncRanges: Object.fromEntries(TMDB_SOURCE_KEYS.map(source => [source,
+                config.tmdbAutoSyncRanges?.[source] || {
+                    startPage: config.tmdbAutoSyncPage,
+                    endPage: config.tmdbAutoSyncEndPage ?? config.tmdbAutoSyncPage,
+                }])),
+            gyingAutoSyncEndPage: config.gyingAutoSyncEndPage ?? config.gyingAutoSyncPage,
+            gyingAutoSyncRanges: Object.fromEntries(GYING_SOURCE_KEYS.map(source => [source,
+                config.gyingAutoSyncRanges?.[source] || {
+                    startPage: config.gyingAutoSyncPage,
+                    endPage: config.gyingAutoSyncEndPage ?? config.gyingAutoSyncPage,
+                }])),
+            tmdbAutoSyncSources: config.tmdbAutoSyncSources
+                ? config.tmdbAutoSyncSources.split(',').map((item) => item.trim()).filter(Boolean)
+                : [],
+            gyingAutoSyncSources: config.gyingAutoSyncSources
+                ? config.gyingAutoSyncSources.split(',').map((item) => item.trim()).filter(Boolean)
+                : [],
+        };
+    };
 
     const fetchOverview = useCallback(async () => {
         if (!token) {
@@ -354,7 +490,6 @@ export default function ResourceHubAdminPage() {
             setOverview(data);
             configForm.setFieldsValue(normalizeConfigForm(data.config));
             setPublishLimit(data.worker.publishLimit || 20);
-            setQuarkLimit(data.worker.quarkLimit || 5);
         } catch (error) {
             message.error(error instanceof Error ? error.message : t('resourceHubLoadFailed'));
         } finally {
@@ -447,12 +582,20 @@ export default function ResourceHubAdminPage() {
     };
 
     const saveConfig = async (values: ResourceHubConfigFormValues) => {
+        if (gyingPausePending.current) return;
         setSavingConfig(true);
         try {
+            const settings: Partial<ResourceHubConfigFormValues> = { ...values };
+            delete settings.tmdbAutoSyncPage;
+            delete settings.tmdbAutoSyncEndPage;
+            delete settings.gyingAutoSyncPage;
+            delete settings.gyingAutoSyncEndPage;
+            delete settings.gyingAutoSyncPausedSources;
+            delete settings.tvmazeSyncProgress;
             const data = await requestJson<ResourceHubConfig>('/api/admin/resource-hub/config', {
                 method: 'PUT',
                 body: JSON.stringify({
-                    ...values,
+                    ...settings,
                     tmdbAutoSyncSources: values.tmdbAutoSyncSources.join(','),
                     gyingAutoSyncSources: values.gyingAutoSyncSources.join(','),
                 }),
@@ -464,6 +607,37 @@ export default function ResourceHubAdminPage() {
             message.error(error instanceof Error ? error.message : t('resourceHubConfigSaveFailed'));
         } finally {
             setSavingConfig(false);
+        }
+    };
+
+    const changeGyingSourcePause = async (source: string, paused: boolean) => {
+        if (gyingPausePending.current || savingConfig) return;
+        gyingPausePending.current = true;
+        setPausingGyingSource(source);
+        try {
+            const result = await requestJson<{ source: string; paused: boolean }>(
+                `/api/admin/resource-hub/gying/sources/${encodeURIComponent(source)}/pause`, {
+                    method: 'PUT', body: JSON.stringify({ paused }),
+                });
+            if (result?.source !== source || result.paused !== paused) {
+                throw new Error('Invalid source pause response');
+            }
+            setOverview(current => current ? { ...current, config: { ...current.config,
+                gyingAutoSyncPausedSources: { ...current.config.gyingAutoSyncPausedSources, [source]: paused },
+            } } : current);
+            message.success(t(paused ? 'resourceHubGyingPauseSaved' : 'resourceHubGyingResumeSaved'));
+            try {
+                const config = await requestJson<ResourceHubConfig>('/api/admin/resource-hub/config');
+                // Refresh progress without replacing unsaved form values.
+                setOverview(current => current ? { ...current, config } : current);
+            } catch {
+                message.warning(t('resourceHubGyingPauseRefreshFailed'));
+            }
+        } catch {
+            message.error(t('resourceHubGyingPauseFailed'));
+        } finally {
+            gyingPausePending.current = false;
+            setPausingGyingSource(null);
         }
     };
 
@@ -492,6 +666,70 @@ export default function ResourceHubAdminPage() {
             setSavingConfig(false);
         }
     };
+
+    const saveDriveWorkflow = async (update: CloudDriveWorkflowUpdate): Promise<CloudDriveWorkflow> => {
+        const workflow = overview?.config.driveWorkflows?.find(item => item.provider === update.provider);
+        if (!workflow || !canConfigureCloudDrive(workflow)) throw new Error(t('cloudDriveWorkflows.unavailable'));
+        const config = await requestJson<ResourceHubConfig>('/api/admin/resource-hub/config', {
+            method: 'PUT', body: JSON.stringify({ driveWorkflows: [cloudDriveWorkflowUpdate(update)] }),
+        });
+        const saved = config.driveWorkflows?.find(item => item.provider === update.provider);
+        if (!saved) throw new Error(t('cloudDriveWorkflows.invalidResponse'));
+        setOverview(current => current ? { ...current, config: { ...current.config,
+            driveWorkflows: current.config.driveWorkflows?.map(item => item.provider === saved.provider ? saved : item),
+        } } : current);
+        return saved;
+    };
+
+    const runDriveTransfers = async (provider: CloudDriveProvider, limit: number): Promise<CloudDriveTransferResult> => {
+        const workflow = overview?.config.driveWorkflows?.find(item => item.provider === provider);
+        if (!workflow || !canConfigureCloudDrive(workflow) || !workflow.transferEnabled
+            || (provider === 'BAIDU' && !workflow.credentialConfigured)
+            || (!workflow.videoEnabled && !workflow.torrentEnabled)) {
+            throw new Error(t('cloudDriveWorkflows.transferDisabled'));
+        }
+        return requestJson<CloudDriveTransferResult>('/api/admin/resource-hub/transfers/run', {
+            method: 'POST', body: JSON.stringify({ provider, limit }),
+        });
+    };
+
+    const readBaiduSession = useCallback(async (signal: AbortSignal): Promise<BaiduSessionStatus> =>
+        baiduSessionStatus(await requestJson<unknown>('/api/admin/resource-hub/baidu/session', { signal })), [requestJson]);
+
+    const startBaiduLogin = useCallback(async (signal: AbortSignal): Promise<BaiduSessionStatus> =>
+        baiduSessionStatus(await requestJson<unknown>('/api/admin/resource-hub/baidu/login', {
+            method: 'POST', body: '{}', signal,
+        })), [requestJson]);
+
+    const readBaiduBackfill = useCallback(async (signal: AbortSignal): Promise<BaiduBackfillStatus> =>
+        baiduBackfillStatus(await requestJson<unknown>('/api/admin/resource-hub/baidu/backfill', { signal })), [requestJson]);
+
+    const saveBaiduBackfill = useCallback(async (settings: BaiduBackfillSettings, signal: AbortSignal): Promise<BaiduBackfillStatus> =>
+        baiduBackfillStatus(await requestJson<unknown>('/api/admin/resource-hub/baidu/backfill', {
+            method: 'PUT', body: JSON.stringify(baiduBackfillSettings(settings)), signal,
+        })), [requestJson]);
+
+    const runBaiduBackfill = useCallback(async (signal: AbortSignal): Promise<BaiduBackfillStatus> =>
+        baiduBackfillStatus(await requestJson<unknown>('/api/admin/resource-hub/baidu/backfill/run', {
+            method: 'POST', body: '{}', signal,
+        })), [requestJson]);
+
+    const deferBaiduUnknown = useCallback(async (request: BaiduBackfillDeferRequest, signal: AbortSignal): Promise<BaiduBackfillStatus> =>
+        baiduBackfillStatus(await requestJson<unknown>('/api/admin/resource-hub/baidu/backfill/defer-unknown', {
+            method: 'POST', body: JSON.stringify({ taskId: request.taskId, childId: request.childId, revision: request.revision }), signal,
+        })), [requestJson]);
+
+    const refreshBaiduConnection = useCallback(async (signal: AbortSignal): Promise<void> => {
+        const config = await requestJson<ResourceHubConfig>('/api/admin/resource-hub/config', { signal });
+        const baidu = config.driveWorkflows?.find(item => item.provider === 'BAIDU');
+        if (!baidu) throw new Error('Missing Baidu workflow');
+        if (signal.aborted) return;
+        // Account refresh must not restore an old path, stage or a different drive's saved state.
+        setOverview(current => current ? { ...current, config: { ...current.config,
+            driveWorkflows: current.config.driveWorkflows?.map(item => item.provider === 'BAIDU'
+                ? { ...item, credentialConfigured: baidu.credentialConfigured } : item),
+        } } : current);
+    }, [requestJson]);
 
     const runAction = async (key: string, path: string) => {
         setRunningAction(key);
@@ -872,7 +1110,15 @@ export default function ResourceHubAdminPage() {
         { title: t('movieId'), dataIndex: 'movieId', width: 190, render: (value?: string) => value || '-' },
         { title: t('resourceHubKeyword'), dataIndex: 'keyword', width: 240, ellipsis: true, render: (value?: string) => value || '-' },
         { title: t('resourceHubSourceLabel'), dataIndex: 'source', width: 110, render: (value?: string) => value || '-' },
-        { title: t('status'), dataIndex: 'status', width: 120, render: statusTag },
+        { title: t('status'), dataIndex: 'status', width: 150, render: (value: string, record) => {
+            const availability = completedCrawlAvailability(record);
+            if (!availability) return statusTag(value);
+            return <Tooltip title={t(`resourceHubCrawlAvailabilityHelp.${availability}`)}>
+                <Tag color="default">
+                    {t(`resourceHubCrawlAvailability.${availability}`)}
+                </Tag>
+            </Tooltip>;
+        } },
         { title: t('resourceHubAttempts'), dataIndex: 'attempts', width: 90, render: (value?: number) => value ?? 0 },
         { title: t('resourceHubScheduledAt'), dataIndex: 'scheduledAt', width: 180, render: formatDate },
         { title: t('createdAt'), dataIndex: 'createdAt', width: 180, render: formatDate },
@@ -887,7 +1133,7 @@ export default function ResourceHubAdminPage() {
                     size="small"
                     icon={<PlayCircleOutlined />}
                     loading={runningAction === `task-${record.id}`}
-                    onClick={() => runAction(`task-${record.id}`, `/api/admin/resource-hub/tmdb/metadata-sync/${record.id}/run`)}
+                    onClick={() => runAction(`task-${record.id}`, `/api/admin/resource-hub/${record.source === 'TVMAZE' ? 'tvmaze' : 'tmdb'}/metadata-sync/${record.id}/run`)}
                 >
                     {t('resourceHubRun')}
                 </Button>
@@ -1018,6 +1264,9 @@ export default function ResourceHubAdminPage() {
     const counts = overview?.taskStatusCounts || {};
     const collectionStats = overview?.collectionStats;
     const workerEffective = Boolean(overview?.enabled && overview?.worker.enabled);
+
+    // Locale and admin session are client-side; keep the first render identical to SSR.
+    if (!hydrated) return <main className="container mx-auto px-4 py-8" aria-busy="true" />;
 
     return (
         <div className="min-h-screen bg-[#f5f7fa] dark:bg-black">
@@ -1199,7 +1448,7 @@ export default function ResourceHubAdminPage() {
                                                     {t('resourceHubRunWorker')}
                                                 </Button>
                                                 <Text type="secondary">{t('resourceHubRunWorkerHelp')}</Text>
-                                                <Space.Compact block>
+                                                <Space.Compact block className="[&>button]:h-auto [&>button]:min-h-11 [&>button]:min-w-0 [&>button]:flex-1 [&>button]:whitespace-normal">
                                                     <InputNumber min={1} max={100} value={publishLimit} onChange={(value) => setPublishLimit(value || 20)} />
                                                     <Button
                                                         icon={<ShareAltOutlined />}
@@ -1210,17 +1459,6 @@ export default function ResourceHubAdminPage() {
                                                     </Button>
                                                 </Space.Compact>
                                                 <Text type="secondary">{t('resourceHubPublishPendingHelp')}</Text>
-                                                <Space.Compact block>
-                                                    <InputNumber min={1} max={20} value={quarkLimit} onChange={(value) => setQuarkLimit(value || 5)} />
-                                                    <Button
-                                                        icon={<CloudSyncOutlined />}
-                                                        loading={runningAction === 'quark'}
-                                                        onClick={() => runAction('quark', `/api/admin/resource-hub/quark/transfers/submit?limit=${quarkLimit}`)}
-                                                    >
-                                                        {t('resourceHubSubmitTransfers')}
-                                                    </Button>
-                                                </Space.Compact>
-                                                <Text type="secondary">{t('resourceHubSubmitTransfersHelp')}</Text>
                                                 <Button
                                                     block
                                                     icon={<SearchOutlined />}
@@ -1249,34 +1487,8 @@ export default function ResourceHubAdminPage() {
                                                         scroll={{ x: 1200 }}
                                                     />
                                                 )}
-                                                <Space.Compact block>
-                                                    <Button
-                                                        icon={<SearchOutlined />}
-                                                        loading={runningAction === 'cleanup-dry'}
-                                                        onClick={() => runResultAction(
-                                                            'cleanup-dry',
-                                                            '/api/admin/resource-hub/cleanup/duplicate-tmdb?dryRun=true&limit=100',
-                                                            (data) => t('resourceHubCleanupDryRunDone', { count: data.candidates || 0 }),
-                                                        )}
-                                                    >
-                                                        {t('resourceHubCleanupDryRun')}
-                                                    </Button>
-                                                    <Button
-                                                        danger
-                                                        loading={runningAction === 'cleanup-execute'}
-                                                        onClick={() => runResultAction(
-                                                            'cleanup-execute',
-                                                            '/api/admin/resource-hub/cleanup/duplicate-tmdb?dryRun=false&limit=100',
-                                                            (data) => t('resourceHubCleanupDone', {
-                                                                merged: data.merged || 0,
-                                                                resources: data.movedResources || 0,
-                                                            }),
-                                                        )}
-                                                    >
-                                                        {t('resourceHubCleanupExecute')}
-                                                    </Button>
-                                                </Space.Compact>
-                                                <Space.Compact block>
+                                                <DuplicateMovieScanner />
+                                                <Space.Compact block className="[&>button]:h-auto [&>button]:min-h-11 [&>button]:min-w-0 [&>button]:flex-1 [&>button]:whitespace-normal">
                                                     <Button
                                                         icon={<SearchOutlined />}
                                                         loading={runningAction === 'pollution-dry'}
@@ -1306,6 +1518,8 @@ export default function ResourceHubAdminPage() {
                                     <Col xs={24} xl={14}>
                                         <Card title={t('resourceHubAutoSettings')} loading={loading}>
                                             <Form form={configForm} layout="vertical" onFinish={saveConfig}>
+                                                <Alert className="mb-4" type="info" showIcon
+                                                    title={t('resourceHubMetadataOnlyHelp')} />
                                                 <Row gutter={12}>
                                                     <Col xs={24} md={12}>
                                                         <Form.Item name="enabled" label={t('resourceHubMasterSwitch')} valuePropName="checked">
@@ -1323,19 +1537,12 @@ export default function ResourceHubAdminPage() {
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={24} md={12}>
-                                                        <Form.Item name="tmdbAutoDiscoveryEnabled" label={t('resourceHubAutoDiscovery')} valuePropName="checked">
-                                                            <Switch />
-                                                        </Form.Item>
-                                                    </Col>
-                                                    <Col xs={24} md={12}>
-                                                        <Form.Item name="gyingDiscoveryEnabled" label={t('resourceHubGyingDiscovery')} valuePropName="checked">
-                                                            <Switch />
-                                                        </Form.Item>
-                                                    </Col>
-                                                    <Col xs={24} md={12}>
                                                         <Form.Item name="gyingAutoSyncEnabled" label={t('resourceHubGyingAutoSync')} valuePropName="checked">
                                                             <Switch />
                                                         </Form.Item>
+                                                    </Col>
+                                                    <Col xs={24}>
+                                                        <MetadataUpdatesOnlySettings provider="tmdb" />
                                                     </Col>
                                                     <Col xs={24}>
                                                         <Form.Item name="tmdbAutoSyncSources" label={t('resourceHubTmdbSources')}>
@@ -1348,17 +1555,18 @@ export default function ResourceHubAdminPage() {
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={12} md={8}>
-                                                        <Form.Item name="tmdbAutoSyncPage" label={t('resourceHubSyncPage')}>
-                                                            <InputNumber min={1} max={20} className="w-full" />
-                                                        </Form.Item>
-                                                    </Col>
-                                                    <Col xs={12} md={8}>
                                                         <Form.Item name="tmdbAutoSyncMaxItems" label={t('resourceHubSyncItems')}>
                                                             <InputNumber min={1} max={100} className="w-full" />
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={24}>
-                                                        <Text type="secondary">{t('resourceHubSyncIntervalHelp')}</Text>
+                                                        <MetadataSyncIntervalHelp provider="tmdb" />
+                                                    </Col>
+                                                    <Col xs={24}>
+                                                        <MetadataCrawlRanges provider="tmdb" options={tmdbSourceOptions} />
+                                                    </Col>
+                                                    <Col xs={24}>
+                                                        <MetadataUpdatesOnlySettings provider="gying" />
                                                     </Col>
                                                     <Col xs={24}>
                                                         <Form.Item name="gyingAutoSyncSources" label={t('resourceHubGyingSources')}>
@@ -1371,17 +1579,106 @@ export default function ResourceHubAdminPage() {
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={12} md={8}>
-                                                        <Form.Item name="gyingAutoSyncPage" label={t('resourceHubGyingSyncPage')}>
-                                                            <InputNumber min={1} max={500} className="w-full" />
-                                                        </Form.Item>
-                                                    </Col>
-                                                    <Col xs={12} md={8}>
                                                         <Form.Item name="gyingAutoSyncMaxItems" label={t('resourceHubGyingSyncItems')}>
                                                             <InputNumber min={1} max={20} className="w-full" />
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={24}>
-                                                        <Text type="secondary">{t('resourceHubGyingSyncHelp')}</Text>
+                                                        <MetadataSyncIntervalHelp provider="gying" />
+                                                    </Col>
+                                                    <Col xs={24}>
+                                                        <MetadataCrawlRanges provider="gying" options={gyingSourceOptions}
+                                                            pausedSources={overview?.config.gyingAutoSyncPausedSources}
+                                                            pausingSource={pausingGyingSource} pauseDisabled={savingConfig}
+                                                            onPauseChange={changeGyingSourcePause} />
+                                                    </Col>
+                                                    <Col xs={24}>
+                                                        <Card size="small" title={t('resourceHubTvmazeTitle')} data-testid="tvmaze-settings">
+                                                            <Text type="secondary">{t('resourceHubTvmazeHelp')}</Text>
+                                                            <Row gutter={12} className="mt-3">
+                                                                <Col xs={24} md={8}>
+                                                                    <Form.Item name="tvmazeAutoSyncEnabled" label={t('resourceHubTvmazeAutoSync')} valuePropName="checked">
+                                                                        <Switch data-testid="tvmaze-auto-sync-switch" />
+                                                                    </Form.Item>
+                                                                </Col>
+                                                                <Col xs={12} md={8}>
+                                                                    <Form.Item name="tvmazeAutoSyncIntervalHours" label={t('resourceHubSyncInterval')}>
+                                                                        <InputNumber min={1} max={720} className="w-full" />
+                                                                    </Form.Item>
+                                                                </Col>
+                                                                <Col xs={12} md={8}>
+                                                                    <Form.Item name="tvmazeAutoSyncMaxItems" label={t('resourceHubSyncItems')}>
+                                                                        <InputNumber min={1} max={10} className="w-full" />
+                                                                    </Form.Item>
+                                                                </Col>
+                                                            </Row>
+                                                            <Text type="secondary">
+                                                                {overview?.config.tvmazeSyncProgress
+                                                                    ? t('resourceHubTvmazeProgress', {
+                                                                        status: overview.config.tvmazeSyncProgress.status,
+                                                                        checkedAt: overview.config.tvmazeSyncProgress.checkedAt
+                                                                            ? new Date(overview.config.tvmazeSyncProgress.checkedAt).toLocaleString() : '—',
+                                                                        attempted: overview.config.tvmazeSyncProgress.attempted,
+                                                                        processed: overview.config.tvmazeSyncProgress.processed,
+                                                                        pending: overview.config.tvmazeSyncProgress.pending,
+                                                                        deferred: overview.config.tvmazeSyncProgress.deferred,
+                                                                    }) : t('resourceHubTvmazeNoChecks')}
+                                                            </Text>
+                                                            {(overview?.config.tvmazeSyncProgress?.coverageGap || Boolean(overview?.config.tvmazeSyncProgress?.exhausted)) &&
+                                                                <Alert className="mt-3" type="warning" showIcon title={t('resourceHubTvmazeReview')} />}
+                                                        </Card>
+                                                    </Col>
+                                                    <Col xs={24}>
+                                                        <Alert type="info" showIcon title={t('resourceHubCrawlHelp')} />
+                                                    </Col>
+                                                    <Col xs={24}>
+                                                        <Title level={5}>{t('resourceHubCrawlProgress')}</Title>
+                                                        <Text type="secondary">{t('resourceHubCrawlProgressHelp')}</Text>
+                                                        <Table<MetadataCrawlProgress>
+                                                            data-testid="metadata-crawl-progress"
+                                                            size="small" pagination={false} scroll={{ x: 960 }}
+                                                            rowKey={(row) => `${row.provider}:${row.source}`}
+                                                            dataSource={overview?.config.metadataCrawlProgress || []}
+                                                            columns={[
+                                                                { title: t('resourceHubCrawlSource'), key: 'source', render: (_, row) => `${row.provider} / ${t(`${row.provider === 'GYING' ? 'resourceHubGyingSource' : 'resourceHubSource'}.${row.source}`, { defaultValue: row.source })}` },
+                                                                { title: t('resourceHubCrawlRange'), key: 'range', width: 180, render: (_, row) => <div>
+                                                                    <div>{`${row.startPage}–${row.endPage}`}</div>
+                                                                    {providerUpdatesOnly(overview?.config, row.provider) && <Text type="secondary">
+                                                                        {t('resourceHubFullProgressRetained')}
+                                                                    </Text>}
+                                                                    {Number.isInteger(row.observedTotalPages) && (row.observedTotalPages as number) >= 0
+                                                                        && <Text type="secondary">{t('resourceHubCrawlObservedLastPage')}: {row.observedTotalPages}</Text>}
+                                                                </div> },
+                                                                { title: t('resourceHubCrawlNext'), key: 'next', render: (_, row) => {
+                                                                    const position = t('resourceHubCrawlPosition', { page: row.nextPage, item: row.nextItem });
+                                                                    return providerUpdatesOnly(overview?.config, row.provider)
+                                                                        ? t('resourceHubFullProgressPositionRetained', { position }) : position;
+                                                                 } },
+                                                                { title: t('resourceHubCrawlState'), dataIndex: 'status', render: (value: string, row) => {
+                                                                    if (providerUpdatesOnly(overview?.config, row.provider)) return t('resourceHubFullCollectionPausedForUpdates');
+                                                                    const paused = overview?.config.gyingAutoSyncPausedSources?.[row.source];
+                                                                    const status = row.provider === 'GYING' && paused ? 'PAUSED'
+                                                                        : row.provider === 'GYING' && value === 'PAUSED' ? 'RESUMED' : value;
+                                                                    return t(`resourceHubCrawlStatus.${status}`, { defaultValue: status });
+                                                                } },
+                                                                { title: t('resourceHubCrawlAvailabilityLabel'), key: 'availability', width: 280, render: (_, row) => {
+                                                                    if (row.status !== 'SUCCEEDED' || !row.availability) return '-';
+                                                                    const reason = row.availability === 'EMPTY_RANGE' && Number.isInteger(row.observedTotalPages)
+                                                                        && (row.observedTotalPages as number) < row.startPage
+                                                                        ? t('resourceHubCrawlRangeBeyondLastPage', { total: row.observedTotalPages, start: row.startPage, end: row.endPage })
+                                                                        : row.availability !== 'AVAILABLE' ? t(`resourceHubCrawlAvailabilityHelp.${row.availability}`) : null;
+                                                                    return <div>
+                                                                        <Tag color={row.availability === 'AVAILABLE' ? 'green' : 'default'}>
+                                                                            {t(`resourceHubCrawlAvailability.${row.availability}`)}
+                                                                        </Tag>
+                                                                        {reason && <div><Text type="secondary">{reason}</Text></div>}
+                                                                        {row.availability === 'EMPTY_RANGE' && row.nextCheckAt && <div>
+                                                                            <Text type="secondary">{t('resourceHubCrawlNextCheckAt')}: {formatCrawlCheckDate(row.nextCheckAt)}</Text>
+                                                                        </div>}
+                                                                    </div>;
+                                                                } },
+                                                            ]}
+                                                        />
                                                     </Col>
                                                     <Col xs={12} md={8}>
                                                         <Form.Item name="tmdbDiscoveryMaxResults" label={t('resourceHubDiscoveryLimit')}>
@@ -1393,33 +1690,30 @@ export default function ResourceHubAdminPage() {
                                                             <InputNumber min={1} max={20} className="w-full" />
                                                         </Form.Item>
                                                     </Col>
-                                                    <Col xs={12} md={8}>
-                                                        <Form.Item name="workerPublishLimit" label={t('resourceHubPublishLimit')}>
-                                                            <InputNumber min={1} max={100} className="w-full" />
-                                                        </Form.Item>
-                                                    </Col>
-                                                    <Col xs={24} md={6}>
-                                                        <Form.Item name="discoveredRetryEnabled" label={t('resourceHubRetryDiscoveredEnabled')} valuePropName="checked">
-                                                            <Switch />
-                                                        </Form.Item>
-                                                    </Col>
-                                                    <Col xs={12} md={6}>
-                                                        <Form.Item name="discoveredRetryLimit" label={t('resourceHubRetryDiscoveredLimit')}>
-                                                            <InputNumber min={1} max={100} className="w-full" />
-                                                        </Form.Item>
-                                                    </Col>
-                                                    <Col xs={12} md={6}>
-                                                        <Form.Item name="discoveredRetryDelayMs" label={t('resourceHubRetryDiscoveredDelay')}>
-                                                            <InputNumber min={0} max={3600000} className="w-full" />
-                                                        </Form.Item>
-                                                    </Col>
-                                                    <Col xs={24} md={6}>
-                                                        <Form.Item name="discoveredRetryCron" label={t('resourceHubRetryDiscoveredCron')}>
-                                                            <Input />
-                                                        </Form.Item>
-                                                    </Col>
                                                 </Row>
-                                                <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={savingConfig}>
+                                                <Card className="my-4" title={t('resourceHubWeeklyTitle')} data-testid="weekly-transfer-settings">
+                                                    <Alert className="mb-4" type="warning" showIcon title={t('resourceHubWeeklyHelp')} />
+                                                    <Form.List name="weeklyTransferSchedules">
+                                                        {(fields) => fields.map(({ key, name, ...rest }) => {
+                                                            const schedule = overview?.config.weeklyTransferSchedules?.[name];
+                                                            const type = schedule?.typeCode || ['mv', 'tv', 'ac'][name];
+                                                            return <Card key={key} size="small" className="mb-3" title={t(`resourceHubWeeklyType.${type}`)}>
+                                                                <Form.Item {...rest} name={[name, 'typeCode']} hidden><Input /></Form.Item>
+                                                                <Row gutter={12}>
+                                                                    <Col xs={8}><Form.Item {...rest} name={[name, 'enabled']} label={t('resourceHubWeeklyEnabled')} valuePropName="checked"><Switch /></Form.Item></Col>
+                                                                    <Col xs={8}><Form.Item {...rest} name={[name, 'intervalDays']} label={t('resourceHubWeeklyDays')}
+                                                                        rules={[{ required: true, type: 'integer', min: 1, max: 365 }]}><InputNumber min={1} max={365} precision={0} className="w-full" /></Form.Item></Col>
+                                                                    <Col xs={8}><Form.Item {...rest} name={[name, 'maxItems']} label={t('resourceHubWeeklyLimit')}
+                                                                        rules={[{ required: true, type: 'integer', min: 1, max: 20 }]}><InputNumber min={1} max={20} precision={0} className="w-full" /></Form.Item></Col>
+                                                                </Row>
+                                                                <div>{t('resourceHubWeeklyNext')}: {formatDate(schedule?.nextRunAt)}</div>
+                                                                <Text type="secondary">{t('resourceHubWeeklyLast')}: {formatDate(schedule?.lastRunAt)} / {t(`resourceHubCrawlStatus.${schedule?.lastStatus || 'NOT_STARTED'}`, { defaultValue: schedule?.lastStatus || '-' })}</Text>
+                                                            </Card>;
+                                                        })}
+                                                    </Form.List>
+                                                </Card>
+                                                <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={savingConfig}
+                                                    disabled={Boolean(pausingGyingSource)}>
                                                     {t('resourceHubSaveSettings')}
                                                 </Button>
                                             </Form>
@@ -1473,6 +1767,14 @@ export default function ResourceHubAdminPage() {
                                     </Col>
                                 </Row>
                             ),
+                        },
+                        {
+                            key: 'drive-workflows',
+                            label: t('cloudDriveWorkflows.title'),
+                            children: <DriveWorkflowSettings workflows={overview?.config.driveWorkflows} loading={loading} hubEnabled={overview?.config.enabled === true}
+                                onSave={saveDriveWorkflow} onRunTransfers={runDriveTransfers} onReadBaiduSession={readBaiduSession}
+                                onStartBaiduLogin={startBaiduLogin} onBaiduConnected={refreshBaiduConnection}
+                                onReadBaiduBackfill={readBaiduBackfill} onSaveBaiduBackfill={saveBaiduBackfill} onRunBaiduBackfill={runBaiduBackfill} onDeferBaiduUnknown={deferBaiduUnknown} />,
                         },
                         {
                             key: 'manual',

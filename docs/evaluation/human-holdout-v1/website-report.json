@@ -1,0 +1,3279 @@
+{
+  "reportSchemaVersion": 1,
+  "datasetSha256": "d157d1c2f6f7864af369434ec5e0fc3981c177b1468af7ff8796373dbc70d187",
+  "datasetVersion": "gying-human-holdout-v1",
+  "provenance": "independent-human-holdout",
+  "evaluatedAt": "2026-10-23T12:24:55.367147+00:00",
+  "repeat": 2,
+  "transport": "authenticated-website-api",
+  "completedAllTurns": true,
+  "selectionSha256": "9cd74f5638246f13bb5fde90141a93e371f14bff1cc52586b67e5fcae7a72864",
+  "summary": {
+    "turns": 88,
+    "mechanicalPasses": 84,
+    "mechanicalFailures": 4,
+    "manualReviewRequired": 84,
+    "latencySampleCount": 88,
+    "p50Ms": 172.0,
+    "p95Ms": 10765.0,
+    "latencyScope": "Observed sequential requests; small sample, not a production SLA",
+    "qualityScope": "HTTP/job/tool evidence checks only; independent questions, human quality scores pending",
+    "plannedTurns": 88,
+    "executedTurns": 88,
+    "notExecutedTurns": 0,
+    "routeCounts": {
+      "direct-catalog": 78,
+      "model-queue": 10
+    },
+    "failedTurns": [
+      {
+        "caseId": "h02",
+        "repetition": 1,
+        "turn": 1,
+        "failure": "WEBSITE_JOB_FAILED"
+      },
+      {
+        "caseId": "h11",
+        "repetition": 1,
+        "turn": 1,
+        "failure": "WEBSITE_JOB_FAILED"
+      },
+      {
+        "caseId": "h19",
+        "repetition": 1,
+        "turn": 3,
+        "failure": "WEBSITE_JOB_FAILED"
+      },
+      {
+        "caseId": "h19",
+        "repetition": 2,
+        "turn": 3,
+        "failure": "WEBSITE_JOB_FAILED"
+      }
+    ],
+    "tokens": null,
+    "monetaryCost": null
+  },
+  "rows": [
+    {
+      "caseId": "h01",
+      "sourceGroup": "robert-downey",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "54888f31c937b89c7702e9b45faf74b7002bb4727eb9e8744d400ca9f9c7a5fd",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 10765.0
+    },
+    {
+      "caseId": "h02",
+      "sourceGroup": "trapped-house",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": false,
+      "manualReviewRequired": false,
+      "historyEntries": 0,
+      "jobStatus": "FAILED",
+      "route": "model-queue",
+      "checks": {
+        "businessSuccess": false
+      },
+      "failure": "WEBSITE_JOB_FAILED",
+      "durationMs": 2610.0
+    },
+    {
+      "caseId": "h03",
+      "sourceGroup": "question-03",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "25c92791233929b6a2d8c96200b81b9d9bb592f5cc4a116edc1387b2fc1f7291",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 63.0
+    },
+    {
+      "caseId": "h04",
+      "sourceGroup": "question-04",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "e931bbe5135f08abcfa3e6d9b9a26375eea4418afb4f0846b313cdd39ae7d3b9",
+      "answerChars": 57,
+      "evidenceSha256": "0a4d62996006140ffa920ed97febaea225d3ecd831833a45619b077a09bb6619",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 157.0
+    },
+    {
+      "caseId": "h05",
+      "sourceGroup": "question-05",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "01c8c1c5233963f19243c7b2549a834d47a019ef3f955e2b24c892499dad2f82",
+      "answerChars": 44,
+      "evidenceSha256": "58cbf0c96ea3a7793e27a11df0c15efaf1dfe904319546bff3e43a2ddb493fe1",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 141.0
+    },
+    {
+      "caseId": "h06",
+      "sourceGroup": "question-06",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "c7530fc6adc7b6a8f525585003c4ab19309dc33253b0d4b593b40d6d9517923a",
+      "answerChars": 45,
+      "evidenceSha256": "64e1a9fe15ba6a0a21c4737d45ff4d6a9b8a81b08a0c888ec6d783dcccfc3c1e",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 187.0
+    },
+    {
+      "caseId": "h07",
+      "sourceGroup": "question-07",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "c65b042f76eb47889fc4d78dcb4b975a3ab52df53ea0ca1dd11dcc3b6047e3e6",
+      "answerChars": 48,
+      "evidenceSha256": "f35cc13e0b0ca6222a8a42a79fffa57dbc6044b6c9bd4991bd7b7aacf497d486",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 188.0
+    },
+    {
+      "caseId": "h08",
+      "sourceGroup": "question-08",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "b1e297b7325b2f3d3f0e05c304a702b255a91af3930b7ba7642b39390681ec79",
+      "answerChars": 48,
+      "evidenceSha256": "fd3afd8f7f6689d2f497c5688778af4ffd47072726b2ed676176454691a88fe9",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 156.0
+    },
+    {
+      "caseId": "h09",
+      "sourceGroup": "question-09",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "85a01936ea450620d97f1f5ab06ad2e0145c00e2d749dd765ef1704cd5e4e4e6",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 2390.0
+    },
+    {
+      "caseId": "h10",
+      "sourceGroup": "question-10",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "c68fa7e7a204138582440fb975e42ef5b8e1fba332332afb324e0b90cf409456",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 31.0
+    },
+    {
+      "caseId": "h11",
+      "sourceGroup": "question-11",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": false,
+      "manualReviewRequired": false,
+      "historyEntries": 0,
+      "jobStatus": "FAILED",
+      "route": "model-queue",
+      "checks": {
+        "businessSuccess": false
+      },
+      "failure": "WEBSITE_JOB_FAILED",
+      "durationMs": 2578.0
+    },
+    {
+      "caseId": "h12",
+      "sourceGroup": "question-12",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "79290a4d7c9a53b9bc97a41b77fc8c54d241ad7915cb832501e864187950f2e0",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 47.0
+    },
+    {
+      "caseId": "h13",
+      "sourceGroup": "question-13",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "ad37bceafbd41cece1f64cfd069b9a7a45dd588607a0ef24b0c5c39c9c5782bf",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 157.0
+    },
+    {
+      "caseId": "h14",
+      "sourceGroup": "question-14",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "3f8ef19f07fc618b757d9762b624f8d657c513f96a4abee48083706ba00af23b",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 94.0
+    },
+    {
+      "caseId": "h15",
+      "sourceGroup": "question-15",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "c201eedcc8eda0b4f1510af5d1a48ac78a883e81b41516671915fbcff79f235d",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 2609.0
+    },
+    {
+      "caseId": "h16",
+      "sourceGroup": "question-16",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "61baea9610604dcb295065254f7acc6f991526441eb0957b23c9006d320101fe",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 109.0
+    },
+    {
+      "caseId": "h17",
+      "sourceGroup": "robert-downey",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "4a82ab7cbba2a70692cb8f1ff2937a01c2f34ef8608a582d3d8ea4dd7f38699b",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 47.0
+    },
+    {
+      "caseId": "h17",
+      "sourceGroup": "robert-downey",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "bc910d30e99c5104e76cf5c8902dd7e658caf1a77593c888af382fc67df1c780",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 110.0
+    },
+    {
+      "caseId": "h17",
+      "sourceGroup": "robert-downey",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 3,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 4,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "a2f946b8cb2aa12313a98711fea17139355f13a8c0760994a96866e330e8f610",
+      "answerChars": 36,
+      "evidenceSha256": "2611bb907c0eb60fb45e357788084b4f8601109e35ac39119ac37c460d5e3df4",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 156.0
+    },
+    {
+      "caseId": "h18",
+      "sourceGroup": "marvel-vision",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "0462c499f4584316b2c03dc697f556c127b915f3041ee9e34eee583a8f2c9780",
+      "answerChars": 58,
+      "evidenceSha256": "fa0f89320306b671b5e2a809de4707a25f09d40967045bb6cd00099c03a32568",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 156.0
+    },
+    {
+      "caseId": "h18",
+      "sourceGroup": "marvel-vision",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "be259a06b3a75761d43dc91f5e10c71a471ca9dc145724472c14f89753c64ee7",
+      "answerChars": 31,
+      "evidenceSha256": "d16891dc241583279bb5fa7bbc71f8001c64db9fc3a1fc4a55a887a68097293d",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 156.0
+    },
+    {
+      "caseId": "h18",
+      "sourceGroup": "marvel-vision",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 3,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 4,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "ba366fdb4597345dfde5d31122dd88dbc902bd68e9a5feebac9d444453260319",
+      "answerChars": 32,
+      "evidenceSha256": "2eb9e6d4718018b13ce217bd89fd99f9044e80f61ac67da9f05ff6a57618e72f",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 156.0
+    },
+    {
+      "caseId": "h19",
+      "sourceGroup": "question-19",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "48c31a8ac2432cf46e11f2603a70d384e5c1980d4fa14cc93fa48c976b13c901",
+      "answerChars": 36,
+      "evidenceSha256": "8772caafdfa07d570bba52f285794f20147bf5d8f760746d88ca2b9ea1d95185",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "recommendation",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "recommendMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 4750.0
+    },
+    {
+      "caseId": "h19",
+      "sourceGroup": "question-19",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "05a652f942589ee4df253f918f9afb626b5babae85f998e8da05388a6029eb26",
+      "answerChars": 32,
+      "evidenceSha256": "bf5395b165e6314ae07f69af7aef0de4c2803f708b4e5c3bb0f053d1ca51a51d",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 6063.0
+    },
+    {
+      "caseId": "h19",
+      "sourceGroup": "question-19",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 3,
+      "executed": true,
+      "passed": false,
+      "manualReviewRequired": false,
+      "historyEntries": 4,
+      "jobStatus": "FAILED",
+      "route": "model-queue",
+      "checks": {
+        "businessSuccess": false
+      },
+      "failure": "WEBSITE_JOB_FAILED",
+      "durationMs": 15266.0
+    },
+    {
+      "caseId": "h20",
+      "sourceGroup": "trapped-house",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "54bccaf31a4bbe482ccbe83c2c01d959b83c01dd48e0523c6da980275fa3a2b6",
+      "answerChars": 30,
+      "evidenceSha256": "6dec30df738e308cfe1aaecd9b24802ea874ed59118afc9d7935c7ea764a481e",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 94.0
+    },
+    {
+      "caseId": "h20",
+      "sourceGroup": "trapped-house",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "6bc83a9d208101c6b2d703c366a9628e9aadbe857af9c20d5720bfcfc020b23c",
+      "answerChars": 30,
+      "evidenceSha256": "ae228c7f109d983fba789b23178a27af22b63690fe65670aebe45fb5b8097d2a",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 172.0
+    },
+    {
+      "caseId": "h20",
+      "sourceGroup": "trapped-house",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 3,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 4,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "aee0abe20f8fd0587d770999a981ed111c71961e6d1992873543e26122ddd2e3",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 125.0
+    },
+    {
+      "caseId": "h21",
+      "sourceGroup": "question-21",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "f7bc251ad862958a2f7635a3802bc868d8b6a46672fa45fc7f301193130ffb10",
+      "answerChars": 30,
+      "evidenceSha256": "cae53a86e64f4bac633048c7cbbf8f42212a47163bc3b6d1c6ee172f60e4ced0",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 6313.0
+    },
+    {
+      "caseId": "h21",
+      "sourceGroup": "question-21",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "ed9ec79462157b297000b51378659b376a6a3ad649230fa0a735182f986d56e5",
+      "answerChars": 34,
+      "evidenceSha256": "e5a2a76e1d3cea12b394613a629140708766f6699c2d5891b9147927a7d0211c",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 141.0
+    },
+    {
+      "caseId": "h21",
+      "sourceGroup": "question-21",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 3,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 4,
+      "jobStatus": "SUCCEEDED",
+      "route": "model-queue",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "8949501e97822817c3b78033a6cd2ff519c4fe2ab493fbc20562ef09f5b2d5e3",
+      "answerChars": 278,
+      "evidenceSha256": "636571ab111115bd4543af7b8e2a08e5f4f7ea8b552c399ba648190a4304452f",
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 3796
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 99
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 9333
+        }
+      ],
+      "durationMs": 15250.0
+    },
+    {
+      "caseId": "h22",
+      "sourceGroup": "question-22",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "1d1fe4d2293184ab3ba3d57832083fc12ab13a097c5f56edc18c530a0d82b6c4",
+      "answerChars": 30,
+      "evidenceSha256": "053994ce70bef62f4482a3703029834c1e9d4be9b6c18f5e5c9402352b7e9531",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 172.0
+    },
+    {
+      "caseId": "h22",
+      "sourceGroup": "question-22",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "2754c4f44743177393d05f66cebbe4ea9d95021bd16d66ccfbf994f232c49309",
+      "answerChars": 31,
+      "evidenceSha256": "222e424430e1337d86a150102245eeb9b279dcd1619e546f8651771303486ceb",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 156.0
+    },
+    {
+      "caseId": "h22",
+      "sourceGroup": "question-22",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 3,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 4,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "40fe3ca48f897f705b389f174445593f34a50e78498cc26b1335bbf5dcf8c007",
+      "answerChars": 38,
+      "evidenceSha256": "b6187800d5f06dc01c04712166f44718996ee8819bd264643be57623f0107b05",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 141.0
+    },
+    {
+      "caseId": "h23",
+      "sourceGroup": "question-23",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "2052bcd6c614ae3fad4466df5640627194e36c77800f62e50d90cf0c9335560c",
+      "answerChars": 37,
+      "evidenceSha256": "f76735f26bed5a0b6175ecfd29d7fd2b1d536183ccc1c7cb4e85e87c856e81dc",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 156.0
+    },
+    {
+      "caseId": "h23",
+      "sourceGroup": "question-23",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "123c565770302d5c32ba8bdc0c11b58e2ba1dda179aeded6cceae610868a66bc",
+      "answerChars": 31,
+      "evidenceSha256": "7f5d102bb4b1669f8a6b9b106da9af4ad1c123ff852c2f99c4062e2e9201ded7",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 5281.0
+    },
+    {
+      "caseId": "h23",
+      "sourceGroup": "question-23",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 3,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 4,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "1b44b70eeed7f6ba9f27ba9a75a5ab6e33d9e38abe587dc31d923d019eafceba",
+      "answerChars": 34,
+      "evidenceSha256": "8036d46a245266f0ec9c1cd1190324068e2295a1a9ea8ffbd223ffe254f7ae1a",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 141.0
+    },
+    {
+      "caseId": "h24",
+      "sourceGroup": "marvel-vision",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "model-queue",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "033d57906acc5559bcaa206ebe5f01b71b33087e5905d056921a05771d940c85",
+      "answerChars": 17,
+      "evidenceSha256": "b0e15979b9f904bed5e768150460cdbb867900189e731df9aa6fe0107d7efe6f",
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1479
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 62
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1262
+        }
+      ],
+      "durationMs": 5094.0
+    },
+    {
+      "caseId": "h25",
+      "sourceGroup": "question-25",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "ce6f89ae423199714629d91025cf771db7fcaac51800ffb821ff9056a93e5c1d",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 47.0
+    },
+    {
+      "caseId": "h26",
+      "sourceGroup": "question-26",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "311133e8945c5bdfb6995cd06215517093f88f729f9058c7764988ebef952002",
+      "answerChars": 43,
+      "evidenceSha256": "3320dc1686e77c3a0a253be38f5950b08c6d3e7065054f3803d46b6a681450da",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 141.0
+    },
+    {
+      "caseId": "h27",
+      "sourceGroup": "question-27",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "48c31a8ac2432cf46e11f2603a70d384e5c1980d4fa14cc93fa48c976b13c901",
+      "answerChars": 36,
+      "evidenceSha256": "f6c6787671efadd2744092b1e41e808d5bf345139fd5b0d350f51c235cbb7b73",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "recommendation",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "recommendMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 406.0
+    },
+    {
+      "caseId": "h28",
+      "sourceGroup": "question-28",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "b746d82c2a6b70d7a240c424a1a6d80f23f6d265a915b44e4fdb2ff05cf86c42",
+      "answerChars": 37,
+      "evidenceSha256": "faa51a9dee07d8e40fc4e879fed5d51da82a84f110531e6932cfc037b5dff8fe",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 141.0
+    },
+    {
+      "caseId": "h29",
+      "sourceGroup": "question-29",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "d2112a7be666cb0a24dfa1a8f8852821a9524e4a2f400df0714654c94f4963cb",
+      "answerChars": 49,
+      "evidenceSha256": "3dd0ac3a64257b8d3ce3aaaaafb97015dd1272d3b5a711a2ff5ee782cf9e80bf",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 156.0
+    },
+    {
+      "caseId": "h30",
+      "sourceGroup": "question-30",
+      "split": "holdout",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "dd25924fb98e495ed32047dfc5ee84d6d8c06ae38aba8f21aaccfaa9dd14b0a4",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 6297.0
+    },
+    {
+      "caseId": "h01",
+      "sourceGroup": "robert-downey",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "87b764e7cfcbc989b5614ea65d2a05718904ffc580adf7681467f3b0714a4c1b",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 47.0
+    },
+    {
+      "caseId": "h02",
+      "sourceGroup": "trapped-house",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "model-queue",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "09a2875630838e126b3789c1bc6c0864032426ee45f8b44c4e9d68d329e7d952",
+      "answerChars": 42,
+      "evidenceSha256": "9db1290950ea5b05b3bdf20058f142265bdab90bf57b8fda52e2926f73bb1a93",
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1502
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 175
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 2193
+        }
+      ],
+      "durationMs": 5094.0
+    },
+    {
+      "caseId": "h03",
+      "sourceGroup": "question-03",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "9fb2dff8a1bd3db5ca761fbd6faecc912a9c970e4b4dbbb6a651160fc50e5e68",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 31.0
+    },
+    {
+      "caseId": "h04",
+      "sourceGroup": "question-04",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "e931bbe5135f08abcfa3e6d9b9a26375eea4418afb4f0846b313cdd39ae7d3b9",
+      "answerChars": 57,
+      "evidenceSha256": "11b91618f1bb917882b32ffbb0805d9e0f6b5ec2507a0d44650eda1f59fcd78c",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 141.0
+    },
+    {
+      "caseId": "h05",
+      "sourceGroup": "question-05",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "01c8c1c5233963f19243c7b2549a834d47a019ef3f955e2b24c892499dad2f82",
+      "answerChars": 44,
+      "evidenceSha256": "1b8e3214ce6897010853698f9205f16284e7b4721a168b4ae682eee075ed59c8",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 157.0
+    },
+    {
+      "caseId": "h06",
+      "sourceGroup": "question-06",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "c7530fc6adc7b6a8f525585003c4ab19309dc33253b0d4b593b40d6d9517923a",
+      "answerChars": 45,
+      "evidenceSha256": "6c7676481a113b49653d2bf03c243c717db33c8dd86b80cea0b6c8810d190e7e",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 125.0
+    },
+    {
+      "caseId": "h07",
+      "sourceGroup": "question-07",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "c65b042f76eb47889fc4d78dcb4b975a3ab52df53ea0ca1dd11dcc3b6047e3e6",
+      "answerChars": 48,
+      "evidenceSha256": "95fbfd5bf56c7d620c9cf06b1dcbbacb3944f6c97551ebadeb86c6edb0b8881f",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 156.0
+    },
+    {
+      "caseId": "h08",
+      "sourceGroup": "question-08",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "b1e297b7325b2f3d3f0e05c304a702b255a91af3930b7ba7642b39390681ec79",
+      "answerChars": 48,
+      "evidenceSha256": "7fcb519296c6bdd27b136c12ad3e4d06c8a5c5d96a8af0fa1372d342562ed80a",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 187.0
+    },
+    {
+      "caseId": "h09",
+      "sourceGroup": "question-09",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "58d8267358f476b8c9028f0d72faadef95836cca8e487610a98d2fcd6a64122e",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 8500.0
+    },
+    {
+      "caseId": "h10",
+      "sourceGroup": "question-10",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "6f63b72eed089156818b600912f0f06c986a3eed34af3629125b5a57fda274c9",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 47.0
+    },
+    {
+      "caseId": "h11",
+      "sourceGroup": "question-11",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "model-queue",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "cbdaa13541d735a914510e8246ffcfaf4b81f30946e1b8a7173699a284cc2a75",
+      "answerChars": 37,
+      "evidenceSha256": "b0cff6dc8f486c11a0bbe2dd46c270ee25a0039a11ed47b20a6e3d0927dd0ea5",
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 2106
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 40
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1824
+        }
+      ],
+      "durationMs": 7687.0
+    },
+    {
+      "caseId": "h12",
+      "sourceGroup": "question-12",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "0f24ace2a354419d0e0a0aa5efe41849d976e7abbf7b22581e3879a9d2538d52",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 32.0
+    },
+    {
+      "caseId": "h13",
+      "sourceGroup": "question-13",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "642ad30b1a509347394c32cd98cac4348a4e4d2dfbc30191173aee1177a5d50f",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 79.0
+    },
+    {
+      "caseId": "h14",
+      "sourceGroup": "question-14",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "858a6bfbcc242356b95d92cdd1c9bfca428713e082c5e0c467d03a2bb1570976",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 63.0
+    },
+    {
+      "caseId": "h15",
+      "sourceGroup": "question-15",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "ca01ef5f77dff1edc3d7343be03b9aed298fc8dd0f1fdbce46f6ea06b7283667",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 1734.0
+    },
+    {
+      "caseId": "h16",
+      "sourceGroup": "question-16",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "3f10ac4edcda5f44b5c024adcfed312ac07586f178c08874f2889f4cf78ba791",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 93.0
+    },
+    {
+      "caseId": "h17",
+      "sourceGroup": "robert-downey",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "75b5586f7d3f313300905e0801341195e5c4823550333a9fd0a39118968b5140",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 62.0
+    },
+    {
+      "caseId": "h17",
+      "sourceGroup": "robert-downey",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "02f679fa4ad50719ae87b8844043ebfd007c8691efacea3f95856e32fe2bc94b",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 125.0
+    },
+    {
+      "caseId": "h17",
+      "sourceGroup": "robert-downey",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 3,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 4,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "a2f946b8cb2aa12313a98711fea17139355f13a8c0760994a96866e330e8f610",
+      "answerChars": 36,
+      "evidenceSha256": "796e1b4a6ccfd577f1c1ab4391e7dbc3c7220f4e2abb0d0f4a69e7140d14b045",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 219.0
+    },
+    {
+      "caseId": "h18",
+      "sourceGroup": "marvel-vision",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "0462c499f4584316b2c03dc697f556c127b915f3041ee9e34eee583a8f2c9780",
+      "answerChars": 58,
+      "evidenceSha256": "a038789d215db5b6e4ccbd53caa8452d407b521277a92681ac64f6d13b970e08",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 250.0
+    },
+    {
+      "caseId": "h18",
+      "sourceGroup": "marvel-vision",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "be259a06b3a75761d43dc91f5e10c71a471ca9dc145724472c14f89753c64ee7",
+      "answerChars": 31,
+      "evidenceSha256": "91d743a321cef41844c45c3a11c4123f76a6ded1542794c9f879a7495e65a5fc",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 234.0
+    },
+    {
+      "caseId": "h18",
+      "sourceGroup": "marvel-vision",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 3,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 4,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "ba366fdb4597345dfde5d31122dd88dbc902bd68e9a5feebac9d444453260319",
+      "answerChars": 32,
+      "evidenceSha256": "b2f534c1a0c42ea6b9d5f7b95b3412d743f9aabd58113dbb9955a9170f37c898",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 203.0
+    },
+    {
+      "caseId": "h19",
+      "sourceGroup": "question-19",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "48c31a8ac2432cf46e11f2603a70d384e5c1980d4fa14cc93fa48c976b13c901",
+      "answerChars": 36,
+      "evidenceSha256": "886316fd71c3a33117a74e7c6e0048ec3bd2d33e02680a14a3d4532ed8171fd4",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "recommendation",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "recommendMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 2485.0
+    },
+    {
+      "caseId": "h19",
+      "sourceGroup": "question-19",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "05a652f942589ee4df253f918f9afb626b5babae85f998e8da05388a6029eb26",
+      "answerChars": 32,
+      "evidenceSha256": "e04466c9b55e8f3b00e9d337b9a63e64a4686551e234413fd5ff9cc7cab58f81",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 156.0
+    },
+    {
+      "caseId": "h19",
+      "sourceGroup": "question-19",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 3,
+      "executed": true,
+      "passed": false,
+      "manualReviewRequired": false,
+      "historyEntries": 4,
+      "jobStatus": "FAILED",
+      "route": "model-queue",
+      "checks": {
+        "businessSuccess": false
+      },
+      "failure": "WEBSITE_JOB_FAILED",
+      "durationMs": 13000.0
+    },
+    {
+      "caseId": "h20",
+      "sourceGroup": "trapped-house",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "54bccaf31a4bbe482ccbe83c2c01d959b83c01dd48e0523c6da980275fa3a2b6",
+      "answerChars": 30,
+      "evidenceSha256": "f49f127f780d934f28cbd9d05b341e68d732f799b96b9f087e983d3e33cec5ea",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 156.0
+    },
+    {
+      "caseId": "h20",
+      "sourceGroup": "trapped-house",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "6bc83a9d208101c6b2d703c366a9628e9aadbe857af9c20d5720bfcfc020b23c",
+      "answerChars": 30,
+      "evidenceSha256": "57941bbc3c0cbfad18a6b7b9d12abea1e7b9db6ea131f3424196683a49b9d2f2",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 250.0
+    },
+    {
+      "caseId": "h20",
+      "sourceGroup": "trapped-house",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 3,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 4,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "b0e30f43b4b3134c3b016c8e8e41d610126b11e5464dbb2f63ac3f5f4cfa5db7",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 125.0
+    },
+    {
+      "caseId": "h21",
+      "sourceGroup": "question-21",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "f7bc251ad862958a2f7635a3802bc868d8b6a46672fa45fc7f301193130ffb10",
+      "answerChars": 30,
+      "evidenceSha256": "6c31e8e1cd4015eb97d6545292aec9fae9ce5e71062bc321c4388dd19580bff8",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 2172.0
+    },
+    {
+      "caseId": "h21",
+      "sourceGroup": "question-21",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "ed9ec79462157b297000b51378659b376a6a3ad649230fa0a735182f986d56e5",
+      "answerChars": 34,
+      "evidenceSha256": "5bf9eb5010833cb3281f58da365d1272ff6edffb91a1ae256ee11b4df25c0fa4",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 203.0
+    },
+    {
+      "caseId": "h21",
+      "sourceGroup": "question-21",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 3,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 4,
+      "jobStatus": "SUCCEEDED",
+      "route": "model-queue",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "b10bb80fa1316b0e718e20286b95f5019e10876e84682566bb483cc4cd77ef94",
+      "answerChars": 280,
+      "evidenceSha256": "cca9a9de719155dc5ef16c7369efae66dc51c9494d648214c3eeb632247e5c40",
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 3904
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 89
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 9541
+        }
+      ],
+      "durationMs": 15282.0
+    },
+    {
+      "caseId": "h22",
+      "sourceGroup": "question-22",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "1d1fe4d2293184ab3ba3d57832083fc12ab13a097c5f56edc18c530a0d82b6c4",
+      "answerChars": 30,
+      "evidenceSha256": "0ff107892df851839424be0312831d30066260aa6f5ec55351f3c2cf7a35328b",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 203.0
+    },
+    {
+      "caseId": "h22",
+      "sourceGroup": "question-22",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "2754c4f44743177393d05f66cebbe4ea9d95021bd16d66ccfbf994f232c49309",
+      "answerChars": 31,
+      "evidenceSha256": "4224a8e9290f8d0e03c8d9147c116d7fdb0ef269f4c5391a3ee3d082cc14028e",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 125.0
+    },
+    {
+      "caseId": "h22",
+      "sourceGroup": "question-22",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 3,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 4,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "40fe3ca48f897f705b389f174445593f34a50e78498cc26b1335bbf5dcf8c007",
+      "answerChars": 38,
+      "evidenceSha256": "d9dbf6258113e700bf45bb0b322ff84d5a1a2b6c16c089d7652c2301fe1f2f6d",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 203.0
+    },
+    {
+      "caseId": "h23",
+      "sourceGroup": "question-23",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "2052bcd6c614ae3fad4466df5640627194e36c77800f62e50d90cf0c9335560c",
+      "answerChars": 37,
+      "evidenceSha256": "a908004588558977705f75a0356a78718bf95c4a744193528e39b6815342b6a5",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 172.0
+    },
+    {
+      "caseId": "h23",
+      "sourceGroup": "question-23",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "123c565770302d5c32ba8bdc0c11b58e2ba1dda179aeded6cceae610868a66bc",
+      "answerChars": 31,
+      "evidenceSha256": "cbfbaaf9cd10b4ca17443444606af4916b8e9f913990448e0fbf433df3534bfa",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 2188.0
+    },
+    {
+      "caseId": "h23",
+      "sourceGroup": "question-23",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 3,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 4,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "1b44b70eeed7f6ba9f27ba9a75a5ab6e33d9e38abe587dc31d923d019eafceba",
+      "answerChars": 34,
+      "evidenceSha256": "721d134c72453f6da4fd42f9e2a196cc393fc896b26da2ab4f8ef71cbdb30d2e",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 297.0
+    },
+    {
+      "caseId": "h24",
+      "sourceGroup": "marvel-vision",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "model-queue",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "033d57906acc5559bcaa206ebe5f01b71b33087e5905d056921a05771d940c85",
+      "answerChars": 17,
+      "evidenceSha256": "42b22175ccb51aaec26a41233fd755941f46806c5a713ba51f8b1c5068b82f40",
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1544
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 123
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1480
+        }
+      ],
+      "durationMs": 5125.0
+    },
+    {
+      "caseId": "h25",
+      "sourceGroup": "question-25",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "f1370d225a40c2cf948b15305636c975bce62984d10f49e6320e09d5cec3a21c",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 188.0
+    },
+    {
+      "caseId": "h26",
+      "sourceGroup": "question-26",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "311133e8945c5bdfb6995cd06215517093f88f729f9058c7764988ebef952002",
+      "answerChars": 43,
+      "evidenceSha256": "6f311a01ec66a0bd84cb78c85ef7fc6e76b84d63f33d05da34f5fc3edb572c9d",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 204.0
+    },
+    {
+      "caseId": "h27",
+      "sourceGroup": "question-27",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "48c31a8ac2432cf46e11f2603a70d384e5c1980d4fa14cc93fa48c976b13c901",
+      "answerChars": 36,
+      "evidenceSha256": "2da53ea1d0da0979e692484d44cdfce3eea55af53453be4de52f95009726c057",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "recommendation",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "recommendMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 500.0
+    },
+    {
+      "caseId": "h28",
+      "sourceGroup": "question-28",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "b746d82c2a6b70d7a240c424a1a6d80f23f6d265a915b44e4fdb2ff05cf86c42",
+      "answerChars": 37,
+      "evidenceSha256": "d919a8ab34b0ca013fc20a1d93481106dd81bab357c8c11f6a46493ace4ee94e",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 265.0
+    },
+    {
+      "caseId": "h29",
+      "sourceGroup": "question-29",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "d2112a7be666cb0a24dfa1a8f8852821a9524e4a2f400df0714654c94f4963cb",
+      "answerChars": 49,
+      "evidenceSha256": "0e44b4daf936d0c090781884fa281cfe5cd81b39b904cf527341a1a0e2acec48",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "title",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 218.0
+    },
+    {
+      "caseId": "h30",
+      "sourceGroup": "question-30",
+      "split": "holdout",
+      "repetition": 2,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "jobStatus": "SUCCEEDED",
+      "route": "direct-catalog",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true
+      },
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "answerChars": 28,
+      "evidenceSha256": "9b6660d6f803b27fdeb9882f43ceee8cc899f82aea78277cefab180089cc1853",
+      "trace": [
+        {
+          "kind": "unknown",
+          "name": "natural_query",
+          "status": "success",
+          "durationMs": 0
+        },
+        {
+          "kind": "tool",
+          "name": "naturalSearchMovies",
+          "status": "success",
+          "durationMs": 0
+        }
+      ],
+      "durationMs": 3485.0
+    }
+  ],
+  "freezeSha256": "494cd7871adaf6c04d19c5882f854cab79015ab2b7cdeaf42581205a81c71879",
+  "evaluatorSha256": "155861acbfc400abd3351d02988dce837f8b421d1563371c29d42db8a807943d",
+  "websiteIdentityRole": "USER",
+  "browserUiCovered": false
+}

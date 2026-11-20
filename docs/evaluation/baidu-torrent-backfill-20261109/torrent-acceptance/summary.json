@@ -1,0 +1,91 @@
+{
+  "evidenceType": "sanitized derived acceptance summary; original attempts retained",
+  "sourceCommit": "b55080d8c0449f6dc6852beff0356d7350cce570",
+  "outcome": "BLOCKED_REQUIRES_REVIEW",
+  "parentId": 17583,
+  "childId": 17584,
+  "legacyParentId": 17580,
+  "legacyVideoChildId": 1,
+  "legacyRowsUnchanged": true,
+  "localGyingIdentityId": 41,
+  "sourceResourceIds": [
+    28253,
+    28254
+  ],
+  "source": "GYING",
+  "sourceResourceQualities": [
+    "1080P",
+    "4K"
+  ],
+  "configurationPutRequests": 1,
+  "runPostRequests": 1,
+  "runIntentFsyncedBeforeSend": true,
+  "runIntentRetained": true,
+  "postReplayPerformed": false,
+  "automaticSchedulingEnabled": false,
+  "intervalMinutes": 10,
+  "batchLimit": 1,
+  "processed": 0,
+  "succeeded": 0,
+  "skipped": 0,
+  "failed": 0,
+  "currentAction": "UPLOAD_MAGNET_TEXT",
+  "currentChildStatus": "UNKNOWN",
+  "currentChildErrorCategory": "BaiduActionException",
+  "upstreamErrorCodeRetained": false,
+  "rootCauseConfirmed": false,
+  "uploadedMetadataFileIdsPersisted": 0,
+  "shareSubmitIntentPresent": false,
+  "remoteFolderCheckedReadOnly": true,
+  "remoteFileCountAtObservation": 0,
+  "sameDedicatedAccount": true,
+  "encryptedSessionPairUnchanged": true,
+  "remoteFolderEmptyProvesNoTemporaryUploadBlocks": false,
+  "archiveSuccessVerified": false,
+  "lowSpeedEnableHelperExecuted": false,
+  "videoTransferDiscoveryOrGyingPublishCalled": false,
+  "nativeJsonHelperCompatibilityRegression": {
+    "Python": 20,
+    "Node": 5,
+    "independentMustFixRemaining": 0
+  },
+  "unusedLowSpeedHelpersOfflineRegression": {
+    "EnablePython": 27,
+    "ObserverPython": 5,
+    "mustFixRemaining": 0
+  },
+  "receipts": {
+    "run": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\verification\\torrent-acceptance-20261109T050556.296587Z\\attempt-20261109T062404.667039Z\\result.json",
+      "sha256": "b49eb8795ec16672f21e0807bb4ea1239de2f5e3c41a7d56eb3f8a3fd35b8b44"
+    },
+    "lastReadOnlyPoll": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\verification\\torrent-acceptance-20261109T050556.296587Z\\attempt-20261109T063235.599305Z\\result.json",
+      "sha256": "203c896db369dd52b7665e19e113c145efbecc707645b68b9bb925cc4f184b34"
+    },
+    "remoteFolder": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\verification\\unknown-upload-20261109\\readonly-folder-20261109T062931.998756Z.json",
+      "sha256": "284b72768af824f64cb0a34c6f07cb1308b80ea66b9c7129b2b7d8a0a9e62369"
+    },
+    "intent": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\verification\\torrent-acceptance-20261109T050556.296587Z\\run-send-intent.json",
+      "sha256": "da65ee79fab5332d629facf638e4ac39ac306acb33c5d080668c007c4b1faf25"
+    },
+    "configurePaused": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\verification\\torrent-acceptance-20261109T050556.296587Z\\attempt-20261109T061206.650502Z\\settings-after.json",
+      "sha256": "f288f3900db250d31353103eb25e65b58099c0b5a1ea41a92577a10d03c1d00a"
+    },
+    "helperV3": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\verification\\torrent-acceptance-20261109T050556.296587Z\\json-compat-v3-20261109T061702.093002Z\\frozen-helper-manifest-v3.json",
+      "sha256": "67fb7bf01e4901e4368a8e5527efa34b00a48c675d46d5a080448b6754f9824a"
+    },
+    "helperV3Independent": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\verification\\torrent-acceptance-20261109T050556.296587Z\\independent-json-review-20261109\\review-final-v3-freeze.json",
+      "sha256": "309933019ac3dc4990cf63bab949608478e32d5cf93ea38caa7d1b4c5ea1791a"
+    },
+    "enableHelperUnused": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\verification\\torrent-enable-20261109\\freeze-review-20261109T062007.339683Z\\frozen-enable-manifest.json",
+      "sha256": "113727e96cedd0244fd112aa93eb01ebd6a72cb6ba673c6555bc636493bba0c3"
+    }
+  }
+}

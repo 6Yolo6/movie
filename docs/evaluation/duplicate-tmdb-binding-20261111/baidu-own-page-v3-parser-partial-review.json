@@ -1,0 +1,57 @@
+{
+  "status": "LOCAL_PARTIAL_REVIEW_PASS",
+  "createdAt": "2026-11-11T11:42:20.517052+00:00",
+  "sourceSha256": {
+    "DiagnoseBaiduOwnPageReadOnlyV3.java": "6b673f35d2ecdd28b11b20fd7240ec0ac2ed59155a7e9c12decd6bb2ec5eff62",
+    "CompileOwnPageDiagnosticV3.py": "55d4254d769303b5ac44e9348e175023b8ebee75080e1155959c3a99b65786a3",
+    "PostOwnPageDiagnosticV3.py": "a79047bd778a8560f97c7dd84ddcf66d49abad5cf3158f4c9a4b6b41b21946fa",
+    "OwnPageDiagnosticV3Binding.py": "5502e57248c77d8f44397eea13201a21cf70a0b9fc9523cd43345ea901b75502"
+  },
+  "sources": {
+    "DiagnoseBaiduOwnPageReadOnlyV3.java": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\DiagnoseBaiduOwnPageReadOnlyV3.java",
+      "sha256": "6b673f35d2ecdd28b11b20fd7240ec0ac2ed59155a7e9c12decd6bb2ec5eff62"
+    },
+    "CompileOwnPageDiagnosticV3.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileOwnPageDiagnosticV3.py",
+      "sha256": "55d4254d769303b5ac44e9348e175023b8ebee75080e1155959c3a99b65786a3"
+    },
+    "PostOwnPageDiagnosticV3.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostOwnPageDiagnosticV3.py",
+      "sha256": "a79047bd778a8560f97c7dd84ddcf66d49abad5cf3158f4c9a4b6b41b21946fa"
+    },
+    "OwnPageDiagnosticV3Binding.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\OwnPageDiagnosticV3Binding.py",
+      "sha256": "5502e57248c77d8f44397eea13201a21cf70a0b9fc9523cd43345ea901b75502"
+    }
+  },
+  "reviewScope": [
+    "V3 structured HTML/JSON extraction and root-object owner/shareId co-location diagnostic",
+    "V3 exact-share redirect identity/query validation and bounded inert GET page parsing",
+    "V3 safe schema/token output validator and no-owner-proof invariant",
+    "Final retry initialization before HTTP client and host-only/domain-dot/path-order cookie correction"
+  ],
+  "findings": [
+    "No path accepts an owner or official reconciliation proof; all source/token/object evidence remains diagnostic only.",
+    "Owner and shareId presence is computed for each single object; no cross-object pairing occurs.",
+    "Duplicate keys and trailing JSON are rejected, including nested input; balanced extraction respects braces inside escaped JSON strings.",
+    "Known object/script/call inventories are bounded; unknown field names are not emitted and mark schema incomplete.",
+    "All redirects retain the exact bound share identity using /s/1ID or known /share/init?surl equivalent routes; unknown or duplicate query keys, changed code, unrelated paths and unsafe origins are rejected.",
+    "Up to three redirects means at most four page requests; this matches the explicit redirect limit.",
+    "No JS evaluation, external script fetch, password verification POST, cookie persistence, SQL, queue or scheduling API exists in the parser path."
+  ],
+  "limitation": "Go reference try{{...}} wrapper is not a recognized structured V3 source; only diagnostic token candidates may be observed there. This cannot establish owner context and remains STOP-only.",
+  "offlineTests": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-local-tests\\7b11dc6ceea84f88856f2ce30218125f\\own-page-diag-v3-local-tests.json",
+    "sha256": "cf888ce3440216466d34c34909b776e08b03f4b9b5b6abad0c938f5815070f15"
+  },
+  "offlineTestsExecutedByThisReviewer": false,
+  "productionDockerCommands": 0,
+  "runtimeRequests": 0,
+  "productionApiRequests": 0,
+  "cloudWrites": 0,
+  "sqlWrites": 0,
+  "ownerProofAccepted": false,
+  "officialReconciliationVerified": false,
+  "actualFrozenBindingReviewed": false
+}

@@ -1,0 +1,31 @@
+{
+  "observedAt": "2026-11-03T12:46:27.687302+00:00",
+  "command": "python -X utf8 tools/security/check_security.py --repo . --probe",
+  "exitCode": 1,
+  "summary": {
+    "PASS": 58,
+    "FAIL": 11,
+    "UNKNOWN": 1
+  },
+  "gateLedger": {
+    "PASS": 0,
+    "FAIL": 11,
+    "UNKNOWN": 0,
+    "failedIds": [
+      "G01",
+      "G02",
+      "G03",
+      "G04",
+      "G05",
+      "G06",
+      "G07",
+      "G08",
+      "G09",
+      "G10",
+      "G11"
+    ]
+  },
+  "scriptFileSha256": "525297c0772573290428e47ecc3b1f20ee0ffdbfa225b513fca5281a49a0bf8f",
+  "deploymentPerformed": false,
+  "scope": "Read-only local origin, production containers and attached peers. External reachability, Cloudflare policies, dedicated identities and restoration were not verified. UNKNOWN is the exited historical Xunlei probe root process check."
+}

@@ -1,0 +1,109 @@
+{
+  "status": "STOPPED",
+  "startedAt": "2026-11-11T10:39:37.914196+00:00",
+  "scriptSha256": "7f81d579c36776adb4092e51546fd6ed025858705213f2d19898d4c84355ef1b",
+  "configurationSha256": "20111b6a8f2fe40e301011e52de85245f1232f49af3d0628d72835bcf60ac1f8",
+  "derivedFromSha256": "76beb61acbb76bb79dbab121c93c52e9d8943434be47065682230f30444b3b18",
+  "originalStoppedReceiptSha256": "293eb54526ec28c42ab1b799c1ffe0456a4cfd2c81268cfe65d67079b31b6cf8",
+  "affectedServices": [
+    "nginx"
+  ],
+  "containerRecreations": 0,
+  "cloudWrites": 0,
+  "directSqlWrites": 0,
+  "manualPostRequests": 0,
+  "settingsPutRequests": 0,
+  "originalConfigurationExactHashProof": [
+    {
+      "name": "/gying-movie-backend-1",
+      "originalConfigurationSha256": "69710eef489beb4672f4d13a905e34fe0576ab6994e9ce835ad87a4066ec0267",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-movie-frontend-1",
+      "originalConfigurationSha256": "ad38704b70d11a7ef7e4a135b1dfc2579b1c5dcd85f78200f21661efdac6188e",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-baidu-share-probe-748d2e7e229848a698f6f6c52a1d07fa",
+      "originalConfigurationSha256": "8896bb99334ab26ae64230297391bf9506f67c1fc855b48213ddd97946c79b6d",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-baidu-upload-probe-748d2e7e229848a698f6f6c52a1d07fa",
+      "originalConfigurationSha256": "b2db2621236cfd35428635263e87f9db983addec6f0f8fc9d19fc255cc892333",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-movie-social-publisher-1",
+      "originalConfigurationSha256": "884bdaa918222c29bad5d7f3cbc0847b15c270e1cf9fed57c0447f6d011f0e5c",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-movie-quark-auto-save-1",
+      "originalConfigurationSha256": "fcaf403afc147ae62bdc858dba0344f76d3090c80e8154a7242893376e943853",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-movie-gying-source-1",
+      "originalConfigurationSha256": "48a18b294613ac43fe115a6e55fa96fb12a59516070985ec107f3fbe788f6378",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-xunlei-path-probe-20261006",
+      "originalConfigurationSha256": "fd37302942277fcccc90ea50ffcd7b51a1f2f0ff304ad255393cef3834dcc32e",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-movie-nginx-1",
+      "originalConfigurationSha256": "12bf74f0bff1f6c73a9d6f4c438e01e4ce99d369854cb720045dbd874136276c",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/openclaw-openclaw-gateway-1",
+      "originalConfigurationSha256": "86b6680d85f6ba07b664f7223960cd297698c26a00ea2a4eb7507cfe942f6ea9",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-movie-redis-1",
+      "originalConfigurationSha256": "98397dbfe796fc0c37431cb6f282e0fc44e3923189e5629fc19dfc396c9ec0bf",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/gying-movie-pansou-1",
+      "originalConfigurationSha256": "2c37aee7bb61a123f09d5c480c645ca72931854c51ccfc74f3e21efe78631360",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    },
+    {
+      "name": "/minio-server",
+      "originalConfigurationSha256": "75eb76ec4a631a2f59f384d086388daf1089dd29b55ae8f7ca5f520e8efb71f9",
+      "exactOriginalHashMatchedByOnlyMountPermutation": true
+    }
+  ],
+  "commands": [
+    {
+      "command": [
+        "nginx",
+        "-t"
+      ],
+      "exit": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "c1d95d6441adac8d73265f026042743581500b1133052abc44ed98cf52bb6618"
+    },
+    {
+      "command": [
+        "nginx",
+        "-s",
+        "reload"
+      ],
+      "exit": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "2a9b7d4e42efc72ba63604e12554bbb0f6ff4c7f60c4eec3ce099a0589a8155a"
+    }
+  ],
+  "failure": {
+    "type": "AssertionError",
+    "code": "NGINX_ENTRY_STATUS_MISMATCH"
+  },
+  "completedAt": "2026-11-11T10:39:43.234174+00:00"
+}

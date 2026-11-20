@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Spin, Empty, Segmented } from 'antd';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Alert, Button, Spin, Empty, Segmented } from 'antd';
 import { FireOutlined, HeartFilled } from '@ant-design/icons';
-import { api } from '@/lib/api';
+import { api, readApiError } from '@/lib/api';
 import { HotItem } from '@/types';
 import MovieCard from '@/components/MovieCard';
 import { useTranslation } from 'react-i18next';
@@ -14,33 +14,45 @@ type HotMode = 'favorite' | 'tmdb';
 export default function HotPage() {
     const [mode, setMode] = useState<HotMode>('favorite');
     const [period, setPeriod] = useState<Period>('all');
-    const [items, setItems] = useState<HotItem[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [refresh, setRefresh] = useState(0);
     const { t } = useTranslation();
-
-    const fetchHot = useCallback(async (nextMode: HotMode, p: Period) => {
-        setLoading(true);
-        try {
-            const path = nextMode === 'tmdb'
-                ? '/api/favorites/tmdb-hot?limit=30'
-                : `/api/favorites/hot?period=${p}&limit=30`;
-            const res = await api(path);
-            if (res.ok) {
-                const data: HotItem[] = await res.json();
-                setItems(data);
-            } else {
-                setItems([]);
-            }
-        } catch {
-            setItems([]);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    const query = mode === 'tmdb'
+        ? '/api/favorites/tmdb-hot?limit=30'
+        : '/api/favorites/hot?period=' + period + '&limit=30';
+    const request = useMemo(() => ({ query, refresh, t }), [query, refresh, t]);
+    const [snapshot, setSnapshot] = useState<{
+        request: typeof request | null;
+        items: HotItem[];
+        error: string | null;
+    }>({ request: null, items: [], error: null });
+    // Derive loading immediately; a new query never displays the old ranking.
+    const items = snapshot.request?.query === query ? snapshot.items : [];
+    const loading = snapshot.request !== request;
+    const error = snapshot.request === request ? snapshot.error : null;
 
     useEffect(() => {
-        fetchHot(mode, period);
-    }, [mode, period, fetchHot]);
+        const controller = new AbortController();
+        let active = true;
+        const fail = (error: string) => {
+            if (active) setSnapshot(previous => ({ request,
+                items: previous.request?.query === request.query ? previous.items : [], error }));
+        };
+        void (async () => {
+            try {
+                const response = await api(request.query, { signal: controller.signal });
+                if (!response.ok) {
+                    fail(await readApiError(response, request.t('hotLoadFailed')));
+                    return;
+                }
+                const items: HotItem[] = await response.json();
+                if (active) setSnapshot({ request, items, error: null });
+            } catch {
+                fail(request.t('networkError'));
+            }
+        })();
+        // Guard even when a transport ignores abort or JSON parsing finishes late.
+        return () => { active = false; controller.abort(); };
+    }, [request]);
 
     const periodOptions = [
         { label: t('hotAll'), value: 'all' },
@@ -84,8 +96,10 @@ export default function HotPage() {
                 </div>
 
                 {/* Content */}
+                {error && <Alert className="!mb-4" type="error" showIcon title={error}
+                    action={<Button onClick={() => setRefresh(value => value + 1)}>{t('retry')}</Button>} />}
                 <Spin spinning={loading}>
-                    {items.length === 0 && !loading ? (
+                    {items.length === 0 && !loading && !error ? (
                         <Empty
                             className="py-20"
                             description={t('hotEmpty')}

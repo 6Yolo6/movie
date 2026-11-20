@@ -1,0 +1,9 @@
+Retained initial npm run build failure from the tool response; user-config paths omitted.
+Next.js 16.3.5 (Turbopack)
+Running next.config.ts took 933ms
+Build error occurred
+Error: EXDEV: cross-device link not permitted while renaming the Next.js global config temporary file to config.json
+errno: -4037
+code: EXDEV
+syscall: rename
+exit_code: 1

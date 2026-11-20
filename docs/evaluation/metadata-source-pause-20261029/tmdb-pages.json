@@ -1,0 +1,156 @@
+{
+  "researchDate": "2026-10-29",
+  "scope": "TMDB official public documentation for seven metadata list sources",
+  "productionAPIRequests": 0,
+  "credentialsRead": false,
+  "configurationChangesPerformed": false,
+  "errorCode22": {
+    "officialURL": "https://developer.themoviedb.org/docs/errors",
+    "markdownURL": "https://developer.themoviedb.org/docs/errors.md",
+    "httpStatus": 400,
+    "statusCode": 22,
+    "pageMin": 1,
+    "pageMax": 500,
+    "type": "integer",
+    "exactQuote": "Invalid page: Pages start at 1 and max at 500. They are expected to be an integer.",
+    "verification": "Official HTML and Markdown fetched HTTP 200; repeated later request timed out"
+  },
+  "sources": [
+    {
+      "source": "trending-movies",
+      "officialURL": "https://developer.themoviedb.org/reference/trending-movies",
+      "endpoint": "/3/trending/movie/{time_window}",
+      "pageParameter": null,
+      "pageParameterStatus": "Omitted in current reference request parameters; time_window enum day/week defaults to day",
+      "officialExamplePagination": {
+        "page": 1,
+        "total_pages": 1000,
+        "total_results": 20000
+      },
+      "verification": "Official Markdown HTTP 200 read during research; subsequent summary re-fetch failed"
+    },
+    {
+      "source": "trending-tv",
+      "officialURL": "https://developer.themoviedb.org/reference/trending-tv",
+      "endpoint": "/3/trending/tv/{time_window}",
+      "pageParameter": null,
+      "pageParameterStatus": "Omitted in current reference request parameters",
+      "officialExamplePagination": {
+        "page": 1,
+        "total_pages": 1000,
+        "total_results": 20000
+      },
+      "publicMarkdownSha256": "192d25e0c58fcd4e7b0ee3ed2d78baee6dee710ce26d60d93c47a615d0875942"
+    },
+    {
+      "source": "movie-popular-list",
+      "officialURL": "https://developer.themoviedb.org/reference/movie-popular-list",
+      "endpoint": "/3/movie/popular",
+      "pageParameter": {
+        "name": "page",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "default": 1
+        }
+      },
+      "officialExamplePagination": {
+        "page": 1,
+        "total_pages": 38029,
+        "total_results": 760569
+      },
+      "publicMarkdownSha256": "286eb40ef1b10b7b0911897af34846a57c3ee4a54d07f25d40ecc5a3392e09e9"
+    },
+    {
+      "source": "tv-series-popular-list",
+      "officialURL": "https://developer.themoviedb.org/reference/tv-series-popular-list",
+      "endpoint": "/3/tv/popular",
+      "pageParameter": {
+        "name": "page",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "default": 1
+        }
+      },
+      "officialExamplePagination": {
+        "page": 1,
+        "total_pages": 7416,
+        "total_results": 148302
+      },
+      "publicMarkdownSha256": "f5df6a64759ee03ef5bb5e013ccb281642373ff7b5067f1429d96cd5cdcdf8db"
+    },
+    {
+      "source": "movie-top-rated-list",
+      "officialURL": "https://developer.themoviedb.org/reference/movie-top-rated-list",
+      "endpoint": "/3/movie/top_rated",
+      "pageParameter": {
+        "name": "page",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "default": 1
+        }
+      },
+      "officialExamplePagination": {
+        "page": 1,
+        "total_pages": 552,
+        "total_results": 11032
+      },
+      "publicMarkdownSha256": "ba7329bb6a400a88538f6546e7ae66a95498a57d867df0f34a83da815b1db14c"
+    },
+    {
+      "source": "tv-series-top-rated-list",
+      "officialURL": "https://developer.themoviedb.org/reference/tv-series-top-rated-list",
+      "endpoint": "/3/tv/top_rated",
+      "pageParameter": {
+        "name": "page",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "default": 1
+        }
+      },
+      "officialExamplePagination": {
+        "page": 1,
+        "total_pages": 142,
+        "total_results": 2833
+      },
+      "publicMarkdownSha256": "669beda264532c63fe10703416092eac20b64b8cad7bea3c979781f4bdb86569"
+    },
+    {
+      "source": "movie-upcoming-list",
+      "officialURL": "https://developer.themoviedb.org/reference/movie-upcoming-list",
+      "endpoint": "/3/movie/upcoming",
+      "pageParameterStatus": "Not independently extracted in this research; repeated requests timed out or failed",
+      "officialExamplePagination": {
+        "page": 1,
+        "total_pages": 19,
+        "total_results": 369
+      },
+      "verification": "Official Markdown was fetched earlier; only response example retained from tool output; no claim about query schema"
+    }
+  ],
+  "correctedConclusion": "Keep this project's existing 1-500 ranges and cursors. Official-forum search-index summaries distinguish ordinary lists/Discover500 from Trending1000. This is documentation evidence, not a live API limit measurement; generic code22 alone cannot deny that exception.",
+  "forumEvidence": {
+    "officialURL": "https://www.themoviedb.org/talk/668b027390c809787099e77d",
+    "visibleSummary": "Ordinary pagination500 and Trending1000 pages; the current tool evidence does not establish full text, author, role or exact posting date",
+    "ordinaryMaximumPages": 500,
+    "trendingMaximumPages": 1000,
+    "evidenceAccess": "Root agent obtained official-forum search-index summaries only; child direct fetch returned HTTP403",
+    "supportingIndexedURL": "https://www.themoviedb.org/talk/629be4627e12f0721cbf6ec4",
+    "liveAPI501Or1000Verified": false
+  },
+  "boundaryNotes": [
+    "Generic code22 says page1-500, but official-forum search-index Trending1000 summary must be preserved. Do not generalize generic Errors wording to all seven endpoint capabilities or claim a live limit was tested.",
+    "Four extracted non-trending operation schemas explicitly show page integer/int32 default 1, with no per-operation maximum property.",
+    "Trending request parameters omit page while examples expose paginated response fields; do not claim these references explicitly document the request page default or maximum.",
+    "total_pages is response pagination metadata, not a stand-alone guarantee of endpoint reachability. Ordinary movie/popular example38029 exceeds the ordinary500 documentation boundary; Trending1000 is separately supported by official-forum index summaries.",
+    "All example counts are official documentation examples, not current API observations or current project catalog totals.",
+    "Keep existing source ranges and cursors. This research establishes no new GYING limit; do not add a GYING 50-page restriction."
+  ]
+}

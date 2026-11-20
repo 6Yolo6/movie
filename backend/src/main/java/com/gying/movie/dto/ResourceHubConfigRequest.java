@@ -4,14 +4,19 @@ import lombok.Data;
 
 @Data
 public class ResourceHubConfigRequest {
+    private java.util.List<CloudDriveWorkflowConfig> driveWorkflows;
+    private java.util.List<GyingWeeklyTransferSchedule> weeklyTransferSchedules;
     /** Runtime-only credentials. Blank values keep the current process value. */
     private String xunleiAuthorization;
     private String xunleiCaptchaToken;
     private Boolean enabled;
     private Boolean autoApprove;
     private Boolean tmdbAutoSyncEnabled;
+    private Boolean tmdbAutoSyncUpdatesOnly;
     private String tmdbAutoSyncSources;
+    private java.util.Map<String, MetadataCrawlRange> tmdbAutoSyncRanges;
     private Integer tmdbAutoSyncPage;
+    private Integer tmdbAutoSyncEndPage;
     private Integer tmdbAutoSyncMaxItems;
     private Integer tmdbAutoSyncIntervalHours;
     private Boolean tmdbAutoDiscoveryEnabled;
@@ -19,10 +24,16 @@ public class ResourceHubConfigRequest {
     private Integer tmdbDiscoveryCooldownHours;
     private Boolean gyingDiscoveryEnabled;
     private Boolean gyingAutoSyncEnabled;
+    private Boolean gyingAutoSyncUpdatesOnly;
     private String gyingAutoSyncSources;
+    private java.util.Map<String, MetadataCrawlRange> gyingAutoSyncRanges;
     private Integer gyingAutoSyncPage;
+    private Integer gyingAutoSyncEndPage;
     private Integer gyingAutoSyncMaxItems;
     private Integer gyingAutoSyncIntervalHours;
+    private Boolean tvmazeAutoSyncEnabled;
+    private Integer tvmazeAutoSyncMaxItems;
+    private Integer tvmazeAutoSyncIntervalHours;
     private Boolean workerEnabled;
     private Integer workerTaskLimit;
     private Integer workerQuarkLimit;

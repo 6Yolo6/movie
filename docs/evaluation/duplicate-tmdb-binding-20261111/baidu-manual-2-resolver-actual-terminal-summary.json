@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "status": "ACTUAL_READ_ONLY_RESOLVER_TERMINAL_FACT_VERIFIED_OFFICIAL_PENDING",
+  "sourceReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json",
+    "sha256": "6ca4fbe9cce6db86cec4ee07f2d1922ac94a1fb829b2bbf2a756a5cf028221cc",
+    "bytes": 37661,
+    "status": "ARCHIVE_SUCCESS",
+    "startedAt": "2026-11-11T10:43:14.236755+00:00",
+    "completedAt": "2026-11-11T10:43:29.688142+00:00"
+  },
+  "helperSha256": "6df489e13dc1842e687b3c4094daef0d2979692b04c36210fa1f5c8e04222339",
+  "bindingSha256": "d7d98431cef52fdcea851096a74aee3c8cb9e6b6d7de625704f82ff9ce319140",
+  "successfulArchiveRows": {
+    "childId": 17650,
+    "movieId": "x3xX",
+    "childPayloadSha256": "c73fef9b73e8f48aceec0cbec62df6a8275cecf0462b3b274aeea1a26d4cb839",
+    "sourceMovieProjectionSha256": "1e796fc93c8bbaa66123b9cfea331f7d31d99e3b49eb4af6096872ff6d6e0ffb",
+    "selectedSourceProjectionSha256": "a6d4cf81ee2ea917a4aba2d89b09893966dd54c2ea36de8072dfca93e6ea8c08",
+    "metadataLinkProjectionSha256": "c4be60ae8d469cafb8e87556f424a3d0d9f1ac96f1c81846612f86708d8d804f",
+    "resourceLinkId": 28262,
+    "selectedResourceIds": [
+      28260,
+      28261
+    ],
+    "fileCount": 4,
+    "totalBytes": 143163,
+    "urlSha256": "68221e28ac1c7302878589a8f3ba15f89ac72851d75ebabd9611255cd8c14999"
+  },
+  "checkpointProof": {
+    "manifestSha256": "47499d24d35037d8204023e760104b789d93e0c2a04cafcf4289dd900d58b6e8",
+    "sourceSelectionMatchesManifest": true,
+    "selectionFingerprintSha256": "253f4ecc4a4a13fd97b9fe39f565c732f3d6f4caab99c2c53dc533f488e2ec85",
+    "uploadedFileMapSha256": "de008b3cbe697ef753b050b92ec590f1025be8d3cad2ae56a7073443e22c56a9",
+    "folderIdSha256": "1d440d15d149acbd6a8c84f58a266078bf422fac9132b45d225ca50a60034a74",
+    "uploadedFileNamesSha256": "b7edd863591dd84c4f913ef4948483c65131e3ad3195de15f7a8171ed3fb67c9",
+    "fileCount": 4,
+    "totalBytes": 143163,
+    "officialCloudContentVerified": false
+  },
+  "selectedResourceDeltaProof": {
+    "preexistingSelectedMovieResourceFullRowsRetained": true,
+    "preexistingResourceRows": 1,
+    "addedRows": 3,
+    "addedResourceIds": [
+      28260,
+      28261,
+      28262
+    ],
+    "currentFullScopeSha256": "b9cdae953e8c87a669eef48e1158a8c1fd22b7c4c02053af0f443948bc1df5e8"
+  },
+  "finallyAllFullSnapshotsRetained": true,
+  "originalIntentUnknownReceiptAndFrozenSourcesRetained": true,
+  "newResolverBindingArtifactsRetained": true,
+  "originalTransportOutcomeUnknown": true,
+  "originalPostAcknowledgmentRecovered": false,
+  "originalUnknownReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2.receipt.json",
+    "sha256": "24ebeb78f8cd1588d99be5ad4485f3388a9e6208c0768fcff23bff9a3285c601"
+  },
+  "originalConsumedIntent": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2.intent.json",
+    "sha256": "e49cf8d6a04c32e688cb0475830ba70d1cef88a94ca756e7402e93767b7db1b9"
+  },
+  "newChildren": [
+    {
+      "id": 17650,
+      "stage": "COMPLETE",
+      "status": "SUCCEEDED",
+      "movieId": "x3xX",
+      "attempts": 1,
+      "parentId": 17583,
+      "fileCount": 4,
+      "totalBytes": 143163,
+      "payloadSha256": "c73fef9b73e8f48aceec0cbec62df6a8275cecf0462b3b274aeea1a26d4cb839"
+    }
+  ],
+  "expectedIdentity": {
+    "identityId": 48,
+    "movieId": "x3xX",
+    "sourceType": "mv",
+    "externalId": "x3xX",
+    "titleCn": "霸王别姬",
+    "year": "1993"
+  },
+  "actualArchiveAttempts": 1,
+  "resolutionIsReadOnlyTerminalFact": true,
+  "originalReceiptActualArchiveAttempts": 0,
+  "originalReceiptAttemptCountIsUnobservedNotEvidenceOfNoAttempt": true,
+  "postReconcileCompatibleTerminalFactOnly": true,
+  "frozenCycleNaturalAcceptsThisAsOriginalReceipt": false,
+  "originalManualLedgerNaturalGateRemainsBlocked": true,
+  "resolvedManualLineagePostRequestsAlreadyConsumed": 2,
+  "resolvedManualLineageActualArchiveAttemptsObserved": 1,
+  "currentAdminGetRequests": 1,
+  "sourceResourceGetRequestsReserved": 1,
+  "sourceTorrentGetRequestsReserved": 2,
+  "successSelectQueries": 8,
+  "freshSourceManifestSha256": "47499d24d35037d8204023e760104b789d93e0c2a04cafcf4289dd900d58b6e8",
+  "beforeAfterFinallyFullSnapshotsExact": true,
+  "matchesPriorBoundReadOnlyStatusExact": true,
+  "afterParent": {
+    "taskId": 17583,
+    "revision": 72,
+    "settingsRevision": 5,
+    "status": "PAUSED",
+    "enabled": false,
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "identityCursor": 48,
+    "identityMaxId": 18820,
+    "movieCutoff": "2026-11-09T14:12:10",
+    "processed": 7,
+    "skipped": 6,
+    "succeeded": 1,
+    "failed": 0,
+    "currentChildId": null,
+    "currentIdentityId": null,
+    "currentMovieId": null,
+    "currentGyingType": null,
+    "currentGyingId": null,
+    "leaseOwner": null,
+    "leaseUntil": null,
+    "nextRunAt": null,
+    "blockedReason": null,
+    "lastResult": "TORRENTS_ARCHIVED",
+    "phase": "GYING_TORRENTS",
+    "deferredCount": 3,
+    "deferredItemsSha256": "b040e843171b6ead3c67c397d0b8b6acc9fa383095025192abf1f232728f71cc",
+    "payloadSha256": "b09fcaae4cd5050ea68a4eca52eaa16690ca21bf33cb69b2c64c6d040d655e3b"
+  },
+  "protectedCompleteRows": {
+    "resource_hub_task": {
+      "rows": 4,
+      "sha256": "013e57ccce190d2197180157a960b1914ad6d5047f82fa7eb70cdbecc4527ff4"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "candidateIdentityMetadataSha256": "9348b4f102b680ead0ab3b5e21a563e065414e48c4fd5e6c4cfc26532b8a99ab",
+  "candidateResourceScopes": {
+    "0WG4": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "x3xX": {
+      "rows": 4,
+      "sha256": "b9cdae953e8c87a669eef48e1158a8c1fd22b7c4c02053af0f443948bc1df5e8"
+    },
+    "r7yR": {
+      "rows": 1,
+      "sha256": "758cc55ba489ffe14d58a80bdefd63cdf9eae41125e678efe44dafee303702ce"
+    },
+    "M9m6": {
+      "rows": 6,
+      "sha256": "443b802fc964cd4a5f87e165db9f1b1705da8d07a93985aaad500644908aaeb3"
+    },
+    "738A": {
+      "rows": 1,
+      "sha256": "bdc09b750085d14aaf37d3ead95e31531132b51078f4210ba2c1dea106a1835b"
+    }
+  },
+  "allContainerCount": 13,
+  "allContainerGenerationsSha256": "50d7443c175fdcfe6b4969528ca99efa66e857fe2fdaa472430ce181a898edff",
+  "completeRuntimeSnapshotSha256": "b5f1ac84c433d39c613f1d6afc268ec489ec7e39e2c3ebc4a8cd6761dd505f2e",
+  "resolverManualPostRequests": 0,
+  "resolverSettingsPutRequests": 0,
+  "resolverCloudWrites": 0,
+  "resolverDirectSqlWrites": 0,
+  "resolverPerformedNewArchiveAttempt": false,
+  "officialCloudReconciliationPerformedByResolver": false,
+  "officialCloudContentVerified": false,
+  "oldUnknownNotReplayed": true,
+  "naturalScheduleRestored": false,
+  "rawReceiptRuntimeFullRowsAndProviderUrlsRemainOutsideRepository": true,
+  "reviewMethod": "Pure local existing receipt/bound status/resource proof/digest comparisons; no production replay or additional queries",
+  "reviewProductionApiRequests": 0,
+  "reviewProductionSqlQueries": 0,
+  "reviewDockerRequests": 0,
+  "gitActions": 0
+}

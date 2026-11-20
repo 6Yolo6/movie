@@ -1,0 +1,143 @@
+{
+  "derivedAt": "2026-11-09T06:17:32.072570+00:00",
+  "evidenceType": "sanitized derived summary; original reports retained outside repository",
+  "status": "DEPLOYMENT_AND_POST_PIN_BACKUP_VERIFIED",
+  "sourceCommit": "b55080d8c0449f6dc6852beff0356d7350cce570",
+  "deploymentCommit": "b55080d8c0449f6dc6852beff0356d7350cce570",
+  "completedAt": "2026-11-09T05:54:51.951319+00:00",
+  "candidateImages": {
+    "backend": "sha256:adfd0dfad9dd63a8d0996848b7b13745f1af15669f45c800ae04ecde0cd2a4e6",
+    "frontend": "sha256:663b83853b72bbaff753a12c42e6a9a54718643c3cb3d10b95dda1e938f90c54"
+  },
+  "backendJarSha256": "90e4a3f936390caa1737343a06ba59ec48acce8f41ab316f338713409eb60519",
+  "frontendBuildId": "q5wwVUB40SraMiAz1xwR0",
+  "frontendArtifactCount": 375,
+  "composeFileCounts": {
+    "backend": 16,
+    "frontend": 10
+  },
+  "unaffectedContainersPreserved": 11,
+  "schemaChanged": false,
+  "currentSqlStateAndKeysRetained": true,
+  "applicationIndependent": {
+    "PASS": 25,
+    "FAIL": 0,
+    "UNKNOWN": 0
+  },
+  "realAdmin": {
+    "scenarios": 8,
+    "configurationWriteRequestsSent": 0,
+    "usersOrDevicesCreated": 0,
+    "transfersMessagesPostsSent": 0,
+    "parentsPreserved": true,
+    "configurationRowsPreserved": true
+  },
+  "publicAndLocalAssetHashChecks": 194,
+  "backups": {
+    "stoppedWindow": {
+      "directory": "G:\\gying-backups\\baidu-torrent-backfill-20261109-20261109T055331.438299Z",
+      "encryptedArtifactCount": 7,
+      "authenticatedAndContentVerified": true,
+      "crossServiceAtomicSnapshot": false
+    },
+    "postPin": {
+      "directory": "G:\\gying-backups\\baidu-torrent-post-pin-20261109-20261109T060747.706533Z",
+      "manifestSha256": "4166c551684c5fd0607feb829b6c0a59c279904d06f13e40234fc272417fae8a",
+      "encryptedArtifactCount": 3,
+      "authenticated": true,
+      "host": {
+        "regularFiles": 877,
+        "directories": 494,
+        "totalFileBytes": 143714917,
+        "allFileHashesMatched": true,
+        "allDirectoryStructureMatched": true,
+        "allNtfsAclEntriesMatched": true,
+        "inventoryUnchanged": true
+      },
+      "backendDataFileCount": 7,
+      "allFileHashesMatched": true,
+      "sessionAuthenticatedAndCurrentPairMatched": true,
+      "originalPinnedAndActualTaskXmlMatched": true,
+      "taskEnabled": true,
+      "taskState": "Ready",
+      "taskCanonicalUtf8XmlSha256": "a18d999cb2a1b2a3aceb14d1fb8cae4e1d843237b86a729239831fd1f9f9cd28",
+      "allCurrentAclEntriesMatched": 1371,
+      "strictIdleBeforeAndAfter": true,
+      "hostTaskOrBackendDataModified": false,
+      "productionDataRestored": false
+    },
+    "dailyCoverageCount": 38,
+    "dailyAdditiveCasAndDryRunVerified": true,
+    "naturalFullBackupVerified": false
+  },
+  "historicalFailuresRetained": {
+    "firstDryRunBlockedByInflightTasks": true,
+    "postWrapperAttempt01Gate": "UNKNOWN",
+    "postAttempt02FreshGatesAndNewBackupPassed": true,
+    "oldIndependentAdminScenarioFieldWasWrong": true,
+    "oldIndependentRuntimeImageFieldWasRetainedBaseline": true,
+    "fieldClarificationsRecordedIndependently": true
+  },
+  "security": {
+    "PASS": 58,
+    "FAIL": 11,
+    "UNKNOWN": 1,
+    "G01ToG11Closed": false,
+    "sameScopeLimitedDeploymentAuthorized": true,
+    "originalSecretFindingsRetained": 2,
+    "objectivelyReviewedFalsePositives": 2,
+    "validatedCredentials": 0
+  },
+  "rollback": {
+    "oldBackendCompatible": false,
+    "keepCurrentSqlSessionStateAndKeys": true,
+    "restartIncompatibleOldConsumerAllowed": false
+  },
+  "realTorrentAcceptanceIncluded": false,
+  "receipts": {
+    "deployment": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\deployment\\attempts\\frozen-b550-execution-01\\deployment-result.json",
+      "sha256": "e553c66eabc10d0c28343d41220fb921a206bbabd33e23f815eaa04511563a5c"
+    },
+    "pin": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\host\\attempts\\frozen-b550-pin-execute-01\\pin-result.json",
+      "sha256": "8a1eaf6a636aed3fd67c428dff715591dd79cafce67757d1eb250f3d91f0a075"
+    },
+    "post": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\verification\\post-checkpoint-frozen-b550-02\\post-checkpoint-result.json",
+      "sha256": "fcf845a9b0a8c1ddc96bd8c08f2d3423ebc9e05fe1a30075d17033615816a7df"
+    },
+    "postXml": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\verification\\independent-resume-ops-20261109\\post-checkpoint-final-02.json",
+      "sha256": "8f3556f8cf93e328117186ab5db53e64e5e2eb72a6a21d2cffde3f0da45f1e04"
+    },
+    "postRuntime": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\verification\\independent-resume-ops-20261109\\post-checkpoint-final-02-runtime-age.json",
+      "sha256": "ac78153e634dcf2ea46b0409888b1711fc28cc167908723c845a87b6fb7e4f00"
+    },
+    "finalIndependent": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\verification\\independent-resume-ops-20261109\\final-independent-verification.json",
+      "sha256": "6d8cb3c41028e1b552fa5acd50cd8af53610dff1539314cc5427a91879a27052"
+    },
+    "ops": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\verification\\ops-resume-final-20261109\\summary.json",
+      "sha256": "bfbe4e957a6b5143e2ff1a8b7074cf20ba76d163ccf1eb3f6e46914cb449e88c"
+    },
+    "application": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\verification\\live-independent-20261109T060305.937218Z\\report.json",
+      "sha256": "95470b7bac8e24a43e31ad8d4a995c9aa540f720e982ad3892dcb76af0093b5d"
+    },
+    "admin": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\admin-verify\\live-admin-verification.json",
+      "sha256": "a3cc55209afbb83a1370e5a3a9b6964d0cd8514d6dbca97c55537b8689654189"
+    },
+    "metadata": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\admin-verify\\frontend-final-metadata.json",
+      "sha256": "45ae47c701e2d6bf3dfc3b9e618189784a2d3654ce79fcd4b55a3f12cb6b96fb"
+    },
+    "assets": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\admin-verify\\public-baidu-assets.json",
+      "sha256": "8dddc825ef460432794fd73d84d58e705c6c72cc90cc81438f0aabb9227dc6c5"
+    }
+  }
+}

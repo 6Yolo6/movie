@@ -69,13 +69,6 @@ public class NotificationController {
     public Map<String, Object> markAllRead(
             @RequestHeader(value = "Authorization", required = false) String token) {
         AuthUser user = authHelper.requireUser(token);
-        var unread = notificationService.list(new QueryWrapper<UserNotification>()
-                .eq("user_id", user.getId())
-                .eq("read_flag", false));
-        unread.forEach(notification -> notification.setReadFlag(true));
-        if (!unread.isEmpty()) {
-            notificationService.updateBatchById(unread);
-        }
-        return Map.of("updated", unread.size());
+        return Map.of("updated", notificationService.markAllRead(user.getId()));
     }
 }

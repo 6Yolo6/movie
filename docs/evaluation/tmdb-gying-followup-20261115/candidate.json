@@ -1,0 +1,23 @@
+{
+  "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "jarSha256": "5b4492cd4047161c030b6c53254d7a7d8682d8ec220bef465d7b392e434b4c8e",
+  "sourceManifestSha256": "4ba8a13372b15d513fc76cf7e8cb3c95126823df39505bd5968fd3698d5bfa98",
+  "sourceFileCount": 423,
+  "baseImageId": "sha256:3094a644b065d0546ee0d06fea5e8128abb14f79d42c829cb6d007674e893707",
+  "deployed": false,
+  "at": "2026-11-15T11:24:27.831254+00:00",
+  "imageId": "sha256:8931619fd119eb9154ff498adace98d6f688bdff409e1e4db816969cce4fdc95",
+  "imageTag": "gying-movie-backend:tmdb-gying-followup-20261115-b8ef54e-0d48948d",
+  "runtimeImageConfigPreservedExceptCandidateLabels": true,
+  "imageJarHashVerified": true,
+  "buildNetwork": "none",
+  "productionMounts": [],
+  "testsRerun": false,
+  "productionContainersUnchanged": true,
+  "runnerSha256": "3b456870041053c9c7b0d228ed33d97c863ef365d3921490f0ca3a12c24c08d0",
+  "dockerfileSha256": "ec4d9f5f9c1d959319478e7179ac1faad3b0ba28bcb97562fbfd5f648c8cd217",
+  "packageProof": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5\\backend-package-bound.json",
+    "sha256": "f1cf1a1550ac25ca590ecbaf9109420d4ca4d8a9f2154996c4757b1c465fab20"
+  }
+}

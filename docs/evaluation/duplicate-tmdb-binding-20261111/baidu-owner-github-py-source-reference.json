@@ -1,0 +1,45 @@
+{
+  "status": "PRIMARY_PUBLIC_SOURCE_REVIEWED",
+  "createdAt": "2026-11-11T11:29:54.729128+00:00",
+  "sources": [
+    {
+      "repository": "PeterDing/BaiduPCS-Py",
+      "commit": "e81e9b65c4b35fc8f7f2993a81e25e0bc24608db",
+      "sourcePath": "baidupcs_py/baidupcs/pcs.py",
+      "url": "https://raw.githubusercontent.com/PeterDing/BaiduPCS-Py/e81e9b65c4b35fc8f7f2993a81e25e0bc24608db/baidupcs_py/baidupcs/pcs.py",
+      "localPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\github-source-reference-125e8a602034418db5a20891384bd3fe\\pcs.py",
+      "sha256": "9636f654839b9c2a8bc1aca4c9373bf1a56cb1ccb28db4b1a0af4c8c00c5341a",
+      "bytes": 32130
+    },
+    {
+      "repository": "PeterDing/BaiduPCS-Py",
+      "commit": "e81e9b65c4b35fc8f7f2993a81e25e0bc24608db",
+      "sourcePath": "baidupcs_py/baidupcs/api.py",
+      "url": "https://raw.githubusercontent.com/PeterDing/BaiduPCS-Py/e81e9b65c4b35fc8f7f2993a81e25e0bc24608db/baidupcs_py/baidupcs/api.py",
+      "localPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\github-source-reference-125e8a602034418db5a20891384bd3fe\\api.py",
+      "sha256": "97cc1302fd57148ecf0357727ff260d0879f25ae98635e5a78241f13591ff293",
+      "bytes": 20015
+    }
+  ],
+  "sourceCodeExecuted": false,
+  "productionReads": 0,
+  "productionWrites": 0,
+  "finding": "GET share page extracts JSON argument of yunData.setData or locals.mset; same parsed object provides share_uk or uk, shareid and file_list; access_share password path is separate POST and is excluded from GET-only verifier",
+  "implementationReferences": {
+    "pcs.py": [
+      771,
+      781,
+      787,
+      791
+    ],
+    "api.py": [
+      406,
+      409,
+      410,
+      415,
+      418,
+      428
+    ]
+  },
+  "actualBaiduOwnerProof": false
+}

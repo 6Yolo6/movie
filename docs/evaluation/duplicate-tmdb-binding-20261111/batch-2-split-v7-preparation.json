@@ -1,0 +1,50 @@
+{
+  "status": "SPLIT_READ_ONLY_PREPARED",
+  "at": "2026-11-11T07:15:21.623754+00:00",
+  "dbUtc": "2026-11-11 07:15:02.193335",
+  "scope": {
+    "parentBatch": 2,
+    "generation": "batch2-split-v7",
+    "subbatchIds": [
+      201,
+      202
+    ],
+    "subbatchSizes": [
+      10,
+      9
+    ],
+    "originalAuthorizedRemainingPairs": 73,
+    "newCandidatePairs": 0,
+    "originalEligiblePairs": 19,
+    "originalBlockedPairsPermanentlyExcluded": 1,
+    "realUnusedExpiredObserverPassRequired": true,
+    "maxPreviewPostsPerSubbatch": 2,
+    "maxMergePostsPerSubbatch": 1,
+    "allFreshPreviewPairsMustBeEligible": true,
+    "oldBodiesAndKeysNeverReused": true,
+    "newAuthenticatedAgePerSubbatch": true,
+    "maxExactIdleReadOnlyWaitSeconds": 120,
+    "sharedIdleDeadlinePerExecution": true,
+    "verifierVersion": 4,
+    "automaticRequestRetry": false,
+    "automaticRestore": false,
+    "cloudActions": 0,
+    "operatorDirectSqlWrites": 0
+  },
+  "observer": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\unused-expired-observation-4b13f5e8de0940bd84f2e1db9ba084c6.json",
+    "sha256": "dfe60a595c51553d3d67857ce89588a13438c40d67a2d583b0f04f246c17c9d3"
+  },
+  "fullPrimaryAndSubsetStateEquality": true,
+  "primaryStateSha256": "98ccc08f5b4dc48800d6a097f6cfa6677d27b05f36b6583c099c4c6785de85f7",
+  "subsetStateSha256": "e438ba1a173c8ffac545a933ad29c1147cb483df0f135b0517fbfc3121f06cd5",
+  "blockedPairs": [
+    {
+      "fromMovieId": "tmdb_movie_11647",
+      "toMovieId": "gying_mv_XpJM"
+    }
+  ],
+  "newPosts": 0,
+  "operatorDirectSqlWrites": 0,
+  "cloudActions": 0
+}

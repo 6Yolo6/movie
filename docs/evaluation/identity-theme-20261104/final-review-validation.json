@@ -1,0 +1,470 @@
+{
+  "schemaVersion": 1,
+  "validationProtocol": "custom-v1-byte-hash-and-review-integrity-validation",
+  "validatedAt": "2026-11-04T13:47:45.512327+00:00",
+  "reportFile": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\final-candidate\\probes\\report.json",
+  "reportSha256": "1881325d57f00ce00bf8752358f922aaaf1069218d770eb347fbc92bf978b17c",
+  "candidateReviewSha256": "03528cea6f9c6dc58c19a82ba749ff8422dd71b1b13d0eefea3eba40f58c9581",
+  "reviewMarkdownSha256": "45e9dc300421d0107110870b6eb2da4b0ef77966b1fbe9ee6955dd50297b98a3",
+  "qualityPassedNotClaimed": true,
+  "validationOnly": "Hash, record binding, score/null counts, observation scope, fixture endpoints and normal-stop receipts; not mechanical quality pass, fact oracle, human review or independent blind test.",
+  "allChecksPassed": true,
+  "checksCount": 69,
+  "summary": {
+    "plannedCases": 3,
+    "plannedTurns": 7,
+    "executedTurns": 7,
+    "completedTurns": 7,
+    "executionFailedTurns": 0,
+    "notExecutedTurns": 0,
+    "mechanicalAssertionProtocolUsed": false,
+    "mechanicallyPassedTurns": null,
+    "verdictCounts": {
+      "证据不足": 2,
+      "部分有用": 1,
+      "满足": 3,
+      "未满足": 1
+    },
+    "scoreDimensionCounts": {
+      "factuality": {
+        "scored": 3,
+        "unknown": 4
+      },
+      "grounding": {
+        "scored": 7,
+        "unknown": 0
+      },
+      "usefulness": {
+        "scored": 7,
+        "unknown": 0
+      }
+    },
+    "fullThreeDimensionReviews": 3,
+    "modelDiagnosedCompletedRows": 7,
+    "reviewRecords": 7,
+    "newHumanReviews": 0,
+    "durationSecondsSum": 286.81,
+    "tokens": null,
+    "monetaryCost": null
+  },
+  "stopEvidence": {
+    "agentInstanceId": "b870649a-4544-494f-8c38-b3245c0d3311",
+    "agentProcessId": 2472,
+    "agentReceiptPath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\final-candidate\\probes\\lifecycle\\b870649a-4544-494f-8c38-b3245c0d3311\\stop.completed.json",
+    "agentReceiptSha256": "4210f442fec4dc308edd9c02e3e8514a57e600284105f987cbf43ecbf20e2302",
+    "harnessProcessId": 44892,
+    "harnessReceiptPath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\final-candidate\\probes\\catalog-harness-stopped.json",
+    "harnessReceiptSha256": "d882e091abd2b22954508858a1aae5890baca63c8fc1442485fbcb970a166186",
+    "agentExitCode": 0,
+    "harnessExitCode": 0,
+    "databaseConnections": 0,
+    "databaseWrites": 0,
+    "queueClaims": 0,
+    "detailGets": 2,
+    "detailSources": [
+      {
+        "row": 1,
+        "caseId": "dev-v3-04",
+        "turn": 2,
+        "source": "http://127.0.0.1:18883/api/movies/gying_mv_M4Lk",
+        "movieId": "gying_mv_M4Lk"
+      },
+      {
+        "row": 4,
+        "caseId": "dev-v3-06",
+        "turn": 3,
+        "source": "http://127.0.0.1:18883/api/movies/gying_mv_4dO4",
+        "movieId": "gying_mv_4dO4"
+      }
+    ]
+  },
+  "previousImmutableArtifactHashes": {
+    "report.json": "8eff43f9b8baf7dee64d9fd7f1d3e8fe4476a6088d82e932cecbdb8312d077aa",
+    "candidate-review.json": "88f876c88a51e3df2798690a4be8b2a4745d84b8d2e9f1ef61fd57b4272b02ab",
+    "review.md": "903f117a12443c7906ee9f2067a7998c79535a89368cd51e349eba38c20c39af"
+  },
+  "checks": [
+    {
+      "name": "completed-before-freeze",
+      "passed": true,
+      "details": "2026-11-04T13:42:02.477844+00:00"
+    },
+    {
+      "name": "original-report-byte-sha-bound",
+      "passed": true,
+      "details": "1881325d57f00ce00bf8752358f922aaaf1069218d770eb347fbc92bf978b17c"
+    },
+    {
+      "name": "row-and-plan-counts",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "unique-case-turn-identities",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-0-binding",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-0-original-answer-utf8-sha",
+      "passed": true,
+      "details": "e1ebe68af4fee15060f681788faa615c7da572528254bac21973438e7b32a9a6"
+    },
+    {
+      "name": "row-0-execution",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-0-scores",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-0-constraint-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-0-specific-review",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-1-binding",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-1-original-answer-utf8-sha",
+      "passed": true,
+      "details": "510a2b392e5d821c3f272360f361324bea8b9f4c1d6c2b73f4db2f99de0e0150"
+    },
+    {
+      "name": "row-1-execution",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-1-scores",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-1-constraint-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-1-specific-review",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-2-binding",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-2-original-answer-utf8-sha",
+      "passed": true,
+      "details": "100381981ac51fe8a19eecad04472113aeb393487ae65da3a6d6df3ac8c9c7e1"
+    },
+    {
+      "name": "row-2-execution",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-2-scores",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-2-constraint-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-2-specific-review",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-3-binding",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-3-original-answer-utf8-sha",
+      "passed": true,
+      "details": "6ccce7bbe0ce32fd5d6ca749df6149bc620def67c5dd399609592a528fd9f0ea"
+    },
+    {
+      "name": "row-3-execution",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-3-scores",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-3-constraint-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-3-specific-review",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-4-binding",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-4-original-answer-utf8-sha",
+      "passed": true,
+      "details": "4862646ac8ea8c077be1d5f13682402f26a479f66d50548c4a262404f5f0b574"
+    },
+    {
+      "name": "row-4-execution",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-4-scores",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-4-constraint-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-4-specific-review",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-5-binding",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-5-original-answer-utf8-sha",
+      "passed": true,
+      "details": "364d041759dcd950102cda38befe6cc61a68c406343efc38674cc454aae0ca2c"
+    },
+    {
+      "name": "row-5-execution",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-5-scores",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-5-constraint-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-5-specific-review",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-6-binding",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-6-original-answer-utf8-sha",
+      "passed": true,
+      "details": "9faeb19610b6ef189e9e0dbb01588b56806596e70d5e44719a889729f72c7184"
+    },
+    {
+      "name": "row-6-execution",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-6-scores",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-6-constraint-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "row-6-specific-review",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "summary-verdict-counts",
+      "passed": true,
+      "details": {
+        "证据不足": 2,
+        "部分有用": 1,
+        "满足": 3,
+        "未满足": 1
+      }
+    },
+    {
+      "name": "summary-score-null-counts",
+      "passed": true,
+      "details": {
+        "factuality": {
+          "scored": 3,
+          "unknown": 4
+        },
+        "grounding": {
+          "scored": 7,
+          "unknown": 0
+        },
+        "usefulness": {
+          "scored": 7,
+          "unknown": 0
+        }
+      }
+    },
+    {
+      "name": "full-three-dimension-count",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "facts-unknown-preserved",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "all-three-music-rows-evidence-supported",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "cinema-not-full-satisfaction",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "cinema-t2-literary-source-limits-recorded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "new-human-review-zero",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "no-blind-test-or-production-claims",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "no-retry-no-force-cleanup",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "normal-stop-and-exit0",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "agent-stop-receipt-file-matches-report",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "agent-lifecycle-launch-identity",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "agent-lifecycle-status",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "harness-stop-receipt-file-matches-report",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "harness-stop-launch-identity",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "harness-zero-db-and-queue",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "all-details-fixture-bound",
+      "passed": true,
+      "details": [
+        {
+          "row": 1,
+          "caseId": "dev-v3-04",
+          "turn": 2,
+          "source": "http://127.0.0.1:18883/api/movies/gying_mv_M4Lk",
+          "movieId": "gying_mv_M4Lk"
+        },
+        {
+          "row": 4,
+          "caseId": "dev-v3-06",
+          "turn": 3,
+          "source": "http://127.0.0.1:18883/api/movies/gying_mv_4dO4",
+          "movieId": "gying_mv_4dO4"
+        }
+      ]
+    },
+    {
+      "name": "detail-identity-projection-preserved",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "candidate-artifact-hashes-bound",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "actual-web-success-not-timeout-fallback",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "previous-report-and-review-immutable",
+      "passed": true,
+      "details": {
+        "report.json": "8eff43f9b8baf7dee64d9fd7f1d3e8fe4476a6088d82e932cecbdb8312d077aa",
+        "candidate-review.json": "88f876c88a51e3df2798690a4be8b2a4745d84b8d2e9f1ef61fd57b4272b02ab",
+        "review.md": "903f117a12443c7906ee9f2067a7998c79535a89368cd51e349eba38c20c39af"
+      }
+    },
+    {
+      "name": "markdown-final-verdicts",
+      "passed": true,
+      "details": null
+    }
+  ]
+}

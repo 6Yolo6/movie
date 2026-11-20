@@ -1,0 +1,52 @@
+{
+  "status": "PASS",
+  "at": "2026-11-11T05:56:53.030076+00:00",
+  "batch": 1,
+  "blockedPairs": [
+    {
+      "fromMovieId": "tmdb_tv_95396",
+      "toMovieId": "B2kG"
+    },
+    {
+      "fromMovieId": "tmdb_tv_220102",
+      "toMovieId": "EVrv"
+    }
+  ],
+  "primaryPreimage": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-rows-before.json.age",
+    "sha256": "1f0cdb6f80f3304d33b79fb2a47d7226c53a42d3d1e592d4b72fd85a0975ed30",
+    "size": 520925,
+    "plaintextSha256": "7c36c460d6b65b7a48612ede5ef0cc0eb23440d4e8bb5f4b9464ef149a790854",
+    "stateSha256": "4f51ca4592f011b80b036ad02f24f088298b71eb31b85380b45ba4c471c843ae",
+    "authenticatedDecryption": true,
+    "plaintextWritten": false,
+    "dbUtcBefore": "2026-11-11 05:41:04.912785"
+  },
+  "completeRowsSha256": "8c2b0297e3d5e4b3bf2d2fa0fd2ef5089a2b95a2446a97bbf34d7904831be13a",
+  "rowCounts": {
+    "baidu_temporary_cleanup_job": 0,
+    "baidu_transfer_task": 0,
+    "movie_source_identity": 4,
+    "qq_bot_search_log": 0,
+    "qq_channel_post_log": 0,
+    "qq_transfer_cleanup_job": 0,
+    "quark_transfer_task": 2,
+    "resource_discovery_result": 1,
+    "resource_hub_task": 4,
+    "resource_link": 95,
+    "resource_operation_log": 35,
+    "social_post_log": 0,
+    "user_favorite": 0,
+    "xunlei_transfer_task": 0,
+    "comment": 0,
+    "user_notification": 0,
+    "movie_metadata": 4,
+    "movie_merge_alias": 0
+  },
+  "fullColumnAndRowEquality": true,
+  "payloadDeferredItemsSelectionMatchesProduction": true,
+  "sqlWrites": 0,
+  "newPosts": 0,
+  "cloudActions": 0,
+  "automaticRetry": false
+}

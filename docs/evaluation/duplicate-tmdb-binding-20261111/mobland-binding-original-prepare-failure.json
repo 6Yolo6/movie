@@ -1,0 +1,16 @@
+{
+  "status": "STOPPED",
+  "recordedAt": "2026-11-11T05:33:56.840587+00:00",
+  "operation": "BindMerged.py --prepare",
+  "errorType": "Gate",
+  "gate": "MYSQL_EOF_BEFORE_STATEMENT_COMPLETED",
+  "exit": 1,
+  "helperSha256": "642c57dce96302d973010ec5e4b14860b6a4830aeed354faae72d062e268e599",
+  "preparedFileExists": false,
+  "preimageFileExists": false,
+  "reservationExists": false,
+  "sqlUpdatesAttempted": 0,
+  "cloudActions": 0,
+  "automaticRetry": false,
+  "evidenceSource": "Original command result from this chat; root only recorded summary after failure"
+}

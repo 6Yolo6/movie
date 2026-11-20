@@ -46,6 +46,9 @@ public class ResourceHubInternalController {
     private final IResourceHubPublishService resourceHubPublishService;
     private final IXunleiTransferRunnerService xunleiTransferRunnerService;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.gying.movie.service.impl.GyingSourceWorkflowService gyingWorkflow;
+
     public ResourceHubInternalController(
             InternalAuthHelper internalAuthHelper,
             ResourceHubProperties resourceHubProperties,
@@ -63,6 +66,14 @@ public class ResourceHubInternalController {
         this.quarkTransferRunnerService = quarkTransferRunnerService;
         this.resourceHubPublishService = resourceHubPublishService;
         this.xunleiTransferRunnerService = xunleiTransferRunnerService;
+    }
+
+    @PostMapping("/p2p/{movieId}/sync")
+    public ApiResponse<Map<String, Object>> syncP2pMetadata(
+            @RequestHeader(value = "X-Internal-Token", required = false) String token,
+            @org.springframework.web.bind.annotation.PathVariable String movieId) {
+        internalAuthHelper.requireInternal(token);
+        return ApiResponse.ok(gyingWorkflow.syncMovieP2pResources(movieId));
     }
 
     @PostMapping("/discoveries/{discoveryResultId}/publish")

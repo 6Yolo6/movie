@@ -1,0 +1,36 @@
+[
+  {
+    "taskId": 2177,
+    "elapsedSeconds": 6.641,
+    "done": true,
+    "doneReason": "stop",
+    "selection": {
+      "decision": "MATCH",
+      "directoryId": "d0",
+      "expandedTitle": "The Devil Wears Prada 2",
+      "year": 2026,
+      "installment": 2
+    },
+    "loadSeconds": 0.1238662,
+    "promptSeconds": 1.3844624,
+    "evalSeconds": 5.1147523,
+    "transferPerformed": false
+  },
+  {
+    "taskId": 2176,
+    "elapsedSeconds": 6.688,
+    "done": true,
+    "doneReason": "stop",
+    "selection": {
+      "decision": "MATCH",
+      "directoryId": "d0",
+      "expandedTitle": "The Devil Wears Prada 2",
+      "year": 2026,
+      "installment": 2
+    },
+    "loadSeconds": 0.1071236,
+    "promptSeconds": 1.4369036,
+    "evalSeconds": 5.1357471,
+    "transferPerformed": false
+  }
+]

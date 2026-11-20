@@ -1,0 +1,14 @@
+[
+  {
+    "path": "tools/register-baidu-login-task.ps1",
+    "errors": 0
+  },
+  {
+    "path": "tools/run-baidu-browser-login.ps1",
+    "errors": 0
+  },
+  {
+    "path": ".agents/skills/gying-project-ops/scripts/collect-ops-snapshot.ps1",
+    "errors": 0
+  }
+]

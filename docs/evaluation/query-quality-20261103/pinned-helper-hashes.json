@@ -1,0 +1,22 @@
+{
+  "cloneSha256": "ee94ee4522c09f023ff9b30931e7e9fdcd526cf6d3b590e802c5e6d7d5c812ad",
+  "originalSha256": "02ebc9faf91eda5435edce0f89a4bf10e76cbbcde0e678535acc0133e1082745",
+  "prepareCheckpointHelperSha256": "a954b73a5c65dde0f97c0a42c7dcc5dfe288a64b38eccd35cf257fc392bd9098",
+  "sourceBindingProofSha256": "ec71982ea853614851b626dd4db2b2225f9aeb2a8246f9801b467c8c81957946",
+  "pinnedCommit": "13660c92735af71e01782e529a82051f92936e2d",
+  "sourceCanonicalSha256": "90a1533dffaf5aa9221b57972d243ba53188298b670b276cedfe3fa84a45ec3a",
+  "verifiedSourceFiles": 349,
+  "offlineGuardTestsPassed": 14,
+  "originalFiveArtifactCheckpointChanged": false,
+  "deploymentMutationFunctionsAstUnchanged": {
+    "model_matches": true,
+    "natural_idle": true,
+    "stop_service": true,
+    "verify_live": true,
+    "rollback_state": true,
+    "recover": true,
+    "main": true
+  },
+  "newSupplementaryCheckpointExecuted": false,
+  "productionDeploymentExecuted": false
+}

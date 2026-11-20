@@ -1,0 +1,48 @@
+{
+  "checkedAt": "2026-11-08T14:39:00.006381+00:00",
+  "scope": "Read-only supplementary observation through approximately 14:38 UTC; no additional tests",
+  "runtimeReportSha256": "ba9bffd417bfa81bde81ded68fad29f739793e9b5afea6352cbfc3107e1302c1",
+  "rawLogsPrintedOrArchived": false,
+  "productionWrites": false,
+  "services": {
+    "backend": {
+      "containerId": "defa419359eaabb5a4cd3fd55133dba84e42d6babd7f82dff9ccb9f103687986",
+      "imageId": "sha256:2925c3b129e1ddf505f0483403ae5c3eb11c4675fbb6f8cec6af96ffcb78c6d4",
+      "identityMatchesPriorIndependentReport": true,
+      "windowStart": "2026-11-08T14:33:56.222151011Z",
+      "windowEnd": "2026-11-08T14:39:00.006381+00:00",
+      "logsExitCode": 0,
+      "lines": 24,
+      "bytes": 3180,
+      "logBytesSha256": "721ffff2a0ebc5a42ca9a4945cd3f486b79eb8fe1c797075b323da9d6a41d764",
+      "counts": {
+        "ERROR": 0,
+        "Exception": 0,
+        "OOM": 0
+      },
+      "running": true,
+      "restartCount": 0,
+      "oomKilled": false
+    },
+    "frontend": {
+      "containerId": "808e5bfe32d218ff8ce00292ba24feb630df48da19df7414e4e2f7177c9c9af6",
+      "imageId": "sha256:35cce07fe8af5dbcd6b625b96d0c6c3a83b91995766989b865d5ae282744359f",
+      "identityMatchesPriorIndependentReport": true,
+      "windowStart": "2026-11-08T14:34:20.129068821Z",
+      "windowEnd": "2026-11-08T14:39:00.006381+00:00",
+      "logsExitCode": 0,
+      "lines": 5,
+      "bytes": 300,
+      "logBytesSha256": "8833f5f4aac18a458e52e12472f288cc277730cb42776e9c51517ad6758bfee0",
+      "counts": {
+        "ERROR": 0,
+        "Exception": 0,
+        "OOM": 0
+      },
+      "running": true,
+      "restartCount": 0,
+      "oomKilled": false
+    }
+  },
+  "status": "passed"
+}

@@ -1,0 +1,12 @@
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+null !== '50'
+
+    at main (D:\gying-movie\movie\tools\tests\metadata-crawl.browser.cjs:55:11) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: null,
+  expected: '50',
+  operator: 'strictEqual',
+  diff: 'simple'
+}

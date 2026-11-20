@@ -1,0 +1,25 @@
+{
+  "builtAt": "2026-11-03T13:00:16.390514+00:00",
+  "imageId": "sha256:f2b7361bc19b547611ed4e963105b9e1d38648de44a0cae4407e1e1bf30d4a44",
+  "imageTag": "gying-query-quality-backend:20261103-90a1533dffaf",
+  "baseImageId": "sha256:d7014158bbcd577ebf855837a5a045bdc3aa32f030d7d39518667b35dc8af1cf",
+  "imageUser": "gying",
+  "sourceSha256": "90a1533dffaf5aa9221b57972d243ba53188298b670b276cedfe3fa84a45ec3a",
+  "jarSha256": "1b8a09d55b13c21b00b4bc4cbad730576e249a6d8222554518b216cf6bd494cd",
+  "artifactVerified": true,
+  "effectiveImageConfigPreserved": true,
+  "backendOverride": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\backend-candidate.json",
+  "effectiveComposeFiles": [
+    "D:\\gying-movie\\movie\\docker-compose.prod.yml",
+    "E:\\gying-tools\\releases\\ai-query-plan-v2-20261025\\deploy.json",
+    "E:\\gying-tools\\releases\\ai-recovery-20261029-1750\\rescue.json",
+    "E:\\gying-tools\\releases\\ai-recovery-20261029-1750\\backend-candidate.json",
+    "E:\\gying-tools\\releases\\metadata-source-pause-20261029\\candidate.json",
+    "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\backend-quality-final.json",
+    "E:\\gying-tools\\releases\\publishing-recovery-20261101\\candidate.json",
+    "E:\\gying-tools\\releases\\tmdb-empty-range-20261102\\candidate.json",
+    "E:\\gying-tools\\releases\\ai-query-quality-20261103\\backend-candidate.json"
+  ],
+  "composeConfigQuietExitCode": 0,
+  "deploymentPerformed": false
+}

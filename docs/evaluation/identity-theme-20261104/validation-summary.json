@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-04T13:51:23.351114+00:00",
+  "scope": "Frozen candidate only; three previously observed development scenarios; not production or independent holdout validation",
+  "deploymentPerformed": false,
+  "firstStageComplete": false,
+  "newHumanReviews": 0,
+  "sources": {
+    "movie": {
+      "sourceSha256": "35f97ec81590a7a7b8e91f0f9f0866b593b7c80f289daf9675685663677ba302",
+      "sourceFiles": 354,
+      "currentSourceMatches": true
+    },
+    "agent": {
+      "sourceSha256": "70a7788e9b18af43098a06c117fdf0609c84528c67ef9014526eb8dbacbcec9b",
+      "sourceFiles": 50,
+      "currentSourceMatches": true
+    }
+  },
+  "builds": {
+    "movie": {
+      "jarSha256": "2c1301be46e97f12da16167896cd1241efbb4abc20404d4e9c7c53672a3f5054",
+      "verifyExitCode": 0,
+      "compileExitCode": 0,
+      "tests": {
+        "tests": 973,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 31
+      }
+    },
+    "agent": {
+      "jarSha256": "1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64",
+      "verifyExitCode": 0,
+      "compileExitCode": 0,
+      "tests": {
+        "tests": 202,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "sql": {
+    "totals": {
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 12
+    },
+    "classes": {
+      "CatalogAiMySqlTest": {
+        "tests": 12,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "required_sql_verified": true
+  },
+  "reportSha256": "1881325d57f00ce00bf8752358f922aaaf1069218d770eb347fbc92bf978b17c",
+  "reportHashProtocol": "Raw report bytes SHA256; each answer uses UTF8 bytes SHA256; custom v1, not canonical-JSON v2",
+  "plannedTurns": 7,
+  "executedTurns": 7,
+  "completedTurns": 7,
+  "answers": [
+    {
+      "caseId": "dev-v3-04",
+      "turn": 1,
+      "answerSha256": "e1ebe68af4fee15060f681788faa615c7da572528254bac21973438e7b32a9a6"
+    },
+    {
+      "caseId": "dev-v3-04",
+      "turn": 2,
+      "answerSha256": "510a2b392e5d821c3f272360f361324bea8b9f4c1d6c2b73f4db2f99de0e0150"
+    },
+    {
+      "caseId": "dev-v3-06",
+      "turn": 1,
+      "answerSha256": "100381981ac51fe8a19eecad04472113aeb393487ae65da3a6d6df3ac8c9c7e1"
+    },
+    {
+      "caseId": "dev-v3-06",
+      "turn": 2,
+      "answerSha256": "6ccce7bbe0ce32fd5d6ca749df6149bc620def67c5dd399609592a528fd9f0ea"
+    },
+    {
+      "caseId": "dev-v3-06",
+      "turn": 3,
+      "answerSha256": "4862646ac8ea8c077be1d5f13682402f26a479f66d50548c4a262404f5f0b574"
+    },
+    {
+      "caseId": "dev-v3-10",
+      "turn": 1,
+      "answerSha256": "364d041759dcd950102cda38befe6cc61a68c406343efc38674cc454aae0ca2c"
+    },
+    {
+      "caseId": "dev-v3-10",
+      "turn": 2,
+      "answerSha256": "9faeb19610b6ef189e9e0dbb01588b56806596e70d5e44719a889729f72c7184"
+    }
+  ],
+  "reviewFile": "final-review.json",
+  "reviewSha256": "03528cea6f9c6dc58c19a82ba749ff8422dd71b1b13d0eefea3eba40f58c9581",
+  "reviewSummary": {
+    "plannedCases": 3,
+    "plannedTurns": 7,
+    "executedTurns": 7,
+    "completedTurns": 7,
+    "executionFailedTurns": 0,
+    "notExecutedTurns": 0,
+    "mechanicalAssertionProtocolUsed": false,
+    "mechanicallyPassedTurns": null,
+    "verdictCounts": {
+      "证据不足": 2,
+      "部分有用": 1,
+      "满足": 3,
+      "未满足": 1
+    },
+    "scoreDimensionCounts": {
+      "factuality": {
+        "scored": 3,
+        "unknown": 4
+      },
+      "grounding": {
+        "scored": 7,
+        "unknown": 0
+      },
+      "usefulness": {
+        "scored": 7,
+        "unknown": 0
+      }
+    },
+    "fullThreeDimensionReviews": 3,
+    "modelDiagnosedCompletedRows": 7,
+    "reviewRecords": 7,
+    "newHumanReviews": 0,
+    "durationSecondsSum": 286.81,
+    "tokens": null,
+    "monetaryCost": null
+  },
+  "runtimeValidationFile": "runtime-validation.json",
+  "gracefulStopsVerified": true,
+  "security": {
+    "PASS": 58,
+    "FAIL": 11,
+    "UNKNOWN": 1
+  },
+  "deploymentBlockedByGates": [
+    "G01",
+    "G02",
+    "G03",
+    "G04",
+    "G05",
+    "G06",
+    "G07",
+    "G08",
+    "G09",
+    "G10",
+    "G11"
+  ],
+  "remaining": [
+    "Sparse catalog media identity",
+    "Cinema core-scene entailment and web snippet relevance",
+    "Full website queue/UI and human acceptance not performed this turn"
+  ],
+  "successfulSupplementaryWebCalls": 3,
+  "timeoutDegradationObserved": false
+}

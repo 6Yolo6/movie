@@ -1,0 +1,12 @@
+{
+  "status": "STOPPED_NO_RETRY_PRESERVE_CURRENT_STATE",
+  "at": "2026-11-15T12:05:20.728428+00:00",
+  "stage": "prepare",
+  "errorType": "HostReadyError",
+  "hostSnapshotFailureCode": "HOST_PROBE_READ_FAILED",
+  "gate": null,
+  "reservations": [],
+  "automaticRetry": false,
+  "automaticSqlRestore": false,
+  "oldTasksReplayed": false
+}

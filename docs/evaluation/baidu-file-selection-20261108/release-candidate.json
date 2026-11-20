@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-08",
+  "preparedAt": "2026-11-08T15:51:54.662527+00:00",
+  "branch": "codex/cloud-drive-workflows",
+  "baseCommit": "35eaec05ce6cfe465112501554834e7a6da9b81e",
+  "scope": [
+    "backend",
+    "frontend"
+  ],
+  "status": "candidate-ready-deployment-blocked",
+  "candidateCompose": "E:\\gying-tools\\releases\\baidu-file-selection-20261108\\candidate.json",
+  "candidateComposeSha256": "e34dc61570f95a882ae04a7ca2f48b4402ee73e3ebba0c25d7bb27cb5c195287",
+  "backendImageId": "sha256:ef4cdaf146d4af070968ca058fe159aa3f1ddf397d60ea6e1c2789fc8c1c002f",
+  "backendJarSha256": "f140914a7bf2ee9971d5240706c96be8271de5041c9e1a60f0d70dfdd7c0fec5",
+  "backendSourceSha256": "de27c44963c121277b46f7a379ec0fa12f77747a5d761617e894aa29cc9db282",
+  "frontendImageId": "sha256:fb2baa912bf471e40cc060b581c34bf8080200fe867573d96dd182a13e861a3e",
+  "frontendBuildId": "PkKhcSWV5lALygtXYFXqG",
+  "securitySummary": {
+    "PASS": 58,
+    "FAIL": 11,
+    "UNKNOWN": 1
+  },
+  "newSqlApplied": false,
+  "hostInstalled": false,
+  "hostTaskRegistered": false,
+  "realBaiduLoginVerified": false,
+  "realTransfersVerified": false,
+  "deployed": false,
+  "blockingRequirements": [
+    "Current safety gates FAIL; no applicable new exception",
+    "New MySQL/backend-data/host-private backup and authenticated restore preflight",
+    "Additive Baidu task migration and private host installation after gates",
+    "Do not roll back to consumers that ignore new file policy or submitting intents"
+  ],
+  "composeReadOnlyValidation": {
+    "checkedAt": "2026-11-08T15:52:29.101785+00:00",
+    "results": [
+      {
+        "service": "gying-movie-backend-1",
+        "existingComposeFileCount": 13,
+        "candidateAdded": true,
+        "exit": 0,
+        "resolvedEnvironmentPrinted": false
+      },
+      {
+        "service": "gying-movie-frontend-1",
+        "existingComposeFileCount": 7,
+        "candidateAdded": true,
+        "exit": 0,
+        "resolvedEnvironmentPrinted": false
+      }
+    ],
+    "servicesStartedOrStopped": false
+  }
+}

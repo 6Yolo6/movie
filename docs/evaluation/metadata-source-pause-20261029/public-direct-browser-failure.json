@@ -1,0 +1,28 @@
+{
+  "status": "failed",
+  "startedAt": "2026-10-29T16:29:42.927Z",
+  "synthetic": false,
+  "authUsed": false,
+  "browserMode": "Edge headless default system network",
+  "viewports": [
+    {
+      "width": 1280,
+      "actualOrigin": "https://gyinghub.dpdns.org",
+      "requests": [],
+      "failures": [
+        {
+          "host": "gyinghub.dpdns.org",
+          "path": "/",
+          "code": "net::ERR_TIMED_OUT"
+        }
+      ],
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "navigationErrorType": "Error"
+    }
+  ],
+  "pageErrors": 0,
+  "actualMessagesPostsTransfers": 0,
+  "errorType": "Error",
+  "completedAt": "2026-10-29T16:30:14.816Z"
+}

@@ -1,0 +1,18 @@
+{
+  "binding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\unused-batch2-observer-binding.json",
+    "sha256": "60ac7e9fb02f232b8d85c720f7951383bdc5db655a10049f0957a8aceccaf9e3"
+  },
+  "completeCiphertextHashesRetained": true,
+  "databaseReviewsObserved": false,
+  "encryptedRowsDecrypted": false,
+  "mutationEntryPointsLocallyDenied": 7,
+  "originalMaterialCount": 22,
+  "primaryPairCount": 20,
+  "productionIoCalls": 0,
+  "runtimeVerified": false,
+  "scope": "LOCAL_BINDING_AND_HISTORICAL_CONTRACT_ONLY",
+  "status": "PASS",
+  "subsetPairCount": 19,
+  "v5MutationExpiryFunctionsUncalled": true
+}

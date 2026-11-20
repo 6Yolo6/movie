@@ -1,0 +1,445 @@
+package com.gying.movie.service.impl;
+
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.node.*;
+import org.junit.jupiter.api.*;
+import org.springframework.jdbc.core.*;
+import java.util.*;
+import java.time.Instant;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.util.ReflectionTestUtils.*;
+
+class CatalogResearchServiceTest {
+    final ObjectMapper mapper=new ObjectMapper();
+    CatalogResearchService service; List<ObjectNode> docs; JdbcTemplate jdbc;
+    ObjectNode film(String id,String title,int year,String genre,String director,double douban,double imdb){
+        ObjectNode d=mapper.createObjectNode().put("id",id).put("titleCn",title).put("year",year).put("category","mv")
+            .put("doubanScore",douban).put("imdbScore",imdb).put("runtimeMinutes",100).put("resourceCount",0)
+            .put("summary",id.equals("a")?"宇航员航行太空，寻找回家的航线。":"一家人经营旅馆并调查神秘失踪事件。");
+        d.putArray("genres").add(genre); d.putArray("directors").add(director);d.putArray("actors").add("凯特·布兰切特");
+        d.putArray("regions").add("United States of America");d.putArray("languages").add("English");
+        d.put("embeddingText",d.path("summary").asText()).put("fingerprint",CatalogResearchService.fingerprint(d.path("summary").asText()));return d;
+    }
+    @BeforeEach @SuppressWarnings("unchecked") void setup(){
+        docs=List.of(film("a","星际样本",2024,"科幻","克里斯托弗·诺兰",7,9),film("b","迷案样本",2019,"悬疑","王家卫",9,6),film("c","旅行样本",2020,"冒险","丹尼斯·维伦纽瓦",8,8));
+        jdbc=mock(JdbcTemplate.class);when(jdbc.query(anyString(),any(RowMapper.class))).thenReturn(docs);service=new CatalogResearchService(jdbc,mapper);
+    }
+    ObjectNode query(String json)throws Exception{return service.query(mapper.createObjectNode().set("plan",mapper.readTree(json)),mapper.createObjectNode());}
+    List<String> ids(JsonNode result){List<String> ids=new ArrayList<>();result.path("movies").forEach(m->ids.add(m.path("id").asText()));return ids;}
+    @Test void orGenresAndPersonExclusionAreHardFilters()throws Exception{
+        assertThat(ids(query("{\"intent\":\"search\",\"genresAny\":[\"科幻\",\"悬疑\"],\"excludedDirectors\":[\"诺兰\"]}"))).containsExactly("b");
+        assertThat(ids(query("{\"intent\":\"search\",\"excludedDirectors\":[\"王家卫\"]}"))).containsExactlyInAnyOrder("a","c");
+    }
+    @Test void allGenresDoesNotBecomeOr()throws Exception{assertThat(ids(query("{\"intent\":\"search\",\"genresAll\":[\"科幻\",\"悬疑\"]}"))).isEmpty();}
+    @Test void documentaryAliasesMatchBothDirectionsAndPreserveOriginalMetadata()throws Exception{
+        var aliases=List.of("纪录","纪录片","纪录电影","纪录影片","Documentary","紀錄片");
+        for(String metadata:aliases){
+            docs.get(0).putArray("genres").add(metadata);
+            for(String requested:aliases){
+                var plan=mapper.createObjectNode().put("intent","search");plan.putArray("genresAny").add(requested);
+                var result=service.query(mapper.createObjectNode().set("plan",plan),mapper.createObjectNode());
+                assertThat(ids(result)).containsExactly("a");
+                assertThat(result.path("movies").get(0).path("genres").get(0).asText()).isEqualTo(metadata);
+                assertThat(result.path("queryPlan").path("genresAny").get(0).asText()).isEqualTo(requested);
+            }
+        }
+    }
+    @Test void documentaryAliasesPreserveAllAndAnyGenreSemantics()throws Exception{
+        docs.get(0).putArray("genres").add("纪录").add("科幻");docs.get(1).putArray("genres").add("纪录片");docs.get(2).putArray("genres").add("科幻");
+        assertThat(ids(query("{\"intent\":\"search\",\"genresAll\":[\"纪录电影\",\"科幻\"]}"))).containsExactly("a");
+        assertThat(ids(query("{\"intent\":\"search\",\"genresAny\":[\"Documentary\",\"科幻\"]}"))).containsExactlyInAnyOrder("a","b","c");
+    }
+    @Test void documentaryExclusionsApplyToEveryAliasWithoutExcludingBroaderThemes()throws Exception{
+        docs.get(0).putArray("genres").add("纪录");docs.get(1).putArray("genres").add("纪录片");docs.get(2).putArray("genres").add("传记");
+        for(String excluded:List.of("纪录","纪录片","纪录电影","纪录影片","Documentary","紀錄片")){
+            var plan=mapper.createObjectNode().put("intent","search");plan.putArray("excludedGenres").add(excluded);
+            assertThat(ids(service.query(mapper.createObjectNode().set("plan",plan),mapper.createObjectNode()))).containsExactly("c");
+        }
+        assertThat(ids(query("{\"intent\":\"search\",\"genresAny\":[\"传记\"]}"))).containsExactly("c");
+    }
+    @Test void documentaryGenreNormalizationCannotRelaxOtherHardFilters()throws Exception{
+        docs.get(0).putArray("genres").add("纪录");docs.get(1).putArray("genres").add("纪录片");docs.get(2).putArray("genres").add("Documentary");
+        docs.get(2).put("runtimeMinutes",150);
+        assertThat(ids(query("{\"intent\":\"search\",\"genresAny\":[\"纪录影片\"],\"yearFrom\":2020,\"maxRuntime\":110,\"ratingSource\":\"douban\",\"minRating\":6}"))).containsExactly("a");
+        assertThat(ids(query("{\"intent\":\"search\",\"genresAny\":[\"纪录片\"],\"excludedDirectors\":[\"诺兰\"],\"yearFrom\":2020,\"maxRuntime\":110}"))).isEmpty();
+    }
+    @Test void sourceSpecificRatingDoesNotUseOtherSource()throws Exception{
+        assertThat(ids(query("{\"intent\":\"search\",\"ratingSource\":\"douban\",\"minRating\":8.5}"))).containsExactly("b");
+        assertThat(ids(query("{\"intent\":\"search\",\"ratingSource\":\"imdb\",\"minRating\":8.5}"))).containsExactly("a");
+    }
+    @Test void yearRuntimeAndAliasesAreIndependent()throws Exception{
+        assertThat(ids(query("{\"intent\":\"search\",\"regionsAny\":[\"美国\"],\"languagesAny\":[\"英语\"],\"yearFrom\":2020,\"yearTo\":2024,\"maxRuntime\":110}"))).containsExactlyInAnyOrder("a","c");
+        assertThat(ids(query("{\"intent\":\"search\",\"maxRuntime\":90}"))).isEmpty();
+        assertThat(ids(query("{\"intent\":\"search\",\"excludedLanguages\":[\"英语\"]}"))).isEmpty();
+    }
+    @Test void missingRatingCannotSatisfyMaximum()throws Exception{
+        docs.get(0).remove("doubanScore");assertThat(ids(query("{\"intent\":\"search\",\"ratingSource\":\"douban\",\"maxRating\":7}"))).isEmpty();
+    }
+    @Test void missingSelectedSourceRatingRemainsNullWithoutBorrowingAnotherScore()throws Exception{
+        docs.get(0).putNull("doubanScore");
+        var result=query("{\"intent\":\"search\",\"titles\":[\"星际样本\"],\"ratingSource\":\"douban\"}");
+        var movie=result.path("movies").get(0);
+        assertThat(movie.path("rating").isNull()).isTrue();assertThat(movie.path("ratingSource").asText()).isEqualTo("douban");
+        assertThat(movie.path("doubanScore").isNull()).isTrue();assertThat(movie.path("imdbScore").asDouble()).isEqualTo(9);
+        var known=query("{\"intent\":\"search\",\"titles\":[\"星际样本\"],\"ratingSource\":\"imdb\"}");
+        assertThat(known.path("movies").get(0).path("rating").asDouble()).isEqualTo(9);
+    }
+    @Test void sourceRatingSortPutsMissingLastAndKeepsARealZeroScore()throws Exception{
+        docs.get(0).remove("doubanScore");docs.get(1).put("doubanScore",0);
+        var result=query("{\"intent\":\"search\",\"ratingSource\":\"douban\",\"sort\":\"rating_desc\"}");
+        assertThat(ids(result)).containsExactly("c","b","a");
+        assertThat(result.path("movies").get(0).path("rating").asDouble()).isEqualTo(8);
+        assertThat(result.path("movies").get(1).path("rating").isNumber()).isTrue();assertThat(result.path("movies").get(1).path("rating").asDouble()).isZero();
+        assertThat(result.path("movies").get(2).path("rating").isNull()).isTrue();assertThat(result.path("movies").get(2).path("imdbScore").asDouble()).isEqualTo(9);
+    }
+    @Test void anyRatingUsesExistingValuesButDoesNotInventZeroForMissingAllSources()throws Exception{
+        docs.get(0).put("doubanScore",0);docs.get(0).remove("imdbScore");
+        docs.get(1).remove(List.of("doubanScore","imdbScore"));docs.get(2).put("tmdbVoteAverage",9.5);
+        var result=query("{\"intent\":\"search\",\"ratingSource\":\"any\",\"sort\":\"rating_desc\"}");
+        assertThat(ids(result)).containsExactly("c","a","b");
+        assertThat(result.path("movies").get(0).path("rating").asDouble()).isEqualTo(9.5);assertThat(result.path("movies").get(0).path("doubanScore").asDouble()).isEqualTo(8);
+        assertThat(result.path("movies").get(1).path("rating").isNumber()).isTrue();assertThat(result.path("movies").get(1).path("rating").asDouble()).isZero();
+        assertThat(result.path("movies").get(2).path("rating").isNull()).isTrue();
+    }
+    @Test void previousResultScopeAndOrdinalUseServerIds()throws Exception{
+        var context=mapper.createObjectNode();context.putArray("candidateIds").add("c").add("a");
+        ObjectNode body=mapper.createObjectNode().set("plan",mapper.readTree("{\"intent\":\"search\",\"scope\":\"previousResults\",\"yearFrom\":2022}"));
+        assertThat(ids(service.query(body,context))).containsExactly("a");
+        body.set("plan",mapper.readTree("{\"intent\":\"details\",\"ordinal\":2}"));assertThat(service.query(body,context).path("selectedId").asText()).isEqualTo("a");
+    }
+    ObjectNode leasedDetails(String id,String message) {
+        ObjectNode body=mapper.createObjectNode().put("jobId",UUID.randomUUID().toString()).put("lease",UUID.randomUUID().toString()).put("message",message);
+        body.putObject("plan").put("intent","details").put("inheritContext",false).put("scope","catalog").put("movieId",id);return body;
+    }
+    ObjectNode historicalContext() {
+        ObjectNode context=mapper.createObjectNode().put("historyComplete",true).put("expiresAt",Instant.now().plusSeconds(600).toString());
+        context.putArray("candidateIds").add("c");ObjectNode first=context.putArray("candidateHistory").addObject().put("expiresAt",Instant.now().plusSeconds(300).toString());
+        first.putArray("candidateIds").add("a");return context;
+    }
+    @Test void leasedHistoricalDetailsRecheckExpiryBeforeReturningSelectedId(){
+        ObjectNode body=leasedDetails("a","最开始那份列表的第一部导演是谁？"),context=historicalContext();
+        assertThat(service.query(body,context).path("selectedId").asText()).isEqualTo("a");
+        ((ObjectNode)context.path("candidateHistory").get(0)).put("expiresAt",Instant.now().minusSeconds(1).toString());
+        JsonNode expired=service.query(body,context);assertThat(expired.has("selectedId")).isFalse();assertThat(expired.path("queryPlan").path("intent").asText()).isEqualTo("clarify");
+        assertThat(expired.path("answer").asText()).contains("上下文已过期");
+        context=historicalContext();context.put("expiresAt",Instant.now().minusSeconds(1).toString());assertThat(service.query(body,context).has("selectedId")).isFalse();
+    }
+    @Test void anExpiredRootPrunedAfterPlanningCannotSelectItsOldIdOrTheLatestList(){
+        ObjectNode context=historicalContext();context.put("historyComplete",false);context.withArray("candidateHistory").removeAll();
+        assertThat(service.query(leasedDetails("a","第一轮第一部导演是谁？"),context).has("selectedId")).isFalse();
+        assertThat(service.query(leasedDetails("c","第一轮第一部导演是谁？"),context).has("selectedId")).isFalse();
+        assertThat(service.query(leasedDetails("c","第一份列表的首片导演是谁？"),historicalContext()).has("selectedId")).isFalse();
+    }
+    @Test void explicitFreshCatalogIdsTitlesAndNoJobCallsRemainIndependentOfHistoricalExpiry(){
+        ObjectNode context=historicalContext().put("historyComplete",false),body=leasedDetails("b","查影片ID: b的详情");
+        assertThat(service.query(body,context).path("selectedId").asText()).isEqualTo("b");
+        ObjectNode plan=(ObjectNode)body.path("plan");plan.remove("movieId");plan.putArray("titles").add("迷案样本");body.put("message","查《迷案样本》的详情");
+        assertThat(service.query(body,context).path("selectedId").asText()).isEqualTo("b");
+        body=leasedDetails("a","第一轮第一部导演是谁？");body.remove(List.of("jobId","lease"));assertThat(service.query(body,context).path("selectedId").asText()).isEqualTo("a");
+    }
+    @Test void rangeReplacementSearchesNewYearsAndPreservesUnchangedFilters()throws Exception{
+        var context=mapper.createObjectNode();context.set("queryPlan",mapper.readTree("{\"intent\":\"search\",\"yearFrom\":2000,\"yearTo\":2010,\"category\":\"mv\",\"maxRuntime\":110,\"limit\":2,\"excludedDirectors\":[\"诺兰\"]}"));
+        context.putArray("candidateIds");
+        var body=mapper.createObjectNode();body.set("plan",mapper.readTree("{\"intent\":\"search\",\"inheritContext\":true,\"replaceRanges\":[\"year\"],\"yearFrom\":2015}"));
+        var result=service.query(body,context);
+        assertThat(ids(result)).containsExactly("b","c");assertThat(result.path("queryPlan").has("yearTo")).isFalse();
+        assertThat(result.path("queryPlan").path("maxRuntime").asInt()).isEqualTo(110);assertThat(result.path("queryPlan").has("replaceRanges")).isFalse();
+    }
+    @Test void emptyPreviousListReturnsClarificationInsteadOfSearchingTheWholeCatalog()throws Exception{
+        var result=query("{\"intent\":\"search\",\"scope\":\"previousResults\",\"sort\":\"rating_desc\",\"ratingSource\":\"douban\"}");
+        assertThat(ids(result)).isEmpty();assertThat(result.path("queryPlan").path("intent").asText()).isEqualTo("clarify");
+        assertThat(result.path("answer").asText()).contains("上一轮没有可用的影片候选","筛选或排序","重新查片库");
+    }
+    @Test void narrowingInheritedRuntimeToAnEmptyIntersectionAsksWhichBoundToChange()throws Exception{
+        var context=mapper.createObjectNode();context.set("queryPlan",mapper.readTree("{\"intent\":\"search\",\"minRuntime\":150,\"maxRuntime\":180,\"category\":\"mv\"}"));
+        var body=mapper.createObjectNode();body.set("plan",mapper.readTree("{\"intent\":\"search\",\"inheritContext\":true,\"maxRuntime\":100}"));
+        var result=service.query(body,context);
+        assertThat(ids(result)).isEmpty();assertThat(result.path("queryPlan").path("intent").asText()).isEqualTo("clarify");
+        assertThat(result.path("answer").asText()).contains("上一轮片长条件","至少150分钟","不超过180分钟","本轮明确条件","不超过100分钟","无法同时满足","修改哪项");
+    }
+    @Test void deletedCandidatesAreNotAnAvailablePreviousList()throws Exception{
+        var context=mapper.createObjectNode();context.putArray("candidateIds").add("deleted");
+        var body=mapper.createObjectNode();body.set("plan",mapper.readTree("{\"intent\":\"search\",\"scope\":\"previousResults\"}"));
+        assertThat(service.query(body,context).path("queryPlan").path("intent").asText()).isEqualTo("clarify");
+    }
+    @Test void unavailableOrdinalAndAmbiguousVersionsReturnExplicitClarification()throws Exception{
+        var context=mapper.createObjectNode();context.putArray("candidateIds").add("a");
+        var body=mapper.createObjectNode();body.set("plan",mapper.readTree("{\"intent\":\"details\",\"ordinal\":2}"));
+        var missing=service.query(body,context);assertThat(missing.path("queryPlan").path("intent").asText()).isEqualTo("clarify");
+        assertThat(missing.path("queryPlan").has("ordinal")).isFalse();assertThat(missing.path("answer").asText()).contains("年份","导演");
+        docs.get(0).put("titleCn","同名电影");docs.get(1).put("titleCn","同名电影");
+        body.set("plan",mapper.readTree("{\"intent\":\"details\",\"titles\":[\"同名电影\"]}"));
+        var ambiguous=service.query(body,mapper.createObjectNode());assertThat(ambiguous.path("queryPlan").path("intent").asText()).isEqualTo("clarify");assertThat(ambiguous.has("selectedId")).isFalse();
+    }
+    @Test void denseHitsMustMatchCurrentFingerprintAndHardFilters()throws Exception{
+        var body=mapper.createObjectNode();body.set("plan",mapper.readTree("{\"intent\":\"search\",\"semanticText\":\"未知主题\",\"yearFrom\":2022}"));
+        var dense=body.putArray("denseCandidates");dense.addObject().put("id","a").put("score",.8).put("fingerprint","0".repeat(64));dense.addObject().put("id","b").put("score",.9).put("fingerprint",docs.get(1).path("fingerprint").asText());
+        var result=service.query(body,mapper.createObjectNode());assertThat(ids(result)).isEmpty();assertThat(result.path("semanticStaleCandidates").asInt()).isEqualTo(1);
+        ((ObjectNode)dense.get(0)).put("fingerprint",docs.get(0).path("fingerprint").asText());assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactly("a");
+    }
+    @Test void malformedDenseEvidenceIsRejected()throws Exception{
+        var body=mapper.createObjectNode();body.set("plan",mapper.readTree("{\"intent\":\"search\"}"));body.putArray("denseCandidates").addObject().put("id","a").put("score",2).put("fingerprint","0".repeat(64));
+        assertThatThrownBy(()->service.query(body,mapper.createObjectNode())).isInstanceOf(IllegalArgumentException.class);
+    }
+    @Test void uncertainPersonExclusionCannotReturnGuaranteedCandidates()throws Exception{
+        var result=query("{\"intent\":\"search\",\"excludedDirectors\":[\"不存在导演\"]}");assertThat(ids(result)).isEmpty();assertThat(result.path("unresolvedPeople").size()).isEqualTo(1);
+    }
+    @Test void uniqueLongNameTypoResolvesAgainstCatalog()throws Exception{
+        assertThat(ids(query("{\"intent\":\"search\",\"directors\":[\"丹尼斯维伦纽瓦瓦\"]}"))).containsExactly("c");
+    }
+    @Test void returnedEvidenceDoesNotExposeIndexTextAndCarriesUnverifiedConditions()throws Exception{
+        var result=query("{\"intent\":\"search\",\"limit\":1,\"unsupportedConditions\":[\"获奖\"]}");assertThat(result.path("movies").size()).isEqualTo(1);assertThat(result.path("truncated").asBoolean()).isTrue();assertThat(result.toString()).doesNotContain("embeddingText","fingerprint");assertThat(result.path("answer").asText()).contains("不能保证");
+    }
+    @Test void originalPeopleRestoreOmissionsAndReverseWrongPolarity()throws Exception{
+        ObjectNode body=mapper.createObjectNode().put("message","查凯特布兰切特主演的电影，不要王家卫导演的");body.set("plan",mapper.readTree("{\"intent\":\"search\",\"directors\":[\"王家卫\"]}"));
+        var found=service.query(body,mapper.createObjectNode());assertThat(ids(found)).containsExactlyInAnyOrder("a","c");assertThat(found.path("queryPlan").path("actors").get(0).asText()).isEqualTo("凯特·布兰切特");
+    }
+    @Test void explicitPeoplePreserveOrAndDoNotUseQuotedTitlesAsNames()throws Exception{
+        ObjectNode body=mapper.createObjectNode().put("message","王家卫或丹尼斯维伦纽瓦导演的");body.set("plan",mapper.readTree("{\"intent\":\"search\",\"directorsAny\":[\"王家卫\",\"丹尼斯维伦纽瓦\"]}"));assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactlyInAnyOrder("b","c");
+        body.put("message","类似《王家卫》");body.set("plan",mapper.readTree("{\"intent\":\"search\"}"));assertThat(service.query(body,mapper.createObjectNode()).path("queryPlan").path("directors").isEmpty()).isTrue();
+    }
+
+    @Test void omittedUniqueSurnameExclusionIsRestoredFromOriginalAndExactTitleSurvivesSemanticNoise()throws Exception{
+        ObjectNode body=mapper.createObjectNode().put("message","排除维伦纽瓦的作品");body.set("plan",mapper.readTree("{\"intent\":\"search\"}"));assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactlyInAnyOrder("a","b");
+        docs.get(0).put("aliases","阿瑪迪斯");body.remove("message");body.set("plan",mapper.readTree("{\"intent\":\"web\",\"titles\":[\"阿玛迪斯\"],\"semanticText\":\"不存在的关键词\"}"));assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactly("a");
+    }
+
+    @Test void aShortForeignSurnameInsideAnotherActorsFullNameIsNotAnAdditionalCondition()throws Exception{
+        docs.get(0).putArray("actors").add("凯特·布兰切特");docs.get(1).putArray("actors").add("瑞达·凯特布");docs.get(2).putArray("actors").add("另一个演员");
+        var body=mapper.createObjectNode().put("message","查凯特布兰切特主演的电影");body.putObject("plan").put("intent","search");var found=service.query(body,mapper.createObjectNode());assertThat(ids(found)).containsExactly("a");assertThat(found.path("queryPlan").path("actors").size()).isEqualTo(1);
+        body.with("plan").putArray("actors").add("凯特布");assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactly("a");
+    }
+
+    @Test void genericRequestWordsCannotRecallUnrelatedFilms()throws Exception{
+        docs.get(1).put("titleCn","电影 人").put("summary","人拍电影，电影记录人。");
+        docs.get(2).put("summary","电影展览中的人分享生活经历。");
+        assertThat(ids(query("{\"intent\":\"search\",\"semanticText\":\"人 电影 宇航员\"}"))).containsExactly("a");
+        assertThat(ids(query("{\"intent\":\"search\",\"semanticText\":\"人 电影\"}"))).isEmpty();
+    }
+
+    @Test void shortTitlesMatchWholeNamesOrAliasesInsteadOfArbitrarySubstrings()throws Exception{
+        docs.get(0).put("titleCn","她").put("titleEn","Her");docs.get(1).put("titleCn","她们").put("titleEn","Titanic");
+        docs.get(2).put("titleCn","小丑回魂").put("titleEn","It").put("aliases","小丑|它");
+        assertThat(ids(query("{\"intent\":\"search\",\"titles\":[\"她\"]}"))).containsExactly("a");
+        assertThat(ids(query("{\"intent\":\"search\",\"titles\":[\"IT\"]}"))).containsExactly("c");
+        assertThat(ids(query("{\"intent\":\"search\",\"titles\":[\"它\"]}"))).containsExactly("c");
+    }
+
+    @Test void localizedRegionAndLanguageQueriesMatchEnglishAndIsoSourceMetadata()throws Exception{
+        docs.get(0).putArray("regions").add("Italy");docs.get(0).putArray("languages").add("Italian");
+        docs.get(1).putArray("regions").add("Brazil");docs.get(1).putArray("languages").add("Portuguese");
+        docs.get(2).putArray("regions").add("FR");docs.get(2).putArray("languages").add("fr");
+        assertThat(ids(query("{\"intent\":\"search\",\"regionsAny\":[\"意大利\"],\"languagesAny\":[\"意大利语\"]}"))).containsExactly("a");
+        assertThat(ids(query("{\"intent\":\"search\",\"regionsAny\":[\"巴西\"],\"languagesAny\":[\"葡萄牙语\"]}"))).containsExactly("b");
+        assertThat(ids(query("{\"intent\":\"search\",\"regionsAny\":[\"法国\"],\"languagesAny\":[\"法语\"]}"))).containsExactly("c");
+    }
+    @Test void languageExclusionsDoNotConfuseCountryAndLanguageIsoCodes()throws Exception{
+        docs.get(0).putArray("regions").add("Germany");docs.get(0).putArray("languages").add("French");
+        docs.get(1).putArray("regions").add("France");docs.get(1).putArray("languages").add("German");
+        docs.get(2).putArray("regions").add("FR");docs.get(2).putArray("languages").add("fr");
+        assertThat(ids(query("{\"intent\":\"search\",\"regionsAny\":[\"FR\"],\"languagesAny\":[\"fr\"]}"))).containsExactly("c");
+        assertThat(ids(query("{\"intent\":\"search\",\"regionsAny\":[\"法国\"],\"excludedLanguages\":[\"法语\"]}"))).containsExactly("b");
+    }
+
+    @Test void metadataExportAndNonSemanticQueriesDoNotAllocateSearchIndexes()throws Exception{
+        assertThat(service.documents(1,20).path("total").asInt()).isEqualTo(3);
+        assertThat(ids(query("{\"intent\":\"search\",\"yearFrom\":2022}"))).containsExactly("a");
+        assertThat(query("{\"intent\":\"details\",\"movieId\":\"a\"}").path("selectedId").asText()).isEqualTo("a");
+        assertThat(query("{\"intent\":\"clarify\"}").path("total").asInt()).isZero();
+        Object snapshot=getField(service,"cached");
+        assertThat(getField(snapshot,"lexical")).isNull();
+        assertThat(getField(snapshot,"actors")).isNull();
+        assertThat(getField(snapshot,"directors")).isNull();
+    }
+
+    @Test @SuppressWarnings("unchecked") void semanticIndexIsReusedWhenARefreshFindsUnchangedMetadata()throws Exception{
+        assertThat(ids(query("{\"intent\":\"search\",\"semanticText\":\"宇航员\"}"))).containsExactly("a");
+        Object snapshot=getField(service,"cached"),index=getField(snapshot,"lexical");
+        assertThat(index).isNotNull();
+        assertThat(ids(query("{\"intent\":\"search\",\"semanticText\":\"旅馆\"}"))).containsExactlyInAnyOrder("b","c");
+        assertThat(getField(snapshot,"lexical")).isSameAs(index);
+        when(jdbc.query(anyString(),any(RowMapper.class))).thenReturn(docs.stream().map(ObjectNode::deepCopy).toList());
+        setField(service,"refreshed",0L);service.documents(1,20);
+        assertThat(getField(service,"cached")).isSameAs(snapshot);
+        assertThat(getField(snapshot,"lexical")).isSameAs(index);
+    }
+
+    @Test void peopleConditionsBuildOnlyTheRequiredRoleAndReuseItsDictionary()throws Exception{
+        assertThat(ids(query("{\"intent\":\"search\",\"actors\":[\"凯特布兰切特\"]}"))).hasSize(3);
+        Object snapshot=getField(service,"cached"),actors=getField(snapshot,"actors");
+        assertThat(actors).isNotNull();
+        assertThat(getField(snapshot,"directors")).isNull();
+        assertThat(getField(snapshot,"lexical")).isNull();
+        assertThat(ids(query("{\"intent\":\"search\",\"excludedActors\":[\"凯特布兰切特\"]}"))).isEmpty();
+        assertThat(getField(snapshot,"actors")).isSameAs(actors);
+        var body=mapper.createObjectNode().put("message","排除维伦纽瓦的作品");body.putObject("plan").put("intent","search");
+        assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactlyInAnyOrder("a","b");
+        Object directors=getField(snapshot,"directors");
+        assertThat(directors).isNotNull();
+        assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactlyInAnyOrder("a","b");
+        assertThat(getField(snapshot,"actors")).isSameAs(actors);
+        assertThat(getField(snapshot,"directors")).isSameAs(directors);
+    }
+
+    @Test @SuppressWarnings("unchecked") void changedSnapshotInvalidatesIndexesAndUsesCurrentMetadataForHardFilters()throws Exception{
+        assertThat(ids(query("{\"intent\":\"search\",\"semanticText\":\"宇航员\",\"excludedDirectors\":[\"王家卫\"]}"))).containsExactly("a");
+        Object previous=getField(service,"cached");
+        ObjectNode changed=film("b","迷案样本",2025,"科幻","王家卫",9,6);
+        changed.put("summary","宇航员航行太空，寻找回家的航线。");
+        changed.put("fingerprint",CatalogResearchService.fingerprint(changed.path("summary").asText()));
+        when(jdbc.query(anyString(),any(RowMapper.class))).thenReturn(List.of(changed,docs.get(2).deepCopy()));
+        setField(service,"refreshed",0L);assertThat(service.documents(1,20).path("total").asInt()).isEqualTo(2);
+        Object current=getField(service,"cached");
+        assertThat(current).isNotSameAs(previous);
+        assertThat(getField(current,"lexical")).isNull();assertThat(getField(current,"directors")).isNull();
+        assertThat(ids(query("{\"intent\":\"search\",\"semanticText\":\"宇航员\",\"yearFrom\":2022,\"excludedDirectors\":[\"王家卫\"]}"))).isEmpty();
+        assertThat(ids(query("{\"intent\":\"search\",\"semanticText\":\"宇航员\",\"yearFrom\":2022}"))).containsExactly("b");
+        assertThat(getField(current,"lexical")).isNotSameAs(getField(previous,"lexical"));
+        var unknown=query("{\"intent\":\"search\",\"directors\":[\"诺兰\"]}");
+        assertThat(ids(unknown)).isEmpty();assertThat(unknown.path("unresolvedPeople").size()).isEqualTo(1);
+    }
+
+    @Test void cachedCrossRoleNamesAndAmbiguousSurnamesPreserveLiteralResolution()throws Exception{
+        docs.get(0).putArray("actors").add("王家卫");
+        docs.get(1).putArray("actors").add("瑞达·布兰切特");
+        var body=mapper.createObjectNode().put("message","查王家卫导演的电影");body.putObject("plan").put("intent","search");
+        var result=service.query(body,mapper.createObjectNode());assertThat(ids(result)).containsExactly("b");
+        assertThat(result.path("queryPlan").path("actors").isEmpty()).isTrue();
+        body.put("message","查王家卫主演的电影");assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactly("a");
+        body.put("message","布兰切特主演的电影");
+        assertThat(service.query(body,mapper.createObjectNode()).path("queryPlan").path("actors").isEmpty()).isTrue();
+    }
+
+    @Test void authorSurnameInsideCatalogCastDoesNotBecomeActorOrDirectorFilter()throws Exception{
+        docs.get(0).putArray("actors").add("山田·野岛");
+        docs.get(1).putArray("directors").add("野岛一郎");
+        var body=mapper.createObjectNode().put("message","找野岛一郎原著改编的电影；原作者不是演员或导演条件");
+        body.set("plan",mapper.readTree("{\"intent\":\"search\",\"actors\":[\"山田·野岛\"],\"directors\":[\"野岛一郎\"]}"));
+        var result=service.query(body,mapper.createObjectNode());
+        assertThat(ids(result)).hasSize(3);assertThat(result.path("queryPlan").path("actors").isEmpty()).isTrue();assertThat(result.path("queryPlan").path("directors").isEmpty()).isTrue();
+    }
+    @Test void writerRoleDoesNotRemoveOtherExplicitActorOrDirector()throws Exception{
+        docs.get(0).putArray("actors").add("山田·野岛").add("凯特·布兰切特");
+        var body=mapper.createObjectNode().put("message","查作家野岛一郎的原著改编，凯特布兰切特主演，排除王家卫导演的");body.putObject("plan").put("intent","search");
+        var result=service.query(body,mapper.createObjectNode());
+        assertThat(ids(result)).containsExactlyInAnyOrder("a","c");assertThat(result.path("queryPlan").path("actors").toString()).contains("凯特·布兰切特").doesNotContain("野岛");
+        assertThat(result.path("queryPlan").path("excludedDirectors").toString()).contains("王家卫");
+    }
+    @Test void samePersonCanBeExplicitlyRequestedAsActorEvenWhenAlsoAnAuthor()throws Exception{
+        docs.get(0).putArray("actors").add("野岛一郎");
+        var body=mapper.createObjectNode().put("message","找野岛一郎原著改编，同时由野岛一郎主演的电影");body.putObject("plan").put("intent","search");
+        assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactly("a");
+    }
+    @Test void anAuthorCanAlsoBeExplicitlyRequestedAsActorWithinTheSameClause(){
+        docs.get(0).putArray("actors").add("柳青");
+        for(String message:List.of("找柳青原著改编同时由柳青主演的电影","找作家柳青原著改编而且柳青出演的电影")){
+            var body=mapper.createObjectNode().put("message",message);body.putObject("plan").put("intent","search");
+            var result=service.query(body,mapper.createObjectNode());
+            assertThat(ids(result)).as(message).containsExactly("a");
+            assertThat(result.path("queryPlan").path("actors").toString()).contains("柳青");
+        }
+    }
+    @Test void anAuthorCanAlsoBeExplicitlyRequestedAsDirectorWithinTheSameClause(){
+        docs.get(1).putArray("directors").add("程甲");
+        for(String message:List.of("找程甲原作改编而且程甲执导的电影","找作家程甲原著改编并由程甲导演的电影")){
+            var body=mapper.createObjectNode().put("message",message);body.putObject("plan").put("intent","search");
+            var result=service.query(body,mapper.createObjectNode());
+            assertThat(ids(result)).as(message).containsExactly("b");
+            assertThat(result.path("queryPlan").path("directors").toString()).contains("程甲");
+        }
+    }
+    @Test void aDeniedPerformingRoleInTheSameClauseStillLeavesOnlyTheAuthorReference(){
+        docs.get(0).putArray("actors").add("柳青");
+        var body=mapper.createObjectNode().put("message","找作者柳青原著改编不是演员柳青的作品");
+        body.putObject("plan").put("intent","search").putArray("actors").add("柳青");
+        var result=service.query(body,mapper.createObjectNode());
+        assertThat(ids(result)).hasSize(3);
+        assertThat(result.path("queryPlan").path("actors").isEmpty()).isTrue();
+        assertThat(result.path("queryPlan").path("excludedActors").isEmpty()).isTrue();
+    }
+    @Test void runtimeDigitsAreNotRecoveredAsAShortCatalogPersonName()throws Exception{
+        docs.get(0).putArray("actors").add("50分");
+        var body=mapper.createObjectNode().put("message","片长至少150分钟");body.set("plan",mapper.readTree("{\"intent\":\"search\",\"actors\":[\"50分\"]}"));
+        assertThat(service.query(body,mapper.createObjectNode()).path("queryPlan").path("actors").isEmpty()).isTrue();
+        body.put("message","找50分主演的电影");assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactly("a");
+    }
+
+    @Test void deniedPerformingRoleDoesNotTurnAnAuthorIntoACastFilter()throws Exception{
+        docs.get(0).putArray("actors").add("柳青");
+        var body=mapper.createObjectNode().put("message","找作者柳青原著改编，不是演员柳青的作品");
+        body.set("plan",mapper.readTree("{\"intent\":\"search\",\"actors\":[\"柳青\"],\"excludedActors\":[\"柳青\"]}"));
+        var result=service.query(body,mapper.createObjectNode());
+        assertThat(ids(result)).hasSize(3);assertThat(result.path("queryPlan").path("actors").isEmpty()).isTrue();assertThat(result.path("queryPlan").path("excludedActors").isEmpty()).isTrue();
+    }
+    @Test void aRuntimeFragmentDoesNotHideALaterRealNumericActorName()throws Exception{
+        docs.get(0).putArray("actors").add("50分");
+        var body=mapper.createObjectNode().put("message","片长至少150分钟，找50分主演的电影");body.putObject("plan").put("intent","search");
+        var result=service.query(body,mapper.createObjectNode());
+        assertThat(ids(result)).containsExactly("a");assertThat(result.path("queryPlan").path("actors").toString()).contains("50分");
+    }
+
+    @Test void originalMovieCategoryOverridesAnUnsupportedAnimationPlan(){
+        var body=mapper.createObjectNode().put("message","推荐野外徒步电影");body.putObject("plan").put("intent","search").put("category","ac");
+        var result=service.query(body,mapper.createObjectNode());assertThat(result.path("queryPlan").path("category").asText()).isEqualTo("mv");
+        assertThat(ids(result)).hasSize(3);
+        body.put("message","推荐野外徒步，不超过120分钟");
+        result=service.query(body,mapper.createObjectNode());assertThat(result.path("queryPlan").has("category")).isFalse();assertThat(ids(result)).hasSize(3);
+    }
+    @Test void aFollowupWithoutATypeUsesTrustedPreviousCategoryInsteadOfModelGuess(){
+        var context=mapper.createObjectNode();context.putObject("queryPlan").put("intent","search").put("category","mv");
+        var body=mapper.createObjectNode().put("message","年份换成2020年以后");body.putObject("plan").put("intent","search").put("inheritContext",true).put("category","ac");
+        var result=service.query(body,context);assertThat(result.path("queryPlan").path("category").asText()).isEqualTo("mv");assertThat(ids(result)).hasSize(3);
+    }
+    @Test void quotedAndNegatedTypeWordsCannotOverrideTheCurrentLiteralType(){
+        var body=mapper.createObjectNode().put("message","类似《动画电影》，不要剧集，只看电影");body.putObject("plan").put("intent","search").put("category","tv");
+        var result=service.query(body,mapper.createObjectNode());assertThat(result.path("queryPlan").path("category").asText()).isEqualTo("mv");
+    }
+    @Test void movieSearchExcludesAnExplicitTvSpecialButRetainsUncertainRecordsWithEvidence()throws Exception{
+        docs.get(0).put("summary","电视特辑节目\n音乐家在音乐厅演唱。");
+        docs.get(1).put("summary","这是乐队在录音棚的现场录像。");
+        var result=query("{\"intent\":\"search\",\"category\":\"mv\"}");
+        assertThat(ids(result)).containsExactlyInAnyOrder("b","c");
+        assertThat(result.path("movies").get(0).path("mediaIdentity").path("status").asText()).isEqualTo("uncertain");
+        assertThat(service.documents(1,20).path("documents").get(0).path("mediaIdentity").path("status").asText()).isEqualTo("conflict");
+    }
+    @Test void titleAndDetailsQueriesRetainIdentityConflictsForAnExplicitExplanation()throws Exception{
+        docs.get(0).put("summary","电视特辑节目\n音乐家演唱。");
+        assertThat(ids(query("{\"intent\":\"search\",\"category\":\"mv\",\"titles\":[\"星际样本\"]}"))).containsExactly("a");
+        assertThat(query("{\"intent\":\"details\",\"movieId\":\"a\"}").path("selectedId").asText()).isEqualTo("a");
+    }
+    @Test void anAnimatedMovieRequestKeepsIdentityRequiredWhileGeneralAnimeClearsIt(){
+        docs.get(0).put("category","ac").put("tmdbType","tv").put("season",1);docs.get(1).put("category","ac").put("summary","影片讲述一家人的旅行。");
+        var body=mapper.createObjectNode().put("message","找动画电影");body.putObject("plan").put("intent","search").put("category","ac").put("filmIdentityRequired",false);
+        var result=service.query(body,mapper.createObjectNode());assertThat(result.path("queryPlan").path("filmIdentityRequired").asBoolean()).isTrue();assertThat(ids(result)).containsExactly("b");
+        body.put("message","找动漫");body.with("plan").put("filmIdentityRequired",true);
+        result=service.query(body,mapper.createObjectNode());assertThat(result.path("queryPlan").path("filmIdentityRequired").asBoolean()).isFalse();assertThat(ids(result)).containsExactlyInAnyOrder("a","b");
+    }
+    @Test void trustedFilmIdentitySurvivesUntypedFollowupAndCannotBeSuppliedByTheModel(){
+        var context=mapper.createObjectNode();context.putObject("queryPlan").put("intent","search").put("category","ac").put("filmIdentityRequired",true);
+        var body=mapper.createObjectNode().put("message","年份换成2020年以后");body.putObject("plan").put("intent","search").put("inheritContext",true).put("category","ac").put("filmIdentityRequired",false);
+        var result=service.query(body,context);assertThat(result.path("queryPlan").path("filmIdentityRequired").asBoolean()).isTrue();
+        body.put("message","推荐野外徒步");body.with("plan").put("inheritContext",false).put("filmIdentityRequired",true);
+        result=service.query(body,mapper.createObjectNode());assertThat(result.path("queryPlan").path("filmIdentityRequired").asBoolean()).isFalse();
+    }
+    @Test void alternativesBetweenFilmCategoriesDoNotPermitTvSpecialsOrAnimeSeasons(){
+        docs.get(0).put("category","ac").put("tmdbType","tv").put("season",1);docs.get(1).put("summary","电视特辑节目，现场音乐表演。");
+        docs.get(2).put("summary","影片讲述一群朋友的野外旅行。");
+        var body=mapper.createObjectNode().put("message","动画电影或真人电影都可以");
+        body.putObject("plan").put("intent","search").put("category","ac").put("filmIdentityRequired",false);
+        var result=service.query(body,mapper.createObjectNode());assertThat(result.path("queryPlan").path("category").asText()).isEmpty();
+        assertThat(result.path("queryPlan").path("filmIdentityRequired").asBoolean()).isTrue();assertThat(ids(result)).containsExactly("c");
+        body.put("message","电影或剧集都可以");result=service.query(body,mapper.createObjectNode());
+        assertThat(result.path("queryPlan").path("filmIdentityRequired").asBoolean()).isFalse();assertThat(ids(result)).containsExactlyInAnyOrder("a","b","c");
+    }
+    @Test void aMultipleMovieVersionsQuestionCannotRemoveTheFilmRequirement(){
+        docs.get(0).put("season",1);
+        var body=mapper.createObjectNode().put("message","片库里的《小妇人》是不是有多个电影版本");
+        body.putObject("plan").put("intent","search").put("category","mv").put("filmIdentityRequired",false);
+        var result=service.query(body,mapper.createObjectNode());
+        assertThat(result.path("queryPlan").path("filmIdentityRequired").asBoolean()).isTrue();
+        assertThat(result.path("queryPlan").path("category").asText()).isEqualTo("mv");
+        assertThat(ids(result)).containsExactlyInAnyOrder("a","b","c");
+        assertThat(service.documents(1,20).path("documents").get(0).path("mediaIdentity").path("status").asText()).isEqualTo("uncertain");
+    }
+}

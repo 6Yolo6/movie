@@ -1,0 +1,124 @@
+{
+  "status": "READ_ONLY_ADMIN_DEVICE_AGGREGATE_PROOF",
+  "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "scope": "SOURCE_REVIEW_AND_AGGREGATE_READ_ONLY_TRANSACTION_NO_LOGIN",
+  "observedAt": "2026-11-15T12:55:19Z",
+  "databaseTimezone": "Asia/Shanghai (+08:00), confirmed by displayed NOW and UNIX_TIMESTAMP",
+  "sourceDefinition": {
+    "adminSource": {
+      "path": "E:/gying-tools/releases/duplicate-tmdb-binding-20261111/BackendReadOnly.py",
+      "sha256": "81aa50d53e011a75cdcbada4f538a940f1ce17308ac90e213e3c16e4680ba1f0",
+      "bytes": 6219
+    },
+    "predicateLine": 11,
+    "failureLine": 12,
+    "exceptionOwner": {
+      "path": "E:/gying-tools/releases/duplicate-tmdb-binding-20261111/Runtime.py",
+      "sha256": "50e2efd9f180f330e59807d6f9085f41e3c22b8cbdb66b9d5bed866a1fc423ab",
+      "bytes": 16540
+    },
+    "guardCaller": {
+      "path": "E:/gying-tools/releases/metadata-update-watch-20261115/UpdateGuard.py",
+      "sha256": "7b9c5a1ef58c7467106320cce138bded5b1dceb1c114949c5be77da6daf7f1fe",
+      "bytes": 19450
+    },
+    "guardCallerLine": 121,
+    "fixedFailureCode": "EXISTING_ACTIVE_ADMIN_DEVICE_REQUIRED",
+    "exactEligibility": "u.enabled=1 AND u.role=ADMIN AND d.revoked_at IS NULL AND d.expires_at>DATE_ADD(NOW(),INTERVAL 10 MINUTE)",
+    "deviceMustHaveMoreThanTenMinutesRemaining": true,
+    "noNewLoginPerformedByExistingAdminHelper": true
+  },
+  "aggregateMetrics": {
+    "databaseNow": "2026-11-15 20:55:19",
+    "databaseNowEpoch": 1794747319,
+    "enabledAdminDeviceRows": 88,
+    "unrevokedRows": 88,
+    "currentlyUnexpiredUnrevoked": 0,
+    "currentlyExpiredUnrevoked": 88,
+    "currentlyEligibleAboveTenMinutes": 0,
+    "currentlyUnexpiredWithinTenMinutes": 0,
+    "latestUnrevokedExpiry": "2026-11-15 20:52:49",
+    "currentUnrevokedRowsWithExpiryAbovePreparedPlusTenMinutes": 1,
+    "currentUnrevokedRowsWithExpiryAboveStopPlusTenMinutes": 0
+  },
+  "comparison": {
+    "preparedAt": "2026-11-15T12:41:30.815616+00:00",
+    "stoppedAt": "2026-11-15T12:43:35.457956+00:00",
+    "preparedRequiredExpiryStrictlyAfter": "2026-11-15T12:51:30.815616+00:00",
+    "stoppedRequiredExpiryStrictlyAfter": "2026-11-15T12:53:35.457956+00:00",
+    "currentLatestUnrevokedExpiryUtc": "2026-11-15T12:52:49+00:00",
+    "derivedTenMinuteMarginThresholdFromCurrentLatestExpiry": "2026-11-15T12:42:49+00:00",
+    "derivedThresholdFallsBetweenPreparedAndStop": true,
+    "interpretation": "The current aggregate expiry values are compatible with ten-minute margin exhaustion between prepare and stop. At observed query time all enabled-admin devices are actually expired; this does not mean the device was actually expired at the earlier execute stop."
+  },
+  "certainty": {
+    "currentAdminEligibilityFailureConfirmed": true,
+    "currentFailureCode": "EXISTING_ACTIVE_ADMIN_DEVICE_REQUIRED",
+    "currentExpiredCountConfirmedByAggregateSql": true,
+    "failedExecuteSpecificGate": "UNKNOWN",
+    "failedExecuteExceptionOwner": "UNKNOWN",
+    "historicalSelectedDeviceEstablished": false,
+    "historicalExpiryRevocationUserRoleAndEnabledStateUnchangedEstablished": false,
+    "currentAggregateDoesNotIdentifyHistoricalDevice": true,
+    "rawExceptionArgsOrStderrUnavailableAndNotInferred": true,
+    "noAttributionOfExecuteFailureToHostMemory": true
+  },
+  "evidenceReferences": {
+    "prepared": {
+      "path": "E:/gying-tools/releases/tmdb-gying-followup-20261115/rollout-v4-after-host-idle/prepared.json",
+      "sha256": "bb62c1b639859ebc4c8c9f60ddb56ff2fc192430f6b96550da4bf3c562f6a2d3",
+      "bytes": 29712
+    },
+    "failedExecute": {
+      "path": "E:/gying-tools/releases/tmdb-gying-followup-20261115/rollout-v4-after-host-idle/failure-2026-11-15T124335.457956_0000.json",
+      "sha256": "fd3909938a263567f18c7bb77e28e86eb7aaceec20cb258d6492542244b2b10e",
+      "bytes": 345
+    },
+    "preCheckpointManifest": {
+      "path": "G:/gying-backups/tmdb-gying-predeploy-20261115-20261115T124231.646434Z/manifest.json",
+      "sha256": "3a9b6bf544c8695194d0cf76a7ed025e57a333ef7b4ed00d519c92eedfafc5fe",
+      "bytes": 884
+    },
+    "currentRootRuntimeProbe": {
+      "path": "E:/gying-tools/releases/tmdb-gying-followup-20261115/runtime-after-backup-stop-2026-11-15T125434.483633_0000.json",
+      "sha256": "2ffa030300e75fad0a33da7d9362cd209c700fd9060e65aed648c111d565e94b",
+      "bytes": 637
+    },
+    "currentHostMemory": {
+      "path": "E:/gying-tools/releases/tmdb-gying-followup-20261115/host-memory-20261115T124826Z.json",
+      "sha256": "338733aa82429ace19e7449138a82ad6baa14c9174c3fa6cef894b8626b0f127",
+      "bytes": 305
+    }
+  },
+  "checkpointInterpretation": {
+    "manifestStatus": "complete",
+    "authenticatedEntryNames": [
+      "backend-image.tar.age",
+      "runtime-preimage.tar.age",
+      "mysql.sql.age"
+    ],
+    "sqlCiphertextSize": 113884417,
+    "sqlCiphertextSha256": "3c85d11763500b3bcbff5906b48e8555f8c8844347e657b0e5a87840cc945048",
+    "sqlBackupDoesNotPrintArtifactProgress": true,
+    "completeManifestDoesNotAloneProveCheckpointFinishReturned": true
+  },
+  "performedOperations": {
+    "aggregateSelectTransactions": 1,
+    "queryExitCode": 0,
+    "queryStderrBytes": 0,
+    "productionWrites": 0,
+    "loginCalls": 0,
+    "tokenCreation": 0,
+    "deviceIdOrJtiOrCookieOrTokenOrUserRowsEmitted": false,
+    "rawStderrOrSqlDataEmitted": false,
+    "backupRuns": 0,
+    "prepareRuns": 0,
+    "executeRuns": 0,
+    "helperChanges": 0,
+    "testsRerun": 0
+  },
+  "preservation": {
+    "priorHelpersFailuresReservationsCheckpointAndRestorationFilesModified": false,
+    "createOnlyLocalEvidenceFile": true
+  }
+}

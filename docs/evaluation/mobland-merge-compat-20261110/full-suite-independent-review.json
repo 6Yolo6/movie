@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "stage": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-8f42d9be5998",
+  "resultSha256": "9250841db94531f51abb00cabc33b271b924c24211798acf515b1644eae793b3",
+  "manifestSha256": "3c0256cda80213696e7cf6f9c2950a515d0bfe9e798b70f20b240a6618f05dad",
+  "totals": {
+    "tests": 1434,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1
+  },
+  "passed": 1433,
+  "skipped": [
+    "com.gying.movie.security.RedisRateLimiterIntegrationTest.realRedisAtomicConcurrencyExpiryAndAcl"
+  ],
+  "mergeMySql": {
+    "tests": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "sourceFiles": 416,
+  "sourceExact": true,
+  "requiredRealSqlVerified": true,
+  "separateJava17CompileVerified": true,
+  "testContainersRemoved": true,
+  "productionChanged": false
+}

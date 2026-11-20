@@ -1,0 +1,19 @@
+{
+  "ops_readiness": {
+    "passed": 11,
+    "warnings": 1,
+    "failed": 0,
+    "existing_warning": "QQ tables require migration"
+  },
+  "global_scan": {
+    "original_exit_code": 1,
+    "historical_findings": 2,
+    "reviewed_as_existing_credential_sha256_fingerprints": true,
+    "actual_credential_match": false
+  },
+  "delivery_scope_scan": {
+    "findings": [],
+    "files": 6
+  },
+  "diff_check": "PASS"
+}

@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.mapper.ResourceLinkMapper;
 import com.gying.movie.service.IResourceLinkService;
+import com.gying.movie.utils.GyingTorrentLinks;
+import com.gying.movie.utils.BaiduTemporaryScope;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -12,13 +14,22 @@ import java.util.List;
 public class ResourceLinkServiceImpl extends ServiceImpl<ResourceLinkMapper, ResourceLink>
         implements IResourceLinkService {
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private MovieMergeAliasResolver mergeAliases;
+
     @Override
     public List<ResourceLink> getResourcesByMovieId(String movieId) {
+        String canonical = mergeAliases == null ? movieId : mergeAliases.resolve(movieId);
         return list(new QueryWrapper<ResourceLink>()
-                .eq("movie_id", movieId)
+                .eq("movie_id", canonical)
+                .and(query -> query.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("audit_status", 1)
                 .eq("status", "ACTIVE")
-                .ne("link_status", "INVALID"));
+                .isNull("deleted_at")
+                .and(query -> query.isNull("link_status").or().ne("link_status", "INVALID")))
+                .stream()
+                .filter(link -> link != null && !BaiduTemporaryScope.RESOURCE_SOURCE.equalsIgnoreCase(link.getSource()))
+                .filter(link -> !GyingTorrentLinks.isAccountDownload(link.getUrl())).toList();
     }
 
     @Override

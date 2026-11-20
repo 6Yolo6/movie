@@ -1,0 +1,20 @@
+{
+  "observedAt": "2026-11-15T10:59:58.538331+00:00",
+  "sourceGetTransport": "Existing source container loopback, port 8091; no host port publication",
+  "searchRequests": 0,
+  "newLoginRequests": 0,
+  "sqlReadOnly": true,
+  "transferRequests": 0,
+  "responseBodyPersisted": false,
+  "credentialsPersisted": false,
+  "schemaCoverage": "One existing trusted identity only; other sources and years untested.",
+  "status": "PASS",
+  "sourceType": "mv",
+  "yearJsonType": "number_integer",
+  "strictFourDigitString": false,
+  "strictIntegerInRange": true,
+  "strictStringParseInRange": false,
+  "authorizedDetailGetCount": 1,
+  "trustedExistingIdentityVerified": true,
+  "sourcePortDeclaredVerified": true
+}

@@ -1,6 +1,7 @@
 import requests
 import re
 import hashlib
+import base64
 import hmac
 import json
 import time
@@ -8,12 +9,13 @@ import os
 import argparse
 import html as html_lib
 import threading
+import signal
 import pymysql
 from minio import Minio
 from io import BytesIO
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import parse_qs, urlparse, urljoin
+from urllib.parse import parse_qs, urlparse, urljoin, unquote
 
 # ================= Configuration =================
 # MySQL Configuration
@@ -173,43 +175,37 @@ def upload_image_by_pattern(type_code, movie_id):
 CN_MAP = {'一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10}
 
 def parse_season(text, type_code=None):
-    if not text: return None, None
-    if type_code == "mv":
+    if not text:
         return None, None
-    # 1. Digits: "第4季"
-    match = re.search(r'^(.*?)\s*第(\d+)季', text)
-    if match:
-        return match.group(1).strip(), int(match.group(2))
-    
-    # 2. Chinese: "第五季"
-    match_cn = re.search(r'^(.*?)\s*第([一二三四五六七八九十]+)季', text)
-    if match_cn:
-        num_str = match_cn.group(2)
-        val = 0
-        if len(num_str) == 1: val = CN_MAP.get(num_str, 0)
-        elif len(num_str) == 2:
-            if num_str[0] == '十': val = 10 + CN_MAP.get(num_str[1], 0)
-            elif num_str[1] == '十': val = CN_MAP.get(num_str[0], 0) * 10
-        elif len(num_str) == 3: # 二十一
-            val = CN_MAP.get(num_str[0],0)*10 + CN_MAP.get(num_str[2],0)
-        
-        return match_cn.group(1).strip(), val
-    
-    # 3. Numeric Suffix: "Title 2", "Title2"
-    # Exclude years (1900-2100)
-    match_num = re.search(r'^(.*?)(\d+)$', text)
-    if match_num:
-        name = match_num.group(1).strip()
-        num_val = int(match_num.group(2))
-        if num_val < 1900 or num_val > 2100:
-             # Ensure name ends with valid separator or is clean?
-             # "Name2" is common. "Name 2" is common.
-             # If name is empty? "2".
-             if name:
-                 return name, num_val
-
-    # 4. Default: Treat as Season 1 of itself
-    return text.strip(), 1
+    text = text.strip()
+    # A season marker outranks a Part suffix: 第三季 Part.2 is season 3, not 2.
+    match = re.search(r'^(.*?)\s*第([0-9一二三四五六七八九十]+)季', text)
+    if match and match.group(1).strip():
+        token = match.group(2)
+        if token.isdigit():
+            value = int(token)
+        elif '十' in token:
+            tens, _, units = token.partition('十')
+            value = (CN_MAP.get(tens, 1) if tens else 1) * 10 + CN_MAP.get(units, 0)
+        else:
+            value = CN_MAP.get(token, 0)
+        if 0 < value <= 99:
+            return match.group(1).strip(), value
+    english = re.search(r'^(.*?)\s+(?:Season\s*|S)(\d{1,2})(?=\s|$|[:：])', text, re.I)
+    if english and english.group(1).strip() and int(english.group(2)) > 0:
+        return english.group(1).strip(), int(english.group(2))
+    # Final/Part labels do not identify a season ordinal. Keep it unknown rather
+    # than comparing an invented season 1/2 with a verified local season.
+    final = re.search(r'^(.*?)\s*(?:最终季|最終季|The\s+Final\s+Season|Final\s+Season)', text, re.I)
+    if final:
+        return final.group(1).strip() or text, None
+    if re.search(r'(?i)(?<![a-z])part\s*\.?\s*\d+', text):
+        return text, None
+    installment = re.search(r'^(.*?[^\d\s])\s*(\d{1,2})(?:\s*[:：]\s*.+)?$', text)
+    if installment and len(installment.group(1).strip()) >= 2 and 0 < int(installment.group(2)) <= 99:
+        return installment.group(1).strip(), int(installment.group(2))
+    # Four-digit years/numbers in a title (大明王朝1566, 1984) are not seasons.
+    return text, 1
 
 def list_get(values, index, default=""):
     if not isinstance(values, list) or index >= len(values):
@@ -272,6 +268,8 @@ def should_ingest_resource(resource):
     if not isinstance(resource, dict):
         return False
     url = str(resource.get("url") or "").strip()
+    if is_account_torrent_download(url):
+        return False
     provider = detect_provider_from_url(
         url, resource.get("provider") or detect_provider(resource.get("tname", "")))
     link_type = resource.get("type") or detect_resource_type(url, provider)
@@ -431,7 +429,7 @@ def fetch_bt_resources(bt_id, title_hint=""):
     return resources
 
 
-def expand_bt_resources(resources, fallback_source_url=None):
+def expand_bt_resources(resources, fallback_source_url=None, strict=False):
     expanded = []
     for resource in resources or []:
         url = str(resource.get("url") or "").strip()
@@ -445,7 +443,11 @@ def expand_bt_resources(resources, fallback_source_url=None):
             bt_items = fetch_bt_resources(bt_id, resource.get("title") or "")
             if bt_items:
                 expanded.extend(bt_items)
+            elif strict:
+                raise RuntimeError("GYING BT detail contained no usable P2P links")
         except Exception as error:
+            if strict:
+                raise RuntimeError("GYING BT resource retrieval failed") from error
             print(f"      ⚠️ BT resource {bt_id} unavailable: {error}")
     return expanded
 
@@ -631,27 +633,68 @@ def wait_for_site_request_slot():
     _SITE_LAST_REQUEST_AT = time.monotonic()
 
 
-def site_get(url, *, timeout=10, headers=None, **kwargs):
+def buffer_bounded_response(response, max_bytes):
+    """Bound decoded bytes before requests' text/JSON challenge probes can read them.
+
+    Cache the completed body using requests.Response's normal content fields so
+    text, json and content share the same bounded bytes (including on retries).
+    The caller owns response cleanup on both success and failure.
+    """
+    try:
+        declared_length = int(response.headers.get("Content-Length", ""))
+    except (TypeError, ValueError):
+        declared_length = None
+    if declared_length is not None and declared_length > max_bytes:
+        raise RuntimeError("Site response exceeds the allowed size")
+
+    content = bytearray()
+    for chunk in response.iter_content(chunk_size=min(65536, max_bytes + 1)):
+        if len(content) + len(chunk) > max_bytes:
+            raise RuntimeError("Site response exceeds the allowed size")
+        content.extend(chunk)
+    response._content = bytes(content)
+    response._content_consumed = True
+
+
+def site_get(url, *, timeout=10, headers=None, max_response_bytes=None, **kwargs):
+    if max_response_bytes is not None:
+        if isinstance(max_response_bytes, bool) or not isinstance(max_response_bytes, int) or max_response_bytes <= 0:
+            raise ValueError("max_response_bytes must be a positive integer")
+        # A non-streaming Session.get would consume the body before we can bound it.
+        kwargs["stream"] = True
     with _SITE_SESSION_LOCK:
         session = get_site_session()
         request_headers = headers or {}
-        wait_for_site_request_slot()
-        resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+        resp = None
 
-        if is_pow_challenge_response(resp):
-            if solve_browser_pow(session, url):
-                wait_for_site_request_slot()
-                resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+        def request_response():
+            nonlocal resp
+            if resp is not None:
+                resp.close()
+                resp = None
+            wait_for_site_request_slot()
+            resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+            if max_response_bytes is not None:
+                buffer_bounded_response(resp, max_response_bytes)
+            return resp
 
-        if is_login_required_response(resp):
-            if login_site_session(session):
-                wait_for_site_request_slot()
-                resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
-                if is_pow_challenge_response(resp) and solve_browser_pow(session, url):
-                    wait_for_site_request_slot()
-                    resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+        try:
+            request_response()
+            if is_pow_challenge_response(resp):
+                if solve_browser_pow(session, url):
+                    request_response()
 
-        return resp
+            if is_login_required_response(resp):
+                if login_site_session(session):
+                    request_response()
+                    if is_pow_challenge_response(resp) and solve_browser_pow(session, url):
+                        request_response()
+            return resp
+        except BaseException:
+            if resp is not None:
+                resp.close()
+            raise
+
 
 def site_post(url, *, data=None, timeout=15, headers=None, **kwargs):
     with _SITE_SESSION_LOCK:
@@ -813,6 +856,42 @@ def normalize_download_item(item):
         "uploader": uploader,
     }
 
+def normalize_compact_bt_section(section):
+    """GYING downlist.list uses parallel m/t/u/k arrays, not url/name arrays.
+
+    m is the actual BTIH for kind 0. The site's own UI links to
+    /dbt/{u}/{hex} for torrent downloads; hex is refreshed by the upstream.
+    Never turn a folder/zip item or an opaque encoded value into a magnet.
+    """
+    rows = section.get("list")
+    if not isinstance(rows, dict) or not isinstance(rows.get("m"), list):
+        raise RuntimeError("Unsupported GYING compact BT payload")
+    hashes = rows["m"]
+    required = ("t", "u", "k")
+    if any(not isinstance(rows.get(key), list) or len(rows[key]) != len(hashes) for key in required):
+        raise RuntimeError("Incomplete GYING compact BT arrays")
+    result = []
+    ticket = str(section.get("hex") or "").strip()
+    for index, value in enumerate(hashes):
+        if rows["k"][index] not in (0, "0"):
+            continue
+        info_hash = str(value or "").strip()
+        source_id = str(rows["u"][index] or "").strip()
+        if not re.fullmatch(r"[0-9a-fA-F]{40}", info_hash) or not re.fullmatch(r"[A-Za-z0-9]+", source_id):
+            raise RuntimeError("Invalid GYING compact BT identity")
+        common = {
+            "source_id": source_id, "source_ref": source_id,
+            "source_url": f"{BASE_URL}/bt/{source_id}",
+            "title": bounded_text(rows["t"][index], 255, f"GYING BT {source_id}"),
+            "code": "", "provider": "P2P", "tname": "BT", "uploader": "", "is_own": False,
+        }
+        # Keep magnet identity stable when display titles change.
+        result.append({**common, "type": "MAGNET", "url": "magnet:?xt=urn:btih:" + info_hash.lower()})
+        if ticket and re.fullmatch(r"[A-Za-z0-9_-]{1,256}", ticket):
+            result.append({**common, "type": "TORRENT", "url": f"{BASE_URL}/dbt/{source_id}/{ticket}"})
+    return result
+
+
 def normalize_download_section(section, target_user=None):
     if isinstance(section, list):
         resources = []
@@ -829,6 +908,9 @@ def normalize_download_section(section, target_user=None):
 
     if not isinstance(section, dict):
         return []
+
+    if isinstance(section.get("list"), dict) and "m" in section["list"]:
+        return normalize_compact_bt_section(section)
 
     # Some GYING responses expose P2P links directly as magnet/torrent arrays.
     # Do not treat a normal parallel `url` array as a direct scalar value: doing
@@ -983,7 +1065,48 @@ def normalize_content_list_resources(resources):
         })
     return normalized
 
-def fetch_download_resources(type_code, mid, fallback_resources, target_user=None):
+def has_chinese_subtitle_label(item):
+    text = " ".join(str(item.get(key) or "") for key in ("title", "subtitle", "subtitles"))
+    if re.search(r"(?i)无中文字幕|无中字|无字幕|不含中文字幕|不带中文字幕|没有字幕|未附字幕|no[ ._-]*(?:chinese[ ._-]*)?subtitles?", text):
+        return False
+    return bool(re.search(r"(?i)中文字幕|中字|简中|繁中|简繁|中英.{0,8}字幕|中英双字|简体中文.{0,4}字幕|繁体中文.{0,4}字幕|(?<![a-z])(?:chs|cht)(?![a-z])|chinese[ ._-]*subtitles?", text))
+
+
+def select_p2p_versions(resources):
+    """Keep at most one BT release each for 1080p and 4K; never infer unknown quality."""
+    other = []
+    groups = {}
+    for item in resources:
+        if item.get("type") not in ("MAGNET", "TORRENT") or item.get("provider") != "P2P":
+            other.append(item)
+            continue
+        text = " ".join(str(item.get(key) or "") for key in ("quality", "resolution", "title"))
+        if re.search(r"(?i)(?<![a-z0-9])(?:4k|2160p?)(?![a-z0-9])", text):
+            quality = "4K"
+        elif re.search(r"(?i)(?<![a-z0-9])1080p?(?![a-z0-9])", text):
+            quality = "1080P"
+        else:
+            continue
+        identity = str(item.get("source_ref") or item.get("source_id") or item.get("title") or item.get("url"))
+        group = groups.setdefault((quality, identity), {})
+        group.setdefault(item["type"], {**item, "quality": quality, "collection_slot": quality,
+                                      "chinese_subtitles": has_chinese_subtitle_label(item),
+                                      "subtitle": "中文字幕（来源标注）" if has_chinese_subtitle_label(item) else ""})
+    selected = []
+    for quality in ("1080P", "4K"):
+        candidates = [group for (q, _), group in groups.items() if q == quality]
+        if candidates:
+            # Explicit Chinese subtitles outrank a more complete but unsubtitled release.
+            best = max(candidates, key=lambda group: (any(r["chinese_subtitles"] for r in group.values()),
+                                                      len(group), "MAGNET" in group))
+            selected.extend(best[kind] for kind in ("MAGNET", "TORRENT") if kind in best)
+    # Do not archive a batch consisting entirely of uncertain/non-Chinese subtitles.
+    if not any(item["chinese_subtitles"] for item in selected):
+        return other
+    return other + selected
+
+
+def fetch_download_resources(type_code, mid, fallback_resources, target_user=None, strict=False):
     resolved_target_user = TARGET_USER if target_user is None else target_user
     url = f"{BASE_URL}/res/downurl/{type_code}/{mid}"
     try:
@@ -997,18 +1120,30 @@ def fetch_download_resources(type_code, mid, fallback_resources, target_user=Non
             },
         )
     except Exception as e:
+        if strict:
+            raise RuntimeError("GYING resource request failed") from e
         print(f"      ⚠️ Downurl request failed: {e}")
         return normalize_content_list_resources(fallback_resources)
 
     if resp.status_code != 200:
+        if strict:
+            raise RuntimeError(f"GYING resource HTTP {resp.status_code}")
         print(f"      ⚠️ Downurl HTTP {resp.status_code}; fallback to content_list resources.")
         return normalize_content_list_resources(fallback_resources)
 
     try:
         data = resp.json()
     except ValueError as e:
+        if strict:
+            raise RuntimeError("GYING resource response was not JSON") from e
         print(f"      ⚠️ Downurl JSON decode failed: {e}")
         return normalize_content_list_resources(fallback_resources)
+
+    if strict and (not isinstance(data, dict) or str(data.get("code", 200)) != "200"
+                   or not any(key in data for key in ("panlist", "downlist", "magnetlist", "btlist",
+                                                      "p2plist", "torrentlist", "magnet", "magnet_url",
+                                                      "torrent", "torrent_url", "download_url"))):
+        raise RuntimeError("GYING resource payload rejected or missing resource sections")
 
     resources = []
     for key in ("panlist", "downlist", "magnetlist", "btlist", "p2plist", "torrentlist"):
@@ -1019,32 +1154,135 @@ def fetch_download_resources(type_code, mid, fallback_resources, target_user=Non
             resources.extend(normalize_download_section(value, resolved_target_user))
 
     fallback = normalize_content_list_resources(fallback_resources)
-    expanded = expand_bt_resources(resources or fallback, f"{BASE_URL}/{type_code}/{mid}")
+    expanded = expand_bt_resources(resources or fallback, f"{BASE_URL}/{type_code}/{mid}", strict=strict)
     for resource in expanded:
         resource.setdefault("source_url", f"{BASE_URL}/{type_code}/{mid}")
         resource.setdefault("source_ref", resource.get("source_id") or "")
-    return expanded
+    return select_p2p_versions(expanded)
+
+def torrent_info_hash(content):
+    """Validate bounded bencode and hash the original info bytes, never the video data."""
+    if not content or len(content) > 2 * 1024 * 1024:
+        raise RuntimeError("Torrent metadata exceeds the allowed size")
+    info_span = None
+    def parse(pos, depth):
+        nonlocal info_span
+        if depth > 48 or pos >= len(content):
+            raise RuntimeError("Invalid torrent structure")
+        token = content[pos:pos + 1]
+        if token in (b'd', b'l'):
+            value = {} if token == b'd' else []
+            pos += 1
+            while pos < len(content) and content[pos:pos + 1] != b'e':
+                if token == b'd':
+                    key, pos = parse(pos, depth + 1)
+                    if not isinstance(key, bytes) or key in value:
+                        raise RuntimeError("Invalid torrent dictionary")
+                    start = pos
+                    item, pos = parse(pos, depth + 1)
+                    value[key] = item
+                    if depth == 0 and key == b'info': info_span = (start, pos)
+                else:
+                    item, pos = parse(pos, depth + 1); value.append(item)
+            if pos >= len(content): raise RuntimeError("Truncated torrent")
+            return value, pos + 1
+        if token == b'i':
+            end = content.find(b'e', pos + 1)
+            digits = content[pos + 1:end]
+            if end < 0 or not re.fullmatch(rb'-?(0|[1-9][0-9]{0,18})', digits):
+                raise RuntimeError("Invalid torrent integer")
+            return int(digits), end + 1
+        colon = content.find(b':', pos, min(pos + 12, len(content)))
+        if colon < 0 or not re.fullmatch(rb'0|[1-9][0-9]{0,8}', content[pos:colon]):
+            raise RuntimeError("Invalid torrent string")
+        end = colon + 1 + int(content[pos:colon])
+        if end > len(content): raise RuntimeError("Truncated torrent string")
+        return content[colon + 1:end], end
+    try:
+        decoded, end = parse(0, 0)
+        info = decoded.get(b'info') if isinstance(decoded, dict) else None
+        # GYING may append one text line ending to an otherwise complete torrent.
+        # Accept only that suffix; never allow arbitrary bytes after the dictionary.
+        if content[end:] not in (b'', b'\n', b'\r\n') or not info_span or not isinstance(info, dict):
+            raise RuntimeError("Torrent info dictionary missing")
+        pieces = info.get(b'pieces')
+        if not isinstance(pieces, bytes) or not pieces or len(pieces) % 20:
+            raise RuntimeError("Torrent v1 pieces missing")
+        return hashlib.sha1(content[info_span[0]:info_span[1]]).hexdigest()
+    except (IndexError, ValueError, TypeError) as error:
+        raise RuntimeError("Invalid torrent metadata") from error
+
+
+def fetch_torrent_file(type_code, mid, source_ref):
+    rows = fetch_download_resources(type_code, mid, [], target_user="", strict=True)
+    matches = [row for row in rows if row.get("source_ref") == source_ref]
+    torrent = next((row for row in matches if row.get("type") == "TORRENT"), None)
+    magnet = next((row for row in matches if row.get("type") == "MAGNET"), None)
+    if not torrent or not magnet:
+        raise RuntimeError("Selected torrent is no longer available")
+    url = torrent["url"]
+    parsed = urlparse(url)
+    if parsed.scheme != 'https' or parsed.netloc != urlparse(BASE_URL).netloc or not parsed.path.startswith('/dbt/' + source_ref + '/'):
+        raise RuntimeError("Torrent download endpoint is not allowed")
+    expected = parse_qs(urlparse(magnet['url']).query).get('xt', [''])[0].removeprefix('urn:btih:').lower()
+    if not re.fullmatch('[0-9a-f]{40}', expected): raise RuntimeError("Torrent magnet identity missing")
+    response = site_get(url, timeout=15, stream=True, allow_redirects=False,
+                        max_response_bytes=2 * 1024 * 1024)
+    try:
+        if response.status_code != 200: raise RuntimeError("Torrent download failed")
+        # site_get has already bounded this cached body before authentication probes.
+        content = response.content
+    finally:
+        response.close()
+    actual = torrent_info_hash(content)
+    if actual != expected: raise RuntimeError("Torrent does not match the selected magnet")
+    # Preserve the original info bytes but upload a strictly terminated bencode file.
+    content = content.rstrip(b'\r\n')
+    return {"sourceRef": source_ref, "infoHash": actual, "size": len(content),
+            "sha256": hashlib.sha256(content).hexdigest(), "dataBase64": base64.b64encode(content).decode('ascii')}
+
+
+def is_account_torrent_download(url):
+    try:
+        parsed = urlparse(str(url or "").strip())
+        path = unquote(parsed.path).lower()
+        return parsed.scheme.lower() in ("http", "https") and (path == "/dbt" or path.startswith("/dbt/"))
+    except ValueError:
+        return False
+
+
+def export_download_resources(resources):
+    """Expose magnets and public links; account-only torrent URLs stay inside the fetcher."""
+    def version_key(item):
+        return (item.get("source_ref") or item.get("source_id"), item.get("quality") or item.get("collection_slot"))
+    torrents = {version_key(item): item for item in resources
+                if item.get("type") == "TORRENT" and item.get("provider") == "P2P"
+                and is_account_torrent_download(item.get("url"))}
+    result = []
+    for item in resources:
+        if is_account_torrent_download(item.get("url")):
+            continue
+        exported = dict(item)
+        ref = item.get("source_ref") or item.get("source_id")
+        if (item.get("type") == "MAGNET" and item.get("provider") == "P2P"
+                and ref and re.fullmatch(r"[A-Za-z0-9]+", str(ref)) and version_key(item) in torrents):
+            exported["archive_torrent"] = True
+            # The same BT release may label subtitles only on its torrent entry.
+            if has_chinese_subtitle_label(torrents[version_key(item)]):
+                exported["chinese_subtitles"] = True
+                exported["subtitle"] = "中文字幕（来源标注）"
+        result.append(exported)
+    return result
+
 
 def fetch_movie_resource_snapshot(type_code, mid):
     metadata = fetch_movie_metadata(type_code, mid) or {}
-    resources = fetch_download_resources(type_code, mid, [], target_user="")
+    resources = export_download_resources(fetch_download_resources(type_code, mid, [], target_user=""))
+    # Ownership comes from this movie's detail resources. Do not scan the account's
+    # content list here: it makes every detail/publish check proportional to account size.
+    # The site also rejects duplicate submissions at the publish endpoint.
     for resource in resources:
-        resource["is_own"] = resource.get("uploader") == TARGET_USER
-    # /res/downurl may omit an already-published item or return stale public data.
-    # The authenticated content list is authoritative for duplicate prevention.
-    owned = list_my_pan_resources(limit=1000, max_pages=50, type_code=type_code, mid=mid)
-    by_source = {item.get("source_id"): item for item in resources if item.get("source_id")}
-    by_url = {item.get("url"): item for item in resources if item.get("url")}
-    for item in owned:
-        existing = by_source.get(item.get("source_id")) or by_url.get(item.get("url"))
-        if existing is None:
-            resources.append(item)
-        else:
-            existing.update(item)
-        if item.get("url"):
-            by_url[item.get("url")] = existing or item
-        if item.get("source_id"):
-            by_source[item.get("source_id")] = existing or item
+        resource["is_own"] = bool(TARGET_USER and resource.get("uploader") == TARGET_USER)
     title = metadata.get("title") or metadata.get("name") or metadata.get("ename")
     series_name, season = parse_season(title, type_code)
     return {
@@ -1360,28 +1598,59 @@ def fetch_catalog_movies(type_code, sort="score", page=1, limit=30):
     return normalize_catalog_items(type_code, payload)[:safe_limit]
 
 
+def parse_weekly_popular(type_code, html, limit=5):
+    if type_code not in ("mv", "tv", "ac"):
+        raise ValueError("invalid weekly chart type")
+    def embedded(name):
+        match = re.search(r"_obj\." + name + r"\s*=\s*", html)
+        if not match:
+            raise RuntimeError("Weekly chart payload missing")
+        return json.JSONDecoder().raw_decode(html[match.end():])[0]
+    section = embedded("inlist")
+    hits = embedded("hits")
+    if not isinstance(section, dict) or section.get("ty") != type_code or hits.get("by") != "week":
+        raise RuntimeError("Weekly chart scope mismatch")
+    items = normalize_catalog_items(type_code, {"inlist": section})
+    if not items:
+        raise RuntimeError("Weekly chart contains no usable entries")
+    return items[:min(max(int(limit), 1), 20)]
+
+
+def fetch_weekly_popular(type_code, limit=5):
+    if type_code not in ("mv", "tv", "ac"):
+        raise ValueError("invalid weekly chart type")
+    response = site_get(f"{BASE_URL}/hits/{type_code}/week", timeout=20)
+    if response.status_code != 200:
+        raise RuntimeError(f"Weekly chart HTTP {response.status_code}")
+    return parse_weekly_popular(type_code, response.text, limit)
+
+
 def find_series_seasons(type_code, mid, max_pages=20):
+    """Exact normalized family only; search first so old series need not be in top charts."""
     anchor = fetch_movie_metadata(type_code, mid) or {}
     anchor_title = anchor.get("title") or anchor.get("name") or anchor.get("ename") or mid
-    base_title, anchor_season = parse_season(anchor_title)
-    expected = re.sub(r"[\s\W_]+", "", base_title or anchor_title).lower()
+    base_title, anchor_season = parse_season(anchor_title, type_code)
+    normalize = lambda value: re.sub(r"[\s\W_]+", "", value or "").lower()
+    expected = normalize(base_title or anchor_title)
     found = {}
-    for page in range(1, min(max(int(max_pages), 1), 50) + 1):
-        rows = fetch_catalog_movies(type_code, "score", page, 100)
-        if not rows:
-            break
-        for row in rows:
-            candidate_base = re.sub(r"[\s\W_]+", "", row.get("seriesName") or row.get("title") or "").lower()
-            if candidate_base == expected and row.get("season"):
-                found[int(row["season"])] = row
-    if anchor_season and anchor_season not in found:
-        found[anchor_season] = {
-            "typeCode": type_code, "mid": mid, "title": anchor_title,
-            "year": anchor.get("year"), "seriesName": base_title, "season": anchor_season,
-            "detailUrl": f"{BASE_URL}/{type_code}/{mid}",
-        }
-    return [found[key] for key in sorted(found)]
 
+    def collect(rows):
+        for row in rows:
+            row_type = row.get("typeCode") or type_code
+            family, number = parse_season(row.get("title"), row_type)
+            if normalize(row.get("seriesName") or family) != expected or not number:
+                continue
+            found[(row_type, str(row.get("mid")))] = dict(row, seriesName=family, season=number)
+
+    collect(search_movies(base_title or anchor_title, type_code=type_code, mode=3, limit=100))
+    # Do not scan dozens of score-chart pages here: that exceeded the backend's
+    # read timeout and incorrectly turned a healthy source into a circuit-breaker outage.
+    found.setdefault((type_code, str(mid)), {
+        "typeCode": type_code, "mid": mid, "title": anchor_title,
+        "year": anchor.get("year"), "seriesName": base_title, "season": anchor_season,
+        "detailUrl": f"{BASE_URL}/{type_code}/{mid}",
+    })
+    return sorted(found.values(), key=lambda row: (row.get("season") or 0, str(row.get("mid"))))
 
 def repair_movie_poster(db, type_code, mid, target_movie_id):
     poster_url = upload_image_by_pattern(type_code, mid)
@@ -1402,8 +1671,21 @@ def repair_movie_poster(db, type_code, mid, target_movie_id):
 
 def save_source_identity(db, movie_id, source, source_type, external_id, season=0,
                          confidence=100, match_method="SOURCE_ID", match_status="CONFIRMED", evidence=None):
+    # Installment ordinal is metadata; film source identities always use season zero.
+    if (source.upper(), source_type.lower()) in {("GYING", "mv"), ("TMDB", "movie")}:
+        season = 0
     try:
         with db.cursor() as cursor:
+            # Intentionally use the column's current comparison, then compare exact values.
+            # This also fails closed before the case-sensitive migration has been applied.
+            cursor.execute(
+                "SELECT movie_id, external_id FROM movie_source_identity "
+                "WHERE source=%s AND source_type=%s AND external_id=%s AND season=%s FOR UPDATE",
+                (source, source_type, str(external_id), int(season or 0)),
+            )
+            existing = cursor.fetchone()
+            if existing and (existing["external_id"] != str(external_id) or existing["movie_id"] != movie_id):
+                raise ValueError("Source identity collision requires review")
             cursor.execute(
                 """
                 INSERT INTO movie_source_identity (
@@ -1471,7 +1753,7 @@ def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None, i
             poster_url=COALESCE(VALUES(poster_url), poster_url),
             douban_score=VALUES(douban_score), imdb_score=VALUES(imdb_score),
             summary=VALUES(summary), category=VALUES(category),
-            series_name=VALUES(series_name), season=VALUES(season),
+            series_name=COALESCE(VALUES(series_name), series_name), season=COALESCE(VALUES(season), season),
             status='ACTIVE', deleted_at=NULL, updated_at=NOW()
     """
     values = (
@@ -1495,12 +1777,17 @@ def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None, i
         series_name,
         season,
     )
-    resources = fetch_download_resources(type_code, mid, []) if include_resources else []
+    resources = export_download_resources(fetch_download_resources(type_code, mid, [])) if include_resources else []
     inserted = 0
     updated = 0
 
     try:
         with db.cursor() as cursor:
+            cursor.execute("SELECT id, status, deleted_at FROM movie_metadata WHERE id=%s FOR UPDATE", (movie_id,))
+            existing = cursor.fetchone()
+            if existing and (existing["id"] != movie_id or existing.get("deleted_at") is not None
+                             or existing.get("status") == "DELETED"):
+                raise ValueError("Local movie identity collision or deleted movie requires review")
             cursor.execute(sql_movie, values)
         for resource in resources:
             resource_url = (resource.get("url") or "").strip()
@@ -1607,7 +1894,7 @@ def mark_resource_published(db, resource_id, source_id, type_code, mid):
     db.commit()
 
 class BoundedThreadingHTTPServer(ThreadingHTTPServer):
-    daemon_threads = True
+    daemon_threads = False
     request_queue_size = 32
     _slots = threading.BoundedSemaphore(32)
 
@@ -1626,6 +1913,26 @@ class BoundedThreadingHTTPServer(ThreadingHTTPServer):
             super().process_request_thread(request, client_address)
         finally:
             self._slots.release()
+
+
+def serve_source(server):
+    stopped = threading.Event()
+    previous = {}
+
+    def stop(signum, frame):
+        stopped.set()
+
+    server.timeout = 0.5
+    for signum in (signal.SIGTERM, signal.SIGINT):
+        previous[signum] = signal.signal(signum, stop)
+    try:
+        while not stopped.is_set():
+            server.handle_request()
+    finally:
+        # Stop accepting requests, then wait for existing handlers to finish.
+        server.server_close()
+        for signum, handler in previous.items():
+            signal.signal(signum, handler)
 
 
 class GyingSourceApiHandler(BaseHTTPRequestHandler):
@@ -1698,6 +2005,11 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
                 limit = int((query.get("limit") or ["30"])[0])
                 self.send_json(200, {"items": fetch_recent_movies(limit)})
                 return
+            if path == "/weekly-popular":
+                type_code = (query.get("typeCode") or ["mv"])[0]
+                limit = int((query.get("limit") or ["5"])[0])
+                self.send_json(200, {"items": fetch_weekly_popular(type_code, limit)})
+                return
             if path == "/catalog":
                 type_code = (query.get("typeCode") or ["mv"])[0]
                 sort = (query.get("sort") or ["score"])[0]
@@ -1707,15 +2019,19 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
                 return
             match = re.fullmatch(r"/resources/(mv|tv|ac)/([A-Za-z0-9]+)", path)
             if match:
-                resources = fetch_download_resources(match.group(1), match.group(2), [], target_user="")
-                self.send_json(200, {"resources": resources})
+                resources = fetch_download_resources(match.group(1), match.group(2), [], target_user="", strict=True)
+                self.send_json(200, {"resources": export_download_resources(resources)})
+                return
+            match = re.fullmatch(r"/torrent-file/(mv|tv|ac)/([A-Za-z0-9]+)/([A-Za-z0-9]+)", path)
+            if match:
+                self.send_json(200, fetch_torrent_file(*match.groups()))
                 return
             match = re.fullmatch(r"/bt/([A-Za-z0-9]+)", path)
             if match:
                 self.send_json(200, {
                     "btId": match.group(1),
                     "sourceUrl": f"{BASE_URL}/bt/{match.group(1)}",
-                    "resources": fetch_bt_resources(match.group(1)),
+                    "resources": export_download_resources(fetch_bt_resources(match.group(1))),
                 })
                 return
             if path == "/search":
@@ -2078,7 +2394,7 @@ def main():
             raise SystemExit("Configure non-root GYING_DB_USER and GYING_DB_PASSWORD")
         server = BoundedThreadingHTTPServer((args.host, args.port), GyingSourceApiHandler)
         print(f"Gying source API listening on {args.host}:{args.port}")
-        server.serve_forever()
+        serve_source(server)
         return
     if command == "publish":
         print(json.dumps(publish_pan_resource(

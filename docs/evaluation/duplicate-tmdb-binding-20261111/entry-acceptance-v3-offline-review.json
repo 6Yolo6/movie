@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "status": "PASS",
+  "at": "2026-11-11T08:37:34.311335+00:00",
+  "reviewer": "review_data_helpers",
+  "allTestsPassed": true,
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceV3.py",
+      "sha256": "b02d75746158c96c49f1adf143a5a8775d360699bd9aece0be0ebf3b01e54f91"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceCoreV3.py",
+      "sha256": "af5618beaf19427cd7e354a28898ba9e4f1a6616c803c1b86269fa45dda2c04f"
+    }
+  ],
+  "tests": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-acceptance-v3-tests-complete.json",
+    "sha256": "c87167981cd939ce371775a241f9b10ea719d1266a6ce4a55d6f891f9cdd9348"
+  },
+  "testScript": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\TestEntryAcceptanceV3.py",
+    "sha256": "cf25525e348a80aa623d5df6d8d10d681103aebf007220396bccb7777ad9cc90"
+  },
+  "independentSemanticsReview": {
+    "path": "D:\\gying-movie\\movie\\docs\\evaluation\\duplicate-tmdb-binding-20261111\\entry-acceptance-v3-independent-semantics-review.json",
+    "sha256": "e84959397019254116ffc19102bcee576982c88b198457769e7f78ea21d0f087"
+  },
+  "newMockTestsRun": 13,
+  "independentPureSemanticChecks": 7,
+  "independentAssertions": 45,
+  "productionPosts": 0,
+  "productionGets": 0,
+  "productionRuntimeIo": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0,
+  "gitActions": 0,
+  "runtimeOrCredentialsRead": false,
+  "originalPassedSuitesReusedNotRerun": true,
+  "mockTestSourceIndependentlyReviewed": true,
+  "testRuntimeIoFullyMocked": true,
+  "coreThreePureFunctionsOnlyAdded": true,
+  "coreExecuteFourExpectedChanges": {
+    "metadataGuard": 1,
+    "dtoSeason": 1,
+    "listSeason": 1,
+    "summary": 1
+  },
+  "wholeCoreNormalizedExactOriginalAst": true,
+  "wrapperUnrelatedFunctionsExactOldAst": [
+    "pairs_valid",
+    "json_value",
+    "success_matches",
+    "validate_split_terminal",
+    "load_plan",
+    "load_records",
+    "load_original",
+    "completions",
+    "execute"
+  ],
+  "originalHttpSsrFullRowsBaiduRuntimeAndBlockedFinallyGuardsRetained": true,
+  "movieReviewedConfirmedNamespaceZeroRequired": true,
+  "movieRawMetadataDtoAndListSeasonPreservedIncludingNull": true,
+  "tvReviewedMetadataConfirmedAndDtoPositiveSeasonExact": true,
+  "booleanAndSeasonDriftMissingOrConflictingIdentityFailClosed": true,
+  "frozenPreviousHelperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceV2.py",
+      "sha256": "61a3fe371d45175a27046398978f60293bbb98acbadd4c955fca161652b23797"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptance.py",
+      "sha256": "f8d371647ea0ba69f13f70d9e636657b08d47f8c248b1130ca605006335f6ea1"
+    }
+  ],
+  "productionResultVerifiedByThisReview": false,
+  "bindingChainReviewPending": true
+}

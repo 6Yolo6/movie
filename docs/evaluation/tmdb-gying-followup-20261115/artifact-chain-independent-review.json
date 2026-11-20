@@ -1,0 +1,119 @@
+{
+  "status": "PASS",
+  "reviewer": "/root/tmdb_gying_review",
+  "reviewedAt": "2026-11-15T11:24:32.495869+00:00",
+  "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "sourceManifestSha256": "4ba8a13372b15d513fc76cf7e8cb3c95126823df39505bd5968fd3698d5bfa98",
+  "sourceFileCount": 423,
+  "gitBlobVerification": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\code-independent-review.json",
+    "sha256": "3674b924eedaa6517f4c0729430737c4c7bf7d345345e5632c5053aaf965f02c"
+  },
+  "testedStageRecordedPathAndRawManifestVerified": true,
+  "workingAndStageSourceBytesVerified": true,
+  "businessTestEvidenceInspected": {
+    "tests": 334,
+    "classes": 13,
+    "mysqlTests": 18,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "fixtureContainersRemoved": 2,
+    "sourceManifestUnchanged": true,
+    "allSelectedClassesPresent": true
+  },
+  "package": {
+    "exitCode": 0,
+    "testsRepeated": false,
+    "containerRemoved": true,
+    "jarSha256": "5b4492cd4047161c030b6c53254d7a7d8682d8ec220bef465d7b392e434b4c8e",
+    "startedAt": "2026-11-15T11:20:09.896329+00:00",
+    "finishedAt": "2026-11-15T11:21:44.464154+00:00"
+  },
+  "classResourceBinding": {
+    "count": 448,
+    "observationCapturedAt": "2026-11-15T11:20:35.536158+00:00",
+    "observationAfterPackageStarted": true,
+    "observationVsPostHashAndMtimeMatch": true,
+    "allFileMtimesBeforeV4FinishedAndPackageStarted": true,
+    "jarAll448EntriesMatchObservationAndPost": true,
+    "duplicateJarClassEntries": false,
+    "latestFileMtimeUtc": "2026-11-15T11:16:07.529032+00:00",
+    "mainAndTestCompileSkippedByActualPackageLog": true,
+    "testsSkippedByActualPackageLog": true,
+    "packageRecompileObserved": false,
+    "prePackageHashSnapshotExisted": false,
+    "inference": "The hash observation was captured after package start. Unchanged hashes/mtimes and completed Maven main/test Nothing-to-compile log establish that this package retained the V4 stage classes; the observation is not a pre-package snapshot."
+  },
+  "sameFileBypass": {
+    "requiredDistinctInput": true,
+    "distinctBoundPackageCopyVerified": true,
+    "packageInput": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5\\backend-package-bound.json",
+      "sha256": "f1cf1a1550ac25ca590ecbaf9109420d4ca4d8a9f2154996c4757b1c465fab20"
+    },
+    "destination": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\backend-package.json",
+    "destinationSha256": "f1cf1a1550ac25ca590ecbaf9109420d4ca4d8a9f2154996c4757b1c465fab20",
+    "sourcesInput": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5\\sources.json",
+      "sha256": "4ba8a13372b15d513fc76cf7e8cb3c95126823df39505bd5968fd3698d5bfa98"
+    },
+    "sourceInputDifferentFromBuildDestination": true
+  },
+  "helperStaticReview": {
+    "BindArtifacts": "PASS with concrete V4 recorded-stage/raw-manifest checks independently supplemented.",
+    "PackageBackend": "PASS: isolated container, network none, offline Maven package with skipTests, only fixture writes and label/id scoped removal.",
+    "BuildBackend": "PASS: supplied distinct proof/source paths avoid SameFileError; candidate-only image layering preserves base runtime configuration and verifies image/JAR hash and production container generations."
+  },
+  "evidence": {
+    "v4Result": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5\\result.json",
+      "sha256": "f9a7760b2e0b36701080ec494a4aead1df10d0b76472e9a6f42f5af6ab82f503"
+    },
+    "v4Sources": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5\\sources.json",
+      "sha256": "4ba8a13372b15d513fc76cf7e8cb3c95126823df39505bd5968fd3698d5bfa98"
+    },
+    "boundTests": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\backend-tests.json",
+      "sha256": "105694c3fa42edc509d143b399852697a0c555e64cf0c392df150b2e9581a481"
+    },
+    "rawPackageProof": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5\\package-proof.json",
+      "sha256": "bbfaf21010423aea9ae5d4d9e9ae08155bac695da511f0064e2bd6ce6e4bedf4"
+    },
+    "boundPackage": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\backend-package.json",
+      "sha256": "f1cf1a1550ac25ca590ecbaf9109420d4ca4d8a9f2154996c4757b1c465fab20"
+    },
+    "classObservationAfterPackageStart": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5\\classes-observation-after-package-start.json",
+      "sha256": "080bbb71a01c0f8884a20a98b445e948597052635e39373348f83ca1def8c21d"
+    },
+    "packageLog": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5\\package.log",
+      "sha256": "353123719c253ce7aa8185bbc377b44ab9e1a9a96baf4d693076efb8fa15292a"
+    }
+  },
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\BindArtifacts.py",
+      "sha256": "7a5881022365a99a106788b64a92403524b77fa0fee0c582aa4ecbbeae039622"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\PackageBackend.py",
+      "sha256": "fc865ad42fa4afe91b578ca2fac45ef676b59f7b345bdf108db6a9643d2fdd07"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\BuildBackend.py",
+      "sha256": "3b456870041053c9c7b0d228ed33d97c863ef365d3921490f0ca3a12c24c08d0"
+    }
+  ],
+  "reviewerMavenRuns": 0,
+  "reviewerProductionMutations": 0,
+  "candidateImageRuntimeVerificationByReviewer": false,
+  "limitations": [
+    "This report verifies the completed V4 stage/package and reviews the candidate build helper; actual candidate image/JAR and production-generation checks are performed by BuildBackend and remain separate.",
+    "The class hash observation was captured after package start. The no-recompile conclusion uses completed compile-skip logs plus unchanged SHA-256 and pre-start file modification times; no pre-package hash snapshot is claimed."
+  ]
+}

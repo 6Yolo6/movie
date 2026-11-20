@@ -1,0 +1,103 @@
+{
+  "version": 3,
+  "status": "READY_FOR_ROOT_READ_ONLY_SCHEMA_DIAGNOSTIC",
+  "createdAt": "2026-11-11T11:47:54.180502+00:00",
+  "sources": {
+    "DiagnoseBaiduOwnPageReadOnlyV3.java": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\DiagnoseBaiduOwnPageReadOnlyV3.java",
+      "sha256": "6b673f35d2ecdd28b11b20fd7240ec0ac2ed59155a7e9c12decd6bb2ec5eff62"
+    },
+    "CompileOwnPageDiagnosticV3.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileOwnPageDiagnosticV3.py",
+      "sha256": "55d4254d769303b5ac44e9348e175023b8ebee75080e1155959c3a99b65786a3"
+    },
+    "PostOwnPageDiagnosticV3.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostOwnPageDiagnosticV3.py",
+      "sha256": "a79047bd778a8560f97c7dd84ddcf66d49abad5cf3158f4c9a4b6b41b21946fa"
+    },
+    "OwnPageDiagnosticV3Binding.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\OwnPageDiagnosticV3Binding.py",
+      "sha256": "5502e57248c77d8f44397eea13201a21cf70a0b9fc9523cd43345ea901b75502"
+    }
+  },
+  "testSources": {
+    "OwnPageDiagnosticMocksV3.java": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\OwnPageDiagnosticMocksV3.java",
+      "sha256": "d67da68ac347019683892fe1418c113a0c725834869daf2c75d20e217fd328f3"
+    },
+    "test_own_page_diag_v3.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\test_own_page_diag_v3.py",
+      "sha256": "28b7c3d6bba3028e072f92e62c853600a8d864bb6b4ff9fc2cd8dfa291971c03"
+    }
+  },
+  "offlineTests": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-local-tests\\7b11dc6ceea84f88856f2ce30218125f\\own-page-diag-v3-local-tests.json",
+    "sha256": "cf888ce3440216466d34c34909b776e08b03f4b9b5b6abad0c938f5815070f15"
+  },
+  "derivation": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-local-derivation-5f18b12c336c40d88651a553121d014f.json",
+    "sha256": "f142a1cd0ecccc701ed2292e682581a662dc1277768ed5b762418c210963f684"
+  },
+  "independentReview": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-final-independent-review-ac2dc293e63240c481f1f84c22ace43d.json",
+    "sha256": "dc0acb5756cd4ac0d580b936e34d0bdb4d620c3824a46d841e24ec1d0909c350"
+  },
+  "additionalParserReview": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-local-parser-partial-review-3a8a0c3463fa477599fabc2db4554d10.json",
+    "sha256": "112208873f81480c1caecc1fec3c48102f9cb8884e2120de0ad09c3b4568ea56"
+  },
+  "precompileBinding": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-reviewed-precompile-binding-736fc8dce0db4089990b4978ce3ec650.json",
+    "sha256": "ba0c3c96d3359d5f5e0499be523ac94410864b6e83937227319f31af6ee11f19"
+  },
+  "compilerReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diagnostic-v3-build-attempts\\57c3694303c24cf6bc43df3b0d19ee67\\compile-completed.json",
+    "sha256": "2ace7582a41c2816c77efb6dd7b93e61a29b16fd73a99df8f71e7e793845fae7"
+  },
+  "compiledBinding": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-reviewed-compiled-binding-dad60f775b3b40e29c8cca1a50eb75e8.json",
+    "sha256": "fa8980f5c3af88a0f50890f9cbecba9bd8cc78aff4ddb2730ef18ac18616a8db"
+  },
+  "offlineCompilerCleanup": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-offline-compile-cleanup-3a014fab06354573b0b98bd3a1d52e24.json",
+    "sha256": "7f4633018344388846efb9958fc346789cdf59372f13ba3ba4fc5181e00baf4a"
+  },
+  "artifactManifest": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diagnostic-v3-build-attempts\\57c3694303c24cf6bc43df3b0d19ee67\\artifact-manifest.json",
+    "sha256": "f462a88448515afdb09d57f63d6a5c232bf0682ff83179f5ad97b1959cc5a979"
+  },
+  "cycleReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json",
+    "sha256": "6ca4fbe9cce6db86cec4ee07f2d1922ac94a1fb829b2bbf2a756a5cf028221cc"
+  },
+  "rootDiagnosticCommand": [
+    "python",
+    "-B",
+    "-X",
+    "utf8",
+    "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostOwnPageDiagnosticV3.py",
+    "--diagnose",
+    "--child-id",
+    "17650",
+    "--compiler-receipt",
+    "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diagnostic-v3-build-attempts\\57c3694303c24cf6bc43df3b0d19ee67\\compile-completed.json",
+    "--cycle-receipt",
+    "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json",
+    "--generation-binding",
+    "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-reviewed-compiled-binding-dad60f775b3b40e29c8cca1a50eb75e8.json"
+  ],
+  "javaMockTests": 65,
+  "pythonMockTests": 25,
+  "verifiedCompiledArtifactFiles": 541,
+  "ownedCompilerRunnersAbsent": true,
+  "actualPageSchemaObserved": false,
+  "ownerProofAccepted": false,
+  "officialReconciliationVerified": false,
+  "productionDiagnosticExecutor": "root-only",
+  "productionApiRequestsByChild": 0,
+  "productionSqlQueriesByChild": 0,
+  "cloudWritesByChild": 0,
+  "manualPostRequestsByChild": 0,
+  "settingsPutRequestsByChild": 0,
+  "allOriginalAndV2InputsRetained": true
+}

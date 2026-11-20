@@ -1,0 +1,120 @@
+{
+  "timezone": "Asia/Shanghai",
+  "scope": "read-only investigation; no application deployment, database mutation, credential update or publication triggered",
+  "sessionObservedAt": "2026-11-05 19:32:53",
+  "postObservedAt": "2026-11-05 19:33:42",
+  "runtime": {
+    "backendImagePrefix": "91dc95395cc5",
+    "publisherImagePrefix": "8b6dd6e77fa9",
+    "screenName": "救星小窝",
+    "sessionUpdatedAt": "2026-11-01T14:06:24.229Z"
+  },
+  "remotePreflight": [
+    {
+      "endpoint": "/ajax/side/cards",
+      "http": 200,
+      "ok": 1
+    },
+    {
+      "endpoint": "/ajax/feed/allGroups",
+      "http": 200,
+      "ok": 1
+    }
+  ],
+  "target": {
+    "id": 5,
+    "enabled": true,
+    "autoPostEnabled": true,
+    "scheduleTime": "09:00",
+    "postsPerRun": 3,
+    "postIntervalSeconds": 500,
+    "lastAutoRunAt": "2026-11-05 09:00:07"
+  },
+  "statusCounts": {
+    "POSTED": 233,
+    "PREPARE_FAILED": 1,
+    "UNKNOWN": 3
+  },
+  "remainingSafeFailure": {
+    "logId": 270,
+    "updatedAt": "2026-11-01 22:05:28",
+    "reason": "Historical identity-verification rejection; no new attempt in this investigation"
+  },
+  "posts": [
+    {
+      "logId": 266,
+      "title": "137号案件",
+      "postedAt": "2026-11-05 09:00:08",
+      "remoteCreatedAt": "2026-11-05 09:00:07",
+      "url": "https://weibo.com/7503820795/RpW9SFHG2",
+      "status": "POSTED",
+      "remoteHttp": 200,
+      "remoteOk": 1,
+      "remotePostExists": true,
+      "titlePresent": true,
+      "remoteAccountMatches": true,
+      "visibleType": 0
+    },
+    {
+      "logId": 267,
+      "title": "摧花谜墓 第三季",
+      "postedAt": "2026-11-05 09:08:29",
+      "remoteCreatedAt": "2026-11-05 09:08:29",
+      "url": "https://weibo.com/7503820795/RpWdh25ME",
+      "status": "POSTED",
+      "remoteHttp": 200,
+      "remoteOk": 1,
+      "remotePostExists": true,
+      "titlePresent": true,
+      "remoteAccountMatches": true,
+      "visibleType": 0
+    },
+    {
+      "logId": 268,
+      "title": "我要你的性",
+      "postedAt": "2026-11-05 09:16:50",
+      "remoteCreatedAt": "2026-11-05 09:16:49",
+      "url": "https://weibo.com/7503820795/RpWgExdgk",
+      "status": "POSTED",
+      "remoteHttp": 200,
+      "remoteOk": 1,
+      "remotePostExists": true,
+      "titlePresent": true,
+      "remoteAccountMatches": true,
+      "visibleType": 0
+    },
+    {
+      "logId": 269,
+      "title": "我那些谎言的全部真相",
+      "postedAt": "2026-11-05 19:30:32",
+      "remoteCreatedAt": "2026-11-05 19:30:31",
+      "url": "https://weibo.com/7503820795/Rq0hL4D59",
+      "status": "POSTED",
+      "remoteHttp": 200,
+      "remoteOk": 1,
+      "remotePostExists": true,
+      "titlePresent": true,
+      "remoteAccountMatches": true,
+      "visibleType": 0
+    }
+  ],
+  "manualRequest": {
+    "at": "2026-11-05 19:30:32",
+    "method": "POST",
+    "path": "/api/admin/social-publishing/targets/5/publish-next",
+    "http": 200,
+    "durationMs": 1167
+  },
+  "uiFacts": {
+    "logsOrderedBy": "created_at DESC",
+    "manualOperationRefreshesCurrentFiltersAndPage": true,
+    "publicationLogPolling": false,
+    "diagnosis": "用户已确认看到帖子在后面；旧队列记录保留创建时间且列表按创建时间排序，与该反馈一致。"
+  },
+  "limits": [
+    "Read-only statuses/show used the current owner session; public visibility value does not independently prove another viewer sees the post.",
+    "No user browser reproduction or UI repair was performed.",
+    "Historical UNKNOWN records were not reset or replayed."
+  ],
+  "userConfirmation": "用户确认：看到了，在后面。"
+}

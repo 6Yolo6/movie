@@ -1,0 +1,84 @@
+{
+  "status": "PASS",
+  "at": "2026-11-11T06:30:46.596938+00:00",
+  "reviewer": "review_data_helpers",
+  "reviewType": "INDEPENDENT_OFFLINE_STATIC_AND_FROZEN_V4_CHAIN",
+  "revisionBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v4-binding.json",
+    "sha256": "de37382a454a06b5d2b24b62b0b95d3406405f40571e1c750045f26b2bebdb33"
+  },
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMergeV4.py",
+      "sha256": "b346f82f4548cc9e491424df5c2f985850cd33ff3d28669aee2e3b743bfdfbfb"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerifyV4.py",
+      "sha256": "c2938ba847727afe1bf727733a0af1d5aa99a71aab38c30d781cb99e344c4f28"
+    }
+  ],
+  "previousBindings": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v2-binding.json",
+      "sha256": "edb8540f998a22eac3ca8723f1f949b14ace6fe87f2ee3d048920c638d63dfab"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v3-binding.json",
+      "sha256": "379d2d90dd78761c885b886312d14457aa33fac834bde356d0396524af68f5c9"
+    }
+  ],
+  "resourceSchema": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v4-schema.json",
+    "sha256": "58e16e67b3973eb9b00dc68a0f808c8f7c5ea9f4c4835b2c6a1e15b010474ce1"
+  },
+  "operationEvidenceCount": 46,
+  "allFrozenChainReferencesPassed": true,
+  "independentTests": {
+    "tests": 42,
+    "failures": 0,
+    "errors": 0,
+    "allPassed": true
+  },
+  "checks": {
+    "batch1MutationHardRejected": true,
+    "originalV2RunPostAuthCaptureUnmodified": true,
+    "onlySourceResourceLinkLegacyUpdateAtAllowed": true,
+    "allOtherRowsColumnsAndHistoryStillExact": true,
+    "fullResourceSchemaAndTriggerHashAndClockGuard": true,
+    "legacyDatetimePrecisionZeroAndUtcOffset28800Required": true,
+    "actualRequestToDatabaseCompletionWindowFlooredToSecond": true,
+    "databaseCompletionMustNotExceedKnownAck": true,
+    "noWiderCaptureToObservationTimestampWindow": true,
+    "targetOrNonmovedSourceOrOtherTableTimestampDriftRejected": true,
+    "malformedTimestampWrongSchemaTimezoneAndAdditionalRowDriftRejected": true,
+    "unknownRequestsOnlyReadOnlyNoReplay": true,
+    "defaultAndUnarmedNoRuntimeIo": true
+  },
+  "entryAcceptanceCompatibility": {
+    "status": "PASS_STATIC",
+    "entryHelper": {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptance.py",
+      "sha256": "f8d371647ea0ba69f13f70d9e636657b08d47f8c248b1130ca605006335f6ea1"
+    },
+    "savedVerificationPattern": "read-only-verification-*.json",
+    "matchingFields": [
+      "status",
+      "batch",
+      "reviewId",
+      "idempotencyKey",
+      "pairs",
+      "exactRowDeltasVerified",
+      "exactHistoryCoverageVerified",
+      "cloudActions",
+      "operatorDirectSqlWrites"
+    ],
+    "presendFailureNotUsedAsTerminalSuccess": true,
+    "productionEntryAcceptanceExecuted": false
+  },
+  "productionResultVerifiedByThisReview": false,
+  "productionPosts": 0,
+  "productionRuntimeIo": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0,
+  "gitActions": 0
+}

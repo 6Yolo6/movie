@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "scope": {
+    "actualPairs": 67,
+    "reusedDetailChecks": 67,
+    "reusedListChecks": 67,
+    "reusedMovieSsrChecks": 2,
+    "remainingSsrIds": [
+      "tmdb_tv_93740",
+      "4YNV",
+      "tmdb_tv_247718",
+      "1YKW"
+    ],
+    "maximumAnonymousSsrGets": 4,
+    "apiDetailGets": 0,
+    "apiListGets": 0,
+    "postRequests": 0,
+    "operatorDirectSqlWrites": 0,
+    "cloudActions": 0,
+    "yearMustBeIndependentH2Span": true,
+    "allSelectedRowsBaiduBlockedAndThirteenGenerationsRequired": true
+  },
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntrySsrCompletion.py",
+      "sha256": "4561ba6cd314e2b3dfe39597649ee4b652b7d57d4a5998702f31bee86ef32f05"
+    }
+  ],
+  "entryV3Binding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-acceptance-v3-binding.json",
+    "sha256": "515fdb2615a3cd7ced1b4afeabaa5c2c10f33509985932292bf5089e489e8305"
+  },
+  "entryV3StoppedReceipt": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-acceptance-20261111T084740.641181Z.json",
+    "sha256": "5250df4151fd79272cabefcc4238c2b52f6bae2ad9f7908adbea4371582c9d25"
+  },
+  "headerObservation": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-acceptance-20261111T085216.348398Z.json",
+    "sha256": "3a04e6ea924672f5d135a0aa2561d27e59a96910dc5d41d9322c546a6bced2a6"
+  },
+  "tests": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-ssr-completion-tests-complete.json",
+    "sha256": "f4281d4beaeb092458373c113c10e0ef1240c41f77147f5d44c050f865f7c6a0"
+  },
+  "offlineReview": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-ssr-completion-offline-review.json",
+    "sha256": "3750fbbff501a62d238f88daab91e0467ec784a5d858ec48db33c71ab527e2ea"
+  },
+  "derivation": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-ssr-completion-derivation.json",
+    "sha256": "ddf4d356bfcd5e487c1a5bce7b029d9f5bbdfd13df54fad51e0593b0cad0ed04"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "verifiedAt": "2026-11-08T17:32:25.321768+00:00",
+  "status": "authenticated-exact-enabled-default-difference-proven",
+  "oldXmlEnabledNodes": 1,
+  "oldEnabled": false,
+  "currentXmlEnabledNodes": 0,
+  "currentEnabled": true,
+  "exactOtherXmlFieldsMatched": true,
+  "currentEnabledXmlSha256": "a18d999cb2a1b2a3aceb14d1fb8cae4e1d843237b86a729239831fd1f9f9cd28",
+  "oldDisabledXmlSha256": "c730bd6c53dd081e36556e7030c07fba94d9392ec9f3fb3af69e4ea99380046d",
+  "sourceTaskArchiveSha256": "eaa9bb5f5c2fb21c950948febcee9d9dba9a3a3aef2419c625d167ec5f198370",
+  "initialFailedReportTaskEnabledValueWasInitializerOnly": true,
+  "plaintextTaskXmlWrittenOrPrinted": false,
+  "credentialsPrinted": false,
+  "explicitTaskStartPerformed": false,
+  "taskDisabledCasRestored": true,
+  "restoredOldDisabledXmlSha256": "c730bd6c53dd081e36556e7030c07fba94d9392ec9f3fb3af69e4ea99380046d",
+  "restoredAt": "2026-11-08T17:32:28.079434+00:00"
+}

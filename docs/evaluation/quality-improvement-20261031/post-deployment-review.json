@@ -1,0 +1,549 @@
+{
+  "schemaVersion": 1,
+  "reviewProtocol": "post-deployment-requirement-review-v1",
+  "reviewedAt": "2026-11-01T09:18:47.131390+00:00",
+  "reviewer": {
+    "kind": "model",
+    "name": "Codex",
+    "independentModelSecondReview": true,
+    "newHumanReviews": 0
+  },
+  "reportFile": "docs/evaluation/quality-improvement-20261031/post-deployment-report.json",
+  "reportSha256": "b8769c9b221ad57b36dbd6da1f6246f3c9d450dbf5f2de958ca4d79c50375dc5",
+  "scope": {
+    "provenance": "four-selected-independent-single-turn-one-shot-live-Agent-API-probes",
+    "finalAnswerAssessed": true,
+    "toolEvidenceAssessedSeparately": true,
+    "websiteUserSessionUsed": false,
+    "browserUiVerified": false,
+    "independentHumanHoldout": false,
+    "productionQueueSubmittedByProbeRunner": false,
+    "productionStateIsolationClaimed": false,
+    "modelInferenceRetries": 0,
+    "realMessagesPostsTransfersByProbeRunner": 0,
+    "oldAnswersOrScoresChanged": false
+  },
+  "definitions": {
+    "scores": {
+      "scale": "0=已证实失败或没有可用答案；1=仅部分有用/部分有据；2=在声明证据范围内满足该维度；null=缺证或没有可评答案，不推测",
+      "factuality": "核对最终正文中实际事实及展示声明",
+      "grounding": "正文是否由本次工具证据支持，不能把trace有候选等同正文已展示",
+      "usefulness": "按本次请求实际正文的可用程度，不以程序通过代替需求满足"
+    },
+    "verdicts": [
+      "满足",
+      "有用但不完全",
+      "未满足",
+      "证据不足",
+      "有效澄清"
+    ]
+  },
+  "executionSummary": {
+    "planned": 4,
+    "submitted": 4,
+    "completed": 4,
+    "failed": 0,
+    "programFailedChecks": 0,
+    "qualityReviewIsSeparateFromProgramChecks": true
+  },
+  "reviewSummary": {
+    "modelReviewedAnswers": 4,
+    "newHumanReviewedAnswers": 0,
+    "verdictCounts": {
+      "满足": 2,
+      "有用但不完全": 1,
+      "未满足": 1,
+      "证据不足": 0,
+      "有效澄清": 0
+    },
+    "satisfiedMetadataAnswerTurns": 2,
+    "satisfiedRecommendationTurns": 0,
+    "independentQualityImprovementClaimed": false,
+    "all82ResolvedClaimed": false
+  },
+  "reviews": [
+    {
+      "id": "post-count-source-runtime",
+      "reportRowPointer": "rows[0]",
+      "requestText": "找喜剧电影，片长严格超过90分钟且严格少于100分钟，最多两部，按豆瓣评分从高到低排；没有豆瓣分的写暂无并放最后，不用IMDb分补。",
+      "answerText": "按本次已识别条件找到 357 部，先展示 2 部。",
+      "answerSha256": "0b7c062e806b860faa7d1c7c6aec3a171cf721add08c5bf71797c3ebe6a04cb3",
+      "durationSeconds": 22.937,
+      "verdict": "未满足",
+      "scores": {
+        "factuality": 1,
+        "grounding": 1,
+        "usefulness": 0
+      },
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex",
+        "independentModelReviewConcurredOnVerdict": true
+      },
+      "primaryCause": {
+        "code": "catalog_candidates_omitted_from_answer",
+        "label": "筛选正确但最终正文未列候选片名",
+        "observation": "trace实际有飞屋环游记96分钟/豆瓣9.1、头脑特工队95分钟/8.9，最终正文只有找到357部、展示2部，没有片名/片长/评分；result没有顶层movies，网页卡片是否补充未验。",
+        "confidence": "high"
+      },
+      "hardConstraintStatus": "satisfied-at-tool-contract",
+      "responseRequirementStatus": "not-fully-satisfied",
+      "evidence": {
+        "queryPlan": {
+          "intent": "search",
+          "inheritContext": false,
+          "genresAll": [
+            "喜剧"
+          ],
+          "minRuntime": 91,
+          "maxRuntime": 99,
+          "limit": 2,
+          "sort": "rating_desc",
+          "category": "mv",
+          "ratingSource": "douban",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "catalogReturned": 2,
+        "catalogTotal": 357,
+        "selectedId": null,
+        "candidates": [
+          {
+            "id": "gying_mv_Bj8e",
+            "titleCn": "飞屋环游记",
+            "year": 2009,
+            "category": "mv",
+            "runtimeMinutes": 96,
+            "genres": [
+              "剧情",
+              "喜剧",
+              "冒险",
+              "动画"
+            ],
+            "languages": [
+              "英语"
+            ],
+            "rating": 9.1,
+            "ratingSource": "douban",
+            "doubanScore": 9.1,
+            "directors": [
+              "彼特·道格特",
+              "鲍勃·彼德森"
+            ],
+            "actors": [
+              "爱德华·阿斯纳",
+              "克里斯托弗·普卢默",
+              "乔丹·长井",
+              "鲍勃·彼德森",
+              "德尔罗伊·林多",
+              "杰罗姆·兰福特",
+              "约翰·拉森贝格",
+              "大卫·卡耶",
+              "艾丽·道克特",
+              "杰里米·利里",
+              "米凯·麦高万",
+              "丹尼·曼恩",
+              "唐纳德·富利洛夫",
+              "杰斯·哈梅尔",
+              "乔什·库雷",
+              "彼特·道格特"
+            ]
+          },
+          {
+            "id": "gying_mv_PBPM",
+            "titleCn": "头脑特工队",
+            "year": 2015,
+            "category": "mv",
+            "runtimeMinutes": 95,
+            "genres": [
+              "喜剧",
+              "冒险",
+              "动画"
+            ],
+            "languages": [
+              "英语"
+            ],
+            "rating": 8.9,
+            "ratingSource": "douban",
+            "doubanScore": 8.9,
+            "directors": [
+              "彼特·道格特",
+              "罗纳尔多·德尔·卡门"
+            ],
+            "actors": [
+              "艾米·波勒",
+              "菲利丝·史密斯",
+              "理查德·坎德",
+              "比尔·哈德尔",
+              "刘易斯·布莱克",
+              "敏迪·卡灵",
+              "凯特林·迪亚斯",
+              "戴安·琳恩",
+              "凯尔·麦克拉克伦",
+              "波拉·庞德斯通",
+              "鲍比·莫尼汉",
+              "保拉·佩尔",
+              "大卫·戈尔兹",
+              "弗兰克·奥兹",
+              "乔什·库雷",
+              "弗利",
+              "约翰·拉森贝格",
+              "卡洛斯·阿拉斯拉奇",
+              "皮特·萨加尔",
+              "拉什达·琼斯",
+              "罗里·艾伦",
+              "约翰·齐甘",
+              "雪莉·琳恩",
+              "拉瑞恩·纽曼",
+              "帕丽斯·冯·戴克"
+            ]
+          }
+        ],
+        "toolNames": [
+          "queryCatalog"
+        ]
+      },
+      "limits": [
+        "没有缺豆瓣分的返回候选，该显示/尾排序分支本次未覆盖。",
+        "最终正文与工具候选分别评价；未验证网站USER/UI。"
+      ]
+    },
+    {
+      "id": "post-version-list",
+      "reportRowPointer": "rows[1]",
+      "requestText": "片库中《小妇人》有哪些电影版本？请列出年份和导演。",
+      "answerText": "按本次已识别条件找到 2 部，先展示 2 部。\n1. 《小妇人》；年份：2019；导演：格蕾塔·葛韦格\n2. 《小妇人》；年份：1994；导演：Gillian Armstrong",
+      "answerSha256": "99a307d918616c18a66892f0567e8d5f5978be37a11800bd9fb9a0fd533f9090",
+      "durationSeconds": 4.25,
+      "verdict": "满足",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex",
+        "independentModelReviewConcurredOnVerdict": true
+      },
+      "primaryCause": {
+        "code": "version_entities_and_metadata_answered",
+        "label": "版本身份和所需年份/导演资料明确",
+        "observation": "正文列2019格蕾塔·葛韦格、1994 Gillian Armstrong，两者各对应本次catalog的不同id；total=returned=2且未截断，仅指本次片库。",
+        "confidence": "high"
+      },
+      "hardConstraintStatus": "satisfied-at-tool-contract",
+      "responseRequirementStatus": "satisfied",
+      "evidence": {
+        "queryPlan": {
+          "intent": "search",
+          "titles": [
+            "小妇人"
+          ],
+          "inheritContext": false,
+          "limit": 10,
+          "category": "mv",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "catalogReturned": 2,
+        "catalogTotal": 2,
+        "selectedId": null,
+        "candidates": [
+          {
+            "id": "gying_mv_M4Lk",
+            "titleCn": "小妇人",
+            "year": 2019,
+            "category": "mv",
+            "runtimeMinutes": 135,
+            "genres": [
+              "剧情",
+              "爱情",
+              "女性"
+            ],
+            "languages": [
+              "英语"
+            ],
+            "rating": 8.0,
+            "ratingSource": "any",
+            "doubanScore": 8.0,
+            "directors": [
+              "格蕾塔·葛韦格"
+            ],
+            "actors": [
+              "西尔莎·罗南",
+              "艾玛·沃森",
+              "弗洛伦丝·皮尤",
+              "伊莱扎·斯坎伦",
+              "劳拉·邓恩",
+              "提莫西·查拉梅",
+              "梅丽尔·斯特里普",
+              "鲍勃·奥登科克",
+              "詹姆斯·诺顿",
+              "路易·加瑞尔",
+              "克里斯·库珀",
+              "崔西·莱茨",
+              "艾比·奎因",
+              "萨莎·弗罗洛娃",
+              "莉莉·恩格勒特",
+              "爱德华德·弗莱彻",
+              "杰妮·霍蒂谢尔",
+              "多梅尼克·阿尔迪诺",
+              "汤姆·斯特拉特福",
+              "托马斯·马里亚诺",
+              "哈德莉·罗宾逊",
+              "杰米·加扎里安"
+            ]
+          },
+          {
+            "id": "tmdb_movie_9587",
+            "titleCn": "小妇人",
+            "year": 1994,
+            "category": "mv",
+            "runtimeMinutes": 115,
+            "genres": [
+              "剧情",
+              "爱情"
+            ],
+            "languages": [
+              "English",
+              "German",
+              "French"
+            ],
+            "rating": 7.3,
+            "ratingSource": "any",
+            "directors": [
+              "Gillian Armstrong"
+            ],
+            "actors": [
+              "薇诺娜·瑞德",
+              "翠尼·阿瓦拉多",
+              "萨曼莎·马蒂斯",
+              "克斯汀·邓斯特",
+              "克莱尔·丹尼斯",
+              "克里斯蒂安·贝尔",
+              "苏珊·萨兰登",
+              "加布里埃尔·伯恩",
+              "艾瑞克·斯托罗兹",
+              "约翰·内维尔",
+              "玛丽·威克斯",
+              "Florence Paterson"
+            ]
+          }
+        ],
+        "toolNames": [
+          "queryCatalog"
+        ]
+      },
+      "limits": [
+        "仅本次片库版本库存，不证明全球版本完整。",
+        "最终正文与工具候选分别评价；未验证网站USER/UI。"
+      ]
+    },
+    {
+      "id": "post-explicit-version-actors",
+      "reportRowPointer": "rows[2]",
+      "requestText": "只查《小妇人》2019年版的主演，按本次片库资料回答。",
+      "answerText": "《小妇人》（2019）。本次片库返回主演：西尔莎·罗南、艾玛·沃森、弗洛伦丝·皮尤。\n马奇夫人（劳拉·邓恩 Laura Dern 饰）有着四个如花似玉的女儿，大女儿梅格（艾玛·沃森 Emma Watson 饰）拥有着美丽的外表，和对于爱情的天真憧憬。二女儿乔（西尔莎·罗南 Saoirse Ronan 饰）满脑子塞着古灵精怪的念头，整天拿着蘸水笔东写西写，她的故事在全家上下都受到了热烈的欢迎。三女儿贝斯（伊莱扎·斯坎伦 Eliza Scanlen 饰）虽然个性比起姐姐们要内向得多，却拥有杰出的音乐天赋。 最小的女儿艾米（佛罗伦斯·珀 Florence Pugh 饰）渴望成为一名画家。\n在马奇夫人的教导之下，四个姑娘渐渐成长为了拥有独立人格的杰出女性，她们热情、乐观、善良，每个人都在各自的道路上坚强而又坚定的前进着。",
+      "answerSha256": "0a938eb7d2d098d11a86dda3d7b6ae0df4ebdf12ae14b85b8eaefa5409c9e680",
+      "durationSeconds": 4.907,
+      "verdict": "满足",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex",
+        "independentModelReviewConcurredOnVerdict": true
+      },
+      "primaryCause": {
+        "code": "explicit_version_cast_answered",
+        "label": "锁定2019版本后按详情返回主演",
+        "observation": "queryCatalog selectedId与detail.movie.id均gying_mv_M4Lk/year2019，正文列西尔莎·罗南、艾玛·沃森、弗洛伦丝·皮尤；详情fieldsTruncated=true，所以不把有界3人当完整演员表，额外附带剧情不影响这3人的来源。",
+        "confidence": "high"
+      },
+      "hardConstraintStatus": "satisfied-at-tool-contract",
+      "responseRequirementStatus": "satisfied",
+      "evidence": {
+        "queryPlan": {
+          "intent": "details",
+          "titles": [
+            "小妇人"
+          ],
+          "limit": 10,
+          "inheritContext": false,
+          "yearFrom": 2019,
+          "yearTo": 2019,
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "catalogReturned": null,
+        "catalogTotal": 1,
+        "selectedId": "gying_mv_M4Lk",
+        "candidates": [],
+        "toolNames": [
+          "queryCatalog",
+          "getMovieDetails"
+        ]
+      },
+      "limits": [
+        "仅详情有界3位主演，不证明完整演员表。",
+        "最终正文与工具候选分别评价；未验证网站USER/UI。"
+      ]
+    },
+    {
+      "id": "post-language-unknown",
+      "reportRowPointer": "rows[3]",
+      "requestText": "找动画电影，原始对白是中文或西班牙语，至少70分钟且严格少于95分钟，最多两部；只有配音资料就标未核验。",
+      "answerText": "按本次已识别条件找到 31 部，先展示 2 部。 片库不能完整核验这些要求：片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验；不能保证下列候选满足它们。\n尚未核实的条件：片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验。片库候选尚不能视为满足全部硬条件。\n本次联网结果没有足够相关的影视依据，请补充人物、场景、语言或大致年代。",
+      "answerSha256": "7cdefbe6c56a7f8e7e51c3abfcedd13e0c9a979a9d0c875eee697db89a29cff7",
+      "durationSeconds": 6.953,
+      "verdict": "有用但不完全",
+      "scores": {
+        "factuality": 1,
+        "grounding": 1,
+        "usefulness": 1
+      },
+      "reviewer": {
+        "kind": "model",
+        "name": "Codex",
+        "independentModelReviewConcurredOnVerdict": true
+      },
+      "primaryCause": {
+        "code": "language_unknown_and_candidates_omitted",
+        "label": "未知提示正确，但正文仍缺候选且原声无证据",
+        "observation": "语言OR/动画/70≤片长<95/limit2都正确；trace魁拔Ⅲ战神崛起90分钟、宝莲灯85分钟/国语，但正文没有片名；原始对白条件unknown，Bing返回0，要求补人物场景不计有效澄清。",
+        "confidence": "high"
+      },
+      "hardConstraintStatus": "unknown",
+      "responseRequirementStatus": "not-fully-satisfied",
+      "evidence": {
+        "queryPlan": {
+          "intent": "search",
+          "inheritContext": false,
+          "genresAny": [
+            "动画"
+          ],
+          "unsupportedConditions": [
+            "片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验"
+          ],
+          "minRuntime": 70,
+          "maxRuntime": 94,
+          "limit": 2,
+          "languagesAny": [
+            "中文",
+            "西班牙语"
+          ],
+          "category": "mv",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "catalogReturned": 2,
+        "catalogTotal": 31,
+        "selectedId": null,
+        "candidates": [
+          {
+            "id": "YMnB",
+            "titleCn": "魁拔Ⅲ战神崛起",
+            "year": 2014,
+            "category": "mv",
+            "runtimeMinutes": 90,
+            "genres": [
+              "动作",
+              "冒险",
+              "奇幻",
+              "动画"
+            ],
+            "languages": [
+              "国语"
+            ],
+            "rating": 8.6,
+            "ratingSource": "any",
+            "doubanScore": 8.6,
+            "directors": [
+              "王川",
+              "张钢",
+              "周洁"
+            ],
+            "actors": [
+              "刘婧荦",
+              "姚姝",
+              "王宇腾",
+              "杨晨",
+              "刘校妤",
+              "王凯",
+              "敖磊",
+              "石困困",
+              "宝木中阳",
+              "马斑马",
+              "杨凝",
+              "张杰",
+              "范哲琛",
+              "图特哈蒙",
+              "姜广涛"
+            ]
+          },
+          {
+            "id": "gying_mv_WLn7",
+            "titleCn": "宝莲灯",
+            "year": 1999,
+            "category": "mv",
+            "runtimeMinutes": 85,
+            "genres": [
+              "动画"
+            ],
+            "languages": [
+              "国语"
+            ],
+            "rating": 8.6,
+            "ratingSource": "any",
+            "doubanScore": 8.6,
+            "directors": [
+              "常光希"
+            ],
+            "actors": [
+              "姜文",
+              "徐帆",
+              "宁静",
+              "陈佩斯",
+              "崔杰",
+              "丁嘉丽",
+              "江平",
+              "雷恪生",
+              "梁天",
+              "马精武",
+              "马羚",
+              "马晓晴"
+            ]
+          }
+        ],
+        "toolNames": [
+          "queryCatalog",
+          "searchMovieWeb"
+        ]
+      },
+      "limits": [
+        "原始对白与发行配音未区分；本次web成功返回0条相关证据，不能视作来源核验。",
+        "最终正文与工具候选分别评价；未验证网站USER/UI。"
+      ]
+    }
+  ]
+}

@@ -7,6 +7,14 @@ import com.gying.movie.entity.MovieMetadata;
 import org.junit.jupiter.api.Test;
 
 class ResourceTitleMatcherTest {
+    @Test void acceptsTheReportedMixedTitlesWithoutCrossingSeasonOrSequelBoundaries() {
+        var film=movie("一个部门的诞生",null,null);film.setCategory("mv");
+        assertTrue(ResourceTitleMatcher.isRelevant(film,"一个–部门的DS (2026)",null));
+        assertFalse(ResourceTitleMatcher.isRelevant(film,"一个–部门的DS2 (2026)",null));
+        var anime=movie("黑暗召唤师在地下恋爱中",null,null);anime.setCategory("ac");anime.setSeason(1);
+        assertTrue(ResourceTitleMatcher.isRelevant(anime,"黑-A-召-喚-師Z地-下-戀-愛-中",null));
+        assertFalse(ResourceTitleMatcher.isRelevant(anime,"黑-A-召-喚-師Z地-下-戀-愛-中 第二季",null));
+    }
 
     @Test
     void acceptsCanonicalAliasAndSeasonResourceNames() {

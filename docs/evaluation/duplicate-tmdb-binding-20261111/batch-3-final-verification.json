@@ -1,0 +1,53 @@
+{
+  "status": "PASS",
+  "pairs": 16,
+  "historyRows": 105,
+  "movedReferences": 73,
+  "favoriteDeletes": 0,
+  "favoriteHistoryRows": 0,
+  "exactRowDeltasVerified": true,
+  "exactHistoryCoverageVerified": true,
+  "historyFingerprintSha256FormatVerified": true,
+  "historyOriginalFingerprintRecomputed": false,
+  "nativeJsonPayloadCompatible": true,
+  "sourceMetadataPreserved": true,
+  "targetOnlyTmdbBindingAndResourceStatusChanged": true,
+  "sourceIdentityOnlyMovieIdMoved": true,
+  "afterSha256": "fdea440f42a464a508e3829e0010705c627c0e8f420463e21cbc0a95e57dc95d",
+  "legacyResourceUpdateAtRows": 0,
+  "legacyUpdateAtNarrowMergeWindowVerified": true,
+  "at": "2026-11-11T06:53:34.147099+00:00",
+  "reviewId": "8b61f414-8762-4026-9a2d-5847e5013cc5",
+  "idempotencyKey": "0a083f2d-4a26-445c-9965-4e764878cbd5",
+  "batch": 3,
+  "protectedBaiduAndConfigurationUnchanged": true,
+  "allThirteenContainerGenerationsUnchanged": true,
+  "cloudActions": 0,
+  "operatorDirectSqlWrites": 0,
+  "readOnlyRecoveryVerification": false,
+  "automaticReplay": false,
+  "legacyResourceSchemaClockAndTriggerVerified": true,
+  "legacyUpdateWindow": {
+    "requestAt": "2026-11-11T06:53:14.941809+00:00",
+    "completedAt": "2026-11-11 06:53:23.452189",
+    "ackAt": "2026-11-11T06:53:23.464737+00:00",
+    "offsetSeconds": 28800,
+    "precisionSeconds": 1
+  },
+  "verifierBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v4-binding.json",
+    "sha256": "de37382a454a06b5d2b24b62b0b95d3406405f40571e1c750045f26b2bebdb33"
+  },
+  "previewPosts": 2,
+  "mergePosts": 1,
+  "blockedPairs": 4,
+  "idleAfter": {
+    "at": "2026-11-11T06:53:37.993303+00:00",
+    "phase": "After exact duplicate merge verification",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  }
+}

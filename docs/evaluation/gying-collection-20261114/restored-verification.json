@@ -1,0 +1,117 @@
+{
+  "checkedAt": "2026-11-14T10:53:07.839973+00:00",
+  "configuration": {
+    "gyingAutoSyncSources": "HITS_MOVIE,HITS_TV,HITS_ANIME",
+    "gyingAutoSyncRanges": {
+      "HITS_MOVIE": {
+        "startPage": 1,
+        "endPage": 2
+      },
+      "HITS_TV": {
+        "startPage": 1,
+        "endPage": 2
+      },
+      "HITS_ANIME": {
+        "startPage": 1,
+        "endPage": 2
+      },
+      "CSCORE_MOVIE": {
+        "startPage": 11,
+        "endPage": 50
+      },
+      "CSCORE_TV": {
+        "startPage": 11,
+        "endPage": 50
+      },
+      "CSCORE_ANIME": {
+        "startPage": 11,
+        "endPage": 50
+      }
+    }
+  },
+  "protected": {
+    "otherConfigCount": 93,
+    "otherConfigSha256": "81f87fbea11189208c32affa928d54511dee4b11a370ed356dc94c21cce934e2",
+    "oldQuark2262Sha256": "ee9c4cb2a66a5629097c7f5a34810000274ef1ca7ff1dfc687588c39c7f83056"
+  },
+  "protectedUnchanged": true,
+  "selectedSourcePauses": {
+    "HITS_MOVIE": false,
+    "HITS_TV": false,
+    "HITS_ANIME": false
+  },
+  "cadence": {
+    "maxItems": 20,
+    "intervalHours": 1
+  },
+  "archiveCounts": [
+    [
+      "BAIDU",
+      "SUCCEEDED",
+      "9"
+    ],
+    [
+      "QUARK",
+      "SUCCEEDED",
+      "8"
+    ]
+  ],
+  "resources": [
+    [
+      "BAIDU",
+      "9",
+      "9"
+    ],
+    [
+      "QUARK",
+      "7",
+      "7"
+    ]
+  ],
+  "currentBackend": {
+    "id": "993bc5bac12d83ee522c660ba7bfd31f4bed44050ff47eff260219dadc03ad0a",
+    "image": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+    "startedAt": "2026-11-13T05:27:00.80354556Z",
+    "restarts": 0,
+    "running": true,
+    "oomKilled": false
+  },
+  "currentFrontend": {
+    "id": "4ecb31cd5521b122f29041aeb1ae9414d25c55b56cc3fe6b25b28fe219d889d4",
+    "image": "sha256:7e172578b6f954bb368e973a7dca5331747e99b0963a6d6b74896942b42e52ad",
+    "startedAt": "2026-11-12T16:25:52.09455211Z",
+    "restarts": 0,
+    "running": true,
+    "oomKilled": false
+  },
+  "entries": [
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/",
+      "status": 200,
+      "bytes": 68036,
+      "sha256": "3ad4bfe92d95b720d409279e8217de4fc879ae69a70819240ef039df0ef96881"
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/api/movies/list?page=1&size=1",
+      "status": 200,
+      "bytes": 1397,
+      "sha256": "823f80f02839efaa0b4dc9efb77f0ccbbecd4b5309ea926d8299b4346100711c"
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/movie/gying_ac_E4P6",
+      "status": 200,
+      "bytes": 233927,
+      "sha256": "09a5008fa67abf173ecd0cc4c3a80c835655d8053acf622bcb88cedbe0c6a2c7"
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/api/admin/resource-hub/config",
+      "status": 401,
+      "bytes": 60,
+      "sha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328"
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 2,
+  "validatedAt": "2026-11-03T14:03:01.923003+00:00",
+  "validator": "tools/ai/quality_review.py apply_review",
+  "validatorFileByteSha256": "84e6218fccff0f7994e65632f64855de31879ff63a452bb05408984f7473729b",
+  "allV2BindingAndStructureChecksPassed": true,
+  "result": {
+    "schemaVersion": 2,
+    "reportSha256": "f027788aaf70e9968ec1830885554ab06cb2324dce7878480cec8249076273fc",
+    "reviewer": {
+      "kind": "model",
+      "name": "Codex inspect_ai_work with independent review_candidate_quality semantic review"
+    },
+    "plannedTurns": 4,
+    "executedTurns": 4,
+    "notExecutedTurns": 0,
+    "mechanicallyPassedTurns": 4,
+    "mechanicallyFailedTurns": 0,
+    "answerCount": 4,
+    "scorableAnswerCount": 4,
+    "reviewedAnswers": 2,
+    "pendingAnswers": 2,
+    "humanReviewedAnswers": 0,
+    "humanPendingAnswers": 4,
+    "modelReviewedAnswers": 2,
+    "scoreDimensions": {
+      "factuality": {
+        "reviewed": 2,
+        "pending": 2,
+        "mean": 2.0
+      },
+      "grounding": {
+        "reviewed": 4,
+        "pending": 0,
+        "mean": 1.5
+      },
+      "usefulness": {
+        "reviewed": 4,
+        "pending": 0,
+        "mean": 1.5
+      }
+    },
+    "diagnosisReviewedRows": 4,
+    "diagnosisPendingRows": 0,
+    "failureCategoryCounts": {
+      "routing": 0,
+      "conditions": 0,
+      "candidates": 2,
+      "facts": 2,
+      "clarification": 0,
+      "multiTurn": 0
+    },
+    "hardConstraintCounts": {
+      "pending": 0,
+      "satisfied": 1,
+      "violated": 1,
+      "unknown": 1,
+      "notApplicable": 1
+    },
+    "outcomeCounts": {
+      "pending": 0,
+      "exact": 1,
+      "usefulApproximation": 0,
+      "clarification": 1,
+      "unhelpful": 2
+    },
+    "failedTurns": [],
+    "tokens": null,
+    "monetaryCost": null,
+    "scope": "Offline review; reviewer attribution is self-declared, not identity-verified. Model reviews do not count as human review. Per-dimension means include partial reviews. Diagnosis closes with documented categories or a documented outcome and constraint check; categories can overlap. Mechanical pass/failure does not determine score eligibility; any executed answer remains reviewable. Execution failures are not inferred quality causes. Usage is copied from the report only; missing values remain null. Scores are not production accuracy."
+  },
+  "semanticDispositionCounts": {
+    "satisfied": 2,
+    "unmet": 1,
+    "insufficientEvidence": 1
+  },
+  "semanticCountsAreModelJudgmentsNotMechanicalPasses": true,
+  "newHumanReviews": 0,
+  "factuallyCompleteReviews": 2,
+  "unknownFactualityRows": 2
+}

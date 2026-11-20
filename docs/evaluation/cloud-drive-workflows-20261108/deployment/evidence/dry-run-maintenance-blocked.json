@@ -1,0 +1,46 @@
+{
+  "status": "stopped",
+  "startedAt": "2026-11-08T14:20:30.753822+00:00",
+  "affected": [
+    "backend",
+    "frontend"
+  ],
+  "deploymentPerformed": false,
+  "schemaChanged": false,
+  "liveDataStateKeyRetained": true,
+  "publicVerificationPerformed": false,
+  "securityException": {
+    "acceptedByCurrentUserAuthorization": true,
+    "scanSummary": {
+      "PASS": 58,
+      "FAIL": 11,
+      "UNKNOWN": 1
+    },
+    "gateLedgerStillOpen": true,
+    "authorizationSha256": "2a72ccf4a6d98a8141116bb3aeda97cd793c3c6ce8d3f4b22d4dff6ed4f899d4"
+  },
+  "candidateImages": {
+    "backend": "sha256:2925c3b129e1ddf505f0483403ae5c3eb11c4675fbb6f8cec6af96ffcb78c6d4",
+    "frontend": "sha256:35cce07fe8af5dbcd6b625b96d0c6c3a83b91995766989b865d5ae282744359f"
+  },
+  "backendJarSha256": "21dd135cdc9f604e0d2f2ab9a62e43e40e616e2bd64638a7f7ea7cfc465c95f6",
+  "sourceBound": true,
+  "effectiveComposeAndRuntimePreserved": true,
+  "stopSignalProofs": {
+    "backend": {
+      "signal": "SIGTERM",
+      "pid1": "java",
+      "receiver": "handler"
+    },
+    "frontend": {
+      "signal": "SIGTERM",
+      "pid1": "next-server (v",
+      "receiver": "handler"
+    }
+  },
+  "preparatoryCheckpoint": "G:\\gying-backups\\cloud-drive-workflows-20261108-20261108T141852.558294Z",
+  "finalStoppedCheckpointRequired": true,
+  "readinessExitCode": 0,
+  "failureGate": "Current in-flight work prevents application rollback",
+  "phase": "Stopped before further action"
+}

@@ -114,7 +114,7 @@ function extractGyingTextCommand(content) {
     if (/^(?:[1-9]|10)$/.test(normalized)) {
         return normalized;
     }
-    const resourcePreferencePattern = /^(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)$/iu;
+    const resourcePreferencePattern = /^(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?)$/iu;
     if (resourcePreferencePattern.test(normalized)) {
         return normalized;
     }
@@ -198,9 +198,12 @@ function extractGyingTextCommand(content) {
     if (/^(?:[1-9]|10)$/.test(normalized)) {
         return normalized;
     }
-    const resourcePreferencePattern = /^(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)$/iu;
+    const resourcePreferencePattern = /^(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?)$/iu;
     if (resourcePreferencePattern.test(normalized)) {
         return normalized;
+    }
+    if (/^(?:帮|请|能|可以|有没有|有无|想|我想|麻烦|找一下|搜索一下|搜索.*(?:资源|吗)|搜.*(?:资源|吗))/u.test(normalized)) {
+        return normalized.length <= 75 ? "自然语言：" + normalized : null;
     }
     for (const prefix of ["\u641c", "\u627e"]) {
         if (normalized === prefix) {
@@ -210,7 +213,7 @@ function extractGyingTextCommand(content) {
             return normalized.slice(prefix.length).trim();
         }
     }
-    return null;
+    return normalized.length <= 75 ? "自然语言：" + normalized : null;
 }
 '@
 $helperPattern = '(?s)(?:function buildGyingDefaultReply\(\)|(?:async\s+)?function runGyingMovieSearch\(ctx, keyword\)).*?(?=// ============ 内置指令 ============)'
@@ -232,7 +235,7 @@ if ($content -notmatch '\^\(\?:\[1-9\]\|10\)\$') {
 
 if ($content -notmatch "resourcePreferencePattern") {
     $resourcePreferenceHandler = @'
-    const resourcePreferencePattern = /^(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)$/iu;
+    const resourcePreferencePattern = /^(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?)$/iu;
     if (resourcePreferencePattern.test(normalized)) {
         return normalized;
     }
@@ -240,7 +243,7 @@ if ($content -notmatch "resourcePreferencePattern") {
     $content = $content -replace '(if \(/\^\(\?:\[1-9\]\|10\)\$/\.test\(normalized\)\) \{\r?\n        return normalized;\r?\n    \})', "`$1`n$resourcePreferenceHandler"
 }
 
-$resourcePreferencePatternLine = '    const resourcePreferencePattern = /^(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)$/iu;'
+$resourcePreferencePatternLine = '    const resourcePreferencePattern = /^(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?)$/iu;'
 $content = $content -replace '(?m)^\s*const resourcePreferencePattern = .*;$', $resourcePreferencePatternLine
 
 if ($content -notmatch 'name: "movie"') {
@@ -342,8 +345,15 @@ if ($gatewayContent -notmatch 'isAdminSlashCommand\(content\) && !isAdminCommand
     $gatewayContent = $gatewayContent -replace '(if \(!content\.startsWith\("/"\) && !isGyingMovieSearchCommand\(content\) && !isGyingMentionFallback\(msg\)\) \{\r?\n            msgQueue\.enqueue\(msg\);\r?\n            return;\r?\n        \})', ('$1' + "`n" + $authorizationGuard.TrimEnd())
 }
 if ($gatewayContent -notmatch "const isGyingMovieSearchCommand") {
-    $gatewayContent = $gatewayContent -replace 'const URGENT_COMMANDS = \["/stop", "/approve"\];', "const URGENT_COMMANDS = [`"/stop`", `"/approve`"];`n    const isGyingMovieSearchCommand = (text) => /^(?:(?:\u641c|\u627e)(?:\s+.+)?|(?:[1-9]|10)|(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)\s*\d{1,2}\s*(?:\u6761|\u4e2a)?))$/iu.test(String(text ?? `"`").trim());`n    const isGyingMentionFallback = (msg) => msg?.type === `"group`" && (msg?.eventType === `"GROUP_AT_MESSAGE_CREATE`" || msg?.mentions?.some((mention) => mention?.is_you));"
+    $gatewayContent = $gatewayContent -replace 'const URGENT_COMMANDS = \["/stop", "/approve"\];', "const URGENT_COMMANDS = [`"/stop`", `"/approve`"];`n    const isGyingMovieSearchCommand = (text) => /^(?:(?:\u641c|\u627e)(?:\s+.+)?|(?:[1-9]|10)|(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?))$/iu.test(String(text ?? `"`").trim());`n    const isGyingMentionFallback = (msg) => msg?.type === `"group`" && (msg?.eventType === `"GROUP_AT_MESSAGE_CREATE`" || msg?.mentions?.some((mention) => mention?.is_you));"
 }
+# Update an already-patched gateway too; otherwise bare resource commands stay on the old route.
+$gyingMovieSearchCommandLine = '    const isGyingMovieSearchCommand = (text) => /^(?:(?:\u641c|\u627e)(?:\s+.+)?|(?:[1-9]|10)|(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?))$/iu.test(String(text ?? "").trim());'
+$gatewayContent = [regex]::Replace(
+        $gatewayContent,
+        '(?m)^\s*const isGyingMovieSearchCommand = .*?;\s*$',
+        $gyingMovieSearchCommandLine)
+
 if ($gatewayContent -notmatch "const isGyingSearchStartCommand") {
     $gatewayContent = $gatewayContent -replace '(const isGyingMovieSearchCommand = .*?;\r?\n)',
             "`$1    const isGyingSearchStartCommand = (text) => /^(?:(?:\\/movie|\\/search)\\s+.+|(?:\\u641c|\\u627e)\\s+.+)$/iu.test(String(text ?? `"`").trim());`n"
@@ -431,6 +441,38 @@ if ($gatewayContent -notmatch 'Gying QR image sent') {
             '$1' + "`n" + $mediaHandler + '$2',
             1)
 }
+# A matched plugin command must stay handled even if its QQ reply cannot be sent.
+# Only the explicit unmatched/delegate branches may enqueue a message for the agent.
+$slashCommandErrorFallback = @'
+        catch (err) {
+            log?.error(`[qqbot:${account.accountId}] Slash command error: ${err}`);
+            // 出错时回退到正常入队
+            msgQueue.enqueue(msg);
+        }
+'@
+$slashCommandErrorTerminal = @'
+        catch (err) {
+            log?.error(`[qqbot:${account.accountId}] Slash command error: ${err}`);
+            // Plugin command errors must never enter the agent queue.
+            return;
+        }
+'@
+# Normalize only line endings so this narrow replacement is identical on Windows/Linux.
+$gatewayContent = $gatewayContent.Replace("`r`n", "`n")
+$slashCommandErrorFallback = $slashCommandErrorFallback.Replace("`r`n", "`n")
+$slashCommandErrorTerminal = $slashCommandErrorTerminal.Replace("`r`n", "`n")
+$fallbackCount = [regex]::Matches($gatewayContent, [regex]::Escape($slashCommandErrorFallback)).Count
+$terminalCount = [regex]::Matches($gatewayContent, [regex]::Escape($slashCommandErrorTerminal)).Count
+if (($fallbackCount -eq 1) -and ($terminalCount -eq 0)) {
+    $gatewayContent = $gatewayContent.Replace($slashCommandErrorFallback, $slashCommandErrorTerminal)
+} elseif (($fallbackCount -ne 0) -or ($terminalCount -ne 1)) {
+    throw "Unexpected QQBot command error handler; stop before installing the gateway"
+}
+if ($gatewayContent.Contains($slashCommandErrorFallback) -or
+        ([regex]::Matches($gatewayContent, [regex]::Escape($slashCommandErrorTerminal)).Count -ne 1)) {
+    throw "QQBot command error handler verification failed"
+}
+
 [System.IO.File]::WriteAllText($gatewayPath, $gatewayContent, [System.Text.UTF8Encoding]::new($false))
 
 $runtimePluginPath = $null

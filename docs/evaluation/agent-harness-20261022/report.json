@@ -1,0 +1,647 @@
+{
+  "datasetVersion": "gying-agent-regression-v1",
+  "datasetSha256": "5f6f05e994fc0ee8ac2564bfc0a6fde6198bf6916b356b276cb91b80cc4db4e3",
+  "provenance": "agent-authored-regression",
+  "evaluatedAt": "2026-10-22T15:07:09.534431+00:00",
+  "transport": "existing-loopback-assistant",
+  "repeat": 2,
+  "plannedTurns": 16,
+  "completedAllTurns": true,
+  "summary": {
+    "turns": 16,
+    "mechanicalPasses": 16,
+    "mechanicalFailures": 0,
+    "manualReviewRequired": 12,
+    "latencySampleCount": 16,
+    "p50Ms": 2531.0,
+    "p95Ms": 10187.0,
+    "latencyScope": "Observed sequential requests; small sample, not a production SLA",
+    "qualityScope": "Mechanical regression checks; not independent human evaluation or task success rate"
+  },
+  "rows": [
+    {
+      "caseId": "exact-title",
+      "repetition": 1,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 2562.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true,
+        "expectedYearEvidence": true
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 718
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 168
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1672
+        }
+      ],
+      "answerSha256": "a10904b5ae227bc36176ff5537a998f213dc4db7cd0f188d8fba8c956e73ed84",
+      "answerChars": 58,
+      "requestId": "3b59f356-bc22-464e-9604-78ca8a82e146"
+    },
+    {
+      "caseId": "english-title",
+      "repetition": 1,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 3594.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true,
+        "expectedYearEvidence": true
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 641
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 157
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 2787
+        }
+      ],
+      "answerSha256": "6e1c956147aff753f9aba79bdb31be11bbf4e202e2660cb9750924b53ba704ee",
+      "answerChars": 186,
+      "requestId": "d5580143-88ce-4753-8e27-541f44128c8e"
+    },
+    {
+      "caseId": "unknown-title",
+      "repetition": 1,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 1906.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "emptySearchEvidence": true
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 901
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 72
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 922
+        }
+      ],
+      "answerSha256": "b55506550f5778d60cb4ad3be69c7e6444c711e1710c0723c8ead6efde91d24a",
+      "answerChars": 14,
+      "requestId": "3db20cca-9db6-45b3-9cf0-348acf1201be"
+    },
+    {
+      "caseId": "details-followup",
+      "repetition": 1,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 2578.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 671
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 178
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1708
+        }
+      ],
+      "answerSha256": "974a37d6d31d9d9eba5309f112c5d80a3abc50f8621bc7668bdc098a304626bf",
+      "answerChars": 64,
+      "requestId": "9382872a-c31c-4265-b6e1-4030e58fa9d4"
+    },
+    {
+      "caseId": "details-followup",
+      "repetition": 1,
+      "turn": 2,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 8735.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true,
+        "expectedYearEvidence": true
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 815
+        },
+        {
+          "kind": "tool",
+          "name": "getMovieDetails",
+          "status": "success",
+          "durationMs": 35
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 7876
+        }
+      ],
+      "answerSha256": "9b2aff8bface4cbc96ceb5a4e8a74ae2da3da8ce725b2319e7b5d7c0908cbdb4",
+      "answerChars": 416,
+      "requestId": "ddce556d-5518-43cb-b2c7-5ba798389a56"
+    },
+    {
+      "caseId": "web-excerpts",
+      "repetition": 1,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 10187.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "webExcerptAndUrl": true
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 692
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "durationMs": 2757
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 6732
+        }
+      ],
+      "answerSha256": "de93c1de9d53495061deb12534c0345b84bf6bcd05229d64f7917723a6c3e73f",
+      "answerChars": 591,
+      "requestId": "0cf23aca-8109-4e91-a1dd-bf55963d93e0"
+    },
+    {
+      "caseId": "invalid-history-role",
+      "repetition": 1,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": false,
+      "durationMs": 0.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "expectedError": true,
+        "noAnswerOnRejection": true,
+        "noToolOnRejection": true,
+        "noModelOnRejection": true
+      },
+      "trace": [
+        {
+          "kind": "error",
+          "name": "assistant",
+          "status": "error",
+          "durationMs": 0
+        }
+      ],
+      "answerSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+      "answerChars": 0,
+      "requestId": "621111b7-14c8-4dcd-bd4d-0ee6ec2b229a"
+    },
+    {
+      "caseId": "unknown-request-field",
+      "repetition": 1,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": false,
+      "durationMs": 0.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "expectedError": true,
+        "noAnswerOnRejection": true,
+        "noToolOnRejection": true,
+        "noModelOnRejection": true
+      },
+      "trace": [
+        {
+          "kind": "error",
+          "name": "assistant",
+          "status": "error",
+          "durationMs": 0
+        }
+      ],
+      "answerSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+      "answerChars": 0,
+      "requestId": "d844bbca-d75c-49ec-a09c-5f00556b7909"
+    },
+    {
+      "caseId": "exact-title",
+      "repetition": 2,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 1985.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true,
+        "expectedYearEvidence": true
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 669
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 158
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1137
+        }
+      ],
+      "answerSha256": "31a30f91ac993af3ee76cf79dea232c198ef337d964ea168de7a2d32a2c1d270",
+      "answerChars": 36,
+      "requestId": "e0089b6e-cf4b-46bd-9d6f-647658a7f238"
+    },
+    {
+      "caseId": "english-title",
+      "repetition": 2,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 3015.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true,
+        "expectedYearEvidence": true
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 693
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 197
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 2120
+        }
+      ],
+      "answerSha256": "c476b555b5aa91dceecf6402940b5c254cd1ec736882dfd5779b711c8495fd36",
+      "answerChars": 120,
+      "requestId": "6d04ed77-9216-4d2c-a218-ec1f068bcfd2"
+    },
+    {
+      "caseId": "unknown-title",
+      "repetition": 2,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 1891.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "emptySearchEvidence": true
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 881
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 79
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 931
+        }
+      ],
+      "answerSha256": "8043f5fdbaa019e232224764b7f4a8b3a3e296278e5d7c6401d2bc34d20a8547",
+      "answerChars": 11,
+      "requestId": "da8a4f45-aae1-4a90-bf9a-87b827856749"
+    },
+    {
+      "caseId": "details-followup",
+      "repetition": 2,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 2531.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 695
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 163
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1651
+        }
+      ],
+      "answerSha256": "b7683058c63a1164fe2663da75bc5fa11bd4c4718a66fa4b7f9e31f9caf1526a",
+      "answerChars": 64,
+      "requestId": "3efa137c-1809-48bf-a5f7-9a5d59b71fbf"
+    },
+    {
+      "caseId": "details-followup",
+      "repetition": 2,
+      "turn": 2,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 9016.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true,
+        "expectedYearEvidence": true
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 852
+        },
+        {
+          "kind": "tool",
+          "name": "getMovieDetails",
+          "status": "success",
+          "durationMs": 25
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 8145
+        }
+      ],
+      "answerSha256": "290deeb0fb562c6b932468286e42ea3a1e59126f40beaace62eb4e8b12dbded2",
+      "answerChars": 476,
+      "requestId": "8edb47f2-0a7f-498e-952d-b54d4ea0c856"
+    },
+    {
+      "caseId": "web-excerpts",
+      "repetition": 2,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 10187.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "webExcerptAndUrl": true
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 713
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "durationMs": 369
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 9092
+        }
+      ],
+      "answerSha256": "de93c1de9d53495061deb12534c0345b84bf6bcd05229d64f7917723a6c3e73f",
+      "answerChars": 591,
+      "requestId": "926174e3-2484-4931-b1f9-4b443fa36829"
+    },
+    {
+      "caseId": "invalid-history-role",
+      "repetition": 2,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": false,
+      "durationMs": 0.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "expectedError": true,
+        "noAnswerOnRejection": true,
+        "noToolOnRejection": true,
+        "noModelOnRejection": true
+      },
+      "trace": [
+        {
+          "kind": "error",
+          "name": "assistant",
+          "status": "error",
+          "durationMs": 0
+        }
+      ],
+      "answerSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+      "answerChars": 0,
+      "requestId": "c7f1eaba-d3d0-4a43-a79b-5ce48172cd53"
+    },
+    {
+      "caseId": "unknown-request-field",
+      "repetition": 2,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": false,
+      "durationMs": 16.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "expectedError": true,
+        "noAnswerOnRejection": true,
+        "noToolOnRejection": true,
+        "noModelOnRejection": true
+      },
+      "trace": [
+        {
+          "kind": "error",
+          "name": "assistant",
+          "status": "error",
+          "durationMs": 0
+        }
+      ],
+      "answerSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+      "answerChars": 0,
+      "requestId": "3f715e45-94de-4be7-87bb-c30cd0819ac0"
+    }
+  ],
+  "runtimeToolSchemaSha256": "894db26f996248566f1481bc7efb09938bb7705131b4d6d0244f5b21abadb27a",
+  "toolNames": [
+    "getMovieDetails",
+    "searchMovieWeb",
+    "searchMovies"
+  ]
+}

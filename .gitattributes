@@ -1,3 +1,7 @@
 *.sh text eol=lf
 Dockerfile text eol=lf
 *.conf text eol=lf
+
+# Preserve byte-bound evaluation evidence; Markdown remains normalized.
+docs/evaluation/quality-improvement-20261031/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/evaluation/quality-improvement-20261031/*.md text eol=lf

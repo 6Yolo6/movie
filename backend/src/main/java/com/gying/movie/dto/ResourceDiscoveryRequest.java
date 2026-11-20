@@ -12,4 +12,6 @@ public class ResourceDiscoveryRequest {
     private Boolean refresh;
     private Boolean runNow;
     private Boolean deferTransfer;
+    /** Optional provider scope; omitted requests retain the existing multi-provider behavior. */
+    private java.util.List<String> providers;
 }

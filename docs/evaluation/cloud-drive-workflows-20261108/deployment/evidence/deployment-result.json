@@ -1,0 +1,122 @@
+{
+  "status": "deployed-local-verification-passed",
+  "startedAt": "2026-11-08T14:31:37.890453+00:00",
+  "affected": [
+    "backend",
+    "frontend"
+  ],
+  "deploymentPerformed": true,
+  "schemaChanged": false,
+  "liveDataStateKeyRetained": true,
+  "publicVerificationPerformed": false,
+  "securityException": {
+    "acceptedByCurrentUserAuthorization": true,
+    "scanSummary": {
+      "PASS": 58,
+      "FAIL": 11,
+      "UNKNOWN": 1
+    },
+    "gateLedgerStillOpen": true,
+    "authorizationSha256": "2a72ccf4a6d98a8141116bb3aeda97cd793c3c6ce8d3f4b22d4dff6ed4f899d4"
+  },
+  "candidateImages": {
+    "backend": "sha256:2925c3b129e1ddf505f0483403ae5c3eb11c4675fbb6f8cec6af96ffcb78c6d4",
+    "frontend": "sha256:35cce07fe8af5dbcd6b625b96d0c6c3a83b91995766989b865d5ae282744359f"
+  },
+  "backendJarSha256": "21dd135cdc9f604e0d2f2ab9a62e43e40e616e2bd64638a7f7ea7cfc465c95f6",
+  "sourceBound": true,
+  "effectiveComposeAndRuntimePreserved": true,
+  "stopSignalProofs": {
+    "backend": {
+      "signal": "SIGTERM",
+      "pid1": "java",
+      "receiver": "handler"
+    },
+    "frontend": {
+      "signal": "SIGTERM",
+      "pid1": "next-server (v",
+      "receiver": "handler"
+    }
+  },
+  "preparatoryCheckpoint": "G:\\gying-backups\\cloud-drive-workflows-20261108-20261108T141852.558294Z",
+  "finalStoppedCheckpointRequired": false,
+  "readinessExitCode": 0,
+  "idleChecks": [
+    {
+      "at": "2026-11-08T14:32:22.444331+00:00",
+      "phase": "Deployment preflight natural idle",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false
+    },
+    {
+      "at": "2026-11-08T14:33:05.333745+00:00",
+      "phase": "Immediately before backend TERM",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false
+    },
+    {
+      "at": "2026-11-08T14:33:26.606419+00:00",
+      "phase": "Backend drained",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false
+    },
+    {
+      "at": "2026-11-08T14:33:54.477114+00:00",
+      "phase": "Before backend candidate start",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false
+    },
+    {
+      "at": "2026-11-08T14:34:18.018654+00:00",
+      "phase": "Immediately before frontend TERM",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false
+    }
+  ],
+  "phase": "Actual applications/configuration/nginx entries verified; public verification remains",
+  "attemptedServices": [
+    "backend",
+    "frontend"
+  ],
+  "TERMReceipts": {
+    "backend": {
+      "id": "420d51fd707039fe582fd5be5a39875a2deeb092fec5a5bd49ed75edcd198312",
+      "image": "sha256:91dc95395cc5d30d589a3c5bf6c4e6053bb972e91ceb138f45cf78dd81d9f521",
+      "exitCode": 143,
+      "finishedAt": "2026-11-08T14:33:06.591148485Z"
+    },
+    "frontend": {
+      "id": "163716fe61d2d115f082ce553ed58c551ddbc75c6efebd1b9d9090b1d47fb30c",
+      "image": "sha256:f16cb8f1440681ef2fd2f3e2d508f7745b8c509bb6e96ce36592e9221291c841",
+      "exitCode": 143,
+      "finishedAt": "2026-11-08T14:34:18.344342603Z"
+    }
+  },
+  "finalCheckpoint": "G:\\gying-backups\\cloud-drive-workflows-20261108-20261108T143327.142120Z",
+  "candidateStartAttempted": true,
+  "actualJarVerified": true,
+  "localEntriesVerified": true,
+  "unaffectedContainersPreserved": true,
+  "dailyBackupOverlayIncluded": true,
+  "completedAt": "2026-11-08T14:34:28.057745+00:00"
+}

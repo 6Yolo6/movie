@@ -1,0 +1,740 @@
+{
+  "status": "SAFE_EVIDENCE_BACKEND_DEPLOYED_NATURAL_ACCEPTANCE_PENDING",
+  "directory": "docs/evaluation/tmdb-gying-followup-20261115",
+  "files": [
+    {
+      "file": "qq-baidu-reason-observation.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\qq-baidu-reason-observation.json",
+      "sha256": "1b5defa51f0ac9244e2df7b4677093c39f9a550211681a1f11974b0e573f9112",
+      "byteCount": 2703,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "qq-baidu-current-config.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\qq-baidu-current-config.json",
+      "sha256": "fbfa6bf41e68f5fb584fe9692cf627a4cb2c1f1b8fe0e2dbc6d8ed744bbf471b",
+      "byteCount": 914,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "gying-live-year-schema-readonly-v2.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\gying-live-year-schema-readonly-v2.json",
+      "sha256": "be631ef5e323c55d0e6cb1f2c7829a9bf406c85bf6e06616ba0d6823d3c8c317",
+      "byteCount": 705,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "root-operational-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\root-operational-review.json",
+      "sha256": "73f5b18fe9b93a5779efba966583e80360eae09589afc14f6f00a78dec28a540",
+      "byteCount": 2127,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "followup-declarations-final-static-tests.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\followup-declarations-final-static-tests.json",
+      "sha256": "439e1ee60a241478b5da7f2d2055e17f3c3b4785eab8f53ff4b3d76ee8b9fe81",
+      "byteCount": 990,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "backend-rollout-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend-rollout-independent-review.json",
+      "sha256": "3e93c044fbf93180bea2ed52e041675a9009216866369fc7cc652bddca248833",
+      "byteCount": 8995,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "README.md",
+      "sha256": "997a5f438c0a8764973d16e341fdb73074f63c86c8e9ddf8d8f330e3a465f22b",
+      "byteCount": 46157,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "code-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\code-independent-review.json",
+      "sha256": "3674b924eedaa6517f4c0729430737c4c7bf7d345345e5632c5053aaf965f02c",
+      "byteCount": 8864,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "business-tests-pass-v4.json",
+      "sha256": "80f1c793dadd4201a680b4c0f8e9cd5a357d5ba0f64a899e233b9bc29dd330bc",
+      "byteCount": 4631,
+      "secretScannerFindings": 0,
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\business-tests-pass-v4.json"
+    },
+    {
+      "file": "business-test-stages-summary.json",
+      "sha256": "6317993cb0a3d0f8a4100691b8543ad4c713bc4782b619ee57cf11b2bc9fd004",
+      "byteCount": 3494,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "backend-tests.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\backend-tests.json",
+      "sha256": "105694c3fa42edc509d143b399852697a0c555e64cf0c392df150b2e9581a481",
+      "byteCount": 2952,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "backend-package.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\backend-package.json",
+      "sha256": "f1cf1a1550ac25ca590ecbaf9109420d4ca4d8a9f2154996c4757b1c465fab20",
+      "byteCount": 2281,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "artifact-chain-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\artifact-chain-independent-review.json",
+      "sha256": "2399ecf7e43db7c2138214b1b261c7cfb96bf832f2046e049c778cb616667f3e",
+      "byteCount": 6376,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "candidate.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\candidate.json",
+      "sha256": "691b40cf5146cbab178a6c8af1353f05542daa31c5ccffb5e4ec7efbe0424682",
+      "byteCount": 1238,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "deployment-v1-safe-stop.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\failure-2026-11-15T112651.860985_0000.json",
+      "sha256": "6a7e9b925000b7e202ff8b85f4327dc3127544d029873303b79f09cbb58774e1",
+      "byteCount": 351,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "deployment-v1-serialization-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\deployment-v1-serialization-independent-review.json",
+      "sha256": "7db1a1270ff92a8eb0bf3b9773542f89c793727bfb595399c0eff469621b330f",
+      "byteCount": 1192,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "deployment-v1-unchanged-runtime.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\deployment-v1-unchanged-runtime.json",
+      "sha256": "e4655dccf20a770be1c537bdc0218311ed9ca73748945e061a8bd86374c27421",
+      "byteCount": 611,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v2/repair-description.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\repair-description.json",
+      "sha256": "5c8e91c42f58b237ddebb7cccf052dfca55b3e223032f689360606db3709a7fe",
+      "byteCount": 6152,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v2/backend-rollout-v2-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\backend-rollout-v2-independent-review.json",
+      "sha256": "4fe2a7e02568bbda33b2ffdf04547c15c1bd907c9cb9fc75a9253db1a32d1091",
+      "byteCount": 2361,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v2/independent-offline-tests.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\independent-offline-tests.json",
+      "sha256": "628e8dda4d7d3e4f3e4bd9718ff814f0a12a87be925a53e67ad1cff9e89a7fd8",
+      "byteCount": 1595,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v2/deployment-emit-runtime-safe-stop.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\failure-2026-11-15T113814.786863_0000.json",
+      "sha256": "5cf33dac328eafdc481873502a5ee38c330c195f094d37e47fe3220cf8117bbd",
+      "byteCount": 323,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v2/deployment-execute-safe-stop.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\failure-2026-11-15T113814.818135_0000.json",
+      "sha256": "6a27b098108c8a71513fb788097b50f9ec6c781a4365b0b26a1bf6f521fd4df1",
+      "byteCount": 318,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v2/deployment-v2-incomplete-runtime-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\deployment-v2-incomplete-runtime-independent-review.json",
+      "sha256": "7df2027661c42120edf8b4c7ba7b296a07fdcab54e628d0fa8010cf3f60b379f",
+      "byteCount": 2469,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "deployment-v2-readonly-emit-diagnosis.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\deployment-v2-readonly-emit-diagnosis.json",
+      "sha256": "e908b649c98f2071ec4ce0617dd94310415f4295a1fe33662fbd3572dfc611ba",
+      "byteCount": 1112,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v3/backend-rollout-v3-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v3\\backend-rollout-v3-independent-review.json",
+      "sha256": "360a37e0ba15abd3fe78a464341ae4b574c23efb8da67420c9890779b7658ece",
+      "byteCount": 3716,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v3/offline-ops-tests-attempt1.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v3\\offline-ops-tests-attempt1.json",
+      "sha256": "229e1be1f883814fe63f6e02913ca706d2cf3d818a1897d6159a6f465a79933b",
+      "byteCount": 2219,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v3/adapter-tests-attempt3.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v3\\adapter-tests-attempt3.json",
+      "sha256": "6314e61ba4091d6ebe831be6622c187eeea7c3aec04e64a54cebc36e210ae225",
+      "byteCount": 1419,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v3/independent-offline-tests.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v3\\independent-offline-tests.json",
+      "sha256": "150039aa846be378b6a28deef69947cdc362713c810b52a5e1cb0aeaf38eaf65",
+      "byteCount": 2195,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v3/deployment-prepare-safe-stop.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v3\\failure-2026-11-15T120520.728428_0000.json",
+      "sha256": "8a92899315f0bcf7ffdddc02d00b99eea39a101213dc02461440228be9237352",
+      "byteCount": 338,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "host-probe-diagnostic-20261115/probe-20261115T120846Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-probe-diagnostic-20261115\\probe-20261115T120846Z.json",
+      "sha256": "03fa297a768108e8a8e9d6974d795df23a4599b26ae2cb304f9f14cffc215f8f",
+      "byteCount": 1226,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "host-probe-diagnostic-20261115/probe-output-text-20261115T120940Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-probe-diagnostic-20261115\\probe-output-text-20261115T120940Z.json",
+      "sha256": "835231334159757c3962053019181e94d9f28b1e9b7c0a041fa3fd054b1715db",
+      "byteCount": 1224,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "host-probe-diagnostic-20261115/probe-plain-command-20261115T121106Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-probe-diagnostic-20261115\\probe-plain-command-20261115T121106Z.json",
+      "sha256": "703be5e04c214ba49dfb7401d631a054034ed5ef7528ef3d8bff8a552c4f6af4",
+      "byteCount": 1216,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "deployment-v4-design-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\deployment-v4-design-independent-review.json",
+      "sha256": "533ffc67a24bb7149fa52faec9af670f3be33f27f0fce7745146cc6e8deaaa50",
+      "byteCount": 3238,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "synthetic-host-probe-command-mode-validation-v1.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\synthetic-host-probe-command-mode-validation-v1.json",
+      "sha256": "2a1f6cb18ae49270cd285e315d4da3ef4f2c52a2bab2b429d1f0f8f57d7bcd69",
+      "byteCount": 5688,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4/backend-rollout-v4-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\backend-rollout-v4-independent-review.json",
+      "sha256": "33ca6642f1af83fcebc41fa8e363fe37c99ece0e932e7b84e992b07952a2bc0c",
+      "byteCount": 4535,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4/independent-offline-tests.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\independent-offline-tests.json",
+      "sha256": "2e2461db80e6497df682e3774a88537504c5c65cb73c8c2986fada50626ed1f2",
+      "byteCount": 2214,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4/offline-ops-tests-attempt1.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\offline-ops-tests-attempt1.json",
+      "sha256": "9f3d1accc28127eee89fa1db7cffe6668a3f7d4b18c825e69cd96a4ef88d35e0",
+      "byteCount": 2221,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4/adapter-tests-attempt1.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\adapter-tests-attempt1.json",
+      "sha256": "e6998cf003f492e4b5ce78329bd115d73c8597c2e8b44115dcd43d0939d8ead2",
+      "byteCount": 445,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4/deployment-prepare-safe-stop.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\failure-2026-11-15T121955.855343_0000.json",
+      "sha256": "daea4d03617984d13094269941e494e031435d0e58278bbaa49307ae8b66b945",
+      "byteCount": 325,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "qq-cleanup-deploy-blocker.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\qq-cleanup-deploy-blocker-2026-11-15T122133.723062_0000.json",
+      "sha256": "2f3fc9ad48b81a63ef41efbb30d5c76de28de32028a2d246d06239be83243574",
+      "byteCount": 577,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4-idle-retry-isolation-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-idle-retry-isolation-independent-review.json",
+      "sha256": "0f3d5376badef1de482aac7bee126d4ba3a373b0cccf96f841ce8861c8df5b99",
+      "byteCount": 3782,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4-idle-retry/deployment-execute-safe-stop.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-idle-retry\\failure-2026-11-15T123311.888447_0000.json",
+      "sha256": "a996f3495dfd37194ea48099341b3897fb615f95761d31e6cd591f3994cfc233",
+      "byteCount": 409,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4-idle-retry/worker-restored-old-backend.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-idle-retry\\worker-restored-old-backend.json",
+      "sha256": "67da7f7cedb8f439120a46e7175dcb1705584cbf8457df977304252a5a8a8ce2",
+      "byteCount": 697,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4-idle-retry/worker-restore-after-host-idle-stop-ack.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-idle-retry\\worker-restore-after-host-idle-stop-ack.json",
+      "sha256": "28910cb86b48241eee282ee7356dc5c28d93e6024458a3494245e94a22d47d1c",
+      "byteCount": 186,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "host-idle-diagnostic-20261115/fixed-info-projected-20261115T124016Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-idle-diagnostic-20261115\\fixed-info-projected-20261115T124016Z.json",
+      "sha256": "e33d0facc72ef0393d2b5209bb683c0f2d9d690a2df4fd2e8796c6b23b98ade6",
+      "byteCount": 1973,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4-after-host-idle-isolation-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-after-host-idle-isolation-independent-review.json",
+      "sha256": "e74568e9bc565617baa4b00e49802532bb8e90579541a16ab38cca1fa75ab38d",
+      "byteCount": 5405,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4-after-host-idle/deployment-execute-safe-stop.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-after-host-idle\\failure-2026-11-15T124335.457956_0000.json",
+      "sha256": "fd3909938a263567f18c7bb77e28e86eb7aaceec20cb258d6492542244b2b10e",
+      "byteCount": 345,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "host-memory-20261115T124826Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-memory-20261115T124826Z.json",
+      "sha256": "338733aa82429ace19e7449138a82ad6baa14c9174c3fa6cef894b8626b0f127",
+      "byteCount": 305,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "runtime-after-backup-stop-2026-11-15T125434.483633_0000.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\runtime-after-backup-stop-2026-11-15T125434.483633_0000.json",
+      "sha256": "2ffa030300e75fad0a33da7d9362cd209c700fd9060e65aed648c111d565e94b",
+      "byteCount": 637,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "host-idle-window-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-idle-window-independent-review.json",
+      "sha256": "2604113774a87db078d5975c264a75e2c4e4cf4667c1a307b11576974dd3eb69",
+      "byteCount": 1345,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4-idle-retry/worker-pause-ack.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-idle-retry\\worker-pause-ack.json",
+      "sha256": "ac1664a1218170f33d68f74249348e7e285ec9139c6149d233ca821aa8e39664",
+      "byteCount": 187,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "admin-device-expiry-aggregate-20261115T125519Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\admin-device-expiry-aggregate-20261115T125519Z.json",
+      "sha256": "adbf4625e4c2d00666a93b9d4c04303d0cc98d7b095e15fb49246643a191dd38",
+      "byteCount": 5606,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "host-memory-20261115T125919Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-memory-20261115T125919Z.json",
+      "sha256": "c19aa694d6e43ad97c82ca585f1c34b0bb5f58ac7e126fe2baf6f26ee18ba0d1",
+      "byteCount": 306,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "runtime-after-backup-stop-2026-11-15T130008.487232_0000.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\runtime-after-backup-stop-2026-11-15T130008.487232_0000.json",
+      "sha256": "058d958ded72981992fe7287f6de7fb524247cf47a1e57463e8be0ffa9ed6864",
+      "byteCount": 637,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": ".gitattributes",
+      "sha256": "308a40fa1d89ae5ea4390b4c9b46a0108b09f171f07898f25d451fa0c69c4e9f",
+      "byteCount": 72,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "runtime-after-backup-stop-2026-11-15T140833.907967_0000.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\runtime-after-backup-stop-2026-11-15T140833.907967_0000.json",
+      "sha256": "0754ed1f06636e8d9ef2fe17fb36ba17031bb9f84bcc6dbf62ed159753ff616a",
+      "byteCount": 602,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "host-memory-20261115T140415Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-memory-20261115T140415Z.json",
+      "sha256": "86f0d7858195f7e36d0ae1cf2666649ea41719088e97a54b788a68b94829ee37",
+      "byteCount": 306,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "resume-fresh-run-independent-review-20261115T140629884Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\resume-fresh-run-independent-review-20261115T140629884Z.json",
+      "sha256": "e110fec537924d16c4c9c7c0ebb26f48b9782e6a5d045fc7ae4aacbd790f92c1",
+      "byteCount": 2557,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "resume-admin-session-20261115T141235Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\resume-admin-session-20261115T141235Z.json",
+      "sha256": "c72e92af35fb31c8f66b2d81b1ab5b35d3d3a6e556a2ecb39f6a5606d9fc723c",
+      "byteCount": 665,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4-after-admin-relogin-20261115T140629884Z/failure-2026-11-15T141147.250637_0000.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-after-admin-relogin-20261115T140629884Z\\failure-2026-11-15T141147.250637_0000.json",
+      "sha256": "9f71938d16113be11e7c4b86ffd0b8c42def2664e7a78f8eb31a2c53ec0d56e1",
+      "byteCount": 451,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "old-backend-recovered-after-key-mount-stop-20261115T1411.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\old-backend-recovered-after-key-mount-stop-20261115T1411.json",
+      "sha256": "12614fe64381cf1adfd7b03d4c6794a0070ee62f4ded76f74e995ea5aa802bf4",
+      "byteCount": 3628,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "host-memory-20261115T141910Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-memory-20261115T141910Z.json",
+      "sha256": "f20606e3a318226de661d363a5adae6abf65b11cfb35a8c3f266f7d3ba1119e7",
+      "byteCount": 306,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "fresh-v5-run-creation-20261115T142029Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\fresh-v5-run-creation-20261115T142029Z.json",
+      "sha256": "cd4733967734deb5dd7e98a75c6f54cb1c7fe02568b25b9aeb98da4f65f1dce1",
+      "byteCount": 979,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "independent-final-review/v5-fresh-static-review-20261115T142231Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\independent-final-review\\v5-fresh-static-review-20261115T142231Z.json",
+      "sha256": "e9a6bff79bef31ea9924a7593399a075824ddd57394b709145a88cf8bb9751d4",
+      "byteCount": 1749,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v5-verification/result.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-verification\\result.json",
+      "sha256": "49ea48e72b3918384aa1478ac9a2dcd424d128c5f4f2aeb1668aac8379574a1e",
+      "byteCount": 3786,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/deployment-receipt.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\deployment-receipt.json",
+      "sha256": "5f95fec76266521a8af2d9185219108fe0ec286d84e89b1ec6dc43833594b787",
+      "byteCount": 5563,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/backend-term-result.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\backend-term-result.json",
+      "sha256": "ba916b6d7816124ffa84abd46d2c0e29240fd05acb167fb80a8151a181036212",
+      "byteCount": 293,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/worker-pause-ack.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\worker-pause-ack.json",
+      "sha256": "2c8a5ba77d9a20c72c44a6fee75d8ee5361020723dd458c64d961ce8d0257c8e",
+      "byteCount": 187,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/worker-restore-ack.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\worker-restore-ack.json",
+      "sha256": "97c42e7eaf838367ec14fafc8f29310648be4ae46485eb9092159d9a49b017ea",
+      "byteCount": 186,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "independent-final-review/v5-deployment-static-review-20261115T143000Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\independent-final-review\\v5-deployment-static-review-20261115T143000Z.json",
+      "sha256": "89f473f1e55f7b1e34af45988740b4eb890cfb36548c1a052b40e02cb1aa3fe5",
+      "byteCount": 3826,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/host-applied.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\host-applied.json",
+      "sha256": "5fdb557150db628dca12dbe2dba813951ce7fabd00e531df7454b541473d09ee",
+      "byteCount": 1250,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/daily-applied.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\daily-applied.json",
+      "sha256": "7c96cbd935ce7b78ef9db717b527da0980cbb2ed776015795586bfb883d7967f",
+      "byteCount": 8606,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/final-verification.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\final-verification.json",
+      "sha256": "108ded3a3214743a3b76d8b25ac697a0e8b3f8a5e44faae21fa43390bc077aff",
+      "byteCount": 8227,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "resume-post-deployment-ops-snapshot-20261115T1433.md",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\resume-post-deployment-ops-snapshot-20261115T1433.md",
+      "sha256": "47dd7da67e54604a5122ac0126a80dc36970cb0c177341bc693e879931a74f9a",
+      "byteCount": 9339,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "independent-final-review/fresh-final-review-20261115T143345Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\independent-final-review\\fresh-final-review-20261115T143345Z.json",
+      "sha256": "accf79e22014dd41aefe2753e5a6b748d5d6df768a7455998a4a4d11dd0cd377",
+      "byteCount": 8706,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4-after-admin-relogin-20261115T140629884Z/backend-term-result.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-after-admin-relogin-20261115T140629884Z\\backend-term-result.json",
+      "sha256": "3a8d44e478cba93da38d32120c03af1333796f4c6cb194ede204457d60ebc1f0",
+      "byteCount": 293,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4-after-admin-relogin-20261115T140629884Z/worker-pause-ack.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-after-admin-relogin-20261115T140629884Z\\worker-pause-ack.json",
+      "sha256": "51c23f8a33c13b43e0376053b417a4ae9c5432aa960429a9795d5af074dac448",
+      "byteCount": 187,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4-after-admin-relogin-20261115T140629884Z/old-backend-worker-restore-ack.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-after-admin-relogin-20261115T140629884Z\\old-backend-worker-restore-ack.json",
+      "sha256": "395c039b3f511bad8ee7c3d559ac73fdd71a754f599ff756003341932a26b890",
+      "byteCount": 186,
+      "secretScannerFindings": 0
+    }
+  ],
+  "copiedSourceBytesExact": true,
+  "secretScannerFindings": 0,
+  "rawSqlOrCredentialOrLogBodiesCopied": false,
+  "deploymentVerified": true,
+  "newTaskNaturalAcceptancePending": true,
+  "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "sourceManifestSha256": "4ba8a13372b15d513fc76cf7e8cb3c95126823df39505bd5968fd3698d5bfa98",
+  "businessTestsVerified": true,
+  "businessTests": {
+    "relatedClasses": 13,
+    "tests": 334,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "realMySqlTests": 18,
+    "stage": "V4"
+  },
+  "jarPackageVerified": true,
+  "jarSha256": "5b4492cd4047161c030b6c53254d7a7d8682d8ec220bef465d7b392e434b4c8e",
+  "candidateImageVerified": true,
+  "candidateImageId": "sha256:8931619fd119eb9154ff498adace98d6f688bdff409e1e4db816969cce4fdc95",
+  "artifactChainIndependentReviewPassed": true,
+  "firstDeploymentAttemptStopped": true,
+  "firstDeploymentGate": "AUTHENTICATED_EXACT_EFFECTIVE_BACKEND_MODEL",
+  "firstDeploymentRootCauseConfirmed": true,
+  "originalRunRetried": false,
+  "firstDeploymentRootCause": "JSON_UNICODE_SERIALIZATION_BYTES_DIFFER_WITH_EQUAL_SEMANTICS",
+  "postV1RuntimePreservedVerified": true,
+  "v2OfflineOperationalTestsPassed": true,
+  "v2OfflineOperationalTestCount": 28,
+  "v2IndependentReviewPassed": true,
+  "v1FilesPreserved": true,
+  "secondDeploymentAttemptStopped": true,
+  "v2CheckpointValidBackup": false,
+  "v2EncodingRepairVerifiedFromPartialArtifact": true,
+  "v2SnapshotSpecificFailureConditionConfirmed": false,
+  "readOnlyEmitDiagnosisCompleted": true,
+  "v3OfflineOperationalTestsPassed": true,
+  "v3OfflineOperationalTestCount": 69,
+  "v3AdapterTestCountIncluded": 25,
+  "v3IndependentReviewPassed": true,
+  "v3HelperHashes": {
+    "BackendRollout.py": "8a0c46672e73e51b482113ddc5ee1225a260693c688b5dd92671b38c8a3119b1",
+    "FollowUpDeclarations.py": "1740b1e526568a72d34d996c5d6dbca913bc109c47e4fb2507ded74058234ba1",
+    "HostReadyAdapter.py": "30f4575299742f3e0ef684870c324e0b9017704768ddd7b63454f9d8805e7610"
+  },
+  "v3PrepareStopped": true,
+  "v3PrepareFailureCode": "HOST_PROBE_READ_FAILED",
+  "v3PreparedPlanCreated": false,
+  "v3DeployExecuteStarted": false,
+  "v3SpecificProbeFailureConditionConfirmed": false,
+  "realHostProbeProtocolDiagnosticCompleted": true,
+  "plainCommandProbeReadOnlyPassed": true,
+  "outputFormatTextRecommendationCorrected": true,
+  "v4DesignConditionallyReviewed": true,
+  "v4FinalImplementationReviewed": true,
+  "v4IndependentReviewPassed": true,
+  "v4OfflineOperationalTestsPassed": true,
+  "v4OfflineOperationalTestCount": 85,
+  "v4AdapterTestCountIncluded": 41,
+  "v4HelperHashes": {
+    "BackendRollout.py": "bcfff01eb52c4c7c44b2733cd4d8168c06ac4d76b47b08c40a2af7406f2748f7",
+    "FollowUpDeclarations.py": "96039a5159483577e384177fae070cca25c577ec433fca20a5c52c9ed920c1c9",
+    "HostReadyAdapter.py": "7c799fa149eb80681a3aeda15739ca25d3601fbd19d58f76cb3d95b02d780625"
+  },
+  "v4PrepareStopped": true,
+  "v4PrepareFailureCode": "NO_QQ_CLEANUP_QUEUE",
+  "v4HostAndPriorGatePassedReportedByRoot": true,
+  "v4IdleRetryRunIsolationReviewed": true,
+  "naturalQqCleanupCompletedVerified": false,
+  "manualCleanupRequestsByEvidencePack": 0,
+  "v4IdleRetryExecuteStopped": true,
+  "v4IdleRetryExecuteFailureCode": "NO_RUNNING_HOST_BUSINESS_TASK",
+  "v4IdleRetryWorkerPausedReportedByRoot": true,
+  "v4IdleRetryWorkerRestoreAcknowledged": true,
+  "v4IdleRetryOriginalThirteenGenerationsPreserved": true,
+  "v4IdleRetryServiceStops": 0,
+  "v4IdleRetryServiceActivations": 0,
+  "v4IdleRetryProviderRequests": 0,
+  "historicalHostRunningTaskIdentityConfirmed": false,
+  "qrIncludedInFixedTaskNames": false,
+  "v4AfterHostIdleRunIsolationReviewed": true,
+  "v4AfterHostIdlePreparedReportedByRoot": true,
+  "v4AfterHostIdlePreparedSha256": "bb62c1b639859ebc4c8c9f60ddb56ff2fc192430f6b96550da4bf3c562f6a2d3",
+  "v4AfterHostIdleExecuteResultReceived": true,
+  "taskAllowlistExpanded": false,
+  "v4AfterHostIdleExecuteStopped": true,
+  "v4AfterHostIdleExecuteErrorType": "Gate",
+  "v4AfterHostIdleExecuteGate": null,
+  "v4AfterHostIdleSpecificStopRootCause": "UNKNOWN",
+  "v4AfterHostIdleSpecificStopRootCauseConfirmed": false,
+  "v4AfterHostIdleWorkerPauseReservationAbsent": true,
+  "v4AfterHostIdleTermReservationAbsent": true,
+  "v4AfterHostIdleActivationReservationAbsent": true,
+  "v4AfterHostIdleCompleteAuthenticatedManifestFlagsReportedByRoot": true,
+  "v4AfterHostIdleHelperFinishAndFullBackupGateSuccessConfirmed": false,
+  "v4IdleRetryWorkerPauseAcknowledged": true,
+  "hostIdleWindowIndependentReviewPassed": true,
+  "hostMemoryPressureObserved": true,
+  "hostCommitPercentObserved": 98.49,
+  "hostCommitAvailableMiBObserved": 501.5,
+  "hostMemoryObservationProvesEarlierGateCause": false,
+  "powershellLaunchResourceFailureReportedByRoot": "0x800705AF",
+  "adminFailureCodeProvesExpiredCredential": false,
+  "candidateRebuildOrRepeatedTestsRequired": false,
+  "resourceUploadSucceededVerified": false,
+  "historicalAdminExpiryRevocationRoleAndEnabledStateUnchangedEstablished": false,
+  "priorFollowupConditionsIncludedUserMemoryReleaseAndAdminRefresh": true,
+  "historicalPreResumeObservations": {
+    "scope": "20:40 through 21:00 on 2026-11-15 Asia/Shanghai; superseded as current facts by fresh V5 receipts",
+    "observations": {
+      "originalHostTaskGateCurrentReadOnlyPass": true,
+      "currentOriginalThirteenGenerationsPreserved": true,
+      "currentBackendOriginalImageExact": true,
+      "currentBackendRunning": true,
+      "currentSqlWorkerEnabled": true,
+      "currentSqlTmdbUpdatesOnly": true,
+      "currentSqlGyingUpdatesOnly": true,
+      "currentStableConfigurationExact": null,
+      "currentExistingAdminFailureCode": "EXISTING_ACTIVE_ADMIN_DEVICE_REQUIRED",
+      "currentAdminEligibilityFailureConfirmed": true,
+      "currentAdminExpiryVerifiedFromAggregate": true,
+      "currentAdminAggregateObservedAt": "2026-11-15T12:55:19Z",
+      "currentUnrevokedAdminDevicesObserved": 88,
+      "currentExpiredUnrevokedAdminDevicesObserved": 88,
+      "currentEligibleAdminDevicesAboveTenMinutesObserved": 0,
+      "currentLatestUnrevokedAdminExpiryObserved": "2026-11-15 20:52:49",
+      "adminRefreshRequiredFromCurrentAggregate": true,
+      "currentAggregateDoesNotIdentifyHistoricalAdminDevice": true,
+      "currentAggregateCompatibleWithTenMinuteMarginExhaustionBetweenPreparedAndStop": true,
+      "currentAggregateProvesEarlierExecuteSpecificGate": false,
+      "latestHostMemoryObservedAt": "2026-11-15T12:59:19.939049+00:00",
+      "latestHostCommitPercentObserved": 89.86,
+      "latestHostCommitAvailableMiBObserved": 3373.7,
+      "latestLightweightMemoryHeadroomImproved": true,
+      "latestLightweightMemoryObservationProvesFullReadiness": false,
+      "currentRuntimeObservedAt": "2026-11-15T13:00:08.486232+00:00",
+      "currentAdminRefreshRequired": true,
+      "adminRefreshAndAllReadinessGatesRequiredBeforeFreshRun": true,
+      "memoryMustBeRecheckedBeforeFreshRun": true,
+      "furtherUserMemoryReleaseRequiredEstablished": false
+    },
+    "previousManifestStatus": "SAFE_EVIDENCE_DEPLOYMENT_STOPPED_FRESH_RUN_REQUIRED"
+  },
+  "currentDeployment": {
+    "observedAt": "2026-11-15T14:33:45.800018+00:00",
+    "status": "BACKEND_HOST_AND_DAILY_VERIFIED_NATURAL_ACCEPTANCE_PENDING",
+    "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+    "backend": {
+      "id": "bd827f2dbbac2bf30c285f7f95976f910e784c39f9f84e43c29adc44d18b6eeb",
+      "image": "sha256:8931619fd119eb9154ff498adace98d6f688bdff409e1e4db816969cce4fdc95",
+      "startedAt": "2026-11-15T14:27:42.010101121Z"
+    },
+    "composeFiles": 26,
+    "deploymentReceipt": {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/deployment-receipt.json",
+      "sha256": "5f95fec76266521a8af2d9185219108fe0ec286d84e89b1ec6dc43833594b787"
+    },
+    "finalReceipt": {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/final-verification.json",
+      "sha256": "108ded3a3214743a3b76d8b25ac697a0e8b3f8a5e44faae21fa43390bc077aff"
+    },
+    "independentReceipt": {
+      "file": "independent-final-review/fresh-final-review-20261115T143345Z.json",
+      "sha256": "accf79e22014dd41aefe2753e5a6b748d5d6df768a7455998a4a4d11dd0cd377"
+    },
+    "actualFlags": {
+      "enabled": true,
+      "workerEnabled": true,
+      "tmdbAutoSyncUpdatesOnly": true,
+      "gyingAutoSyncUpdatesOnly": true
+    },
+    "otherTwelveGenerationsExact": true,
+    "hostPinAppliedVerified": true,
+    "dailyCoverageCount": 49,
+    "naturalBackupPending": true,
+    "newResourceNaturalAcceptancePending": true,
+    "newResourceTaskAndBudgetCountsEmpty": true
+  },
+  "resumeV5MinimalFix": {
+    "backendOnlyTwoKeyDestinationLiteralsChanged": true,
+    "declarationsOnlyBackendHashChanged": true,
+    "adapterAndBindingRawBytesRetained": true,
+    "mockTests": 15,
+    "businessTestsRepeated": false,
+    "candidateRebuilt": false,
+    "preparedSha256": "f90d9d62bb438578cba7a7404e9f1832479741c126dc9eb1105631b7ed16dfeb",
+    "oldStoppedRunsPreserved": true,
+    "oldV4OriginalBackendRecoveredVerified": true,
+    "oldV4RecoveryChangedBackendStartedAt": true
+  }
+}

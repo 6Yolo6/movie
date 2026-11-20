@@ -39,11 +39,15 @@ import com.gying.movie.utils.MovieTitleMatcher;
 import com.gying.movie.utils.QqResourcePreferenceParser;
 import com.gying.movie.utils.QqResourcePreferenceParser.ResourcePreference;
 import com.gying.movie.utils.ResourceTitleMatcher;
+import com.gying.movie.utils.BaiduTemporaryScope;
+import com.gying.movie.client.BaiduWebClient;
 import com.gying.movie.utils.SeasonSearchUtils;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -76,7 +80,7 @@ public class QqBotServiceImpl implements IQqBotService {
     private static final int PREFERRED_QUARK_RESOURCE_COUNT = 7;
     private static final int MAX_CANDIDATE_SUGGESTIONS = 10;
     private static final int MAX_GYING_CANDIDATE_SUGGESTIONS = 4;
-    private static final Set<String> OWNED_SHARE_PROVIDERS = Set.of("QUARK", "XUNLEI");
+    private static final Set<String> OWNED_SHARE_PROVIDERS = Set.of("QUARK", "XUNLEI", "BAIDU");
     private static final long CANDIDATE_TTL_SECONDS = 300;
     private static final long RESOURCE_CONTEXT_TTL_SECONDS = 300;
     private static final String PERMANENT_LINK_INVALID_REASON = "Re-shared link is still invalid; possible policy violation";
@@ -102,6 +106,15 @@ public class QqBotServiceImpl implements IQqBotService {
     private final QqTransferCleanupService transferCleanupService;
     private final RedisRateLimiter rateLimiter;
     private com.gying.movie.service.ISysConfigService searchLimitConfig;
+    private final ThreadLocal<String> searchKeywordSnapshot = new ThreadLocal<>();
+    private final ThreadLocal<SearchTiming> searchTiming = new ThreadLocal<>();
+    private final ThreadLocal<Map<String, Boolean>> baiduValidation = new ThreadLocal<>();
+    private BaiduTemporaryTransferService baiduTransfers;
+
+    @Autowired
+    public void configureBaiduSearch(BaiduTemporaryTransferService service) {
+        this.baiduTransfers = service;
+    }
 
     @Autowired
     public void configureSearchLimits(com.gying.movie.service.ISysConfigService config) {
@@ -283,12 +296,55 @@ public class QqBotServiceImpl implements IQqBotService {
 
     @Override
     public String buildSearchReply(String keyword, String userKey) {
+        String fallback = java.util.Objects.toString(qqBotProperties.getBlockedKeywords(), "");
+        String configured = searchLimitConfig == null ? fallback
+                : searchLimitConfig.getConfigValue("qq.bot.blocked_keywords", fallback);
+        searchKeywordSnapshot.set(configured == null ? fallback : configured);
+        SearchTiming timing = new SearchTiming();
+        searchTiming.set(timing);
+        baiduValidation.set(new java.util.HashMap<>());
+        try {
+            return buildSearchReplyWithPolicy(keyword, userKey);
+        } finally {
+            log.info("event=qq_search_completed status={} elapsed_ms={} stages_ms={}",
+                    timing.status, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - timing.started), timing.stages);
+            searchTiming.remove();
+            searchKeywordSnapshot.remove();
+            baiduValidation.remove();
+        }
+    }
+
+    private <T> T timedSearchStage(String stage, java.util.function.Supplier<T> work) {
+        long started = System.nanoTime();
+        try { return work.get(); } finally {
+            SearchTiming timing = searchTiming.get();
+            if (timing != null) timing.stages.merge(stage,
+                    TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started), Long::sum);
+        }
+    }
+
+    private static class SearchTiming {
+        final long started = System.nanoTime();
+        final Map<String, Long> stages = new LinkedHashMap<>();
+        String status = "ERROR";
+    }
+
+    private String buildSearchReplyWithPolicy(String keyword, String userKey) {
         String requestedKeyword = trim(keyword, 80);
         if (!hasText(requestedKeyword)) {
             return finishSearch(userKey, requestedKeyword, "REJECTED", null, 0,
                     defaultHelpReply(), "empty keyword");
         }
+        if (blocked(requestedKeyword)) return blockedReply(userKey, requestedKeyword);
         ResourcePreference resourcePreference = parseResourcePreference(requestedKeyword);
+        ResourceSearchContext policyContext = activeResourceSearchContext(userKey);
+        if (policyContext != null && (resourcePreference != null || isCandidateSelection(requestedKeyword)
+                || isResourcePageCommand(requestedKeyword))) {
+            MovieMetadata contextMovie = movieService.getById(policyContext.movieId());
+            if (blocked(policyContext.keyword()) || blockedMovie(contextMovie)) {
+                return blockedReply(userKey, requestedKeyword);
+            }
+        }
         if (resourcePreference != null) {
             return buildResourcePreferenceReply(requestedKeyword, userKey, resourcePreference);
         }
@@ -299,6 +355,11 @@ public class QqBotServiceImpl implements IQqBotService {
                     "resource candidates expired");
         }
         ResourceCandidates activeResources = activeResourceCandidates(userKey);
+        if (activeResources != null && (candidateSelection || isResourcePageCommand(requestedKeyword))
+                && (blocked(activeResources.movieTitle()) || activeResources.allResources().stream()
+                        .anyMatch(choice -> blocked(choice.name())))) {
+            return blockedReply(userKey, requestedKeyword);
+        }
         if (activeResources != null && isResourcePageCommand(requestedKeyword)) {
             return changeResourcePage(userKey, requestedKeyword, activeResources,
                     isPreviousResourcePage(requestedKeyword) ? -1 : 1);
@@ -330,23 +391,20 @@ public class QqBotServiceImpl implements IQqBotService {
                     "搜索词太短，请至少输入 " + Math.max(qqBotProperties.getMinKeywordLength(), 1) + " 个字。",
                     "keyword too short");
         }
-        String blockedWord = firstBlockedKeyword(safeKeyword);
-        if (hasText(blockedWord)) {
-            log.info("QQ bot search blocked by sensitive keyword: {}", blockedWord);
-            return finishSearch(userKey, safeKeyword, "BLOCKED", null, 0,
-                    "搜索词包含不支持的内容，请更换关键词。", "blocked keyword: " + blockedWord);
+        if (blocked(safeKeyword) || selectedCandidate != null && blocked(selectedCandidate.getOriginalTitle())) {
+            return blockedReply(userKey, safeKeyword);
         }
         if (!allowSearch(userKey)) {
             return finishSearch(userKey, safeKeyword, "RATE_LIMITED", null, 0,
                     "搜索太频繁，请稍后再试。", "rate limited");
         }
-        List<MovieMetadata> localCandidates = findMovieCandidates(safeKeyword);
-        // Website users can immediately use approved library resources. Do not wait for
-        // metadata providers, live share checks, discovery or transfers on this read-only path.
-        if (userKey != null && userKey.startsWith("web:")) {
-            String libraryReply = tryBuildWebLibraryReply(userKey, safeKeyword, selectedCandidate, localCandidates);
-            if (libraryReply != null) return libraryReply;
-        }
+        List<MovieMetadata> localCandidates = timedSearchStage("library_lookup", () -> findMovieCandidates(safeKeyword));
+        // Both QQ and website requests use approved library resources first.
+        // Explicit "资源" continuations have already branched above, so this
+        // read-only fast path never blocks a request for another version.
+        String libraryReply = timedSearchStage("library_resources",
+                () -> tryBuildLibraryReply(userKey, safeKeyword, selectedCandidate, localCandidates));
+        if (libraryReply != null) return libraryReply;
         MovieMetadata movie = resolveSelectedCandidateMovie(selectedCandidate);
         if (selectedCandidate != null && movie == null) {
             return finishSearch(userKey, safeKeyword, "NO_METADATA", null, 0,
@@ -369,6 +427,18 @@ public class QqBotServiceImpl implements IQqBotService {
                 }
             }
             movie = exactLocalMovie;
+        }
+        if (movie == null && selectedCandidate == null && SeasonSearchUtils.parse(safeKeyword) == null) {
+            // A candidate prompt needs names and identities, not ten full metadata imports.
+            List<MovieSearchCandidate> candidates = findSearchCandidates(safeKeyword, localCandidates);
+            if (!candidates.isEmpty()) {
+                rememberSuggestedCandidates(userKey, candidates);
+                return finishSearch(userKey, safeKeyword, "AMBIGUOUS", null, 0,
+                        MovieSearchCandidateUtils.formatReply(safeKeyword, candidates), "candidate selection required");
+            }
+            return finishSearch(userKey, safeKeyword, "NO_METADATA", null, 0,
+                    "没有找到可信影片元数据：" + safeKeyword + "\n已跳过外部资源搜索，避免误转存无关资源。",
+                    "no credible metadata");
         }
         if (movie == null) {
             SeasonSearchUtils.SeasonQuery seasonQuery = SeasonSearchUtils.parse(safeKeyword);
@@ -403,6 +473,7 @@ public class QqBotServiceImpl implements IQqBotService {
                         "no credible metadata");
             }
         }
+        if (blockedMovie(movie)) return blockedReply(userKey, safeKeyword);
         if (hasText(selectedKeyword)) {
             suggestedCandidates.remove(candidateUserKey(userKey));
         }
@@ -424,7 +495,7 @@ public class QqBotServiceImpl implements IQqBotService {
                 buildNoResourceReply(movie, searchNotes), "no resource candidate");
     }
 
-    private String tryBuildWebLibraryReply(String userKey, String keyword,
+    private String tryBuildLibraryReply(String userKey, String keyword,
             MovieSearchCandidate selected, List<MovieMetadata> localCandidates) {
         List<MovieMetadata> matches;
         if (selected != null && hasText(selected.getLocalMovieId())) {
@@ -432,29 +503,43 @@ public class QqBotServiceImpl implements IQqBotService {
             matches = local == null ? List.of() : List.of(local);
         } else {
             matches = localCandidates.stream().filter(movie -> selected == null
-                    ? MovieTitleMatcher.isExactMatch(movie, keyword) : matchesCandidate(movie, selected)).toList();
+                    ? MovieTitleMatcher.isExactMatch(movie, keyword) || isSubtitleStemMatch(movie, keyword)
+                    : matchesCandidate(movie, selected)).toList();
         }
         matches = matches.stream().filter(movie -> "ACTIVE".equalsIgnoreCase(movie.getStatus())
-                && movie.getDeletedAt() == null).toList();
+                && movie.getDeletedAt() == null && !blockedMovie(movie)).toList();
         if (matches.isEmpty()) return null;
+        if (selected == null) {
+            // A sequel can share the original film's series name or alias. An
+            // exact primary title wins; genuine same-title/year variants still
+            // retain the ambiguity confirmation below.
+            List<MovieMetadata> primaryMatches = matches.stream().filter(movie ->
+                    MovieTitleMatcher.normalizedEquals(movie.getTitleCn(), keyword)
+                            || MovieTitleMatcher.normalizedEquals(movie.getTitleEn(), keyword)).toList();
+            if (!primaryMatches.isEmpty()) {
+                matches = primaryMatches;
+            } else {
+                List<MovieMetadata> subtitleMatches = matches.stream()
+                        .filter(movie -> isSubtitleStemMatch(movie, keyword)).toList();
+                if (!subtitleMatches.isEmpty()) matches = subtitleMatches;
+            }
+        }
         Map<String, List<ResourceLink>> resources = new LinkedHashMap<>();
         for (MovieMetadata movie : matches) {
-            List<ResourceLink> links = loadWebLibraryResources(movie.getId());
+            List<ResourceLink> links = loadLibraryResources(movie.getId(), userKey == null || !userKey.startsWith("web:"));
             if (!links.isEmpty()) resources.put(movie.getId(), links);
         }
-        if (resources.isEmpty()) return null;
+        if (resources.isEmpty()) {
+            if (selected == null && matches.stream().anyMatch(movie -> isSubtitleStemMatch(movie, keyword))) {
+                return localCandidateConfirmation(userKey, keyword, matches, resources,
+                        "片库中找到匹配片名，请先确认影片后搜索其他资源：\n", "local subtitle title confirmation");
+            }
+            return null;
+        }
         if (matches.size() > 1) {
             // Same title can refer to different years, films or seasons. Never guess.
-            List<MovieSearchCandidate> candidates = matches.stream()
-                    .sorted(Comparator.comparingInt(movie -> resources.containsKey(movie.getId()) ? 0 : 1))
-                    .limit(MAX_CANDIDATE_SUGGESTIONS)
-                    .map(movie -> new MovieSearchCandidate(movie.getTmdbId(), resolveCandidateMediaType(movie),
-                            title(movie), movie.getTitleEn(), movie.getYear(), scoreMovie(movie, keyword),
-                            "LOCAL", resolveCandidateMediaType(movie), movie.getId(), movie.getId())).toList();
-            rememberSuggestedCandidates(userKey, candidates);
-            return finishSearch(userKey, keyword, "AMBIGUOUS", null, 0,
-                    "片库中有同名影片，请先确认年份或类型：\n"
-                            + MovieSearchCandidateUtils.formatReply(keyword, candidates), "local title ambiguous");
+            return localCandidateConfirmation(userKey, keyword, matches, resources,
+                    "片库中有同名影片，请先确认年份或类型：\n", "local title ambiguous");
         }
         MovieMetadata movie = matches.get(0);
         List<ResourceLink> links = resources.get(movie.getId());
@@ -468,19 +553,48 @@ public class QqBotServiceImpl implements IQqBotService {
         appendLine(reply, "评分", rating(movie));
         appendLine(reply, "简介", trim(movie.getSummary(), 180));
         reply.append("\n\n资源库已有资源（优先展示，无需重新搜索或转存）：");
-        for (ResourceLink link : links) {
-            reply.append("\n- ").append(firstText(link.getName(), title(movie)))
-                    .append(" [").append(resourceProviderLabel(link.getProvider())).append("]")
-                    .append("\n  ").append(link.getUrl());
-            if (hasText(link.getCode())) reply.append("\n  提取码：").append(link.getCode());
-        }
-        reply.append("\n\n需要其他版本或网盘，可点击“搜索其他资源”继续。");
+        appendGroupedResources(reply, links, title(movie));
+        reply.append(userKey != null && userKey.startsWith("web:")
+                ? "\n\n需要其他版本或网盘，可点击“搜索其他资源”继续。"
+                : "\n\n需要其他版本或网盘，可发送“资源”继续。");
         return finishSearch(userKey, keyword, "LIBRARY_RESOURCE", movie.getId(), links.size(), reply.toString(), null);
     }
 
-    private List<ResourceLink> loadWebLibraryResources(String movieId) {
+    private boolean isSubtitleStemMatch(MovieMetadata movie, String keyword) {
+        // A complete film title before ':' can be a short name. Keep sequel
+        // digits and require equality; a shared series name or substring is insufficient.
+        if (movie == null || !"movie".equals(resolveCandidateMediaType(movie))) return false;
+        for (String value : new String[] { movie.getTitleCn(), movie.getTitleEn() }) {
+            if (!hasText(value)) continue;
+            int chineseColon = value.indexOf('：');
+            int asciiColon = value.indexOf(':');
+            int separator = chineseColon < 0 ? asciiColon : asciiColon < 0 ? chineseColon : Math.min(chineseColon, asciiColon);
+            if (separator <= 0) continue;
+            String stem = value.substring(0, separator).trim();
+            if (compactTitle(stem).length() >= 2 && MovieTitleMatcher.normalizedEquals(stem, keyword)) return true;
+        }
+        return false;
+    }
+
+    private String localCandidateConfirmation(String userKey, String keyword, List<MovieMetadata> matches,
+            Map<String, List<ResourceLink>> resources, String introduction, String reason) {
+        List<MovieSearchCandidate> candidates = matches.stream()
+                .sorted(Comparator.comparingInt(movie -> resources.containsKey(movie.getId()) ? 0 : 1))
+                .limit(MAX_CANDIDATE_SUGGESTIONS)
+                .map(movie -> new MovieSearchCandidate(movie.getTmdbId(), resolveCandidateMediaType(movie),
+                        title(movie), movie.getTitleEn(), movie.getYear(), scoreMovie(movie, keyword),
+                        "LOCAL", resolveCandidateMediaType(movie), movie.getId(), movie.getId())).toList();
+        rememberSuggestedCandidates(userKey, candidates);
+        return finishSearch(userKey, keyword, "AMBIGUOUS", null, 0,
+                introduction + MovieSearchCandidateUtils.formatReply(keyword, candidates), reason);
+    }
+
+    private List<ResourceLink> loadLibraryResources(String movieId, boolean cloudDiskOnly) {
         List<ResourceLink> stored = resourceLinkService.list(new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId).eq("audit_status", 1).eq("status", "ACTIVE")
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
+                .eq(cloudDiskOnly, "type", "DISK")
+                .apply("LOWER(url) NOT REGEXP {0}", "^https?://[^/]+/dbt(/|[?#]|$)")
                 .isNull("deleted_at")
                 .and(query -> query.isNull("link_status").or().eq("link_status", "NORMAL").or().eq("link_status", ""))
                 .orderByDesc("created_at").last("LIMIT 50"));
@@ -489,7 +603,11 @@ public class QqBotServiceImpl implements IQqBotService {
         for (ResourceLink link : stored) {
             if (link == null || !movieId.equals(link.getMovieId()) || !Integer.valueOf(1).equals(link.getAuditStatus())
                     || !"ACTIVE".equalsIgnoreCase(link.getStatus()) || link.getDeletedAt() != null
-                    || !isNormalLink(link) || !hasText(link.getUrl())) continue;
+                    || !isNormalLink(link) || !hasText(link.getUrl()) || blocked(link.getName())
+                    || com.gying.movie.utils.GyingTorrentLinks.isAccountDownload(link.getUrl())
+                    || BaiduTemporaryScope.RESOURCE_SOURCE.equals(link.getSource())
+                    || cloudDiskOnly && !isCloudDiskResource(link)) continue;
+            if ("BAIDU".equalsIgnoreCase(link.getProvider()) && !validateBaiduLink(link)) continue;
             try {
                 java.net.URI uri = java.net.URI.create(link.getUrl().trim());
                 String scheme = firstText(uri.getScheme(), "").toLowerCase(Locale.ROOT);
@@ -501,6 +619,20 @@ public class QqBotServiceImpl implements IQqBotService {
         return List.copyOf(unique.values());
     }
 
+    // Provider alone is insufficient: P2P metadata archives also use QUARK/XUNLEI shares.
+    private boolean isCloudDiskResource(ResourceLink link) {
+        if (link == null || !"DISK".equalsIgnoreCase(link.getType()) || !hasText(link.getUrl())) {
+            return false;
+        }
+        try {
+            java.net.URI uri = java.net.URI.create(link.getUrl().trim());
+            return Set.of("http", "https").contains(firstText(uri.getScheme(), "").toLowerCase(Locale.ROOT))
+                    && hasText(uri.getHost());
+        } catch (IllegalArgumentException invalidUrl) {
+            return false;
+        }
+    }
+
     private String finishSearch(
             String userKey,
             String keyword,
@@ -509,6 +641,8 @@ public class QqBotServiceImpl implements IQqBotService {
             int resourceCount,
             String reply,
             String failureReason) {
+        SearchTiming timing = searchTiming.get();
+        if (timing != null) timing.status = status;
         try {
             QqBotSearchLog item = new QqBotSearchLog();
             item.setUserKey(trim(firstText(userKey, "anonymous"), 100));
@@ -548,15 +682,16 @@ public class QqBotServiceImpl implements IQqBotService {
         }
 
         boolean allProviders = QqResourcePreferenceParser.ALL.equals(preference.provider());
-        if ("BAIDU".equals(preference.provider())) {
-            return finishSearch(userKey, requestedCommand, "UNSUPPORTED_PROVIDER", movie.getId(), 0,
-                    "暂不支持百度网盘服务，请使用夸克或迅雷。", "baidu provider is not supported");
-        }
         if (!allProviders && !OWNED_SHARE_PROVIDERS.contains(preference.provider())) {
             return finishSearch(userKey, requestedCommand, "UNSUPPORTED_PROVIDER", movie.getId(), 0,
-                    "目前仅支持夸克和迅雷自有分享链接。", "unsupported cloud provider");
+                    "目前支持夸克、迅雷和百度自有分享链接。", "unsupported cloud provider");
         }
         List<String> searchNotes = new ArrayList<>();
+        // An explicit follow-up must not loop back to the library reply. A current
+        // video cloud share can override stale release metadata; P2P archives cannot.
+        if (isUpcoming(movie) && loadLibraryResources(movie.getId(), true).isEmpty()) {
+            return finishSearch(userKey, context.keyword(), "TRAILER", movie.getId(), 0, buildUpcomingReply(movie), null);
+        }
         ResourceCandidates candidates = activeResourceCandidates(userKey);
         if (candidates == null || !context.movieId().equals(candidates.movieId())) {
             List<ResourceChoice> discovered = findResourceChoices(movie, context.keyword(), searchNotes);
@@ -567,7 +702,7 @@ public class QqBotServiceImpl implements IQqBotService {
         }
         if (candidates == null || candidates.allResources().isEmpty()) {
             String detail = searchNotes.isEmpty()
-                    ? "暂未找到可用的夸克或迅雷资源；已完成多次搜索，请稍后再试。"
+                    ? "暂未找到可用的夸克、迅雷或百度资源；已完成多次搜索，请稍后再试。"
                     : String.join("；", searchNotes);
             return finishSearch(userKey, requestedCommand, "NO_RESOURCE", movie.getId(), 0,
                     "没有找到可供选择的资源：" + detail, detail);
@@ -617,6 +752,7 @@ public class QqBotServiceImpl implements IQqBotService {
                     new QueryWrapper<ResourceDiscoveryResult>()
                             .eq("movie_id", movie.getId())
                             .in("provider", OWNED_SHARE_PROVIDERS)
+                            .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                             .in("status", List.of("DISCOVERED", "FAILED"))
                             .orderByDesc("confidence")
                             .orderByDesc("created_at")
@@ -627,13 +763,14 @@ public class QqBotServiceImpl implements IQqBotService {
             Set<String> identities = new LinkedHashSet<>();
             choices.forEach(choice -> identities.add(choice.identity()));
             for (ResourceDiscoveryResult discovery : discoveries) {
+                if (discovery == null || BaiduTemporaryScope.isTemporaryDiscovery(discovery)) continue;
                 ResourceChoice choice = ResourceChoice.discovery(discovery);
                 if (hasText(choice.name()) && identities.add(choice.identity())) {
                     choices.add(choice);
                 }
             }
         }
-        return prioritizeResourceChoices(choices);
+        return prioritizeResourceChoices(choices.stream().filter(choice -> !blocked(choice.name())).toList());
     }
 
     private void discoverResourceCandidates(MovieMetadata movie, String keyword, List<String> searchNotes) {
@@ -692,6 +829,9 @@ public class QqBotServiceImpl implements IQqBotService {
                     buildSelectedResourceReply(candidates.movieId(), candidates.movieTitle(), ready)
                             + (remaining == null ? "" : continuationReply(remaining)), null);
         }
+        if ("BAIDU".equalsIgnoreCase(choice.provider())) {
+            return completeBaiduResourceSelection(userKey, requestedKeyword, candidates, choice);
+        }
         List<String> transferNotes = new ArrayList<>();
         ResourceLink transferred = transferSelectedDiscovery(choice.discoveryId(), transferNotes);
         if (transferred != null) {
@@ -705,15 +845,48 @@ public class QqBotServiceImpl implements IQqBotService {
                     buildSelectedResourceReply(candidates.movieId(), candidates.movieTitle(), transferred)
                             + (remaining == null ? "" : continuationReply(remaining)), null);
         }
-        String detail = transferNotes.isEmpty()
-                ? "所选资源多次转存后仍失败，可能无资源、违规或分享内没有视频文件。"
-                : String.join("；", transferNotes);
+        String detail = transferNotes.stream()
+                .filter(note -> !note.startsWith("已"))
+                .map(this::userFacingTransferError)
+                .distinct().limit(2)
+                .collect(java.util.stream.Collectors.joining("；"));
+        if (detail.isBlank()) detail = "本次未能生成可用分享，请选择其他资源或稍后重试。";
         rememberFailedResourceSelection(userKey, candidates);
         String reply = containsInvalidShareError(transferNotes)
                 ? invalidResourceSelectionReply(candidates)
                 : "所选资源处理失败：" + detail + "\n请继续回复其他资源序号（1-"
                         + candidates.resources().size() + "），无需重新搜索。";
-        return finishSearch(userKey, requestedKeyword, "NO_RESOURCE", candidates.movieId(), 0, reply, detail);
+        return finishSearch(userKey, requestedKeyword, "NO_RESOURCE", candidates.movieId(), 0, reply, String.join("；", transferNotes));
+    }
+
+    private String completeBaiduResourceSelection(String userKey, String keyword, ResourceCandidates candidates, ResourceChoice choice) {
+        BaiduTemporaryTransferService.SelectionResult selected = baiduTransfers == null
+                ? new BaiduTemporaryTransferService.SelectionResult(null, "BAIDU_NOT_READY", null, null)
+                : baiduTransfers.select(choice.discoveryId(), userKey);
+        if (selected.resource() != null && selected.expiresAt() != null) {
+            ResourceCandidates remaining = removeSelectedResource(candidates, choice);
+            if (remaining == null) resourceCandidates.remove(candidateUserKey(userKey));
+            else resourceCandidates.put(candidateUserKey(userKey), remaining);
+            String expiry = selected.expiresAt().format(java.time.format.DateTimeFormatter.ofPattern("MM-dd HH:mm"));
+            String cleanupNotice = baiduTransfers != null && baiduTransfers.automaticCleanupEnabled()
+                    ? "百度临时分享预计于 " + expiry + " 自动清理，请及时转存到自己的网盘。"
+                    : "百度临时分享预计于 " + expiry + " 到期；自动清理当前关闭，请及时转存到自己的网盘。";
+            return finishSearch(userKey, keyword, "SUCCEEDED", candidates.movieId(), 1,
+                    buildSelectedResourceReply(candidates.movieId(), candidates.movieTitle(), selected.resource())
+                    + "\n\n" + cleanupNotice
+                    + (remaining == null ? "" : continuationReply(remaining)), null);
+        }
+        rememberFailedResourceSelection(userKey, candidates);
+        String status = firstText(selected.status(), "WAITING_SHARE");
+        String reply = switch (status) {
+            case "WAITING_TRANSFER", "WAITING_SHARE", "RUNNING", "PENDING" ->
+                    "已提交，正在确认百度转存或分享。请稍后回复同一资源序号查询进度，无需重新搜索。";
+            case "EXPIRED" -> "本次百度临时分享已到期，清理确认完成后可重新选择同一资源。";
+            case "BAIDU_NOT_READY" -> "百度转存暂不可用，请检查百度网盘登录和转存设置。";
+            case "ACTION_REQUIRED", "REVIEW_REQUIRED" -> "百度任务需要检查账号或资源，请稍后查询，避免重复转存。";
+            default -> "当前百度资源暂不可用，请继续选择其他资源序号。";
+        };
+        return finishSearch(userKey, keyword, status, candidates.movieId(), 0, reply, status);
     }
 
     private void rememberFailedResourceSelection(String userKey, ResourceCandidates candidates) {
@@ -748,20 +921,27 @@ public class QqBotServiceImpl implements IQqBotService {
                     return null;
                 }
                 submitXunleiTransferTask(task, transferNotes);
-                syncTaskShareToDiscovery(discovery, xunleiTransferTaskService.getById(task.getId()));
-            } else {
+                XunleiTransferTask completed = xunleiTransferTaskService.getById(task.getId());
+                if (completed == null || !hasText(completed.getShareUrl())) return null;
+                syncTaskShareToDiscovery(discovery, completed);
+            } else if ("QUARK".equalsIgnoreCase(discovery.getProvider())) {
                 QuarkTransferTask task = findOrCreateQqQuarkTask(discovery);
                 if (task == null) {
                     transferNotes.add("未创建夸克临时转存任务，请稍后重试");
                     return null;
                 }
                 submitTransferTask(task, transferNotes);
-                syncTaskShareToDiscovery(discovery, quarkTransferTaskService.getById(task.getId()));
+                QuarkTransferTask completed = quarkTransferTaskService.getById(task.getId());
+                if (completed == null || !hasText(completed.getShareUrl())) return null;
+                syncTaskShareToDiscovery(discovery, completed);
+            } else {
+                transferNotes.add("该网盘需使用专属转存通道");
+                return null;
             }
             ResourceHubPublishResult publishResult = resourceHubPublishService.publishDiscovery(discoveryId);
             if (publishResult != null && publishResult.getFailed() > 0
                     && publishResult.getErrors() != null && !publishResult.getErrors().isEmpty()) {
-                transferNotes.add(safeError(publishResult.getErrors().get(0)));
+                transferNotes.add(publishResult.getErrors().get(0));
             }
             ResourceDiscoveryResult refreshed = discoveryResultService.getById(discoveryId);
             if (refreshed != null && refreshed.getResourceLinkId() != null) {
@@ -883,7 +1063,7 @@ public class QqBotServiceImpl implements IQqBotService {
             }
             if (result != null && result.getFailed() > 0
                     && result.getErrors() != null && !result.getErrors().isEmpty()) {
-                transferNotes.add(safeError(result.getErrors().get(0)));
+                transferNotes.add(result.getErrors().get(0));
             }
         } catch (Exception e) {
             transferNotes.add(userFacingTransferError(e.getMessage()));
@@ -891,7 +1071,8 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private void ensureShareUrl(QuarkTransferTask task, List<String> transferNotes) {
-        if (task == null || !resourceHubProperties.getQuark().isShareEnabled()) {
+        if (task == null || !"SUBMITTED".equalsIgnoreCase(task.getStatus())
+                || !resourceHubProperties.getQuark().isShareEnabled()) {
             return;
         }
         try {
@@ -900,7 +1081,7 @@ public class QqBotServiceImpl implements IQqBotService {
                 transferNotes.add("已创建我的夸克分享");
             }
         } catch (Exception e) {
-            transferNotes.add("创建分享失败：" + safeError(e.getMessage()));
+            transferNotes.add("创建分享失败：" + e.getMessage());
         }
     }
 
@@ -921,7 +1102,7 @@ public class QqBotServiceImpl implements IQqBotService {
             }
             if (result != null && result.getFailed() > 0
                     && result.getErrors() != null && !result.getErrors().isEmpty()) {
-                transferNotes.add(safeError(result.getErrors().get(0)));
+                transferNotes.add(result.getErrors().get(0));
             }
         } catch (Exception e) {
             transferNotes.add(userFacingTransferError(e.getMessage()));
@@ -955,6 +1136,10 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private MovieMetadata syncExactMovieMetadata(String keyword) {
+        return timedSearchStage("tmdb_metadata", () -> syncExactMovieMetadataUntimed(keyword));
+    }
+
+    private MovieMetadata syncExactMovieMetadataUntimed(String keyword) {
         for (String searchKeyword : buildMetadataSearchKeywords(keyword)) {
             try {
                 MovieMetadata movie = tmdbMetadataSyncService.syncExactByKeyword(searchKeyword);
@@ -1025,14 +1210,14 @@ public class QqBotServiceImpl implements IQqBotService {
                 .toList();
         List<MovieSearchCandidate> gying;
         try {
-            gying = gyingSourceWorkflowService.searchCandidates(keyword, MAX_CANDIDATE_SUGGESTIONS);
+            gying = timedSearchStage("gying_candidates", () -> gyingSourceWorkflowService.suggestCandidates(keyword, MAX_CANDIDATE_SUGGESTIONS));
         } catch (Exception e) {
             log.warn("GYING candidate search failed for QQ keyword {}", keyword, e);
             gying = List.of();
         }
         List<MovieSearchCandidate> tmdb;
         try {
-            tmdb = tmdbMetadataSyncService.searchCandidatesByKeyword(keyword, MAX_CANDIDATE_SUGGESTIONS);
+            tmdb = timedSearchStage("tmdb_candidates", () -> tmdbMetadataSyncService.searchCandidatesByKeyword(keyword, MAX_CANDIDATE_SUGGESTIONS));
             tmdb.forEach(candidate -> {
                 if (!hasText(candidate.getSource())) {
                     candidate.setSource("TMDB");
@@ -1054,7 +1239,8 @@ public class QqBotServiceImpl implements IQqBotService {
                 gying,
                 fallback,
                 MAX_CANDIDATE_SUGGESTIONS,
-                MAX_GYING_CANDIDATE_SUGGESTIONS);
+                MAX_GYING_CANDIDATE_SUGGESTIONS).stream()
+                .filter(candidate -> !blocked(candidate.getTitle()) && !blocked(candidate.getOriginalTitle())).toList();
     }
 
     private String resolveCandidateMediaType(MovieMetadata movie) {
@@ -1132,6 +1318,15 @@ public class QqBotServiceImpl implements IQqBotService {
             MovieMetadata local = movieService.getById(candidate.getLocalMovieId());
             if (local != null && !"DELETED".equalsIgnoreCase(local.getStatus())) {
                 return local;
+            }
+        }
+        if (candidate.getTmdbId() != null && candidate.getTmdbId() > 0) {
+            try {
+                return timedSearchStage("tmdb_selected_metadata", () -> tmdbMetadataSyncService.syncSelectedCandidate(candidate));
+            } catch (Exception error) {
+                log.warn("event=qq_selected_metadata_failed source=TMDB exception_type={}",
+                        error.getClass().getSimpleName());
+                return null;
             }
         }
         return syncExactMovieMetadata(candidateTitle(candidate));
@@ -1352,17 +1547,15 @@ public class QqBotServiceImpl implements IQqBotService {
         if (!hasText(releaseDates)) {
             return null;
         }
-        for (String part : releaseDates.split("[,/;|\\s]+")) {
-            String value = part.trim();
-            if (value.length() >= 10) {
-                try {
-                    return LocalDate.parse(value.substring(0, 10));
-                } catch (DateTimeParseException ignored) {
-                    // Try the next date token.
-                }
-            }
+        LocalDate earliest = null;
+        Matcher dates = Pattern.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}").matcher(releaseDates);
+        while (dates.find()) {
+            try {
+                LocalDate date = LocalDate.parse(dates.group());
+                if (earliest == null || date.isBefore(earliest)) earliest = date;
+            } catch (DateTimeParseException ignored) { /* Ignore malformed source dates. */ }
         }
-        return null;
+        return earliest;
     }
 
     private void markTrailer(MovieMetadata movie) {
@@ -1449,6 +1642,8 @@ public class QqBotServiceImpl implements IQqBotService {
         return resourceLinkService.list(new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId)
                 .in("provider", providers)
+                .eq("type", "DISK")
+                .isNull("deleted_at")
                 .eq("audit_status", 1)
                 .eq("status", "ACTIVE")
                 .orderByDesc("created_at")
@@ -1489,6 +1684,8 @@ public class QqBotServiceImpl implements IQqBotService {
         List<ResourceLink> relatedCandidates = resourceLinkService.list(new QueryWrapper<ResourceLink>()
                 .ne("movie_id", movie.getId())
                 .in("provider", providers)
+                .eq("type", "DISK")
+                .isNull("deleted_at")
                 .eq("source", "RESOURCE_HUB")
                 .eq("audit_status", 1)
                 .eq("status", "ACTIVE")
@@ -1528,7 +1725,7 @@ public class QqBotServiceImpl implements IQqBotService {
             Set<String> providers,
             int limit) {
         List<ResourceLink> result = new ArrayList<>();
-        for (String provider : List.of("QUARK", "XUNLEI")) {
+        for (String provider : List.of("QUARK", "XUNLEI", "BAIDU")) {
             if (!providers.contains(provider)) {
                 continue;
             }
@@ -1559,7 +1756,7 @@ public class QqBotServiceImpl implements IQqBotService {
         Map<String, ResourceChoice> unique = new LinkedHashMap<>();
         for (ResourceChoice candidate : candidates) {
             if (candidate != null && hasText(candidate.identity())) {
-                unique.putIfAbsent(candidate.identity().trim().toLowerCase(Locale.ROOT), candidate);
+                unique.putIfAbsent(resourceIdentity(candidate.provider(), candidate.identity()), candidate);
             }
         }
         List<ResourceChoice> quark = unique.values().stream()
@@ -1581,9 +1778,17 @@ public class QqBotServiceImpl implements IQqBotService {
 
     private String resourceIdentity(ResourceLink link) {
         if (link != null && hasText(link.getUrl())) {
-            return link.getUrl().trim().toLowerCase();
+            return resourceIdentity(link.getProvider(), link.getUrl());
         }
         return link != null && link.getId() != null ? "id:" + link.getId() : "missing";
+    }
+
+    private String resourceIdentity(String provider, String value) {
+        if ("BAIDU".equalsIgnoreCase(provider)) {
+            try { return BaiduWebClient.normalizeShareUrl(value, null); }
+            catch (Exception invalid) { return value.trim(); }
+        }
+        return value.trim().toLowerCase(Locale.ROOT);
     }
 
     private List<ResourceLink> loadResources(
@@ -1594,6 +1799,8 @@ public class QqBotServiceImpl implements IQqBotService {
         int limit = safeMaxResults(maxResults);
         QueryWrapper<ResourceLink> query = new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId)
+                .eq("type", "DISK")
+                .isNull("deleted_at")
                 .eq("audit_status", 1)
                 .eq("status", "ACTIVE");
         if (providers != null && !providers.isEmpty()) {
@@ -1634,7 +1841,8 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private boolean isOwnedShare(ResourceLink link) {
-        if (link == null || !OWNED_SHARE_PROVIDERS.contains(
+        if (link != null && "BAIDU".equalsIgnoreCase(link.getProvider())) return validateBaiduLink(link);
+        if (!isCloudDiskResource(link) || !OWNED_SHARE_PROVIDERS.contains(
                 firstText(link.getProvider(), "").toUpperCase(Locale.ROOT))) {
             return false;
         }
@@ -1701,8 +1909,24 @@ public class QqBotServiceImpl implements IQqBotService {
         return requestedSeason ? 2 : 4;
     }
 
+    private boolean validateBaiduLink(ResourceLink link) {
+        if (link == null || baiduTransfers == null || BaiduTemporaryScope.RESOURCE_SOURCE.equals(link.getSource())
+                || link.getDeletedAt() != null || !"ACTIVE".equalsIgnoreCase(link.getStatus()) || !hasText(link.getUrl())) return false;
+        String key = java.util.Objects.toString(link.getId(), "") + ":" + link.getUrl();
+        Map<String, Boolean> cached = baiduValidation.get();
+        if (cached != null && cached.containsKey(key)) return cached.get(key);
+        boolean valid;
+        try { valid = baiduTransfers.validateOwnedResource(link); }
+        catch (Exception unavailable) { valid = false; }
+        if (cached != null) cached.put(key, valid);
+        return valid;
+    }
+
     private ResourceLink prepareResourceForReply(ResourceLink link) {
-        if (link == null || !hasText(link.getUrl())) {
+        if (link != null && "BAIDU".equalsIgnoreCase(link.getProvider())) {
+            return isCloudDiskResource(link) && validateBaiduLink(link) ? link : null;
+        }
+        if (!isCloudDiskResource(link)) {
             return null;
         }
         if (isPermanentInvalid(link)) {
@@ -1802,6 +2026,7 @@ public class QqBotServiceImpl implements IQqBotService {
 
     private void retireTransferForRediscovery(ResourceLink link, String reason) {
         LocalDateTime now = LocalDateTime.now();
+        if ("BAIDU".equalsIgnoreCase(link.getProvider())) return;
         if ("XUNLEI".equalsIgnoreCase(link.getProvider())) {
             XunleiTransferTask task = findXunleiTransferTask(link);
             if (task != null) {
@@ -1982,18 +2207,23 @@ public class QqBotServiceImpl implements IQqBotService {
         resourceLinkService.updateById(link);
     }
 
-    private String firstBlockedKeyword(String keyword) {
-        if (!hasText(qqBotProperties.getBlockedKeywords())) {
-            return null;
-        }
-        String normalized = keyword.trim().toLowerCase();
-        for (String item : qqBotProperties.getBlockedKeywords().split("[,，|;；\\n\\r]+")) {
-            String blocked = item.trim();
-            if (hasText(blocked) && normalized.contains(blocked.toLowerCase())) {
-                return blocked;
-            }
-        }
-        return null;
+    private boolean blocked(String value) {
+        return com.gying.movie.utils.SearchKeywordPolicy.blocked(value, searchKeywordSnapshot.get() == null
+                ? qqBotProperties.getBlockedKeywords() : searchKeywordSnapshot.get());
+    }
+
+    private boolean blockedMovie(MovieMetadata movie) {
+        return movie != null && (blocked(movie.getTitleCn()) || blocked(movie.getTitleEn())
+                || blocked(movie.getSeriesName()) || blocked(movie.getAliases()));
+    }
+
+    private String blockedReply(String userKey, String keyword) {
+        String key = candidateUserKey(userKey);
+        suggestedCandidates.remove(key);
+        resourceCandidates.remove(key);
+        resourceSearchContexts.remove(key);
+        return finishSearch(userKey, keyword, "BLOCKED", null, 0,
+                "搜索词包含不支持的内容，请更换关键词。", "blocked content policy");
     }
 
     private String buildNoResourceReply(MovieMetadata movie, List<String> searchNotes) {
@@ -2006,7 +2236,7 @@ public class QqBotServiceImpl implements IQqBotService {
         appendLine(reply, "地区", join(movie.getRegions()));
         appendLine(reply, "评分", rating(movie));
         appendLine(reply, "简介", trim(movie.getSummary(), 180));
-        reply.append("\n\n多次搜索后仍未找到可供选择的夸克或迅雷资源。");
+        reply.append("\n\n多次搜索后仍未找到可供选择的夸克、迅雷或百度资源。");
         if (searchNotes != null && !searchNotes.isEmpty()) {
             reply.append("\n处理提示：").append(String.join("；", searchNotes));
         }
@@ -2033,17 +2263,7 @@ public class QqBotServiceImpl implements IQqBotService {
                 .toList();
         if (!ownedChoices.isEmpty()) {
             reply.append("\n\n资源库已有资源（可直接使用）：");
-            for (ResourceChoice choice : ownedChoices) {
-                ResourceLink link = choice.resourceLink();
-                reply.append("\n- ").append(displayResourceChoiceName(choice, title(movie)))
-                        .append(" [").append(resourceProviderLabel(choice.provider())).append("]");
-                if (hasText(link.getUrl())) {
-                    reply.append("\n  ").append(link.getUrl());
-                }
-                if (hasText(link.getCode())) {
-                    reply.append("\n  提取码：").append(link.getCode());
-                }
-            }
+            appendGroupedResources(reply, ownedChoices.stream().map(ResourceChoice::resourceLink).toList(), title(movie));
             reply.append("\n\n如需其他版本或网盘，请继续回复下面的资源序号：");
         } else {
             reply.append("\n\n请选择资源（回复序号后再返回对应资源）：");
@@ -2070,6 +2290,38 @@ public class QqBotServiceImpl implements IQqBotService {
         return trim(name, 100);
     }
 
+    private String resourceKind(ResourceLink link) {
+        if (link.getUrl() != null && link.getUrl().toLowerCase(Locale.ROOT).startsWith("magnet:")) return "MAGNET";
+        if ("MAGNET".equalsIgnoreCase(link.getType())) return "MAGNET";
+        if ("TORRENT".equalsIgnoreCase(link.getType())) return "TORRENT";
+        return "ONLINE".equalsIgnoreCase(link.getType()) ? "ONLINE" : "DISK";
+    }
+
+    private String resourceKindLabel(String kind) {
+        return switch (kind) {
+            case "MAGNET" -> "磁力资源";
+            case "TORRENT" -> "种子资源（仅种子/磁力文件，不含视频）";
+            case "ONLINE" -> "在线资源";
+            default -> "网盘资源";
+        };
+    }
+
+    private void appendGroupedResources(StringBuilder reply, List<ResourceLink> links, String movieTitle) {
+        for (String kind : List.of("DISK", "MAGNET", "TORRENT", "ONLINE")) {
+            var group = links.stream().filter(link -> kind.equals(resourceKind(link))).toList();
+            if (group.isEmpty()) continue;
+            reply.append("\n\n").append(resourceKindLabel(kind)).append("：");
+            for (ResourceLink link : group) {
+                reply.append("\n- ").append(firstText(link.getName(), movieTitle));
+                if ("DISK".equals(kind) || "TORRENT".equals(kind)) {
+                    reply.append(" [").append(resourceProviderLabel(link.getProvider())).append("]");
+                }
+                if (hasText(link.getUrl())) reply.append("\n  ").append(link.getUrl());
+                if (hasText(link.getCode())) reply.append("\n  提取码：").append(link.getCode());
+            }
+        }
+    }
+
     private String resourceProviderLabel(String provider) {
         return firstText(
                 provider == null ? null : QqResourcePreferenceParser.label(provider.toUpperCase(Locale.ROOT)),
@@ -2090,7 +2342,11 @@ public class QqBotServiceImpl implements IQqBotService {
             appendLine(reply, "简介", trim(movie.getSummary(), 180));
         }
         reply.append("\n\n已选择资源：").append(firstText(link.getName(), resolvedTitle));
-        reply.append("\n网盘：").append(firstText(link.getProvider(), "未知"));
+        String kind = resourceKind(link);
+        reply.append("\n资源类型：").append(resourceKindLabel(kind));
+        if ("DISK".equals(kind) || "TORRENT".equals(kind)) {
+            reply.append("\n网盘：").append(resourceProviderLabel(link.getProvider()));
+        }
         if (hasText(link.getUrl())) {
             reply.append("\n").append(link.getUrl());
         }
@@ -2101,17 +2357,17 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private void appendResourcePreferenceHint(StringBuilder reply) {
-        reply.append("\n\n需要筛选网盘，可在 5 分钟内回复“夸克”或“迅雷”；不再支持按数量批量转存，请从资源候选中回复序号。");
+        reply.append("\n\n需要筛选网盘，可在 5 分钟内回复“夸克”、“迅雷”或“百度”；不再支持按数量批量转存，请从资源候选中回复序号。");
     }
 
     private void addSavedPathNote(QuarkTransferTask task, List<String> transferNotes) {
-        if (task != null && hasText(task.getSavedPath())) {
+        if (task != null && hasText(task.getSavedPath()) && hasText(task.getShareUrl())) {
             transferNotes.add("已转存到 " + task.getSavedPath());
         }
     }
 
     private void addSavedPathNote(XunleiTransferTask task, List<String> transferNotes) {
-        if (task != null && hasText(task.getSavedPath())) {
+        if (task != null && hasText(task.getSavedPath()) && hasText(task.getShareUrl())) {
             transferNotes.add("已转存到 " + task.getSavedPath());
         }
     }
@@ -2308,40 +2564,57 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private String userFacingTransferError(String message) {
-        String detail = safeError(message);
-        String lower = detail.toLowerCase(Locale.ROOT);
-        if (isInvalidShareError(detail)) {
-            return "该分享已失效，不可访问";
+        String lower = java.util.Objects.toString(message, "").toLowerCase(Locale.ROOT);
+        // Classify the full diagnostic before truncation: task/source prefixes
+        // can otherwise hide the actual cause beyond the first 120 characters.
+        if (lower.contains("no transferred media") || lower.contains("no new matching")
+                || lower.contains("没有新的转存任务") || lower.contains("本次未转入视频")) {
+            return "转存失败：本次未转入视频，不代表原分享没有视频，请选择其他资源或联系管理员处理";
         }
-        if (lower.contains("no video")
-                || lower.contains("no transferred media")
-                || lower.contains("no new matching")
-                || lower.contains("没有视频")
-                || lower.contains("无视频")) {
-            return "转存失败：分享内没有视频文件";
+        if (lower.contains("target movie directory") || lower.contains("movie directory scan limit")
+                || lower.contains("target movie metadata") || lower.contains("未能确认目标影片子目录")) {
+            return "转存失败：未能确认目标影片子目录，已停止转存以避免混入其他影片";
         }
-        if (lower.contains("违规")
-                || lower.contains("forbidden")
-                || lower.contains("violation")
-                || lower.contains("policy")
-                || lower.contains("blocked")) {
+        // A directory lookup is the failed operation, not the root cause.
+        // Interpret concrete provider errors before generic lookup failures.
+        if (isInvalidShareError(message)) return "该分享已失效，不可访问";
+        if (lower.contains("登录") || lower.contains("未登录") || lower.contains("not logged in")
+                || lower.contains("login expired") || lower.contains("login required")
+                || lower.contains("cookie is not configured") || lower.contains("cookie expired")) {
+            return "转存失败：网盘登录已失效或未配置，请联系管理员重新登录后重试";
+        }
+        if (lower.contains("http 401") || lower.contains("unauthorized") || lower.contains("认证失败")) {
+            return "转存失败：转存服务认证失败，请联系管理员检查账号和服务配置";
+        }
+        if (lower.contains("违规") || lower.contains("forbidden") || lower.contains("violation")
+                || lower.contains("policy") || lower.contains("blocked")) {
             return "转存失败：资源可能违规或已被平台拦截";
         }
-        if (lower.contains("not found")
-                || lower.contains("不存在")
-                || lower.contains("invalid")
-                || lower.contains("失效")
-                || lower.contains("分享为空")) {
-            return "转存失败：资源无效或已无资源";
+        if (lower.contains("提取码") || lower.contains("passcode")) {
+            return "转存失败：分享需要正确的提取码";
         }
-        return "转存失败：" + detail;
+        if (lower.contains("share detail request failed")) {
+            return "转存失败：分享目录请求失败，请稍后重试；无法据此判断分享是否失效";
+        }
+        if (lower.contains("read quark share directory") || lower.contains("source directory listing")
+                || lower.contains("share detail response") || lower.contains("暂时无法读取分享目录")) {
+            return "转存失败：未能读取分享目录，具体原因尚未确认，请选择其他资源或联系管理员检查";
+        }
+        if (lower.contains("saved quark folder") || lower.contains("saved folder")
+                || lower.contains("quark save path")) {
+            return "转存失败：保存目录暂不可用，不能据此判断原分享是否有视频";
+        }
+        if (lower.contains("no video") || lower.contains("没有视频") || lower.contains("无视频")) {
+            return "转存失败：分享内没有视频文件";
+        }
+        // Internal paths, exception chains and provider responses stay in task
+        // diagnostics, not the public QQ reply.
+        return "转存失败：本次未能生成可用分享，请稍后重试或选择其他资源";
     }
 
     private boolean isInvalidShareError(String message) {
-        String lower = firstText(message, "").toLowerCase(Locale.ROOT);
-        return lower.contains("read quark share directory failed")
-                || lower.contains("share detail request failed")
-                || lower.contains("好友已取消")
+        String lower = java.util.Objects.toString(message, "").toLowerCase(Locale.ROOT);
+        return lower.contains("好友已取消")
                 || lower.contains("分享已取消")
                 || lower.contains("分享已失效")
                 || lower.contains("分享不存在")
@@ -2371,7 +2644,7 @@ public class QqBotServiceImpl implements IQqBotService {
         return firstText(
                 qqBotProperties.getDefaultReply(),
                 "机器人使用方法：@机器人 搜/找 影片名\n"
-                        + "影片和资源候选保留 5 分钟；先选影片，再按资源名称回复序号，确认后才转存。可回复“夸克”或“迅雷”筛选，百度网盘暂不支持。");
+                        + "影片和资源候选保留 5 分钟；先选影片，再按资源名称回复序号，确认后才转存。可回复“夸克”、“迅雷”或“百度”筛选；临时分享按清理设置处理，请及时转存自己的网盘。");
     }
 
     private String trim(String value, int maxLength) {

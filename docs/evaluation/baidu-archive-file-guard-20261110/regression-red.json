@@ -1,0 +1,89 @@
+{
+  "run_id": "1a66ea5bf2bc",
+  "stage": "D:\\gying-movie\\movie\\tmp\\p2p-archive-red-1a66ea5bf2bc",
+  "startedAt": "2026-11-10T14:29:56.957219+00:00",
+  "scope": "Pure local mock P2pArchiveTaskService JUnit, red against frozen pre-fix main source",
+  "network": "none",
+  "production_changed": false,
+  "providerCalls": 0,
+  "sqlFixturesCreated": 0,
+  "image": "sha256:880934ae394bf91bc3e57d573e4fc04774f064f3c4df7ccd7cc10b3b126737bf",
+  "cleanup": [
+    {
+      "id": "5288b1ad5d674b05d31f06e2200f86b27f8e84696c147bd44d5c4f795335ecad",
+      "removed": true
+    }
+  ],
+  "isolation": {
+    "id": "5288b1ad5d674b05d31f06e2200f86b27f8e84696c147bd44d5c4f795335ecad",
+    "labels": {
+      "com.gying.fixture": "p2p-archive-junit",
+      "com.gying.fixture.run": "1a66ea5bf2bc",
+      "org.opencontainers.image.description": "Apache Maven is a software project management and comprehension tool. Based on the concept of a project object model (POM), Maven can manage a project's build, reporting and documentation from a central piece of information.",
+      "org.opencontainers.image.source": "https://github.com/carlossg/docker-maven",
+      "org.opencontainers.image.title": "Apache Maven",
+      "org.opencontainers.image.url": "https://github.com/carlossg/docker-maven",
+      "org.opencontainers.image.version": "24.04"
+    },
+    "network": "none",
+    "ports": {},
+    "mounts": [
+      {
+        "Destination": "/workspace",
+        "Mode": "",
+        "Propagation": "rprivate",
+        "RW": true,
+        "Source": "D:\\gying-movie\\movie\\tmp\\p2p-archive-red-1a66ea5bf2bc\\backend",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/m2",
+        "Mode": "",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "C:\\Users\\ASUS\\.m2\\repository",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/fixture-settings.xml",
+        "Mode": "",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "D:\\gying-movie\\movie\\tmp\\p2p-archive-red-1a66ea5bf2bc\\maven-settings.xml",
+        "Type": "bind"
+      }
+    ],
+    "tmpfs": {
+      "/tmp": "rw,nosuid,size=1g,mode=1777"
+    },
+    "user": "10001:10001",
+    "privileged": false,
+    "readonly": true,
+    "security": [
+      "no-new-privileges"
+    ],
+    "status": "created",
+    "exit": 0
+  },
+  "mavenExit": 1,
+  "test_summary": {
+    "totals": {
+      "tests": 72,
+      "failures": 5,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 67
+    },
+    "classes": {
+      "P2pArchiveTaskServiceTest": {
+        "tests": 72,
+        "failures": 5,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "required_sql_verified": false
+  },
+  "redReproduced": true,
+  "completedAt": "2026-11-10T14:33:55.215735+00:00"
+}

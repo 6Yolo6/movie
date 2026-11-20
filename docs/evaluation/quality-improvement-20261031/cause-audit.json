@@ -1,0 +1,5748 @@
+{
+  "schemaVersion": 1,
+  "auditedDate": "2026-10-31",
+  "timezone": "Asia/Shanghai",
+  "reviewer": {
+    "kind": "model",
+    "name": "Codex"
+  },
+  "scope": "重新逐条核对10月23日历史82条usefulness=0/unhelpful观测的依据与归因边界。人工完成数不变；未修改原题、freeze、报告或评分。primaryCause由实际观察后人工编写的模型诊断，脚本仅绑定与计数。",
+  "sourceBindings": {
+    "historicalReport": {
+      "fileByteSha256": "4886d17dd8a44f583f33126825cd9a44e5eff544a52e2c8689aa4cfe5e342320",
+      "canonicalSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06"
+    },
+    "historicalDataset": {
+      "fileByteSha256": "2f0866820c27941df00c2bf187048a16df02c6e4bb5dbdfce3a933c6ca5a2295"
+    },
+    "historicalModelReview": {
+      "fileByteSha256": "5b0fd367beb0579d8e03069437ea031709bf51a252c9733fa47dfff77ba9ae91"
+    },
+    "privateObservations": {
+      "fileByteSha256": "5398683af6b193dcc7f9c72a6b356413d70d3dde9a5b204abe0abf43aedbda07"
+    },
+    "sameDayPublicCatalog": {
+      "fileByteSha256": "9adb9d5aa763e0ef145a6c5b1f6743d99e0c22da1b9182d3790620a29aa495e5"
+    },
+    "currentAgentProbes": {
+      "fileByteSha256": "cad0a7290806984fecc94b435c2b86da17a26fba6701b4e6fc74a216244c643f"
+    }
+  },
+  "bindingLimits": "原回答hash为观测与报告保存的原始hash绑定声明；受限观测已省略链接/凭据，未用脱敏字符串重算hash冒充原文完整验证。同日catalog只作为公开元数据辅助来源，不是独立标签或原始工具返回。",
+  "historicalSummary": {
+    "targetAnswers": 82,
+    "distinctCaseTurns": 42,
+    "allUnhelpfulReasonsConfirmed": true,
+    "sourceHashBindingsMatched": 82,
+    "primaryCauseCounts": {
+      "condition_contract_not_satisfied": 22,
+      "empty_semantic_search_without_effective_clarification": 2,
+      "literal_title_routing": 36,
+      "multi_turn_subject_or_operation_lost": 10,
+      "reference_request_bypassed": 4,
+      "candidate_quantity_and_runtime_unit_failed": 2,
+      "same_entity_answer_contradiction_and_replacement_failed": 2,
+      "opaque_tool_result_without_effective_clarification": 4
+    },
+    "primaryCauseLabels": {
+      "literal_title_routing": "描述、实体关系或列表操作被当成字面片名查询",
+      "condition_contract_not_satisfied": "实际条件契约错误或关键条件未可核验地落实",
+      "multi_turn_subject_or_operation_lost": "多轮主体或集合操作丢失",
+      "reference_request_bypassed": "带明确参照或比较条件的推荐退回普通个性化推荐",
+      "empty_semantic_search_without_effective_clarification": "主题检索无候选后没有有效澄清",
+      "opaque_tool_result_without_effective_clarification": "工具依据缺失且回答没有有效澄清",
+      "candidate_quantity_and_runtime_unit_failed": "候选数量与时长口径未满足或未说明",
+      "same_entity_answer_contradiction_and_replacement_failed": "同一实体剧情依据矛盾且列表替换失败"
+    },
+    "overlapCategoryCounts": {
+      "conditions": 42,
+      "clarification": 68,
+      "candidates": 20,
+      "routing": 40,
+      "multiTurn": 26,
+      "facts": 2
+    },
+    "overlapCountWarning": "诊断类别重叠，不可相加作为失败轮数。primaryCause每条仅一个，互斥汇总82。",
+    "routes": {
+      "direct-catalog": 76,
+      "model-queue": 6
+    },
+    "onlyObservableAnswerDifferenceAcrossRepeatedTargets": [
+      "h21/turn3"
+    ],
+    "oneScorableRepetitionOnly": [
+      "h02/turn1/repetition2",
+      "h11/turn1/repetition2"
+    ],
+    "excludedFrom82": {
+      "partlyUsefulAnswers": 2,
+      "unansweredFailedTurns": 4
+    },
+    "humanReviewedAnswersAdded": 0
+  },
+  "classificationLimits": [
+    "无候选的candidates标签只能表示有用候选缺口，不能证明排名错误或库中存在精确解。",
+    "自然检索保留原query文字；缺少某硬filter并不单独证明该文字完全没有参与检索，可靠结论是条件未可核验地落实。",
+    "h02r2/h11r2/h24两次无原工具参数/结果，只能确认回答及澄清不足，检索因果未知。",
+    "h21首轮原文没明确说电影；tv不能单独判为违反电影类型，已确认的是数量不足未合理处理、时长单位不清及泛词匹配。",
+    "所有无回答任务失败的模型/检索根因未知，不从历史前轮语义错误推断。",
+    "10月23日旧路径已被10月25日结构化计划/人物核对/检索及候选上下文替换；旧82失败不等于现役失败率。"
+  ],
+  "rows": [
+    {
+      "caseId": "h01",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "robert-downey",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h01",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "演员值把错字及时间词合并为“小罗伯特人唐尼最近”，yearFrom/yearTo均空；空答复没有纠错、人物澄清或近期范围。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "我想看小罗伯特人唐尼最近演的片,动作剧情都可",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "剧情",
+              "动作"
+            ],
+            "category": "mv",
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [
+              "小罗伯特人唐尼最近"
+            ],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "无法由该错误姓名过滤的空结果证明正确人物及原条件在片库无解；类型并集执行关系未知。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h03",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-03",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "empty_semantic_search_without_effective_clarification",
+      "primaryCauseLabel": "主题检索无候选后没有有效澄清",
+      "overlapCategories": [
+        "candidates",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h03",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "动画/mv主题检索total=0，回答仅让用户减少条件或换描述；没有处理混合记忆、观看年代或画风。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "我想找一部小时候看的动画电影,女孩掉进洞里遇到会说话的猫,最后发现是梦",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "动画"
+            ],
+            "category": "mv",
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "没有返回候选，既有candidates标签仅表示未形成有用候选，不能证明候选排名错误或片库必有精确命中。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h04",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "e931bbe5135f08abcfa3e6d9b9a26375eea4418afb4f0846b313cdd39ae7d3b9",
+      "sourceGroup": "question-04",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "candidates",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h04",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 57,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "整句相似作品、东北小城和情绪要求进入title/searchMovies.keyword；空答复不能提供相似性依据或解释情绪偏好。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "类似《漫长的季节》那种东北小城、旧案、时间交错,但不要太压抑的剧",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "candidates属于未形成候选的需求缺口，不能由空查询认定某候选不相关或本库不存在相似作品。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h05",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "01c8c1c5233963f19243c7b2549a834d47a019ef3f955e2b24c892499dad2f82",
+      "sourceGroup": "question-05",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h05",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 44,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "周星驰作品及悲剧底色问题被当作字面keyword；未按人物作品或剧情风格作答，换片名提示不能处理风格问题。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "周星驰电影里不是纯搞笑、有点悲剧底色的",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "没有返回候选；不能据该文字搜索推断相关风格作品不存在。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h06",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "c7530fc6adc7b6a8f525585003c4ab19309dc33253b0d4b593b40d6d9517923a",
+      "sourceGroup": "question-06",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h06",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 45,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "黑镜单集剧情及“是哪集”整句进入keyword；没有季/集/集名，也未说明单集资料不足。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "一集《黑镜》讲社交评分把人逼疯的,是哪集",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "未返回剧集总条目或错误集号，因此不能增加杜撰单集或身份错配的事实归因。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h07",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "c65b042f76eb47889fc4d78dcb4b975a3ab52df53ea0ca1dd11dcc3b6047e3e6",
+      "sourceGroup": "question-07",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "candidates",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h07",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 48,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "上班族获得超能力的剧情要求整句进入片名keyword；没有带剧情依据的候选或具体追问。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "有没有讲普通上班族突然获得超能力但很怂的喜剧片",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "candidates表示没有满足线索的候选，不等于已有候选排名被证实错误。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h08",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "b1e297b7325b2f3d3f0e05c304a702b255a91af3930b7ba7642b39390681ec79",
+      "sourceGroup": "question-08",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h08",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 48,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "宫崎骏作品、七岁及惊吓限制整句进入keyword；没有人物作品集、分级/内容依据或需家长确认的边界。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "宫崎骏里适合和7岁小孩一起看、没有太吓人镜头的",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "未交付推荐，不能推定已经发生儿童内容违规或某片确实吓人。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h09",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-09",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h09",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "实际保留yearFrom=2021、maxRuntime=120、悬疑/mv；minRating=0及languages=[]，没有形成豆瓣>8、中文对白的可核验硬筛选；未说明缺口。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "2020年以后、豆瓣8分以上、120分钟以内、中文对白的悬疑片,不要网剧",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "悬疑"
+            ],
+            "category": "mv",
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": 2021,
+            "yearTo": null,
+            "maxRuntime": 120,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "原条件文字仍在query中，空filter只能证明未形成相应硬过滤，不能单独证明完全没参与文字检索；空结果不证明完整组合无解。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h10",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-10",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h10",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "仅有maxRuntime=100，没有90分钟下界；虽有minRating=7.5但未说明来源，Netflix未核验地区/日期。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "想看英语片,90-100分钟,喜剧或爱情,评分7.5以上,最好Netflix能看",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "喜剧",
+              "爱情"
+            ],
+            "category": null,
+            "year": null,
+            "minRating": 7.5,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": 100,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": [
+              "英语"
+            ]
+          }
+        }
+      },
+      "limits": "genres含喜剧/爱情不证明OR被错误执行；平台是最好可看的软偏好，不能将未查平台单独判作硬条件违规。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h12",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-12",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h12",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "year=2000与2000年后冲突，languages=[日语]与非日语冲突，directors=[日本]把国籍作为导演姓名；未提供具体电影节奖项。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "日本导演拍的非日语片,2000年后,拿过三大电影节奖项的",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": "mv",
+            "year": 2000,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [
+              "日本"
+            ],
+            "actors": [],
+            "regions": [],
+            "languages": [
+              "日语"
+            ]
+          }
+        }
+      },
+      "limits": "这是实际条件表达的错误，不等于已返回候选违反硬条件；未取到导演国籍或电影节外部事实，不能猜补候选。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h13",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-13",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h13",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "只可核验yearTo=2014，地区/类型字段空；没有双男主港片警匪及结局的核对，空答复没有说明限制。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "有没有双男主警匪港片,2015年前,结局不要太惨",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": null,
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": 2014,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "主题仍在query文字中；不能由空filter断言主题从所有检索阶段消失，也没有候选可判定结局偏好违规。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h14",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-14",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h14",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "regions只法国未表达法国或爱尔兰并集；“80分钟左右”被收成maxRuntime=80，没有容差；制作方排除未核验。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "动画电影,不是迪士尼皮克斯,法国或爱尔兰的,80分钟左右",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "动画"
+            ],
+            "category": "mv",
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": 80,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [
+              "法国"
+            ],
+            "languages": []
+          }
+        }
+      },
+      "limits": "这是表达与核验缺口；没有候选，不能反推某作品制作方确实违反排除。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h15",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-15",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h15",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "韩国/mv/minRating=7存在，但评分来源、女主复仇主题及内容排除没有核验或解释；仅通用空答复。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "我想看女主复仇但不要强奸暴力镜头的韩国电影,评分7分以上",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": "mv",
+            "year": null,
+            "minRating": 7.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [
+              "韩国"
+            ],
+            "languages": []
+          }
+        }
+      },
+      "limits": "内容词仍在原query；没有实际候选，不能把未核验性暴力镜头升级为已发生硬条件违规。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h16",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-16",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h16",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "纪录片/maxRuntime=60存在，40分钟下界及单集时长口径未表达；美食主题、非探店没有核验或有效说明。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "纪录片,讲美食但不要探店,40-60分钟一集,适合吃饭看",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "纪录片"
+            ],
+            "category": null,
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": 60,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "一集不是整片时长；不能把数据库runtime字段自动当逐集时长证明，也不能由空结果证明美食作品不存在。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h17",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "robert-downey",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h17",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "姓名正确时仍将“最近”并入actors=[小罗伯特·唐尼最近]，没有年份范围或人物纠正；空答复未有效澄清。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "想看小罗伯特·唐尼最近演的片,动作剧情都可",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "剧情",
+              "动作"
+            ],
+            "category": "mv",
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [
+              "小罗伯特·唐尼最近"
+            ],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "表明历史姓名切分错误；不能根据错误过滤的零结果推断演员无作品。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h17",
+      "repetition": 1,
+      "turn": 2,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "robert-downey",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "multi_turn_subject_or_operation_lost",
+      "primaryCauseLabel": "多轮主体或集合操作丢失",
+      "overlapCategories": [
+        "conditions",
+        "multiTurn",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h17",
+          "repetition": 1,
+          "turn": 2
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 2,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "已提交两条历史，query却只剩排钢铁侠/近五年配角，actors及年份边界全空；未延续唐尼主体或说明前轮无候选。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "不要钢铁侠,要近五年配角",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": null,
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "历史传输数量存在不证明服务已正确使用；角色与配角没有外部依据，不能猜哪些片符合。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。当前仍需独立多轮集合/指代/实体依据专项验证，不能由现役支持previousJobId或单测通过推定质量通过。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h17",
+      "repetition": 1,
+      "turn": 3,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "a2f946b8cb2aa12313a98711fea17139355f13a8c0760994a96866e330e8f610",
+      "sourceGroup": "robert-downey",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h17",
+          "repetition": 1,
+          "turn": 3
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 4,
+        "answerChars": 36,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "四条历史存在，评分最高追问仍变成片名keyword；前两轮为空却未说明没有可比较集合或评分来源。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "这里面评分最高的是哪部",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "没有候选可排序，不能归因于排序算法把某两片排反；已证实的是操作分流与澄清失败。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h18",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "0462c499f4584316b2c03dc697f556c127b915f3041ee9e34eee583a8f2c9780",
+      "sourceGroup": "marvel-vision",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h18",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 58,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "幻视背景作品及世界观问题整句进入片名keyword；没有剧/影关联列表或相关关系依据。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "我最近在追复联系列,幻视这条线涉及哪些剧集和电影需要我补背景世界观",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "未返回虚构作品，不增加幻觉事实归因；旧片名快路的失效不能直接归于现役结构化计划。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h18",
+      "repetition": 1,
+      "turn": 2,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "be259a06b3a75761d43dc91f5e10c71a471ca9dc145724472c14f89753c64ee7",
+      "sourceGroup": "marvel-vision",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h18",
+          "repetition": 1,
+          "turn": 2
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 2,
+        "answerChars": 31,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "两条历史存在，观看顺序操作成为新keyword；没有保留幻视主题或解释发行/叙事口径，前轮集合为空也未说明。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "按观看顺序排",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "没有实际排序结果，不能判具体上映先后关系错误。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h18",
+      "repetition": 1,
+      "turn": 3,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "ba366fdb4597345dfde5d31122dd88dbc902bd68e9a5feebac9d444453260319",
+      "sourceGroup": "marvel-vision",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h18",
+          "repetition": 1,
+          "turn": 3
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 4,
+        "answerChars": 32,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "四条历史存在，剧集筛选追问被当作片名keyword；未从前文主题或集合筛出剧集。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "其中哪些是剧集",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "前两轮没有集合；不能把缺集合升级为某实体电影/剧集分类被证明错误。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h19",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "48c31a8ac2432cf46e11f2603a70d384e5c1980d4fa14cc93fa48c976b13c901",
+      "sourceGroup": "question-19",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "reference_request_bypassed",
+      "primaryCauseLabel": "带明确参照或比较条件的推荐退回普通个性化推荐",
+      "overlapCategories": [
+        "routing",
+        "conditions",
+        "candidates"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h19",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 36,
+        "candidateCountObserved": 12,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "recommendation",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "recommendMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "明确要求与盗梦空间相似，实际走普通recommendMovies/个性化列表，返回12项并含剧集；未解释指定参照的相似性。",
+        "catalog": {
+          "kind": "recommendation",
+          "total": 12
+        }
+      },
+      "limits": "不复制账号偏好；缺完整偏好快照，不能证明推荐特征来自何种真实个人行为；不是已证实的事实幻觉。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h19",
+      "repetition": 1,
+      "turn": 2,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "05a652f942589ee4df253f918f9afb626b5babae85f998e8da05388a6029eb26",
+      "sourceGroup": "question-19",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "multi_turn_subject_or_operation_lost",
+      "primaryCauseLabel": "多轮主体或集合操作丢失",
+      "overlapCategories": [
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h19",
+          "repetition": 1,
+          "turn": 2
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 2,
+        "answerChars": 32,
+        "candidateCountObserved": 20,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "两条历史存在但query只剩不要诺兰、人物过滤为空；返回562项并以“不要、兰”等正向命中。候选追随/奥德赛的同日导演字段均含诺兰。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "不要诺兰的",
+          "total": 562,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": null,
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        },
+        "decisivePublicMetadata": [
+          {
+            "id": "tmdb_movie_11660",
+            "title_cn": "追随",
+            "year": 1999,
+            "category": "mv",
+            "directors": "[\"克里斯托弗·诺兰\"]",
+            "runtime": "68 min",
+            "observedMatchReasons": [
+              "影片资料命中：兰、诺"
+            ]
+          },
+          {
+            "id": "tmdb_movie_1368337",
+            "title_cn": "奥德赛",
+            "year": 2026,
+            "category": "mv",
+            "directors": "[\"克里斯托弗·诺兰\"]",
+            "runtime": "172 min",
+            "observedMatchReasons": [
+              "影片资料命中：兰、诺"
+            ]
+          }
+        ]
+      },
+      "limits": "导演排除的实际违规可核验；没有依据推断第二次后续任务失败也是此语义问题造成。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。当前仍需独立多轮集合/指代/实体依据专项验证，不能由现役支持previousJobId或单测通过推定质量通过。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h20",
+      "repetition": 1,
+      "turn": 2,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "6bc83a9d208101c6b2d703c366a9628e9aadbe857af9c20d5720bfcfc020b23c",
+      "sourceGroup": "trapped-house",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "conditions",
+        "multiTurn"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h20",
+          "repetition": 1,
+          "turn": 2
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 2,
+        "answerChars": 30,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "前轮三候选及两条历史存在，“不是《招魂”却被当新片名keyword；排除没有作用于现有找片集合。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "不是《招魂",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "字面空结果不等于排除完成；候选未交付招魂，因此不是已证实重新返回被排除片。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h20",
+      "repetition": 1,
+      "turn": 3,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "trapped-house",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "multi_turn_subject_or_operation_lost",
+      "primaryCauseLabel": "多轮主体或集合操作丢失",
+      "overlapCategories": [
+        "multiTurn",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h20",
+          "repetition": 1,
+          "turn": 3
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 4,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "四条历史存在，query仅剩金发女主短句且filters全空；丢失一家搬凶宅与排除线索，没有唯一识别或有效追问。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "女主是金发那个,片名是什么?",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": null,
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "金发本身不足以唯一锁片；不能从该短句零结果证明原会话无解。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。当前仍需独立多轮集合/指代/实体依据专项验证，不能由现役支持previousJobId或单测通过推定质量通过。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h21",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "f7bc251ad862958a2f7635a3802bc868d8b6a46672fa45fc7f301193130ffb10",
+      "sourceGroup": "question-21",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "candidate_quantity_and_runtime_unit_failed",
+      "primaryCauseLabel": "候选数量与时长口径未满足或未说明",
+      "overlapCategories": [
+        "conditions",
+        "candidates"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h21",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 30,
+        "candidateCountObserved": 2,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "要三部却仅返回两项，没有给数量不足的处理；两项是剧集，63/15分钟为库中剧集runtime，时长单位未说明；命中理由仅“我、给”。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "先给我三部90分钟以内的喜剧",
+          "total": 2,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "喜剧"
+            ],
+            "category": null,
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": 90,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        },
+        "decisivePublicMetadata": [
+          {
+            "id": "tmdb_tv_221851",
+            "title_cn": "和我老公结婚吧",
+            "year": 2024,
+            "category": "tv",
+            "directors": "[\"신유담\", \"박원국\"]",
+            "runtime": "63 min",
+            "observedMatchReasons": [
+              "影片资料命中：我、给",
+              "符合本次已识别的筛选条件"
+            ]
+          },
+          {
+            "id": "tmdb_tv_88043",
+            "title_cn": "魔术学姐",
+            "year": 2019,
+            "category": "tv",
+            "directors": "[]",
+            "runtime": "15 min",
+            "observedMatchReasons": [
+              "影片资料命中：我、给",
+              "符合本次已识别的筛选条件"
+            ]
+          }
+        ]
+      },
+      "limits": "原文没有明确说电影，因此tv只能证明时长/形态需要澄清，不能单独作为违反明确电影类型的依据；两项不足仍不能证明本库只有两部可用喜剧。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h21",
+      "repetition": 1,
+      "turn": 2,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "ed9ec79462157b297000b51378659b376a6a3ad649230fa0a735182f986d56e5",
+      "sourceGroup": "question-21",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h21",
+          "repetition": 1,
+          "turn": 2
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 2,
+        "answerChars": 34,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "两条历史及前轮两候选存在，“其中适合情侣”却作新keyword；没有集合内偏好核查或说明主观边界。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "要其中适合情侣看的",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "情侣适宜不能由常识自动赋真值；没有候选可判定其情感内容错误。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h21",
+      "repetition": 1,
+      "turn": 3,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "8949501e97822817c3b78033a6cd2ff519c4fe2ab493fbc20562ef09f5b2d5e3",
+      "sourceGroup": "question-21",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "same_entity_answer_contradiction_and_replacement_failed",
+      "primaryCauseLabel": "同一实体剧情依据矛盾且列表替换失败",
+      "overlapCategories": [
+        "facts",
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h21",
+          "repetition": 1,
+          "turn": 3
+        },
+        "route": "model-queue",
+        "historyEntriesSubmitted": 4,
+        "answerChars": 154,
+        "candidateCountObserved": 1,
+        "trace": [
+          {
+            "kind": "model",
+            "name": "qwen3:1.7b",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          },
+          {
+            "kind": "model",
+            "name": "qwen3:1.7b",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "两次都返回原首项tmdb_tv_221851，未替换或保留另一项；生成年轻情侣婚姻喜剧情节，与第一轮同ID癌症、偷情、被害后回到十年前简介冲突。",
+        "decisivePublicMetadata": [
+          {
+            "id": "tmdb_tv_221851",
+            "title_cn": "和我老公结婚吧",
+            "year": 2024,
+            "category": "tv",
+            "directors": "[\"신유담\", \"박원국\"]",
+            "runtime": "63 min",
+            "observedMatchReasons": [],
+            "sameIdFirstTurnSummary": "癌症末期患者姜智媛撞见自己的闺蜜郑秀敏与丈夫朴敏焕偷情，在被他们害死后，回到十年前，在同公司部长刘志赫的帮助下，铲除人生垃圾，开拓崭新命运。",
+            "observedAnswerPlotExcerpt": "年轻情侣在婚姻生活中遇到挑战；努力寻找真爱与幸福"
+          }
+        ]
+      },
+      "limits": "链接已省略且本轮原始工具结果不完整，不声称验证了链接；事实矛盾可由同会话同ID前轮简介直接核对。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。当前仍需独立多轮集合/指代/实体依据专项验证，不能由现役支持previousJobId或单测通过推定质量通过。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h22",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "1d1fe4d2293184ab3ba3d57832083fc12ab13a097c5f56edc18c530a0d82b6c4",
+      "sourceGroup": "question-22",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h22",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 30,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "梁朝伟作品请求变为“梁朝伟的片”keyword，未形成演员条件或身份澄清。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "梁朝伟的片",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "空文字搜索不证明梁朝伟没有本库作品。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h22",
+      "repetition": 1,
+      "turn": 2,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "2754c4f44743177393d05f66cebbe4ea9d95021bd16d66ccfbf994f232c49309",
+      "sourceGroup": "question-22",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "multi_turn_subject_or_operation_lost",
+      "primaryCauseLabel": "多轮主体或集合操作丢失",
+      "overlapCategories": [
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h22",
+          "repetition": 1,
+          "turn": 2
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 2,
+        "answerChars": 31,
+        "candidateCountObserved": 12,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "两条历史存在但演员/导演皆空，排王家卫短句按“卫、王家”正向匹配；旺角卡门/2046/重庆森林的同日导演均王家卫。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "不要王家卫的",
+          "total": 12,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": null,
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        },
+        "decisivePublicMetadata": [
+          {
+            "id": "gying_mv_p9ow",
+            "title_cn": "旺角卡门",
+            "year": 1988,
+            "category": "mv",
+            "directors": "[\"王家卫\"]",
+            "runtime": "100分钟",
+            "observedMatchReasons": [
+              "影片资料命中：卫、王家"
+            ]
+          },
+          {
+            "id": "gying_mv_yPmP",
+            "title_cn": "2046",
+            "year": 2004,
+            "category": "mv",
+            "directors": "[\"王家卫\"]",
+            "runtime": "129 分钟",
+            "observedMatchReasons": [
+              "影片资料命中：卫、王家"
+            ]
+          },
+          {
+            "id": "gying_mv_6R0Z",
+            "title_cn": "重庆森林",
+            "year": 1994,
+            "category": "mv",
+            "directors": "[\"王家卫\"]",
+            "runtime": "102分钟 / 111分钟(台湾版DVD)",
+            "observedMatchReasons": [
+              "影片资料命中：卫、王家"
+            ]
+          }
+        ]
+      },
+      "limits": "导演违规证据直接；旺角卡门演员字段未含梁朝伟只能按该快照的记录解释，不将缺失名单当全球完整演职员事实。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。当前仍需独立多轮集合/指代/实体依据专项验证，不能由现役支持previousJobId或单测通过推定质量通过。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h22",
+      "repetition": 1,
+      "turn": 3,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "40fe3ca48f897f705b389f174445593f34a50e78498cc26b1335bbf5dcf8c007",
+      "sourceGroup": "question-22",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h22",
+          "repetition": 1,
+          "turn": 3
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 4,
+        "answerChars": 38,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "四条历史存在，豆瓣降序前三操作被当片名keyword；没有在前述演员/导演范围内排序。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "再按豆瓣评分从高到低排前三",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "未交付新评分列表，不能说已经把IMDb分冒充豆瓣或把某两片次序排反；已证实操作没落实。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h23",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "2052bcd6c614ae3fad4466df5640627194e36c77800f62e50d90cf0c9335560c",
+      "sourceGroup": "question-23",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h23",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 37,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "三体相关影视关系问题整句进片名keyword；没有提取实体或区分改编版本。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "有没有《三体》相关的影视",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "未返回候选，不可推断片库不存在三体条目。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h23",
+      "repetition": 1,
+      "turn": 2,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "123c565770302d5c32ba8bdc0c11b58e2ba1dda179aeded6cceae610868a66bc",
+      "sourceGroup": "question-23",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "multi_turn_subject_or_operation_lost",
+      "primaryCauseLabel": "多轮主体或集合操作丢失",
+      "overlapCategories": [
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h23",
+          "repetition": 1,
+          "turn": 2
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 2,
+        "answerChars": 31,
+        "candidateCountObserved": 16,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "两条历史存在，只保留tv及排动画，query丢三体主体；16项以“只要”命中，毛骨悚然的恋爱明示改编我的见鬼女友，喜人奇妙夜为喜剧节目。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "只要剧集不要动画",
+          "total": 16,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": "tv",
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [
+              "动画"
+            ],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        },
+        "decisivePublicMetadata": [
+          {
+            "id": "gying_tv_YP0d",
+            "title_cn": "毛骨悚然的恋爱",
+            "year": 2026,
+            "category": "tv",
+            "directors": "[\"李敏洙\"]",
+            "runtime": "60分钟",
+            "observedMatchReasons": [
+              "影片资料命中：只要",
+              "符合本次已识别的筛选条件"
+            ],
+            "observedSummaryExcerpt": "一名能看见鬼魂的继承人与一名王牌检察官发现只要轻轻一碰，就能让他们成为异常高效率的搭档，于是两人联手侦破悬案。\r\n该剧翻拍自2011年的《我的见鬼女友》。"
+          },
+          {
+            "id": "tmdb_tv_257161",
+            "title_cn": "喜人奇妙夜",
+            "year": 2024,
+            "category": "tv",
+            "directors": "[\"马东\", \"牟頔\"]",
+            "runtime": null,
+            "observedMatchReasons": [
+              "影片资料命中：只要",
+              "符合本次已识别的筛选条件"
+            ],
+            "observedSummaryExcerpt": "…还有一位神秘观众代表，陪伴大家度过一个又一个的喜剧奇妙夜晚！节目秉持“只要大声笑，烦恼都丢掉”的宗旨，喜剧小队们将围绕最具热点和最有共鸣的情绪主题演绎喜剧作品，用喜剧解构一切！"
+          }
+        ]
+      },
+      "limits": "与原主题的候选错配有公开简介依据；仅缺三体字样不是完整关系反证，不能把任意字段缺失都判成不相关。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。当前仍需独立多轮集合/指代/实体依据专项验证，不能由现役支持previousJobId或单测通过推定质量通过。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h23",
+      "repetition": 1,
+      "turn": 3,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "1b44b70eeed7f6ba9f27ba9a75a5ab6e33d9e38abe587dc31d923d019eafceba",
+      "sourceGroup": "question-23",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h23",
+          "repetition": 1,
+          "turn": 3
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 4,
+        "answerChars": 34,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "四条历史存在，上线时间排序操作成为新keyword；没有延续三体/剧集/排动画及日期来源。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "按上线时间从早到晚",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "没有实际日期排序，不能断言具体上线日期错误。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h24",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "033d57906acc5559bcaa206ebe5f01b71b33087e5905d056921a05771d940c85",
+      "sourceGroup": "marvel-vision",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "opaque_tool_result_without_effective_clarification",
+      "primaryCauseLabel": "工具依据缺失且回答没有有效澄清",
+      "overlapCategories": [
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h24",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "model-queue",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 17,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "model",
+            "name": "qwen3:1.7b",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          },
+          {
+            "kind": "model",
+            "name": "qwen3:1.7b",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "两次回答都仅称未找到复仇者联盟5资源；没有核查运行日上映状态、幻视复活前提或给有效澄清。"
+      },
+      "limits": "catalog=null、工具参数/原始返回缺失；只能确认回答不足，不能断言真实资源存在或不存在，也没有观察到资源交付。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h25",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-25",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h25",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "仅year=2024及maxRuntime=40；精确40、黑白、歌舞与豆瓣9.5未完整核验，空回答只笼统要求减少条件。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "找一部2024年上映、黑白、歌舞片、片长40分钟、豆瓣9.5的",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": null,
+            "year": 2024,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": 40,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "请求并非可直接证明的数值逻辑矛盾；不能凭稀有组合宣称客观不存在，或将<=40说成精确40已满足。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h26",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "311133e8945c5bdfb6995cd06215517093f88f729f9058c7764988ebef952002",
+      "sourceGroup": "question-26",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h26",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 43,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "光头/跳楼/黑帮线索整句作片名keyword；没询问年代、地区、演员，换原名提示要求用户提供所求答案。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "那个光头演的、最后跳楼的黑帮片叫什么",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "没有猜片结果，因此不能增加错误演员或剧情的事实归因。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h27",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "48c31a8ac2432cf46e11f2603a70d384e5c1980d4fa14cc93fa48c976b13c901",
+      "sourceGroup": "question-27",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "reference_request_bypassed",
+      "primaryCauseLabel": "带明确参照或比较条件的推荐退回普通个性化推荐",
+      "overlapCategories": [
+        "routing",
+        "conditions",
+        "candidates",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h27",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 36,
+        "candidateCountObserved": 12,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "recommendation",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "recommendMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "要求选一部、与参照片同源比评分并核查奖项，实际返回12项个性化列表，未说明来源或奖项。",
+        "catalog": {
+          "kind": "recommendation",
+          "total": 12
+        }
+      },
+      "limits": "要求未拿最佳影片本身不是逻辑矛盾；快照无获奖字段，不根据候选常识补判奖项，已证实的数量与条件处理失效足够。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h28",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "b746d82c2a6b70d7a240c424a1a6d80f23f6d265a915b44e4fdb2ff05cf86c42",
+      "sourceGroup": "question-28",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h28",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 37,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "演员与蜘蛛侠关系整句作keyword；未核查身份错配或提出有针对性的演员/作品澄清。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "汤姆·克鲁斯演的《蜘蛛侠",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "未直接杜撰参演记录，不把用户错误前提自动记成模型事实错误。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h29",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "d2112a7be666cb0a24dfa1a8f8852821a9524e4a2f400df0714654c94f4963cb",
+      "sourceGroup": "question-29",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h29",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 49,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "最近热度/十部/各平台版权整句作keyword；没有热度时间窗、版权地区/日期或信息不足说明。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "最近最火”的十部,必须准确告诉我每个平台独家版权",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "空结果不能证明当前版权或热榜事实；没有作品可判数量或授权是否错误。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h30",
+      "repetition": 1,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-30",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h30",
+          "repetition": 1,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "仅有恐怖/mv，没有处理五岁、家庭适宜与更惊吓的偏好冲突，空回答未澄清优先级或说明需内容依据。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "我想看一部适合全家看的恐怖片,孩子5岁,越吓人越好",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "恐怖"
+            ],
+            "category": "mv",
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "未交付实际推荐，不能推定儿童已暴露不当内容；年龄适宜须证据而非从题材直接保证。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h01",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "robert-downey",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h01",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "演员值把错字及时间词合并为“小罗伯特人唐尼最近”，yearFrom/yearTo均空；空答复没有纠错、人物澄清或近期范围。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "我想看小罗伯特人唐尼最近演的片,动作剧情都可",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "剧情",
+              "动作"
+            ],
+            "category": "mv",
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [
+              "小罗伯特人唐尼最近"
+            ],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "无法由该错误姓名过滤的空结果证明正确人物及原条件在片库无解；类型并集执行关系未知。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h02",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "09a2875630838e126b3789c1bc6c0864032426ee45f8b44c4e9d68d329e7d952",
+      "sourceGroup": "trapped-house",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "opaque_tool_result_without_effective_clarification",
+      "primaryCauseLabel": "工具依据缺失且回答没有有效澄清",
+      "overlapCategories": [
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h02",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "model-queue",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 42,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "model",
+            "name": "qwen3:1.7b",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          },
+          {
+            "kind": "model",
+            "name": "qwen3:1.7b",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "仅第二次有回答，笼统称别墅猜忌片未找到并要求更具体关键词；没有提出年代、地区等可回答的澄清。"
+      },
+      "limits": "catalog=null且未保存工具参数/原始返回；不能判定错误分流、关键词、片库覆盖或模型幻觉；第一次为无回答任务失败。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h03",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-03",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "empty_semantic_search_without_effective_clarification",
+      "primaryCauseLabel": "主题检索无候选后没有有效澄清",
+      "overlapCategories": [
+        "candidates",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h03",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "动画/mv主题检索total=0，回答仅让用户减少条件或换描述；没有处理混合记忆、观看年代或画风。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "我想找一部小时候看的动画电影,女孩掉进洞里遇到会说话的猫,最后发现是梦",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "动画"
+            ],
+            "category": "mv",
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "没有返回候选，既有candidates标签仅表示未形成有用候选，不能证明候选排名错误或片库必有精确命中。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h04",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "e931bbe5135f08abcfa3e6d9b9a26375eea4418afb4f0846b313cdd39ae7d3b9",
+      "sourceGroup": "question-04",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "candidates",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h04",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 57,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "整句相似作品、东北小城和情绪要求进入title/searchMovies.keyword；空答复不能提供相似性依据或解释情绪偏好。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "类似《漫长的季节》那种东北小城、旧案、时间交错,但不要太压抑的剧",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "candidates属于未形成候选的需求缺口，不能由空查询认定某候选不相关或本库不存在相似作品。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h05",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "01c8c1c5233963f19243c7b2549a834d47a019ef3f955e2b24c892499dad2f82",
+      "sourceGroup": "question-05",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h05",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 44,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "周星驰作品及悲剧底色问题被当作字面keyword；未按人物作品或剧情风格作答，换片名提示不能处理风格问题。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "周星驰电影里不是纯搞笑、有点悲剧底色的",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "没有返回候选；不能据该文字搜索推断相关风格作品不存在。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h06",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "c7530fc6adc7b6a8f525585003c4ab19309dc33253b0d4b593b40d6d9517923a",
+      "sourceGroup": "question-06",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h06",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 45,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "黑镜单集剧情及“是哪集”整句进入keyword；没有季/集/集名，也未说明单集资料不足。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "一集《黑镜》讲社交评分把人逼疯的,是哪集",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "未返回剧集总条目或错误集号，因此不能增加杜撰单集或身份错配的事实归因。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h07",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "c65b042f76eb47889fc4d78dcb4b975a3ab52df53ea0ca1dd11dcc3b6047e3e6",
+      "sourceGroup": "question-07",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "candidates",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h07",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 48,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "上班族获得超能力的剧情要求整句进入片名keyword；没有带剧情依据的候选或具体追问。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "有没有讲普通上班族突然获得超能力但很怂的喜剧片",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "candidates表示没有满足线索的候选，不等于已有候选排名被证实错误。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h08",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "b1e297b7325b2f3d3f0e05c304a702b255a91af3930b7ba7642b39390681ec79",
+      "sourceGroup": "question-08",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h08",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 48,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "宫崎骏作品、七岁及惊吓限制整句进入keyword；没有人物作品集、分级/内容依据或需家长确认的边界。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "宫崎骏里适合和7岁小孩一起看、没有太吓人镜头的",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "未交付推荐，不能推定已经发生儿童内容违规或某片确实吓人。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h09",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-09",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h09",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "实际保留yearFrom=2021、maxRuntime=120、悬疑/mv；minRating=0及languages=[]，没有形成豆瓣>8、中文对白的可核验硬筛选；未说明缺口。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "2020年以后、豆瓣8分以上、120分钟以内、中文对白的悬疑片,不要网剧",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "悬疑"
+            ],
+            "category": "mv",
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": 2021,
+            "yearTo": null,
+            "maxRuntime": 120,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "原条件文字仍在query中，空filter只能证明未形成相应硬过滤，不能单独证明完全没参与文字检索；空结果不证明完整组合无解。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h10",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-10",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h10",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "仅有maxRuntime=100，没有90分钟下界；虽有minRating=7.5但未说明来源，Netflix未核验地区/日期。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "想看英语片,90-100分钟,喜剧或爱情,评分7.5以上,最好Netflix能看",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "喜剧",
+              "爱情"
+            ],
+            "category": null,
+            "year": null,
+            "minRating": 7.5,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": 100,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": [
+              "英语"
+            ]
+          }
+        }
+      },
+      "limits": "genres含喜剧/爱情不证明OR被错误执行；平台是最好可看的软偏好，不能将未查平台单独判作硬条件违规。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h11",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "cbdaa13541d735a914510e8246ffcfaf4b81f30946e1b8a7173699a284cc2a75",
+      "sourceGroup": "question-11",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "opaque_tool_result_without_effective_clarification",
+      "primaryCauseLabel": "工具依据缺失且回答没有有效澄清",
+      "overlapCategories": [
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h11",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "model-queue",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 37,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "model",
+            "name": "qwen3:1.7b",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          },
+          {
+            "kind": "model",
+            "name": "qwen3:1.7b",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "仅第二次有回答，重复用户条件并称未找到；没有界定十年、排除依据或第一部优先的合理降级。"
+      },
+      "limits": "catalog=null及缺原始工具参数/结果，不能断言过滤解析或检索器错误；第一次是无回答任务失败。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h12",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-12",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h12",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "year=2000与2000年后冲突，languages=[日语]与非日语冲突，directors=[日本]把国籍作为导演姓名；未提供具体电影节奖项。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "日本导演拍的非日语片,2000年后,拿过三大电影节奖项的",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": "mv",
+            "year": 2000,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [
+              "日本"
+            ],
+            "actors": [],
+            "regions": [],
+            "languages": [
+              "日语"
+            ]
+          }
+        }
+      },
+      "limits": "这是实际条件表达的错误，不等于已返回候选违反硬条件；未取到导演国籍或电影节外部事实，不能猜补候选。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h13",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-13",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h13",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "只可核验yearTo=2014，地区/类型字段空；没有双男主港片警匪及结局的核对，空答复没有说明限制。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "有没有双男主警匪港片,2015年前,结局不要太惨",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": null,
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": 2014,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "主题仍在query文字中；不能由空filter断言主题从所有检索阶段消失，也没有候选可判定结局偏好违规。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h14",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-14",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h14",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "regions只法国未表达法国或爱尔兰并集；“80分钟左右”被收成maxRuntime=80，没有容差；制作方排除未核验。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "动画电影,不是迪士尼皮克斯,法国或爱尔兰的,80分钟左右",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "动画"
+            ],
+            "category": "mv",
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": 80,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [
+              "法国"
+            ],
+            "languages": []
+          }
+        }
+      },
+      "limits": "这是表达与核验缺口；没有候选，不能反推某作品制作方确实违反排除。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h15",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-15",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h15",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "韩国/mv/minRating=7存在，但评分来源、女主复仇主题及内容排除没有核验或解释；仅通用空答复。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "我想看女主复仇但不要强奸暴力镜头的韩国电影,评分7分以上",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": "mv",
+            "year": null,
+            "minRating": 7.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [
+              "韩国"
+            ],
+            "languages": []
+          }
+        }
+      },
+      "limits": "内容词仍在原query；没有实际候选，不能把未核验性暴力镜头升级为已发生硬条件违规。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h16",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-16",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h16",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "纪录片/maxRuntime=60存在，40分钟下界及单集时长口径未表达；美食主题、非探店没有核验或有效说明。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "纪录片,讲美食但不要探店,40-60分钟一集,适合吃饭看",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "纪录片"
+            ],
+            "category": null,
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": 60,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "一集不是整片时长；不能把数据库runtime字段自动当逐集时长证明，也不能由空结果证明美食作品不存在。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h17",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "robert-downey",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h17",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "姓名正确时仍将“最近”并入actors=[小罗伯特·唐尼最近]，没有年份范围或人物纠正；空答复未有效澄清。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "想看小罗伯特·唐尼最近演的片,动作剧情都可",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "剧情",
+              "动作"
+            ],
+            "category": "mv",
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [
+              "小罗伯特·唐尼最近"
+            ],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "表明历史姓名切分错误；不能根据错误过滤的零结果推断演员无作品。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h17",
+      "repetition": 2,
+      "turn": 2,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "robert-downey",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "multi_turn_subject_or_operation_lost",
+      "primaryCauseLabel": "多轮主体或集合操作丢失",
+      "overlapCategories": [
+        "conditions",
+        "multiTurn",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h17",
+          "repetition": 2,
+          "turn": 2
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 2,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "已提交两条历史，query却只剩排钢铁侠/近五年配角，actors及年份边界全空；未延续唐尼主体或说明前轮无候选。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "不要钢铁侠,要近五年配角",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": null,
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "历史传输数量存在不证明服务已正确使用；角色与配角没有外部依据，不能猜哪些片符合。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。当前仍需独立多轮集合/指代/实体依据专项验证，不能由现役支持previousJobId或单测通过推定质量通过。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h17",
+      "repetition": 2,
+      "turn": 3,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "a2f946b8cb2aa12313a98711fea17139355f13a8c0760994a96866e330e8f610",
+      "sourceGroup": "robert-downey",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h17",
+          "repetition": 2,
+          "turn": 3
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 4,
+        "answerChars": 36,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "四条历史存在，评分最高追问仍变成片名keyword；前两轮为空却未说明没有可比较集合或评分来源。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "这里面评分最高的是哪部",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "没有候选可排序，不能归因于排序算法把某两片排反；已证实的是操作分流与澄清失败。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h18",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "0462c499f4584316b2c03dc697f556c127b915f3041ee9e34eee583a8f2c9780",
+      "sourceGroup": "marvel-vision",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h18",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 58,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "幻视背景作品及世界观问题整句进入片名keyword；没有剧/影关联列表或相关关系依据。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "我最近在追复联系列,幻视这条线涉及哪些剧集和电影需要我补背景世界观",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "未返回虚构作品，不增加幻觉事实归因；旧片名快路的失效不能直接归于现役结构化计划。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h18",
+      "repetition": 2,
+      "turn": 2,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "be259a06b3a75761d43dc91f5e10c71a471ca9dc145724472c14f89753c64ee7",
+      "sourceGroup": "marvel-vision",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h18",
+          "repetition": 2,
+          "turn": 2
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 2,
+        "answerChars": 31,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "两条历史存在，观看顺序操作成为新keyword；没有保留幻视主题或解释发行/叙事口径，前轮集合为空也未说明。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "按观看顺序排",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "没有实际排序结果，不能判具体上映先后关系错误。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h18",
+      "repetition": 2,
+      "turn": 3,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "ba366fdb4597345dfde5d31122dd88dbc902bd68e9a5feebac9d444453260319",
+      "sourceGroup": "marvel-vision",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h18",
+          "repetition": 2,
+          "turn": 3
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 4,
+        "answerChars": 32,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "四条历史存在，剧集筛选追问被当作片名keyword；未从前文主题或集合筛出剧集。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "其中哪些是剧集",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "前两轮没有集合；不能把缺集合升级为某实体电影/剧集分类被证明错误。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h19",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "48c31a8ac2432cf46e11f2603a70d384e5c1980d4fa14cc93fa48c976b13c901",
+      "sourceGroup": "question-19",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "reference_request_bypassed",
+      "primaryCauseLabel": "带明确参照或比较条件的推荐退回普通个性化推荐",
+      "overlapCategories": [
+        "routing",
+        "conditions",
+        "candidates"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h19",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 36,
+        "candidateCountObserved": 12,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "recommendation",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "recommendMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "明确要求与盗梦空间相似，实际走普通recommendMovies/个性化列表，返回12项并含剧集；未解释指定参照的相似性。",
+        "catalog": {
+          "kind": "recommendation",
+          "total": 12
+        }
+      },
+      "limits": "不复制账号偏好；缺完整偏好快照，不能证明推荐特征来自何种真实个人行为；不是已证实的事实幻觉。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h19",
+      "repetition": 2,
+      "turn": 2,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "05a652f942589ee4df253f918f9afb626b5babae85f998e8da05388a6029eb26",
+      "sourceGroup": "question-19",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "multi_turn_subject_or_operation_lost",
+      "primaryCauseLabel": "多轮主体或集合操作丢失",
+      "overlapCategories": [
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h19",
+          "repetition": 2,
+          "turn": 2
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 2,
+        "answerChars": 32,
+        "candidateCountObserved": 20,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "两条历史存在但query只剩不要诺兰、人物过滤为空；返回562项并以“不要、兰”等正向命中。候选追随/奥德赛的同日导演字段均含诺兰。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "不要诺兰的",
+          "total": 562,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": null,
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        },
+        "decisivePublicMetadata": [
+          {
+            "id": "tmdb_movie_11660",
+            "title_cn": "追随",
+            "year": 1999,
+            "category": "mv",
+            "directors": "[\"克里斯托弗·诺兰\"]",
+            "runtime": "68 min",
+            "observedMatchReasons": [
+              "影片资料命中：兰、诺"
+            ]
+          },
+          {
+            "id": "tmdb_movie_1368337",
+            "title_cn": "奥德赛",
+            "year": 2026,
+            "category": "mv",
+            "directors": "[\"克里斯托弗·诺兰\"]",
+            "runtime": "172 min",
+            "observedMatchReasons": [
+              "影片资料命中：兰、诺"
+            ]
+          }
+        ]
+      },
+      "limits": "导演排除的实际违规可核验；没有依据推断第二次后续任务失败也是此语义问题造成。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。当前仍需独立多轮集合/指代/实体依据专项验证，不能由现役支持previousJobId或单测通过推定质量通过。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h20",
+      "repetition": 2,
+      "turn": 2,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "6bc83a9d208101c6b2d703c366a9628e9aadbe857af9c20d5720bfcfc020b23c",
+      "sourceGroup": "trapped-house",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "conditions",
+        "multiTurn"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h20",
+          "repetition": 2,
+          "turn": 2
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 2,
+        "answerChars": 30,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "前轮三候选及两条历史存在，“不是《招魂”却被当新片名keyword；排除没有作用于现有找片集合。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "不是《招魂",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "字面空结果不等于排除完成；候选未交付招魂，因此不是已证实重新返回被排除片。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h20",
+      "repetition": 2,
+      "turn": 3,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "trapped-house",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "multi_turn_subject_or_operation_lost",
+      "primaryCauseLabel": "多轮主体或集合操作丢失",
+      "overlapCategories": [
+        "multiTurn",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h20",
+          "repetition": 2,
+          "turn": 3
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 4,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "四条历史存在，query仅剩金发女主短句且filters全空；丢失一家搬凶宅与排除线索，没有唯一识别或有效追问。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "女主是金发那个,片名是什么?",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": null,
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "金发本身不足以唯一锁片；不能从该短句零结果证明原会话无解。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。当前仍需独立多轮集合/指代/实体依据专项验证，不能由现役支持previousJobId或单测通过推定质量通过。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h21",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "f7bc251ad862958a2f7635a3802bc868d8b6a46672fa45fc7f301193130ffb10",
+      "sourceGroup": "question-21",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "candidate_quantity_and_runtime_unit_failed",
+      "primaryCauseLabel": "候选数量与时长口径未满足或未说明",
+      "overlapCategories": [
+        "conditions",
+        "candidates"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h21",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 30,
+        "candidateCountObserved": 2,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "要三部却仅返回两项，没有给数量不足的处理；两项是剧集，63/15分钟为库中剧集runtime，时长单位未说明；命中理由仅“我、给”。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "先给我三部90分钟以内的喜剧",
+          "total": 2,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "喜剧"
+            ],
+            "category": null,
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": 90,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        },
+        "decisivePublicMetadata": [
+          {
+            "id": "tmdb_tv_221851",
+            "title_cn": "和我老公结婚吧",
+            "year": 2024,
+            "category": "tv",
+            "directors": "[\"신유담\", \"박원국\"]",
+            "runtime": "63 min",
+            "observedMatchReasons": [
+              "影片资料命中：我、给",
+              "符合本次已识别的筛选条件"
+            ]
+          },
+          {
+            "id": "tmdb_tv_88043",
+            "title_cn": "魔术学姐",
+            "year": 2019,
+            "category": "tv",
+            "directors": "[]",
+            "runtime": "15 min",
+            "observedMatchReasons": [
+              "影片资料命中：我、给",
+              "符合本次已识别的筛选条件"
+            ]
+          }
+        ]
+      },
+      "limits": "原文没有明确说电影，因此tv只能证明时长/形态需要澄清，不能单独作为违反明确电影类型的依据；两项不足仍不能证明本库只有两部可用喜剧。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h21",
+      "repetition": 2,
+      "turn": 2,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "ed9ec79462157b297000b51378659b376a6a3ad649230fa0a735182f986d56e5",
+      "sourceGroup": "question-21",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h21",
+          "repetition": 2,
+          "turn": 2
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 2,
+        "answerChars": 34,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "两条历史及前轮两候选存在，“其中适合情侣”却作新keyword；没有集合内偏好核查或说明主观边界。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "要其中适合情侣看的",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "情侣适宜不能由常识自动赋真值；没有候选可判定其情感内容错误。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h21",
+      "repetition": 2,
+      "turn": 3,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "b10bb80fa1316b0e718e20286b95f5019e10876e84682566bb483cc4cd77ef94",
+      "sourceGroup": "question-21",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "same_entity_answer_contradiction_and_replacement_failed",
+      "primaryCauseLabel": "同一实体剧情依据矛盾且列表替换失败",
+      "overlapCategories": [
+        "facts",
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h21",
+          "repetition": 2,
+          "turn": 3
+        },
+        "route": "model-queue",
+        "historyEntriesSubmitted": 4,
+        "answerChars": 156,
+        "candidateCountObserved": 1,
+        "trace": [
+          {
+            "kind": "model",
+            "name": "qwen3:1.7b",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          },
+          {
+            "kind": "model",
+            "name": "qwen3:1.7b",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "两次都返回原首项tmdb_tv_221851，未替换或保留另一项；生成年轻情侣婚姻喜剧情节，与第一轮同ID癌症、偷情、被害后回到十年前简介冲突。",
+        "decisivePublicMetadata": [
+          {
+            "id": "tmdb_tv_221851",
+            "title_cn": "和我老公结婚吧",
+            "year": 2024,
+            "category": "tv",
+            "directors": "[\"신유담\", \"박원국\"]",
+            "runtime": "63 min",
+            "observedMatchReasons": [],
+            "sameIdFirstTurnSummary": "癌症末期患者姜智媛撞见自己的闺蜜郑秀敏与丈夫朴敏焕偷情，在被他们害死后，回到十年前，在同公司部长刘志赫的帮助下，铲除人生垃圾，开拓崭新命运。",
+            "observedAnswerPlotExcerpt": "年轻情侣在婚姻生活中遇到挑战；通过幽默展现爱情与责任的平衡"
+          }
+        ]
+      },
+      "limits": "链接已省略且本轮原始工具结果不完整，不声称验证了链接；事实矛盾可由同会话同ID前轮简介直接核对。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。当前仍需独立多轮集合/指代/实体依据专项验证，不能由现役支持previousJobId或单测通过推定质量通过。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h22",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "1d1fe4d2293184ab3ba3d57832083fc12ab13a097c5f56edc18c530a0d82b6c4",
+      "sourceGroup": "question-22",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h22",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 30,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "梁朝伟作品请求变为“梁朝伟的片”keyword，未形成演员条件或身份澄清。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "梁朝伟的片",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "空文字搜索不证明梁朝伟没有本库作品。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h22",
+      "repetition": 2,
+      "turn": 2,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "2754c4f44743177393d05f66cebbe4ea9d95021bd16d66ccfbf994f232c49309",
+      "sourceGroup": "question-22",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "multi_turn_subject_or_operation_lost",
+      "primaryCauseLabel": "多轮主体或集合操作丢失",
+      "overlapCategories": [
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h22",
+          "repetition": 2,
+          "turn": 2
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 2,
+        "answerChars": 31,
+        "candidateCountObserved": 12,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "两条历史存在但演员/导演皆空，排王家卫短句按“卫、王家”正向匹配；旺角卡门/2046/重庆森林的同日导演均王家卫。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "不要王家卫的",
+          "total": 12,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": null,
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        },
+        "decisivePublicMetadata": [
+          {
+            "id": "gying_mv_p9ow",
+            "title_cn": "旺角卡门",
+            "year": 1988,
+            "category": "mv",
+            "directors": "[\"王家卫\"]",
+            "runtime": "100分钟",
+            "observedMatchReasons": [
+              "影片资料命中：卫、王家"
+            ]
+          },
+          {
+            "id": "gying_mv_yPmP",
+            "title_cn": "2046",
+            "year": 2004,
+            "category": "mv",
+            "directors": "[\"王家卫\"]",
+            "runtime": "129 分钟",
+            "observedMatchReasons": [
+              "影片资料命中：卫、王家"
+            ]
+          },
+          {
+            "id": "gying_mv_6R0Z",
+            "title_cn": "重庆森林",
+            "year": 1994,
+            "category": "mv",
+            "directors": "[\"王家卫\"]",
+            "runtime": "102分钟 / 111分钟(台湾版DVD)",
+            "observedMatchReasons": [
+              "影片资料命中：卫、王家"
+            ]
+          }
+        ]
+      },
+      "limits": "导演违规证据直接；旺角卡门演员字段未含梁朝伟只能按该快照的记录解释，不将缺失名单当全球完整演职员事实。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。当前仍需独立多轮集合/指代/实体依据专项验证，不能由现役支持previousJobId或单测通过推定质量通过。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h22",
+      "repetition": 2,
+      "turn": 3,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "40fe3ca48f897f705b389f174445593f34a50e78498cc26b1335bbf5dcf8c007",
+      "sourceGroup": "question-22",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h22",
+          "repetition": 2,
+          "turn": 3
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 4,
+        "answerChars": 38,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "四条历史存在，豆瓣降序前三操作被当片名keyword；没有在前述演员/导演范围内排序。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "再按豆瓣评分从高到低排前三",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "未交付新评分列表，不能说已经把IMDb分冒充豆瓣或把某两片次序排反；已证实操作没落实。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h23",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "2052bcd6c614ae3fad4466df5640627194e36c77800f62e50d90cf0c9335560c",
+      "sourceGroup": "question-23",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h23",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 37,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "三体相关影视关系问题整句进片名keyword；没有提取实体或区分改编版本。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "有没有《三体》相关的影视",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "未返回候选，不可推断片库不存在三体条目。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h23",
+      "repetition": 2,
+      "turn": 2,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "123c565770302d5c32ba8bdc0c11b58e2ba1dda179aeded6cceae610868a66bc",
+      "sourceGroup": "question-23",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "multi_turn_subject_or_operation_lost",
+      "primaryCauseLabel": "多轮主体或集合操作丢失",
+      "overlapCategories": [
+        "conditions",
+        "candidates",
+        "multiTurn"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h23",
+          "repetition": 2,
+          "turn": 2
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 2,
+        "answerChars": 31,
+        "candidateCountObserved": 16,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "两条历史存在，只保留tv及排动画，query丢三体主体；16项以“只要”命中，毛骨悚然的恋爱明示改编我的见鬼女友，喜人奇妙夜为喜剧节目。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "只要剧集不要动画",
+          "total": 16,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": "tv",
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [
+              "动画"
+            ],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        },
+        "decisivePublicMetadata": [
+          {
+            "id": "gying_tv_YP0d",
+            "title_cn": "毛骨悚然的恋爱",
+            "year": 2026,
+            "category": "tv",
+            "directors": "[\"李敏洙\"]",
+            "runtime": "60分钟",
+            "observedMatchReasons": [
+              "影片资料命中：只要",
+              "符合本次已识别的筛选条件"
+            ],
+            "observedSummaryExcerpt": "一名能看见鬼魂的继承人与一名王牌检察官发现只要轻轻一碰，就能让他们成为异常高效率的搭档，于是两人联手侦破悬案。\r\n该剧翻拍自2011年的《我的见鬼女友》。"
+          },
+          {
+            "id": "tmdb_tv_257161",
+            "title_cn": "喜人奇妙夜",
+            "year": 2024,
+            "category": "tv",
+            "directors": "[\"马东\", \"牟頔\"]",
+            "runtime": null,
+            "observedMatchReasons": [
+              "影片资料命中：只要",
+              "符合本次已识别的筛选条件"
+            ],
+            "observedSummaryExcerpt": "…还有一位神秘观众代表，陪伴大家度过一个又一个的喜剧奇妙夜晚！节目秉持“只要大声笑，烦恼都丢掉”的宗旨，喜剧小队们将围绕最具热点和最有共鸣的情绪主题演绎喜剧作品，用喜剧解构一切！"
+          }
+        ]
+      },
+      "limits": "与原主题的候选错配有公开简介依据；仅缺三体字样不是完整关系反证，不能把任意字段缺失都判成不相关。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。当前仍需独立多轮集合/指代/实体依据专项验证，不能由现役支持previousJobId或单测通过推定质量通过。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h23",
+      "repetition": 2,
+      "turn": 3,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "1b44b70eeed7f6ba9f27ba9a75a5ab6e33d9e38abe587dc31d923d019eafceba",
+      "sourceGroup": "question-23",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "multiTurn",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h23",
+          "repetition": 2,
+          "turn": 3
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 4,
+        "answerChars": 34,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "四条历史存在，上线时间排序操作成为新keyword；没有延续三体/剧集/排动画及日期来源。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "按上线时间从早到晚",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "没有实际日期排序，不能断言具体上线日期错误。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h24",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "033d57906acc5559bcaa206ebe5f01b71b33087e5905d056921a05771d940c85",
+      "sourceGroup": "marvel-vision",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "opaque_tool_result_without_effective_clarification",
+      "primaryCauseLabel": "工具依据缺失且回答没有有效澄清",
+      "overlapCategories": [
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h24",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "model-queue",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 17,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "model",
+            "name": "qwen3:1.7b",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          },
+          {
+            "kind": "model",
+            "name": "qwen3:1.7b",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "两次回答都仅称未找到复仇者联盟5资源；没有核查运行日上映状态、幻视复活前提或给有效澄清。"
+      },
+      "limits": "catalog=null、工具参数/原始返回缺失；只能确认回答不足，不能断言真实资源存在或不存在，也没有观察到资源交付。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h25",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-25",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h25",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "仅year=2024及maxRuntime=40；精确40、黑白、歌舞与豆瓣9.5未完整核验，空回答只笼统要求减少条件。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "找一部2024年上映、黑白、歌舞片、片长40分钟、豆瓣9.5的",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [],
+            "category": null,
+            "year": 2024,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": 40,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "请求并非可直接证明的数值逻辑矛盾；不能凭稀有组合宣称客观不存在，或将<=40说成精确40已满足。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h26",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "311133e8945c5bdfb6995cd06215517093f88f729f9058c7764988ebef952002",
+      "sourceGroup": "question-26",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h26",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 43,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "光头/跳楼/黑帮线索整句作片名keyword；没询问年代、地区、演员，换原名提示要求用户提供所求答案。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "那个光头演的、最后跳楼的黑帮片叫什么",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "没有猜片结果，因此不能增加错误演员或剧情的事实归因。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h27",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "48c31a8ac2432cf46e11f2603a70d384e5c1980d4fa14cc93fa48c976b13c901",
+      "sourceGroup": "question-27",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "reference_request_bypassed",
+      "primaryCauseLabel": "带明确参照或比较条件的推荐退回普通个性化推荐",
+      "overlapCategories": [
+        "routing",
+        "conditions",
+        "candidates",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h27",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 36,
+        "candidateCountObserved": 12,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "recommendation",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "recommendMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "要求选一部、与参照片同源比评分并核查奖项，实际返回12项个性化列表，未说明来源或奖项。",
+        "catalog": {
+          "kind": "recommendation",
+          "total": 12
+        }
+      },
+      "limits": "要求未拿最佳影片本身不是逻辑矛盾；快照无获奖字段，不根据候选常识补判奖项，已证实的数量与条件处理失效足够。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h28",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "b746d82c2a6b70d7a240c424a1a6d80f23f6d265a915b44e4fdb2ff05cf86c42",
+      "sourceGroup": "question-28",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h28",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 37,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "演员与蜘蛛侠关系整句作keyword；未核查身份错配或提出有针对性的演员/作品澄清。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "汤姆·克鲁斯演的《蜘蛛侠",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "未直接杜撰参演记录，不把用户错误前提自动记成模型事实错误。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h29",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "d2112a7be666cb0a24dfa1a8f8852821a9524e4a2f400df0714654c94f4963cb",
+      "sourceGroup": "question-29",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "overlapCategories": [
+        "routing",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h29",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 49,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "title",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "searchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "最近热度/十部/各平台版权整句作keyword；没有热度时间窗、版权地区/日期或信息不足说明。",
+        "catalog": {
+          "kind": "search",
+          "keyword": "最近最火”的十部,必须准确告诉我每个平台独家版权",
+          "total": 0,
+          "size": 20
+        }
+      },
+      "limits": "空结果不能证明当前版权或热榜事实；没有作品可判数量或授权是否错误。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    },
+    {
+      "caseId": "h30",
+      "repetition": 2,
+      "turn": 1,
+      "reportSha256": "618d6138f7dd03af326e1cb5060b306a0357f8a890c0f33f31defbc5c422da06",
+      "answerSha256": "5c57ef5a63e5b492dd9644939dff1d010dc20878f1e7e08d90be4a4cde453ef4",
+      "sourceGroup": "question-30",
+      "historicalModelUsefulness": 0,
+      "historicalUnhelpfulReasonConfirmed": true,
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "overlapCategories": [
+        "conditions",
+        "clarification"
+      ],
+      "observedEvidence": {
+        "sourceObservationKey": {
+          "caseId": "h30",
+          "repetition": 2,
+          "turn": 1
+        },
+        "route": "direct-catalog",
+        "historyEntriesSubmitted": 0,
+        "answerChars": 28,
+        "candidateCountObserved": 0,
+        "trace": [
+          {
+            "kind": "unknown",
+            "name": "natural_query",
+            "status": "success"
+          },
+          {
+            "kind": "tool",
+            "name": "naturalSearchMovies",
+            "status": "success"
+          }
+        ],
+        "diagnosis": "仅有恐怖/mv，没有处理五岁、家庭适宜与更惊吓的偏好冲突，空回答未澄清优先级或说明需内容依据。",
+        "catalog": {
+          "kind": "natural_search",
+          "query": "我想看一部适合全家看的恐怖片,孩子5岁,越吓人越好",
+          "total": 0,
+          "size": 20,
+          "filters": {
+            "genres": [
+              "恐怖"
+            ],
+            "category": "mv",
+            "year": null,
+            "minRating": 0.0,
+            "yearFrom": null,
+            "yearTo": null,
+            "maxRuntime": null,
+            "excludedGenres": [],
+            "directors": [],
+            "actors": [],
+            "regions": [],
+            "languages": []
+          }
+        }
+      },
+      "limits": "未交付实际推荐，不能推定儿童已暴露不当内容；年龄适宜须证据而非从题材直接保证。",
+      "currentImplementationStatus": "旧title/natural_search/普通推荐实现的历史失效模式；10月25日结构化计划与检索架构已替换相关路径。本次未复跑该原题，现役是否满足需专项验证。10月31日另三条Agent探针仍证实数量与严格时长边界、剧情类型缺口；不将其等同原题复跑。",
+      "classificationAudit": "既有标签保留为可重叠诊断；上述limits限定因果解释，不回写原评分或将标签自动转为实现根因。"
+    }
+  ],
+  "caseTurnComparisons": [
+    {
+      "caseId": "h01",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h03",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "empty_semantic_search_without_effective_clarification",
+      "primaryCauseLabel": "主题检索无候选后没有有效澄清",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h04",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h05",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h06",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h07",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h08",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h09",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h10",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h12",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h13",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h14",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h15",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h16",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h17",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h17",
+      "turn": 2,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "multi_turn_subject_or_operation_lost",
+      "primaryCauseLabel": "多轮主体或集合操作丢失",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h17",
+      "turn": 3,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h18",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h18",
+      "turn": 2,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h18",
+      "turn": 3,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h19",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "reference_request_bypassed",
+      "primaryCauseLabel": "带明确参照或比较条件的推荐退回普通个性化推荐",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h19",
+      "turn": 2,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "multi_turn_subject_or_operation_lost",
+      "primaryCauseLabel": "多轮主体或集合操作丢失",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h20",
+      "turn": 2,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h20",
+      "turn": 3,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "multi_turn_subject_or_operation_lost",
+      "primaryCauseLabel": "多轮主体或集合操作丢失",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h21",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "candidate_quantity_and_runtime_unit_failed",
+      "primaryCauseLabel": "候选数量与时长口径未满足或未说明",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h21",
+      "turn": 2,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h21",
+      "turn": 3,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "same_entity_answer_contradiction_and_replacement_failed",
+      "primaryCauseLabel": "同一实体剧情依据矛盾且列表替换失败",
+      "repeatComparison": {
+        "observableAnswerEqual": false,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次候选ID相同，错误剧情措辞不同；第一次称寻找真爱幸福，第二次称幽默平衡爱情责任，两次都与同ID第一轮真实简介冲突。"
+      }
+    },
+    {
+      "caseId": "h22",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h22",
+      "turn": 2,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "multi_turn_subject_or_operation_lost",
+      "primaryCauseLabel": "多轮主体或集合操作丢失",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h22",
+      "turn": 3,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h23",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h23",
+      "turn": 2,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "multi_turn_subject_or_operation_lost",
+      "primaryCauseLabel": "多轮主体或集合操作丢失",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h23",
+      "turn": 3,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h24",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "opaque_tool_result_without_effective_clarification",
+      "primaryCauseLabel": "工具依据缺失且回答没有有效澄清",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h25",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h26",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h27",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "reference_request_bypassed",
+      "primaryCauseLabel": "带明确参照或比较条件的推荐退回普通个性化推荐",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h28",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h29",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "literal_title_routing",
+      "primaryCauseLabel": "描述、实体关系或列表操作被当成字面片名查询",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h30",
+      "turn": 1,
+      "auditedRepetitions": [
+        1,
+        2
+      ],
+      "primaryCause": "condition_contract_not_satisfied",
+      "primaryCauseLabel": "实际条件契约错误或关键条件未可核验地落实",
+      "repeatComparison": {
+        "observableAnswerEqual": true,
+        "conditionAndCatalogEqualExcludingIndexGeneration": true,
+        "candidateIdsAndOrderEqual": true,
+        "conclusion": "两次分别核对；除h21第三轮生成的虚构剧情措辞差异外，需求失效证据相同。耗时及indexGeneration差异不算语义改进。"
+      }
+    },
+    {
+      "caseId": "h02",
+      "turn": 1,
+      "auditedRepetitions": [
+        2
+      ],
+      "primaryCause": "opaque_tool_result_without_effective_clarification",
+      "primaryCauseLabel": "工具依据缺失且回答没有有效澄清",
+      "repeatComparison": {
+        "conclusion": "仅第二次属于82条未满足回答；第一次WEBSITE_JOB_FAILED无回答，不作质量或语义根因归因。"
+      }
+    },
+    {
+      "caseId": "h11",
+      "turn": 1,
+      "auditedRepetitions": [
+        2
+      ],
+      "primaryCause": "opaque_tool_result_without_effective_clarification",
+      "primaryCauseLabel": "工具依据缺失且回答没有有效澄清",
+      "repeatComparison": {
+        "conclusion": "仅第二次属于82条未满足回答；第一次WEBSITE_JOB_FAILED无回答，不作质量或语义根因归因。"
+      }
+    }
+  ],
+  "currentAgentProbeSummary": {
+    "observedAt": "2026-10-31T10:34:28.024545+00:00",
+    "transport": "local-agent-api",
+    "runtimeSha256": "01eab8e20a5ecbbbc8677d1000fecb7e87479402f3e839c3b9444ff39336782b",
+    "probeCount": 3,
+    "websiteUserEvaluationCovered": false,
+    "externalPostsOrTransfers": 0,
+    "historicalComparison": "这3条是现役Agent专项探针，单独记录；不是原题复跑、独立盲测或82条前后配对质量比较。",
+    "probes": [
+      {
+        "id": "count-and-score",
+        "message": "找喜剧电影，不要剧集，给两部。按豆瓣评分排序，不用IMDb评分补缺分。",
+        "apiCode": 200,
+        "status": "completed",
+        "queryPlan": {
+          "intent": "search",
+          "limit": 10,
+          "inheritContext": false,
+          "genresAll": [
+            "喜剧"
+          ],
+          "category": "mv",
+          "ratingSource": "douban",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "returnedCount": 10,
+        "sourceFileSha256": "cad0a7290806984fecc94b435c2b86da17a26fba6701b4e6fc74a216244c643f",
+        "observedFailure": "要求两部而limit=10/返回10；ratingSource=douban保留但sort缺失。",
+        "limits": "本条实际列表恰与默认豆瓣降序一致；sort缺失证明排序意图未明确落实，不单凭该字段宣称本条实际排序已排错。"
+      },
+      {
+        "id": "tv-genre",
+        "message": "不要电影，找剧情剧集，最多两部。按IMDb评分排序，不用豆瓣评分。",
+        "apiCode": 200,
+        "status": "completed",
+        "queryPlan": {
+          "intent": "search",
+          "limit": 10,
+          "inheritContext": false,
+          "category": "tv",
+          "ratingSource": "imdb",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "returnedCount": 10,
+        "sourceFileSha256": "cad0a7290806984fecc94b435c2b86da17a26fba6701b4e6fc74a216244c643f",
+        "observedFailure": "要求最多两部剧情剧集而limit=10/返回10，category=tv及ratingSource=imdb保留，但genresAll与sort缺失；已返回新闻/纪录/纯喜剧等非剧情标签候选。",
+        "limits": "本条只核对查询计划与已返回元数据；不把这条直接计入历史82，也不宣称完成USER网站验收。"
+      },
+      {
+        "id": "strict-runtime",
+        "message": "找喜剧电影，片长超过90分钟但少于100分钟，最多三部。",
+        "apiCode": 200,
+        "status": "completed",
+        "queryPlan": {
+          "intent": "search",
+          "limit": 10,
+          "inheritContext": false,
+          "genresAll": [
+            "喜剧"
+          ],
+          "minRuntime": 90,
+          "maxRuntime": 100,
+          "category": "mv",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "returnedCount": 10,
+        "sourceFileSha256": "cad0a7290806984fecc94b435c2b86da17a26fba6701b4e6fc74a216244c643f",
+        "observedFailure": "要求90<时长<100且最多三部，实际minRuntime=90/maxRuntime=100/limit=10；返回包含两个90分钟及一个100分钟的候选，明确违反严格边界。",
+        "decisiveBoundaryCandidates": [
+          {
+            "id": "gying_mv_LkrB",
+            "titleCn": "怦然心动",
+            "runtimeMinutes": 90
+          },
+          {
+            "id": "gying_mv_egLW",
+            "titleCn": "蜡笔小新：大人王国的反击",
+            "runtimeMinutes": 90
+          },
+          {
+            "id": "gying_mv_5bbr",
+            "titleCn": "名侦探柯南：世纪末的魔术师",
+            "runtimeMinutes": 100
+          }
+        ],
+        "limits": "这是库中runtimeMinutes的实际过滤结果；未逐片独立查证所有版本剪辑时长。"
+      }
+    ]
+  },
+  "improvementPriorities": [
+    {
+      "priority": 1,
+      "behavior": "原文数量、排序来源、剧情类型及严格数值上下界必须可靠进入计划并由实际候选执行；未知明确说明。",
+      "currentEvidence": "10月31日三条真实Agent探针证实仍有缺口；历史映射只作开发动机。"
+    },
+    {
+      "priority": 2,
+      "behavior": "否定人物/关系以及多轮集合操作保持主体、候选身份与顺序；前轮空集合必须有效说明。",
+      "currentEvidence": "历史82已核验；现役须独立新场景实查，不由架构存在推定已过。"
+    },
+    {
+      "priority": 3,
+      "behavior": "候选与回答只能依据对应ID元数据；无法核验内容排除、国籍/奖项、版权、年份或偏好时提出具体澄清。",
+      "currentEvidence": "历史实体矛盾和空答复已核验；当前更广质量收益仍待实际回答复核。"
+    }
+  ]
+}

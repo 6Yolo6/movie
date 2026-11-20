@@ -1,0 +1,127 @@
+{
+  "status": "deployed-entrypoints-verification-passed",
+  "startedAt": "2026-11-04T14:37:02.975412+00:00",
+  "affected": [
+    "backend"
+  ],
+  "deploymentPerformed": true,
+  "schemaChanged": false,
+  "liveDataStateKeyRetained": true,
+  "publicVerificationPerformed": true,
+  "tests": {
+    "movie": {
+      "tests": 973,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 31
+    },
+    "realSql": {
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 12
+    },
+    "environmentSkipsRetained": true
+  },
+  "securityException": {
+    "acceptedByCurrentUserAuthorization": true,
+    "scanSummary": {
+      "PASS": 58,
+      "FAIL": 11,
+      "UNKNOWN": 1
+    },
+    "gateLedgerStillOpen": true,
+    "authorizationSha256": "eb6899397cc0f0b41a34234e4bbb5c38b0b938eb1a2cd27c8a8b3cb9a3b7ee1c"
+  },
+  "candidateImages": {
+    "backend": "sha256:91dc95395cc5d30d589a3c5bf6c4e6053bb972e91ceb138f45cf78dd81d9f521"
+  },
+  "backendJarSha256": "2c1301be46e97f12da16167896cd1241efbb4abc20404d4e9c7c53672a3f5054",
+  "sourceBound": true,
+  "effectiveComposeAndRuntimePreserved": true,
+  "stopSignalProofs": {
+    "backend": {
+      "signal": "SIGTERM",
+      "pid1": "java",
+      "receiver": "handler"
+    }
+  },
+  "preparatoryCheckpoint": "G:\\gying-backups\\ai-identity-theme-backend-20261104-20261104T143309.718177Z",
+  "finalStoppedCheckpointRequired": false,
+  "readinessExitCode": 0,
+  "idleChecks": [
+    {
+      "at": "2026-11-04T14:37:40.499814+00:00",
+      "phase": "Deployment preflight natural idle",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false,
+      "currentPersistedQueueReadFromCapturedBindings": false,
+      "agentPending": 0
+    },
+    {
+      "at": "2026-11-04T14:38:18.811981+00:00",
+      "phase": "Immediately before backend TERM",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false,
+      "currentPersistedQueueReadFromCapturedBindings": false,
+      "agentPending": 0
+    },
+    {
+      "at": "2026-11-04T14:38:24.895211+00:00",
+      "phase": "Backend drained",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false,
+      "currentPersistedQueueReadFromCapturedBindings": false,
+      "agentPending": 0
+    },
+    {
+      "at": "2026-11-04T14:38:44.287712+00:00",
+      "phase": "Before backend candidate start",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false,
+      "currentPersistedQueueReadFromCapturedBindings": false,
+      "agentPending": 0
+    }
+  ],
+  "phase": "Actual backend/configuration/nginx/local-public-QQ-health entries verified",
+  "rollbackStateBefore": {
+    "moviePending": 0,
+    "movieRunning": 0,
+    "filmIdentityJobs": 0,
+    "filmIdentityJobsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "attemptedServices": [
+    "backend"
+  ],
+  "TERMReceipts": {
+    "backend": {
+      "id": "6a70e9f13de8742096f244a8aa14876e01d4964552f5dd5ddc8b4c84f036b967",
+      "image": "sha256:6bee2a1d65a7114c05dcffed559bab9bbf1791751b855ba5c44a75ef2dcd471e",
+      "exitCode": 143,
+      "finishedAt": "2026-11-04T14:38:19.719768415Z"
+    }
+  },
+  "finalCheckpoint": "G:\\gying-backups\\ai-identity-theme-backend-20261104-20261104T143825.278661Z",
+  "candidateStartAttempted": true,
+  "actualJarVerified": true,
+  "localEntriesVerified": true,
+  "unaffectedContainersPreserved": true,
+  "completedAt": "2026-11-04T14:39:17.278199+00:00"
+}

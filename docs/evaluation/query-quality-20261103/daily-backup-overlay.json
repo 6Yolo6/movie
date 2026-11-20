@@ -1,0 +1,28 @@
+{
+  "preparedAt": "2026-11-03T13:16:42.526377+00:00",
+  "status": "applied",
+  "addition": {
+    "name": "ai-query-quality-backend-runtime-20261103",
+    "path": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\backend-candidate.json"
+  },
+  "originalSha256": "f0c9d82e8b257290f32f391a714e82435eb06c5798c6a8b4f91b574ceecb9477",
+  "proposedSha256": "992021c8945e86f53053ee4635a80dedcd2416a042d7efc710ba98289526ab6e",
+  "oldConfigurationCheckpoint": {
+    "directory": "G:\\gying-backups\\ai-query-quality-daily-backup-config-20261103-20261103T131642.240227Z",
+    "archive": "G:\\gying-backups\\ai-query-quality-daily-backup-config-20261103-20261103T131642.240227Z\\backup-config-before.tar.age",
+    "archiveSha256": "2676970ba3be009e6356016b154a231e40074cce7138104e43ac87a054dee245",
+    "authenticated": true,
+    "exactOriginalContentVerified": true
+  },
+  "differenceKeys": [
+    "paths"
+  ],
+  "productionConfigurationWritten": true,
+  "dryRun": {
+    "exitCode": 0,
+    "newOverlayIncluded": true,
+    "artifactCount": 26,
+    "backupExecuted": false
+  },
+  "appliedAt": "2026-11-03T13:47:46.980315+00:00"
+}
