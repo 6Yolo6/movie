@@ -1,10 +1,6 @@
 # 网盘工作流配置
 
-2026-11-13 21:07（Asia/Shanghai）按用户要求在线关闭迅雷全部工作流：视频、种子、发现、转存、分享、GYING发布均false。真实后台/SQL和跨30秒复核一致，夸克与百度保持原配置；近20条迅雷转存15条明确空间不足，精确配额未取得。当前保持暂停，未清理或重放旧任务。[本次核查与回退](evaluation/xunlei-workflow-pause-20261113/README.md)。
-
-开发分支：`codex/cloud-drive-workflows`。2026-11-09 backend于22:39:17、frontend于22:48:50启动固定`048795f`，22:49:07完成两服务上线：百度上传/分享兼容、QQ/网站独立临时搜索与默认十分钟精确清理、全有效片库重复候选扫描。实际Compose17/11、固定image/JAR/375产物与本机公网资产核验通过；部署类+实库只读快照15366有效/144待审候选/完整、MobLand0/8和分页通过；用户实际新登录后23:05真实ADMIN四次dryRun API扫描15366/144候选、完整/MobLand0/8/144对资源数和分页通过；原22:53无设备FAIL保留，真实归档/转存清理/配额和已认证浏览器UI待验。[本轮上线与边界](evaluation/baidu-search-duplicate-20261109/README.md)。
-
-早先13:54:51按GYING ID补种子上线b55080d8；14:24单影片首个磁力文本上传为UNKNOWN，自动补全保持关闭、十分钟一条。后续e6370cb上传/分享兼容候选1254项及真实61字节合成文本/同目录一次分享核验通过，当时idle/旧consumer门禁FAIL、未部署；兼容代码现随048795f上线，原17583/17584与意图保留，尚未证明真实影视归档成功。[原种子验收](evaluation/baidu-torrent-backfill-20261109/README.md)、[上传实测](evaluation/baidu-share-compat-fix-20261109/README.md)。
+现役配置/版本统一见[当前状态](current-project-status.md)。11月13日迅雷六阶段全部暂停；11月18日百度种子阻塞修复、父17583恢复10分钟1条，17761及首自然18125成功，历史UNKNOWN保留。[交付台账](history/releases.md)记录验证与回退。
 
 ## 页面与阶段
 
@@ -83,21 +79,22 @@ ADMIN `GET /api/admin/resource-hub/baidu/transfers` 查看摘要，`POST /api/ad
 
 复用 `resource_hub_task` 的 `CLOUD_DRIVE_BACKFILL` 父任务，以新的 `resource.hub.baidu.torrent-backfill.task-id` 独立指针保存 v2 进度，不需新增表。固定初次来源身份高水位，记录 GYING 游标、百度 P2P 子任务、统计和三十分钟数据库租约；重启后继续原项。普通 Worker 不消费补全专属子任务。页面显示当前 GYING ID、种子选择、归档步骤和具体错误类别；种子开关关闭会明确提示。
 
-当前实际新父任务为 17583，专属子任务 17584 在 `UPLOAD_MAGNET_TEXT` 为 UNKNOWN，父状态 BLOCKED/CHILD_UNKNOWN、自动开关关闭。2026-11-09 14:29 官方只读目录检查为 0 文件、同一账号且会话保持；未保存上传文件 ID 或分享提交意图，不能将目录为空推定为可以重放。确认未知结果与接口原因前保持暂停。
+11月18日父17583的FAILED阻塞已解除，enabled=true/10分钟1条。原17584/17606/17622等deferred UNKNOWN仍保留；17761保留失败历史后成功、首自然18125成功的具体证据见[恢复摘要](evaluation/baidu-torrent-recovery-20261118/README.md)。不能因父已恢复而重放旧未知上传。
 
 旧 `resource.hub.baidu.backfill.task-id` 及父任务、游标、转存子任务和 UNKNOWN/远端意图原样保留，新补全不读取它们。旧视频分享的审核或源链接错误不会阻塞种子补全。若同片百度种子已有未知提交或待核验 P2P 任务，则保留其原选择及远端检查点，显示该种子任务的具体状态；不重置、重建或重放未知提交。
 
-宿主扫码配置可选 `proxyServer`，仅接受显式 `http://127.0.0.1:<端口>`；当前复用既有 7897 代理。有限权限任务对已有私有目录只验证所有者和 ACL，遇不安全目录直接失败，不重新取得所有权。13:54 本轮仅同步新 backend 固定镜像并核对实际配置、严格前后 idle、原任务 XML/ACL，保持 Enabled/Ready、profile 和加密会话。01:34 历史任务恢复 Enabled/Ready、Limited/Interactive 实际运行 exit0 与独立核验保留；当时 stdout 未捕获，idle 由严格前后无 handoff 与 exit0 推定。首次默认 Enabled 节点省略造成的失败和精确 CAS 回 disabled 保留于历史验收记录。
+宿主扫码配置proxyServer仅接受显式loopback HTTP代理，现用7897。任务保持Limited/Interactive、Enabled/Ready；更新backend镜像时同步expectedBackendImage。既有private/profile只核所有者和ACL，异常直接失败，不取回所有权。[无控制台启动修复](evaluation/console-window-fix-20261109/README.md)保留真实自然运行证据。
 
-## 百度新永久目录候选
+## 百度永久归档与临时搜索
 
 上传兼容修复的新视频计划与种子归档已随048795f上线，按影片类别写到保存根下的 `mv/tv/ac`：默认 `/GYing Resource Hub/mv`、`tv`、`ac`；movie/anime 别名映射到 mv/ac。未知类别在百度云写入前停止。只复用同类别目录；仅用于新计划，历史保存计划、路径与 UNKNOWN 检查点保持原位，未搬迁生产文件。
 
 QQ群与网站共用百度搜索链路、成功后默认十分钟清理已随048795f上线；使用独立临时scope及精确账号/目录/完整树证据，与永久mv/tv/ac归档隔离。用户已选择彻底删除本系统新建临时任务目录，逐对象回收站核验和持久意图，不清空整个回收站；首次分享确认固定时钟，任务创建时固定保留分钟数，重复/补偿不延期。自然真实转存清理与配额变化未实测，历史UNKNOWN/探针/永久目录未删除或重放。[本轮上线](evaluation/baidu-search-duplicate-20261109/README.md)、[原候选与删除边界](evaluation/baidu-search-temp-20261109/README.md)。
 
+<a id="回退"></a>
 ## 部署与回退
 
-百度任务表由用户创建；本轮旧写入者正常停止后由用户执行临时scope/清理增量SQL，助手只读完整契约通过。22:49:07仅backend/frontend完成048795f上线，独立运行17/0、Compose17/11、408/90源码、375产物、20本机公网入口和194资产SHA闭环（管理Access302、Insights精确归一化，原失败保留）。用户实际新登录后23:05真实ADMIN四次POST200/dryRun、全库15366/144候选及资源数/分页通过，登录后新基线业务/授权/历史保持、常规last_seen更新；原22:53无设备FAIL保留，已认证浏览器UI未独立验。停机七age与pin后三age完整认证/会话/原XML和ACL保持，独立post27/0通过（原两次HostCheckpoint RuntimeError保留、原因未定），hostpin仅改预期backend image、Enabled/Ready/profile与会话保持；日常40项CAS/dry-run通过，自然完整备份未验。旧idle/consumer/严格零在途FAIL仍保留，新精确历史与activity守护通过；自动补全关闭10分钟1条，不恢复旧SQL或重放UNKNOWN。[当前部署与备份](evaluation/baidu-search-duplicate-20261109/README.md)。
+百度任务及临时清理/合并保护增量已上线，版本/检查点统一见[发布台账](history/releases.md)。已有逐文件/fileId与自有分享目录守护，缺失或替换即阻止发布；时点核验不保证provider原子性或永久完整性。
 
 旧后端忽略文件类型开关并不能识别百度任务，不能直接自动回退。回退前停止新写入者，读取新配置、百度副作用阶段和 P2P 检查点；有类型关闭、百度在途/未知意图或读取失败时阻断旧消费者，保留当前 SQL/会话/计划与候选版本。新增补全父任务或指针也阻断旧版回退。不能用旧 SQL 覆盖在线数据，不重置/重放队列。真实转存、发帖和删除不作默认健康探针。
 
@@ -107,4 +104,4 @@ QQ群与网站共用百度搜索链路、成功后默认十分钟清理已随048
 
 原 UNKNOWN 子任务、尝试次数、远端意图和保存目录保持；同影片未决提交阻止普通入队、克隆或换指纹再次上传。新自然执行遇 UNKNOWN 也保留待审并按原间隔继续其它影片，ACTION_REQUIRED 或仍在运行的任务继续阻断。待审不计归档成功。旧消费者无法读取这项新进度，不能直接回退或覆盖旧 SQL。
 
-此节说明实现契约；原 17583/17584 历史状态和本轮实际继续处理结果分别以[当前状态](current-project-status.md)和对应验收证据为准。
+实际父任务、待审和自然结果以[当前状态](current-project-status.md)及交付证据为准。

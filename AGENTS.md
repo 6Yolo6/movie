@@ -15,6 +15,12 @@
 - Retain the previous image for rollback and update the existing host image pin if required, without the full host/ACL backup and audit procedure. Require an administrator session only when the affected action actually needs one.
 - Use the full ops workflow for SQL/schema/data or incompatible persisted-state migrations, infrastructure or credential/security changes, and destructive or hard-to-reverse actions. Unrelated historical warnings and generic skill checklists do not automatically escalate a small change; explain a concrete new risk if escalation is necessary.
 
+## Documentation and acceptance
+
+- Small features and resolved bugs need only the relevant manual update and a short ledger entry: date, change/root cause, final validation, and necessary rollback or pending item. Usually 3–5 lines; do not create a long dated report or large evidence bundle by default.
+- Perform one final acceptance of the affected behavior, real entry point, and startup logs. Reuse passed checks; add verification only for new changes, failures, or a concrete unresolved concern.
+- Keep current values in the status manual, reusable behavior in topic manuals, and history in ledgers/Git. Preserve frozen evaluations, essential recovery evidence, and unresolved security, licensing, or migration limits. Documentation cleanup does not refresh observation dates or require deployment.
+
 ## Shell and file operations
 
 - Prefer rg, fd, and git grep over recursive searches; exclude node_modules, bin, obj, dist, target, and .git unless explicitly needed.

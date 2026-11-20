@@ -7,7 +7,12 @@
 <a id="git-history"></a>
 ## Git全文追溯
 
-整理前完整内容固定在已推送提交 `49fe7fd7072ac9ef3c6d1bda7da4bce7d9cf5156`。此前10月22快照也在该提交的 `docs/history/snapshots/20261022/` 下；当前目录不再保存第二份相同手册。下面只读取文字，不执行其中历史操作：
+2026-11-20本次精简前的状态、日期验收与bug流水固定在已推送提交 2b31018595fff14f5068c6040c98e72bc6c927d5。读取对应路径即可核查所有被压缩段落及原SHA表：
+
+    git show 2b31018595fff14f5068c6040c98e72bc6c927d5:docs/current-project-status.md
+    git show 2b31018595fff14f5068c6040c98e72bc6c927d5:docs/evaluation/duplicate-tmdb-binding-20261111/README.md
+
+更早一次整理前完整内容固定在已推送提交 `49fe7fd7072ac9ef3c6d1bda7da4bce7d9cf5156`。此前10月22快照也在该提交的 `docs/history/snapshots/20261022/` 下；当前目录不再保存第二份相同手册。下面只读取文字，不执行其中历史操作：
 
 ```powershell
 git show 49fe7fd7072ac9ef3c6d1bda7da4bce7d9cf5156:docs/ai-query-plan-v2-20261025.md
@@ -38,6 +43,6 @@ git ls-tree -r --name-only 49fe7fd7072ac9ef3c6d1bda7da4bce7d9cf5156 -- docs
 
 ## 保留与维护规则
 
-当前手册维护机制；状态文件维护有日期的运行事实；历史台账保留部署范围、检查点和未决限制；evaluation保留冻结证据。小修复优先更新这四处，不新增一份重复的日期流水文档。需要完整事故细节时，保留脱敏外部证据位置与对应Git提交。
+当前手册维护机制；状态文件维护有日期的运行事实；历史台账保留部署范围、检查点和未决限制；evaluation保留冻结证据。小功能/已解决bug通常用3–5行更新相关手册及一条台账，只留最终验收和必要回退/待办，不新增长篇日期流水。需要完整事故细节时，保留脱敏外部证据位置与对应Git提交。
 
 镜像/hash正确、备份认证、隔离恢复、真实网站登录、外部出站与人工质量各自成立。历史记录没有写成功的项目仍待验，归并不清队列、重置失败或关闭安全风险。
