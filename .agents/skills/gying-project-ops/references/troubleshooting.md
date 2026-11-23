@@ -27,6 +27,12 @@ docker compose -p gying-movie -f docker-compose.prod.yml logs --tail=200 backend
 
 涉及配置变更用已审查覆盖；独立PanSou/Quark/OpenClaw按实际名字读取窗口。metrics核ha_connections。分享只脱敏摘要，禁Cookie/token/body/完整URL参数。
 
+## Tunnel 请求取消与候选链路
+
+`Incoming request ended abruptly: context canceled`表示该请求上下文结束，浏览器换页/取消也会触发；先核ready、HA及同一时段注册/重连、TLS/拨号日志，再结合公网结果判断连接故障。
+
+Cloudflare trace的443测速不能代替7844 TLS/HTTP2与实际HA验收；候选握手EOF或不能稳定建立连接时保留已验线路。升级从官方稳定发布校验SHA-256和签名，保留旧产物/原任务，固定loopback metrics并保存INFO日志；现役版本与出口只在[当前状态](../../../../docs/current-project-status.md)维护。
+
 ## Docker 恢复后端口空响应与 Tunnel fake-IP 漂移
 
 09月30历史两独立问题：容器内部HTTP正常但宿主8880/5005 curl52，vpnkit仍旧IP；先记身份/配置/挂载/转发日志、无新在途后按授权逐原容器重启注册，每项验宿主，backend变化后nginx测试/重载。不要扩大端口/删卷/全Docker重启。
@@ -37,7 +43,9 @@ HTTP2 Tunnel缓存漂移198.18地址时，对照当前DNS/目标/代理；不是
 
 10月14 17:17–17:23公网530/1033、机场测速超时、HA归零；代理恢复后自动重连。查service日志7844 match-Match超时/ready/源站分层，不改Token/Access。
 
-持久规则仅 DOMAIN-SUFFIX argotunnel.com 和198.41.192.0/24、198.41.200.0/24的IP-CIDR no-resolve，prepend置最前；rules/groups订阅增强只支持prepend/append/delete，Merge深合并中的prepend-rules无效。fallback `GYing-Tunnel` 原机场→DIRECT，以Cloudflare trace健康检查；保留TLS/HTTP2/其他策略。修改增强文件后重启客户端，核生成时间、rules前三/7844 connections IPCIDR/chains及连续公网。不要直接改生成clash-verge.yaml；配置可能含secret，加密备份仅路径/hash。原回退tmp/tunnel-diagnose-20261014/backup，删本次prepend后重启，后续用户配置不覆盖。
+前置DOMAIN-SUFFIX argotunnel.com及198.41.192.0/24、198.41.200.0/24的IP-CIDR no-resolve；rules/groups订阅增强只支持prepend/append/delete，Merge的prepend-rules无效。10月14曾采用原机场→DIRECT fallback，现役出口按[当前状态](../../../../docs/current-project-status.md)及真实7844验收选择。
+
+先修改持久增强，再核对规范源、生成产物与运行态一致；生成文件不能作为唯一变更源，其余私有配置键保持。含secret材料加密备份，仅报告路径/hash；复核规则顺序、7844 connections链路及连续公网。历史回退tmp/tunnel-diagnose-20261014/backup，后续用户配置必须合并保护。
 
 ## 数据安全排查
 

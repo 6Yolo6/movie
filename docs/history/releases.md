@@ -6,6 +6,7 @@
 
 | 日期 | 范围与最终结果 | 验证/恢复入口 |
 | --- | --- | --- |
+| 11月23日 | cloudflared升级2026.11.1，固定HTTP/2/IPv4及独立已验节点；排除443测速通过但7844失败的候选，持久/生成配置同步。303秒内HA持续4、入口与匿名拒绝通过、新增错误0；只有一条已验出站 | [现役与验收](../current-project-status.md)；回退 E:/gying-tools/releases/tunnel-stability-20261123/Rollback-Tunnel.ps1（默认只检查，-Apply恢复原路由与9.1旧任务，保留后续配置改动保护） |
 | 11月19日 | TVmaze接入并改6小时10次；backend/frontend现役1b6220ae…/a8e00af6…，22:35上线。首轮9关联/1候选/0失败，真实6小时轮次待验 | [现役与两旧镜像/覆盖](../evaluation/tvmaze-frequency-20261119/README.md) · [首轮](../evaluation/tvmaze-metadata-20261119/README.md) |
 | 11月18日 | source f24203be…修单个LF/CRLF种子尾缀；17761成功及官方两文件/目录/账号通过，首自然18125成功，百度父恢复10分钟1条 | [source旧镜像/三age检查点](../evaluation/baidu-torrent-recovery-20261118/README.md) |
 | 11月17日 | frontend一键去重上线；单次6组，6来源/别名/18历史，23资源/12任务保持；17,967→17,961、87→81，7旧阻塞保持 | [SQL检查点与实际结果](../evaluation/duplicate-one-click-20261117/README.md) |

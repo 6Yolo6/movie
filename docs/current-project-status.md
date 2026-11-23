@@ -1,6 +1,6 @@
 # 当前项目状态
 
-更新时间：2026-11-19（Asia/Shanghai，最近运行观测日期）。
+更新时间：2026-11-23（Asia/Shanghai；本次仅复核隧道，其余内容保留各自观测日期）。
 
 [文档导航](README.md) · [部署与回退](deployment.md) · [发布台账](history/releases.md) · [问题台账](history/issues.md)
 
@@ -19,7 +19,9 @@
 | 主机 | 仓库 D:/gying-movie/movie；Agent D:/ai/local-ai-agent；Docker数据 G:/dockerdesktop/wsl/DockerDesktopWSL |
 | 部署 | 显式 -p gying-movie -f docker-compose.prod.yml，加各服务现役覆盖；私有配置在仓库外 |
 
-QQBot每日推荐、原腾讯频道CLI、social-publisher分别维护。NapCat停用，旧secondary/qq-v3目标为enabled=0。Tunnel配置在 E:/gying-tools/cloudflared/config.yml，原计划任务保留，ready端口20241。
+QQBot每日推荐、原腾讯频道CLI、social-publisher分别维护。NapCat停用，旧secondary/qq-v3目标为enabled=0。Tunnel配置仍在 E:/gying-tools/cloudflared/config.yml；原计划任务运行cloudflared 2026.11.1，产物在 E:/gying-tools/releases/tunnel-stability-20261123/，固定HTTP/2、IPv4与loopback 20241。
+
+规则模式下，GYing-Tunnel独立固定到已验美国V6666，30秒主动健康检查；订阅增强、生成配置与运行态一致，普通代理选点不再牵连此出口。DIRECT及其他候选未通过实际7844握手/完整HA验收，只有一条已验出站，有效备用线路待补；回退见[发布台账](history/releases.md)。
 
 ## 已具备能力
 
@@ -103,6 +105,7 @@ Worker=true，每60秒检查到期；TMDB/GYING旧RANGE游标和CSCORE暂停图�
 
 | 日期 | 已验结果 | 仍有的边界 |
 | --- | --- | --- |
+| 11月23日隧道 | 官方SHA-256/签名及唯一进程通过；09:53–09:58共303秒，56次HA均4，主页/API/图片及匿名拒绝通过，新增请求/连接错误0 | context canceled表示请求取消，不能单独判掉线；有效备用线路待补 |
 | 11月19日TVmaze | 接入156项/频率调整108项后端定向，前端11项、构建/隔离Linux/视口/本机公网入口通过；首18190为10尝试、9关联、1候选、0失败 | 90待后续预算；6小时自然轮次未复验 |
 | 11月18日百度恢复 | source61项回归；17761两文件45,961B及官方内容/目录/账号核验通过，首自然18125四文件255,864B成功 | 后者未再次逐文件独立官方核验；父103处理/84成功/19跳过/2历史失败为当时快照 |
 | 11月17日去重 | frontend37项回归及入口通过；单次6组、6来源/别名/18历史，23资源/12目标任务保持，12新旧详情通过 | 全库17,967→17,961、候选87→81仅当次观测，7阻塞未合并 |
