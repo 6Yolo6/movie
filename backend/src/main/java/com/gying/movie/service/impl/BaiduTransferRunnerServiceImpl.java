@@ -63,7 +63,7 @@ public class BaiduTransferRunnerServiceImpl implements IBaiduTransferRunnerServi
 
     @Override
     public QuarkTransferRunResult submitPending(int limit) {
-        requireEnabled();
+        requireEnabled(null);
         var result = new QuarkTransferRunResult();
         List<BaiduTransferTask> pending = tasks.list(new QueryWrapper<BaiduTransferTask>()
                 .eq("scope_key", BaiduTemporaryScope.PERMANENT)
@@ -77,19 +77,31 @@ public class BaiduTransferRunnerServiceImpl implements IBaiduTransferRunnerServi
 
     @Override
     public QuarkTransferRunResult submitOne(Long id) {
-        requireEnabled();
         var task = tasks.getById(id);
         if (task == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "百度转存任务不存在");
+        requireEnabled(task);
         var result = new QuarkTransferRunResult(); result.setTaskId(id);
         submitGuarded(task, result, true);
         return result;
     }
 
-    private void requireEnabled() {
-        if (!properties.isEnabled() || !properties.isDriveShareTransferEnabled("BAIDU")) {
+    private void requireEnabled(BaiduTransferTask task) {
+        if (!transferEnabled(task)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "百度转存已关闭");
         }
         if (!client.isConfigured()) throw new ResponseStatusException(HttpStatus.CONFLICT, "请先扫码登录百度网盘");
+    }
+
+    private boolean transferEnabled(BaiduTransferTask task) {
+        return properties.isEnabled() && properties.isDriveTransferEnabled("BAIDU")
+                && (videoEnabled(task) || properties.isDriveTorrentEnabled("BAIDU"));
+    }
+
+    private boolean videoEnabled(BaiduTransferTask task) {
+        // Temporary videos require the existing automatic cleanup plan; permanent policy stays independent.
+        return BaiduTemporaryScope.isTemporary(task)
+                ? temporarySettings != null && temporarySettings.enabled() && temporarySettings.baiduPermanentDeleteEnabled()
+                : properties.isDriveVideoEnabled("BAIDU");
     }
 
     private void submitGuarded(BaiduTransferTask candidate, QuarkTransferRunResult result, boolean manual) {
@@ -158,7 +170,7 @@ public class BaiduTransferRunnerServiceImpl implements IBaiduTransferRunnerServi
             if (completedPlan == null || !java.util.Objects.equals(task.getSavedPath(), completedPlan.destination())) {
                 throw new IllegalStateException("INVALID_PLAN");
             }
-            if (!BaiduWebClient.matchesFilePolicy(completedPlan, properties.isDriveVideoEnabled("BAIDU"),
+            if (!BaiduWebClient.matchesFilePolicy(completedPlan, videoEnabled(task),
                     properties.isDriveTorrentEnabled("BAIDU"))) { skip(result); return; }
             if (!client.validateOwnShare(task.getShareUrl())) { fail(result, "BAIDU_SHARE_UNAVAILABLE"); return; }
             if (BaiduTemporaryScope.isTemporary(task)) {
@@ -181,7 +193,7 @@ public class BaiduTransferRunnerServiceImpl implements IBaiduTransferRunnerServi
             var discovery = task.getDiscoveryResultId() == null ? null : discoveries.getById(task.getDiscoveryResultId());
             String code = discovery == null ? null : discovery.getCode();
             plan = client.planTransfer(task.getOriginalUrl(), code, transferPath(task, discovery),
-                    properties.isDriveVideoEnabled("BAIDU"), properties.isDriveTorrentEnabled("BAIDU"));
+                    videoEnabled(task), properties.isDriveTorrentEnabled("BAIDU"));
             task.setResponsePayload(mapper.writeValueAsString(plan)); task.setSavedPath(plan.destination());
             task.setPhase("PREPARED"); task.setStatus("RUNNING"); persist(task, owner);
         } else {
@@ -189,7 +201,7 @@ public class BaiduTransferRunnerServiceImpl implements IBaiduTransferRunnerServi
             plan = mapper.readValue(task.getResponsePayload(), BaiduWebClient.TransferPlan.class);
             if (plan == null || !task.getSavedPath().equals(plan.destination()) || !hasText(plan.sourceUrl())) throw new IllegalStateException("INVALID_PLAN");
         }
-        if (!BaiduWebClient.matchesFilePolicy(plan, properties.isDriveVideoEnabled("BAIDU"),
+        if (!BaiduWebClient.matchesFilePolicy(plan, videoEnabled(task),
                 properties.isDriveTorrentEnabled("BAIDU"))) { skip(result); return; }
         if ("PREPARED".equals(task.getPhase())) {
             if (client.verifyDestination(plan)) {
@@ -197,8 +209,8 @@ public class BaiduTransferRunnerServiceImpl implements IBaiduTransferRunnerServi
             } else {
                 // This persisted phase survives process death between send and response.
                 task.setPhase("TRANSFER_SUBMITTING"); task.setStatus("WAITING_TRANSFER"); persist(task, owner);
-                if (!properties.isDriveShareTransferEnabled("BAIDU")
-                        || !BaiduWebClient.matchesFilePolicy(plan, properties.isDriveVideoEnabled("BAIDU"),
+                if (!transferEnabled(task)
+                        || !BaiduWebClient.matchesFilePolicy(plan, videoEnabled(task),
                                 properties.isDriveTorrentEnabled("BAIDU"))) { skip(result); return; }
                 try {
                     var submitted = client.transfer(plan);

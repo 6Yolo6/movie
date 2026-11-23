@@ -680,11 +680,20 @@ public class BaiduWebClient {
     private static boolean torrentFile(ExpectedFile f) { return f.relativePath() != null && f.relativePath().toLowerCase(Locale.ROOT).endsWith(".torrent") && f.size() > 0 && f.size() <= 2L * 1024 * 1024; }
 
     public static String normalizedShareUrl(String url, String code) {
+        return normalizedShareUrl(url, code, false);
+    }
+
+    /** GYING links may include browser fragments or a malformed separately scraped code. */
+    public static String normalizeDiscoveredShareUrl(String url, String code) {
+        return normalizedShareUrl(url, code, true);
+    }
+
+    private static String normalizedShareUrl(String url, String code, boolean discovered) {
         if (url == null || url.length() > 1000 || hasControl(url)) throw new IllegalArgumentException("Invalid Baidu share URL");
         try {
             URI uri = URI.create(url.trim());
             if (!("https".equalsIgnoreCase(uri.getScheme()) || "http".equalsIgnoreCase(uri.getScheme()))
-                    || uri.getUserInfo() != null || uri.getPort() != -1 || uri.getFragment() != null
+                    || uri.getUserInfo() != null || uri.getPort() != -1 || (!discovered && uri.getFragment() != null)
                     || !Set.of("pan.baidu.com", "yun.baidu.com").contains(uri.getHost() == null ? "" : uri.getHost().toLowerCase(Locale.ROOT))) throw new IllegalArgumentException();
             Map<String, String> query = parseQuery(uri.getRawQuery());
             String id;
@@ -692,6 +701,10 @@ public class BaiduWebClient {
             else if ("/share/init".equals(uri.getPath()) && query.getOrDefault("surl", "").matches("[A-Za-z0-9_-]{1,80}")) id = "1" + query.get("surl");
             else throw new IllegalArgumentException();
             String pwd = code == null || code.isBlank() ? query.get("pwd") : code.trim();
+            if (discovered && pwd != null && !pwd.isBlank() && !pwd.matches("[A-Za-z0-9]{4}")) {
+                String embedded = query.get("pwd");
+                if (embedded != null && embedded.matches("[A-Za-z0-9]{4}")) pwd = embedded;
+            }
             if (pwd != null && !pwd.isBlank() && !pwd.matches("[A-Za-z0-9]{4}")) throw new IllegalArgumentException();
             return ORIGIN + "/s/" + id + (pwd == null || pwd.isBlank() ? "" : "?pwd=" + pwd);
         } catch (RuntimeException ignored) { throw new IllegalArgumentException("Invalid Baidu share URL or extraction code"); }

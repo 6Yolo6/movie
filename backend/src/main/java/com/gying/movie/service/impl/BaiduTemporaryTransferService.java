@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /** User selection has its own durable scope; no remote call runs in a database transaction. */
 @Service
+@Slf4j
 public class BaiduTemporaryTransferService {
     public record SelectionResult(ResourceLink resource, String status, Long taskId, LocalDateTime expiresAt) {}
     private final ResourceHubProperties properties;
@@ -90,12 +92,16 @@ public class BaiduTemporaryTransferService {
             cleanup.bindResource(task.getId(), task.getDiscoveryResultId(), resource.getId(), task.getShareUrlHash());
             if (expired(task)) return outcome(task, "EXPIRED");
             return new SelectionResult(resource, "SUCCEEDED", task.getId(), cleanup.expiresAt(task.getId()));
+        } catch (IllegalArgumentException invalid) {
+            return outcome(task, task == null ? "SOURCE_FORMAT_INVALID" : "ACTION_REQUIRED");
         } catch (IllegalStateException invalid) {
             if ("CLEANUP_BINDING_EXPIRED".equals(invalid.getMessage())) return outcome(task, "EXPIRED");
             return outcome(task, "ACTION_REQUIRED");
         } catch (Exception unavailable) {
             // Persisted submitting phases remain authoritative; another selection reuses this same task.
-            return outcome(task, task == null ? "BAIDU_NOT_READY" : "WAITING_SHARE");
+            log.warn("Baidu temporary selection failed: discoveryId={}, taskId={}, failureType={}",
+                    discoveryId, task == null ? null : task.getId(), unavailable.getClass().getSimpleName());
+            return outcome(task, task == null ? "TEMPORARY_TASK_FAILED" : "WAITING_SHARE");
         }
     }
 
@@ -104,7 +110,7 @@ public class BaiduTemporaryTransferService {
     }
 
     private boolean ready() {
-        return properties.isEnabled() && properties.isDriveShareTransferEnabled("BAIDU") && client.isConfigured();
+        return properties.isEnabled() && properties.isDriveTransferEnabled("BAIDU") && client.isConfigured();
     }
 
     private boolean expired(BaiduTransferTask task) {
@@ -112,6 +118,10 @@ public class BaiduTemporaryTransferService {
     }
 
     private SelectionResult outcome(BaiduTransferTask task, String status) {
+        if (task != null && "ACTION_REQUIRED".equals(status)) {
+            if ("CHALLENGE_REQUIRED".equals(task.getLastError()) || "SOURCE_NO_ALLOWED_FILES".equals(task.getLastError())) status = task.getLastError();
+            else if ("SOURCE_INVALID".equals(task.getLastError())) status = "INVALID_RESOURCE";
+        }
         return new SelectionResult(null, status == null ? "WAITING_SHARE" : status,
                 task == null ? null : task.getId(), task == null ? null : cleanup.expiresAt(task.getId()));
     }
@@ -123,7 +133,9 @@ public class BaiduTemporaryTransferService {
     }
 
     BaiduTransferTask findOrCreate(ResourceDiscoveryResult source, String userKey) {
-        String original = BaiduWebClient.normalizeShareUrl(source.getOriginalUrl(), source.getCode());
+        String original = "GYING".equals(source.getSource())
+                ? BaiduWebClient.normalizeDiscoveredShareUrl(source.getOriginalUrl(), source.getCode())
+                : BaiduWebClient.normalizeShareUrl(source.getOriginalUrl(), source.getCode());
         String sourceHash = ResourceHubHashUtils.sha256(original);
         String requestHash = BaiduTemporaryScope.requestHash(userKey, source.getMovieId(), sourceHash);
         return transactions.execute(tx -> {
@@ -166,7 +178,7 @@ public class BaiduTemporaryTransferService {
         clone.setTaskId(source.getTaskId()); clone.setMovieId(source.getMovieId()); clone.setSource("QQ_BOT");
         clone.setSourceRef(BaiduTemporaryScope.DISCOVERY_PREFIX + task.getScopeKey());
         clone.setTitle(source.getTitle()); clone.setProvider("BAIDU"); clone.setResourceType(source.getResourceType());
-        clone.setOriginalUrl(original); clone.setOriginalUrlHash(hash); clone.setCode(source.getCode());
+        clone.setOriginalUrl(original); clone.setOriginalUrlHash(hash); clone.setCode(BaiduWebClient.extractShareCode(original));
         clone.setQuality(source.getQuality()); clone.setSubtitle(source.getSubtitle()); clone.setFileSize(source.getFileSize());
         clone.setVersionNote(source.getVersionNote()); clone.setConfidence(source.getConfidence());
         clone.setStatus("DISCOVERED"); clone.setCreatedAt(now); clone.setUpdatedAt(now);

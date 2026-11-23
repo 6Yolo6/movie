@@ -57,6 +57,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 
 class QqBotServiceImplTest {
@@ -1724,6 +1725,27 @@ class QqBotServiceImplTest {
             assertFalse(reply.contains("没有找到"));
         }
         verify(baidu, times(2)).select(original.getId(), "qq:baidu-wait");
+        verify(resourceHubPublishService, never()).publishDiscovery(any());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"SOURCE_FORMAT_INVALID,格式不正确", "CHALLENGE_REQUIRED,百度官方页面", "SOURCE_NO_ALLOWED_FILES,没有当前允许转存的文件", "TEMPORARY_TASK_FAILED,任务创建失败"})
+    void baiduSelectionFailuresExplainTheCauseAndKeepTheCandidateWithoutPublishing(String status, String expected) {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("baidu-failure", "百度失败提示测试", 2025);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local)); when(movieService.getById(local.getId())).thenReturn(local);
+        when(resourceDiscoveryService.enqueue(any())).thenReturn(task(11021L));
+        ResourceDiscoveryRunResult found = emptyDiscovery(11021L); found.setDiscovered(1); when(resourceDiscoveryService.runTask(11021L)).thenReturn(found);
+        ResourceDiscoveryResult original = discovery(11022L, local.getId(), "BAIDU", "百度失败提示测试 1080P", "https://pan.baidu.com/s/1failedSource");
+        when(discoveryResultService.list(any(QueryWrapper.class))).thenReturn(List.of(original));
+        var baidu = mock(BaiduTemporaryTransferService.class); service.configureBaiduSearch(baidu);
+        when(baidu.select(original.getId(), "qq:baidu-failure")).thenReturn(new BaiduTemporaryTransferService.SelectionResult(null, status, null, null));
+        service.buildSearchReply(local.getTitleCn(), "qq:baidu-failure");
+        for (int i = 0; i < 2; i++) {
+            String reply = service.buildSearchReply("1", "qq:baidu-failure");
+            assertTrue(reply.contains(expected)); assertFalse(reply.contains("百度转存暂不可用")); assertFalse(reply.contains(original.getOriginalUrl()));
+        }
+        verify(baidu, times(2)).select(original.getId(), "qq:baidu-failure");
         verify(resourceHubPublishService, never()).publishDiscovery(any());
     }
 

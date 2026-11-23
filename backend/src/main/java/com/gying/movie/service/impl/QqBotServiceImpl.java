@@ -883,6 +883,11 @@ public class QqBotServiceImpl implements IQqBotService {
                     "已提交，正在确认百度转存或分享。请稍后回复同一资源序号查询进度，无需重新搜索。";
             case "EXPIRED" -> "本次百度临时分享已到期，清理确认完成后可重新选择同一资源。";
             case "BAIDU_NOT_READY" -> "百度转存暂不可用，请检查百度网盘登录和转存设置。";
+            case "SOURCE_FORMAT_INVALID" -> "所选百度分享链接或提取码格式不正确，请选择其他资源。";
+            case "INVALID_RESOURCE" -> invalidResourceSelectionReply(candidates);
+            case "CHALLENGE_REQUIRED" -> "百度要求验证账号或分享页面，请管理员在百度官方页面完成验证后再查询。";
+            case "SOURCE_NO_ALLOWED_FILES" -> "所选百度分享没有当前允许转存的文件，请选择其他资源；临时视频转存需要开启自动清理。";
+            case "TEMPORARY_TASK_FAILED" -> "百度临时转存任务创建失败，请稍后重试或选择其他资源。";
             case "ACTION_REQUIRED", "REVIEW_REQUIRED" -> "百度任务需要检查账号或资源，请稍后查询，避免重复转存。";
             default -> "当前百度资源暂不可用，请继续选择其他资源序号。";
         };

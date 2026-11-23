@@ -142,20 +142,65 @@ class BaiduTransferRunnerServiceImplTest {
     }
 
 
-    @Test void temporaryPlanUsesTheExactTaskDirectoryAndNeverThePermanentMovieFolder() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void temporaryPlanUsesTheExactTaskDirectoryAndNeverThePermanentMovieFolder(boolean torrentEnabled) throws Exception {
         configureTemporary();
+        props.getBaidu().setVideoEnabled(false); props.getBaidu().setTorrentEnabled(torrentEnabled);
         task.setPhase("NEW"); task.setSavedPath(null); task.setResponsePayload(null); props.getBaidu().setShareEnabled(false);
         String target = "/GYing QQ Temp/baidu-1";
-        when(client.planTransfer(anyString(), any(), eq(target), eq(true), eq(false))).thenReturn(temporaryPlan());
+        when(client.planTransfer(anyString(), any(), eq(target), eq(true), eq(torrentEnabled))).thenReturn(temporaryPlan());
         when(client.verifyDestination(any())).thenReturn(true);
         runner.submitOne(1L);
         assertEquals(target, task.getSavedPath()); assertEquals("TRANSFERRED", task.getPhase());
-        verify(client).planTransfer(anyString(), any(), eq(target), eq(true), eq(false));
+        verify(client).planTransfer(anyString(), any(), eq(target), eq(true), eq(torrentEnabled));
+        assertFalse(props.getBaidu().isVideoEnabled());
         verifyNoInteractions(movies);
+    }
+
+    @Test void temporaryVideoCompletesAndCanBeReusedUnderThePermanentTorrentOnlyPolicy() throws Exception {
+        BaiduTemporaryCleanupService cleanup = configureTemporary();
+        props.getBaidu().setVideoEnabled(false); props.getBaidu().setTorrentEnabled(true);
+        when(client.verifyDestination(any())).thenReturn(false, true);
+        when(client.transfer(any())).thenReturn(new BaiduWebClient.Submission("accepted", "PENDING"));
+        when(client.createOwnShare(task.getSavedPath())).thenReturn("https://pan.baidu.com/s/1owned?pwd=abcd");
+        when(client.validateOwnShare(any())).thenReturn(true);
+        var evidence = new BaiduWebClient.DestinationEvidence("100", task.getSavedPath(), "55",
+                List.of(new BaiduWebClient.DestinationFile("Movie.mkv", "56", 100, false, null)));
+        when(client.captureDestinationEvidence(any())).thenReturn(evidence);
+        when(client.inspectTemporaryDirectory(evidence)).thenReturn(BaiduWebClient.DestinationState.MATCHING);
+        assertEquals(1, runner.submitOne(1L).getSubmitted());
+        assertEquals("SUCCEEDED", task.getStatus()); assertEquals("SHARED", task.getPhase());
+        assertNotNull(task.getShareConfirmedAt()); assertEquals(evidence, mapper.readValue(task.getCleanupEvidence(), BaiduWebClient.DestinationEvidence.class));
+        var confirmed = task.getShareConfirmedAt();
+        assertEquals(1, runner.submitOne(1L).getSkipped());
+        assertEquals(confirmed, task.getShareConfirmedAt());
+        verify(cleanup, times(2)).scheduleConfirmed(task); verify(client).inspectTemporaryDirectory(evidence);
+        verify(client, times(1)).transfer(any()); verify(client, times(1)).createOwnShare(any());
+        assertFalse(props.getBaidu().isVideoEnabled()); verifyNoInteractions(movies);
+    }
+
+    @Test void temporaryVideoExceptionRequiresAutomaticCleanup() throws Exception {
+        BaiduTemporaryCleanupService cleanup = configureTemporary();
+        props.getBaidu().setVideoEnabled(false); props.getBaidu().setTorrentEnabled(true);
+        var settings = mock(QqTransferCleanupSettings.class); when(settings.baiduTarget(1L)).thenReturn(task.getSavedPath());
+        when(settings.baiduPermanentDeleteEnabled()).thenReturn(true); runner.configureTemporaryTransfers(settings, cleanup);
+        assertEquals(1, runner.submitOne(1L).getSkipped());
+        verify(client, never()).verifyDestination(any()); verify(client, never()).transfer(any()); verify(client, never()).createOwnShare(any());
+        verify(cleanup, never()).scheduleConfirmed(any());
+    }
+
+    @Test void automaticBatchCannotConsumeTheTemporaryVideoException() throws Exception {
+        configureTemporary(); props.getBaidu().setVideoEnabled(false); props.getBaidu().setTorrentEnabled(true);
+        when(tasks.list(any(Wrapper.class))).thenReturn(List.of(task));
+        assertEquals(1, runner.submitPending(1).getSkipped()); assertEquals(0, task.getAttempts());
+        verify(client, never()).planTransfer(anyString(), any(), anyString(), anyBoolean(), anyBoolean());
+        verify(client, never()).verifyDestination(any()); verify(client, never()).transfer(any()); verify(client, never()).createOwnShare(any());
     }
 
     @Test void malformedTemporaryMarkerStopsBeforeAnyCloudRequest() throws Exception {
         configureTemporary();
+        props.getBaidu().setVideoEnabled(false); props.getBaidu().setTorrentEnabled(true);
         task.setRequestPayload(task.getRequestPayload().replace("baidu-1", "baidu-2"));
         runner.submitOne(1L);
         verify(client, never()).planTransfer(anyString(), any(), anyString(), anyBoolean(), anyBoolean());
@@ -264,6 +309,7 @@ class BaiduTransferRunnerServiceImplTest {
         when(discoveries.getById(42L)).thenReturn(discovery); when(discoveries.update(any(Wrapper.class))).thenReturn(true);
         runner = new BaiduTransferRunnerServiceImpl(props, client, vault, tasks, discoveries, mock(IResourceLinkService.class), movies, mapper);
         var settings = mock(QqTransferCleanupSettings.class); when(settings.baiduTarget(1L)).thenReturn(task.getSavedPath());
+        when(settings.enabled()).thenReturn(true); when(settings.baiduPermanentDeleteEnabled()).thenReturn(true);
         var cleanup = mock(BaiduTemporaryCleanupService.class); runner.configureTemporaryTransfers(settings, cleanup);
         return cleanup;
     }

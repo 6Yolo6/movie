@@ -38,6 +38,25 @@ class BaiduWebClientTest {
         for (String url : List.of("https://pan.baidu.com.evil/s/1abc", "https://user@pan.baidu.com/s/1abc", "https://pan.baidu.com:443/s/1abc", "https://pan.baidu.com/s/1abc#x", "https://pan.baidu.com/s/1abc?pwd=abcd&pwd=efgh", "https://pan.baidu.com/s/1abc?pwd=toolong")) assertThrows(IllegalArgumentException.class, () -> BaiduWebClient.normalizedShareUrl(url, null));
         assertEquals(BaiduWebClient.normalizedShareUrl("https://pan.baidu.com/s/1abc", "abcd"), BaiduWebClient.normalizeShareUrl("https://pan.baidu.com/s/1abc", "abcd"));
     }
+    @Test void discoveredLinksRecoverBrowserFragmentsAndUseOnlyAValidEmbeddedCode() {
+        String expected = "https://pan.baidu.com/s/1abc?pwd=a1B2";
+        for (String suffix : List.of("#", "#tag")) {
+            assertEquals(expected, BaiduWebClient.normalizeDiscoveredShareUrl(expected + suffix, "提取码："));
+        }
+        assertEquals(expected, BaiduWebClient.normalizeDiscoveredShareUrl(expected, "a1B2备注"));
+        assertThrows(IllegalArgumentException.class, () -> BaiduWebClient.normalizeDiscoveredShareUrl("https://pan.baidu.com/s/1abc", "提取码："));
+        assertThrows(IllegalArgumentException.class, () -> BaiduWebClient.normalizeShareUrl(expected + "#", "a1B2"));
+    }
+
+    @Test void discoveredFormattingDoesNotRelaxHostAuthorityOrAmbiguousQueryGuards() {
+        for (String url : List.of("https://pan.baidu.com.evil/s/1abc#", "https://user@pan.baidu.com/s/1abc#",
+                "https://pan.baidu.com:443/s/1abc#", "https://pan.baidu.com/s/1abc?pwd=abcd&pwd=efgh#",
+                "https://pan.baidu.com/s/1abc?pwd=bad#", "https://pan.baidu.com/s/1abc#\n",
+                "https://pan.baidu.com/s/1abc#" + "x".repeat(1000))) {
+            assertThrows(IllegalArgumentException.class, () -> BaiduWebClient.normalizeDiscoveredShareUrl(url, null));
+        }
+    }
+
     @Test void planIsReadOnlyAndCredentialsAreNotPersisted() throws Exception {
         var plan=client.planTransfer("https://pan.baidu.com/s/1source", null, "/target");
         assertEquals(List.of("11"), plan.sourceRootFsids());

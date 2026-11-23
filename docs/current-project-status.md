@@ -62,7 +62,7 @@ Worker=true，每60秒检查到期；TMDB/GYING旧RANGE游标和CSCORE暂停图�
 
 | 服务 | 固定产物 | 最后记录的上线时间 |
 | --- | --- | --- |
-| backend | sha256:1b6220ae1e9041d1b2dbaa536bb004619acc54eb6a3d3cc5b26e7655b57cbe20 | 2026-11-19 22:35:20；Compose28层 |
+| backend | sha256:47b8c6e2d110f045a3dd3d7e830e4af24b7b384a7369ccfa223f9def08254a90 | 2026-11-23 12:13:06；Compose29层 |
 | frontend | sha256:a8e00af6b8c2e90f45a6211c1a85df8cb9108f6b540ba5d410c070cbc9ef39a6 | 2026-11-19 22:35:41；Compose18层 |
 | gying-source | sha256:f24203be8b93f2d64b0bfeec6069e13a1b072cd03ae667edc98f45f60bb083ed | 2026-11-18 13:05:58 |
 | 本机Agent | JAR 1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64；代码6c277a4 | 2026-11-04 22:42:34 |
@@ -71,9 +71,9 @@ Worker=true，每60秒检查到期；TMDB/GYING旧RANGE游标和CSCORE暂停图�
 
 | 回退对象 | 保留材料 |
 | --- | --- |
-| backend | sha256:44a74bb1976de81b3d932ab66ae0edc587a817fd5287c20e75b3b9cda0c20f42 |
+| backend | sha256:1b6220ae1e9041d1b2dbaa536bb004619acc54eb6a3d3cc5b26e7655b57cbe20 |
 | frontend | sha256:bb21744b05ec2bde1dfc8a360ce9580bfb75c687352d579f7b8ff457c3e42d69 |
-| 两应用覆盖 | E:/gying-tools/releases/tvmaze-frequency-20261119/；先恢复TVmaze 24小时、暂停Worker并等相关任务空闲，回退后同步host镜像指向/恢复原开关 |
+| 两应用覆盖 | backend：E:/gying-tools/releases/qq-baidu-temporary-video-20261123/，rollback.py默认只检查，--apply恢复旧28层及host镜像pin；frontend仍按tvmaze-frequency-20261119的24小时/Worker暂停要求回退 |
 | gying-source | 旧镜像76fe318b24b1…；覆盖及三age认证检查点见[百度恢复](evaluation/baidu-torrent-recovery-20261118/README.md) |
 | Agent | G:/gying-backups/ai-agent-identity-theme-20261104-20261104T144159.678847Z；旧包及配置/state/key认证检查点 |
 | 日常/灾备 | 沿用[加密备份计划](security/backup-plan.md)；已记录的dry-run不等于完整自然备份或异机恢复 |
@@ -85,7 +85,7 @@ Worker=true，每60秒检查到期；TMDB/GYING旧RANGE游标和CSCORE暂停图�
 | 事项 | 下一步与边界 |
 | --- | --- |
 | 自然元数据轮次 | TVmaze真实6小时间隔、版本变化/积压，以及TMDB→GYING新资源上传仍待自然观测；11月19日22:37最后回读仍是18190，不能据预计时间补记次轮成功 |
-| 百度 | 11月18日17761成功及首自然18125已验；17584/17606/17622等deferred UNKNOWN不重放。QQ最新CHALLENGE_REQUIRED需百度页面验证，更早BAIDU_NOT_READY原因未知 |
+| 百度 | 自动采集仅种子；临时搜索视频在清理开启时允许，成功后10分钟清理。22日QQ7/8仍CHALLENGE_REQUIRED需官方验证；来源格式误报已修。17584/17606/17622等deferred UNKNOWN保留 |
 | 重复影片 | 11月11日66组、11月17日新增6组已成功；7组运行态/清理/身份阻塞及排除理由保留，候选不等于已确认重复 |
 | 主机/依赖 | 11月13日入口已恢复；内存压力、Quark2262远端结果及APP_TRUSTED_PROXIES精确地址失配未解决，MinIO/backend本进程完整业务链仍有验收边界 |
 | AI | 电影身份/核心主题与联网相关性仍缺证；最新7轮仅完成，模型满足3/部分1/缺证2/未满足1、真人0，第一阶段未完成 |

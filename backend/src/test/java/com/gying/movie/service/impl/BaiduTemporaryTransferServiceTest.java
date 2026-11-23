@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.TransactionStatus;
@@ -98,6 +100,45 @@ class BaiduTemporaryTransferServiceTest {
         assertEquals("BAIDU_NOT_READY", service.select(1L, "web:1").status());
         verifyNoInteractions(jdbc, transactions, tasks, discoveries, runner);
     }
+    @Test void temporarySelectionDoesNotDependOnPermanentFileCollectionSwitches() {
+        properties.getBaidu().setVideoEnabled(false); properties.getBaidu().setTorrentEnabled(false);
+        when(tasks.getById(100L)).thenAnswer(i -> inserted.get(0));
+        assertEquals("PENDING", service.select(1L, "qq:user1").status());
+        verify(runner).submitOne(100L); assertEquals(1, inserted.size());
+        assertFalse(properties.getBaidu().isVideoEnabled()); assertFalse(properties.getBaidu().isTorrentEnabled());
+    }
+
+    @Test void gyingFormattingIsCanonicalizedOnlyInTheTemporaryClone() {
+        source.setSource("GYING"); source.setOriginalUrl("https://pan.baidu.com/s/1SourceCase?pwd=a1B2#"); source.setCode("提取码：");
+        BaiduTransferTask task = service.findOrCreate(source, "qq:user1");
+        assertEquals("https://pan.baidu.com/s/1SourceCase?pwd=a1B2", task.getOriginalUrl());
+        var clone = ArgumentCaptor.forClass(ResourceDiscoveryResult.class); verify(discoveries).save(clone.capture());
+        assertEquals(task.getOriginalUrl(), clone.getValue().getOriginalUrl()); assertEquals("a1B2", clone.getValue().getCode());
+        assertEquals("https://pan.baidu.com/s/1SourceCase?pwd=a1B2#", source.getOriginalUrl()); assertEquals("提取码：", source.getCode());
+    }
+
+    @Test void invalidSourceFormattingIsNotReportedAsAnAccountOrWorkflowFailure() {
+        source.setSource("GYING"); source.setOriginalUrl("https://pan.baidu.com/s/1SourceCase?pwd=bad#"); source.setCode("提取码：");
+        assertEquals("SOURCE_FORMAT_INVALID", service.select(1L, "qq:user1").status());
+        verifyNoInteractions(jdbc, transactions, tasks, runner);
+    }
+
+    @Test void taskCreationStorageFailureHasADistinctStatusAndDoesNotSendToBaidu() {
+        doThrow(new RuntimeException("fixture storage failure")).when(transactions).execute(any());
+        assertEquals("TEMPORARY_TASK_FAILED", service.select(1L, "qq:user1").status());
+        verifyNoInteractions(tasks, runner);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"CHALLENGE_REQUIRED", "SOURCE_NO_ALLOWED_FILES"})
+    void selectionPreservesTheUpstreamActionRequiredReason(String code) {
+        when(tasks.getById(100L)).thenAnswer(i -> inserted.get(0));
+        doAnswer(i -> { inserted.get(0).setStatus("ACTION_REQUIRED"); inserted.get(0).setLastError(code); return null; })
+                .when(runner).submitOne(100L);
+        assertEquals(code, service.select(1L, "qq:user1").status());
+        verify(runner, times(1)).submitOne(100L);
+    }
+
     @Test void aTemporaryCloneIsNotAcceptedAsANewSourceSelection() {
         source.setSourceRef("BAIDU_TEMP:corrupt");
         assertEquals("INVALID_RESOURCE", service.select(1L, "web:1").status());
