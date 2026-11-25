@@ -56,10 +56,115 @@ class MaintenanceSafety(unittest.TestCase):
         other = dict(old, id="3427")
         self.assertEqual(w.active([old, new, other], w.STALE_ROWS), [new, other])
 
+    def test_baidu_inflight_query_blocks_work_even_with_an_ignored_legacy_id(self):
+        self.cfg.update(mysql="mysql.exe",mysqlDefaults="readonly.cnf")
+        def database_query(args, *unused, **kwargs):
+            query = args[-1]
+            if "FROM baidu_transfer_task WHERE status IN ('RUNNING'" in query:
+                return "baidu_transfer_task\t3426\tRUNNING\t2026-09-28 19:56:43"
+            return ""
+        with patch.object(w, "cmd", side_effect=database_query):
+            with self.assertRaises(w.BusyJobs):
+                w.assert_idle(self.cfg)
+
     def test_config_cannot_expand_stale_allowlist(self):
         self.cfg["ignoredStaleRows"] = [*w.STALE_ROWS, dict(w.STALE_ROWS[0], id="other")]
         with self.assertRaises(w.Blocked):
             w.validate_config(self.cfg)
+
+    def test_busy_lock_startup_failure_is_logged_before_preflight(self):
+        with patch.object(w, "maintenance_window"), \
+             patch.object(w, "lock", side_effect=w.Blocked("Another maintenance/recovery process owns the lock")), \
+             patch.object(w.time, "monotonic", side_effect=[0, 31]), patch.object(w, "run") as run:
+            with self.assertRaises(w.Blocked):
+                w.run_locked(self.cfg, "fixture.json", True)
+        run.assert_not_called()
+        records = list((pathlib.Path(self.cfg["stateRoot"]) / "attempt-log").glob("*.json"))
+        record = w.read(records[0])
+        self.assertEqual(record["stage"], "lock")
+        self.assertEqual(record["status"], "failed")
+        self.assertEqual(w.pending(self.cfg), [])
+
+    def test_short_busy_lock_can_clear_before_execution(self):
+        busy = w.Blocked("Another maintenance/recovery process owns the lock")
+        with patch.object(w, "maintenance_window"), \
+             patch.object(w, "lock", side_effect=[busy, contextlib.nullcontext()]), \
+             patch.object(w.time, "monotonic", return_value=0), patch.object(w.time, "sleep") as sleep, \
+             patch.object(w, "run") as run:
+            w.run_locked(self.cfg, "fixture.json", True)
+        sleep.assert_called_once_with(1)
+        run.assert_called_once()
+        self.assertIn("attempt", run.call_args.kwargs)
+
+    def test_busy_lock_wait_rechecks_the_original_window(self):
+        with patch.object(w, "maintenance_window", side_effect=[None, w.Blocked("Outside window")]), \
+             patch.object(w, "lock", side_effect=w.Blocked("Another maintenance/recovery process owns the lock")), \
+             patch.object(w.time, "monotonic", return_value=0), patch.object(w.time, "sleep"), \
+             patch.object(w, "run") as run:
+            with self.assertRaisesRegex(w.Blocked, "Outside window"):
+                w.run_locked(self.cfg, "fixture.json", True)
+        run.assert_not_called()
+        record = w.read(next((pathlib.Path(self.cfg["stateRoot"]) / "attempt-log").glob("*.json")))
+        self.assertEqual(record["stage"], "waiting_lock")
+        self.assertEqual(record["status"], "failed")
+        self.assertEqual(w.pending(self.cfg), [])
+
+    def test_lock_wait_sleep_respects_remaining_budget(self):
+        with patch.object(w, "maintenance_window"), \
+             patch.object(w, "lock", side_effect=[w.Blocked("Another maintenance/recovery process owns the lock"), contextlib.nullcontext()]), \
+             patch.object(w.time, "monotonic", side_effect=[0, 29.5]), patch.object(w.time, "sleep") as sleep, \
+             patch.object(w, "run"):
+            w.run_locked(self.cfg, "fixture.json", True)
+        sleep.assert_called_once_with(0.5)
+
+    def test_unrelated_startup_lock_failure_is_not_retried(self):
+        with patch.object(w, "maintenance_window"), patch.object(w, "lock", side_effect=w.Blocked("Permission mismatch")), \
+             patch.object(w.time, "sleep") as sleep, patch.object(w, "run") as run:
+            with self.assertRaisesRegex(w.Blocked, "Permission mismatch"):
+                w.run_locked(self.cfg, "fixture.json", True)
+        sleep.assert_not_called()
+        run.assert_not_called()
+
+    def test_preflight_failure_after_lock_is_not_retried(self):
+        with patch.object(w, "maintenance_window"), patch.object(w, "lock", return_value=contextlib.nullcontext()), \
+             patch.object(w, "preflight", side_effect=w.Blocked("Startup failed")) as preflight, \
+             patch.object(w.time, "sleep") as sleep:
+            with self.assertRaisesRegex(w.Blocked, "Startup failed"):
+                w.run_locked(self.cfg, "fixture.json", True)
+        preflight.assert_called_once()
+        sleep.assert_not_called()
+        records = list((pathlib.Path(self.cfg["stateRoot"]) / "attempt-log").glob("*.json"))
+        self.assertEqual(len(records), 1)
+        self.assertEqual(w.read(records[0])["stage"], "preflight")
+        self.assertEqual(w.pending(self.cfg), [])
+
+    def test_locked_startup_records_the_bound_permit_path(self):
+        permit = pathlib.Path(self.cfg["stateRoot"])/"one-off"/"permit.json"
+        permit.parent.mkdir()
+        permit.write_text("{}")
+        with patch.object(w, "maintenance_window"), patch.object(w, "lock", side_effect=w.Blocked("Permission mismatch")):
+            with self.assertRaises(w.Blocked):
+                w.run_locked(self.cfg,"fixture.json",True,str(permit))
+        record = w.read(next((pathlib.Path(self.cfg["stateRoot"])/"attempt-log").glob("*.json")))
+        self.assertEqual(record["onceWindow"],str(permit.resolve()))
+
+    def test_locked_startup_does_not_log_an_unapproved_permit_path(self):
+        external = pathlib.Path(self.cfg["stateRoot"])/"private-cookie-value.json"
+        with patch.object(w, "maintenance_window"), patch.object(w, "lock", side_effect=ValueError("private-error")):
+            with self.assertRaises(ValueError):
+                w.run_locked(self.cfg,"fixture.json",True,str(external))
+        record = w.read(next((pathlib.Path(self.cfg["stateRoot"])/"attempt-log").glob("*.json")))
+        self.assertNotIn("onceWindow",record)
+        self.assertNotIn("private-cookie-value",json.dumps(record))
+
+    def test_startup_failure_does_not_log_private_exception_text(self):
+        with patch.object(w, "maintenance_window"), \
+             patch.object(w, "lock", side_effect=ValueError("private-cookie-value")):
+            with self.assertRaises(ValueError):
+                w.run_locked(self.cfg, "fixture.json", True)
+        record = w.read(next((pathlib.Path(self.cfg["stateRoot"]) / "attempt-log").glob("*.json")))
+        self.assertEqual(record["reason"], "ValueError")
+        self.assertNotIn("private-cookie-value", json.dumps(record))
 
     def test_config_cannot_manage_arbitrary_host_task(self):
         self.cfg["tasks"].append("Unrelated task")

@@ -6,15 +6,40 @@ import xml.etree.ElementTree as ET
 KEY = "resource.hub.worker.enabled"
 
 
-def restore_allowed(task, operation, pending, now):
+def restore_allowed(task, operation, pending, now, startup_terminal=False):
     if pending or task["state"] not in {"Ready", "Disabled"}:
         return False
     start = dt.datetime.fromisoformat(operation["startAt"])
     latest = dt.datetime.fromisoformat(operation["latestStartAt"])
     last = dt.datetime.fromisoformat(task["lastRun"])
-    return task.get("enabled") is False or last >= start or now > latest
+    return (task.get("enabled") is False or now > latest or
+            last >= start and (not operation.get("attemptReceiptRequired") or startup_terminal))
 
 
+
+
+def startup_finished(config, operation):
+    """A Ready task alone is not proof that its bound controller has finished."""
+    target = Path(operation["registration"]["permit"]).resolve()
+    start = dt.datetime.fromisoformat(operation["startAt"])
+    statuses = []
+    for path in (Path(config["stateRoot"]) / "attempt-log").glob("*.json"):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8-sig"))
+            if not isinstance(data, dict):
+                return False
+            if data.get("mode") != "one-off" or not isinstance(data.get("onceWindow"), str):
+                continue
+            if Path(data["onceWindow"]).resolve() != target:
+                continue
+            started = dt.datetime.fromisoformat(data["startedAt"])
+            if started.utcoffset() is None:
+                return False
+            if started >= start:
+                statuses.append(data.get("status"))
+        except (OSError, ValueError, KeyError, TypeError):
+            return False
+    return bool(statuses) and all(status in {"completed", "failed"} for status in statuses)
 
 
 def validate_restart_registration(registration, permit_result):
@@ -319,6 +344,7 @@ def main():
         ROOT.mkdir(parents=True, exist_ok=True)
         operation = ROOT / (uuid.uuid4().hex + ".json")
         state = {"phase": "prepared", "host": c["host"], "createdAt": w["now"](),
+            "attemptReceiptRequired": True,
             "targetTask": reg["task"], "startAt": reg["startAt"], "latestStartAt": reg["latestStartAt"],
             "registration": {key: reg[key] for key in ("mode", "task", "startAt", "latestStartAt", "finishBefore", "permit")},
             "permitId": permit["id"],
@@ -382,13 +408,15 @@ def main():
         state = w["read"](operation)
         if state["phase"] == "restored":
             return
-        if restore_allowed(task(state["targetTask"]), state, len(w["pending"](c)), dt.datetime.now(dt.timezone.utc)):
+        if restore_allowed(task(state["targetTask"]), state, len(w["pending"](c)), dt.datetime.now(dt.timezone.utc),
+                           not state.get("attemptReceiptRequired") or startup_finished(c, state)):
             try:
                 with w["lock"](c):
                     state = w["read"](operation)
                     if state["phase"] == "restored":
                         return
-                    if not restore_allowed(task(state["targetTask"]), state, len(w["pending"](c)), dt.datetime.now(dt.timezone.utc)):
+                    if not restore_allowed(task(state["targetTask"]), state, len(w["pending"](c)), dt.datetime.now(dt.timezone.utc),
+                           not state.get("attemptReceiptRequired") or startup_finished(c, state)):
                         continue
                     database = ApplicationDatabase(c, expected=state["databaseSource"])
                     database.verify()

@@ -26,7 +26,9 @@ BUSY = {"resource_hub_task": ["RUNNING"],
         "quark_transfer_task": ["RUNNING", "TRANSFERRING", "SHARING", "PROCESSING"],
         "xunlei_transfer_task": ["RUNNING", "TRANSFERRING", "SHARING", "PROCESSING"],
         "social_post_log": ["PREPARING", "PUBLISHING"],
-        "qq_transfer_cleanup_job": ["RUNNING", "PROCESSING"]}
+        "qq_transfer_cleanup_job": ["RUNNING", "PROCESSING"],
+        "baidu_transfer_task": ["RUNNING", "TRANSFERRING", "SHARING", "PROCESSING"],
+        "baidu_temporary_cleanup_job": ["RUNNING", "PROCESSING"]}
 LOCAL = {"ollama": 11434, "backend": 5000, "router": 5002, "frontend": 3000}
 DONE = {"recovered", "cancelled"}
 TASK_NAMES = {"GYing Cloudflare Tunnel", "GYing QQ Channel Auto Post", "GYing Xunlei Token Sync"}
@@ -596,12 +598,13 @@ def idle_preflight(c, config, once, attempt=None):
             if attempt:save(attempt,{**read(attempt),"stage":"waiting_idle","lastBusyReason":str(error)[:4000]})
             time.sleep(5)
 
-def run(c, config, reboot, once=None):
+def run(c, config, reboot, once=None, attempt=None):
     # Attempt logs are separate from state.json: no stopped services, no recovery obligation.
-    attempt=Path(c["stateRoot"])/"attempt-log"/(uuid.uuid4().hex+".json")
+    attempt=Path(attempt) if attempt is not None else Path(c["stateRoot"])/"attempt-log"/(uuid.uuid4().hex+".json")
     attempt.parent.mkdir(parents=True,exist_ok=True)
     if once and not reboot:raise Blocked("One-off permit requires execute")
-    save(attempt,{"startedAt":now(),"mode":"one-off" if once else "weekly" if reboot else "rehearsal","stage":"window","status":"started"})
+    record=read(attempt) if attempt.exists() else {}
+    save(attempt,{**record,"startedAt":record.get("startedAt",now()),"mode":"one-off" if once else "weekly" if reboot else "rehearsal","stage":"window","status":"started"})
     try:
         _run(c,config,reboot,once,attempt)
         save(attempt,{**read(attempt),"finishedAt":now(),"status":"completed"})
@@ -709,6 +712,46 @@ def watch(c, path):
             pass
         time.sleep(10)
 
+def run_locked(c, config, reboot, once=None):
+    """Record startup before locking; only a busy maintenance lock may briefly wait."""
+    attempt = Path(c["stateRoot"]) / "attempt-log" / (uuid.uuid4().hex + ".json")
+    attempt.parent.mkdir(parents=True, exist_ok=True)
+    save(attempt, {"startedAt": now(), "mode": "one-off" if once else "weekly" if reboot else "rehearsal",
+                   "stage": "lock", "status": "started"})
+    deadline = time.monotonic() + 30
+    try:
+        if once:
+            target = Path(once).resolve()
+            approved = (Path(c["stateRoot"]) / "one-off").resolve()
+            if target.parent == approved and target.suffix == ".json" and not Path(once).is_symlink():
+                save(attempt, {**read(attempt), "onceWindow": str(target)})
+        while True:
+            if reboot:
+                maintenance_window(c, config, once)
+            try:
+                manager = lock(c)
+                manager.__enter__()
+            except Blocked as error:
+                remaining = deadline - time.monotonic()
+                if str(error) != "Another maintenance/recovery process owns the lock" or remaining <= 0:
+                    raise
+                save(attempt, {**read(attempt), "stage": "waiting_lock", "lastLockReason": str(error)})
+                time.sleep(min(1, remaining))
+                continue
+            try:
+                return run(c, config, reboot, once, attempt=attempt)
+            finally:
+                manager.__exit__(None, None, None)
+    except Exception as error:
+        record = read(attempt)
+        record.update(finishedAt=now(), status="failed",
+                      reason=str(error)[:4000] if isinstance(error, Blocked) else type(error).__name__)
+        if isinstance(error, OSError):
+            record["errorCode"] = {key: getattr(error, key, None) for key in ("errno", "winerror")}
+        save(attempt, record)
+        raise
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
@@ -738,8 +781,7 @@ def main():
                     raise Blocked("Recovery incomplete; inspect maintenance journal")
         print("Recovery check complete")
     elif args.execute or args.rehearse:
-        with lock(c):
-            run(c, config, args.execute, args.once_window)
+        run_locked(c, config, args.execute, args.once_window)
     else:
         report = preflight(c, require_idle=not args.readiness)
         print(json.dumps({"mode": "read-only", "at": report["at"],

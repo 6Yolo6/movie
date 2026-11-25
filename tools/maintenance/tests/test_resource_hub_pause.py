@@ -181,6 +181,65 @@ class WorkerPauseRecovery(unittest.TestCase):
         self.assertTrue(PAUSE.restore_allowed(self.task,self.operation,0,self.now))
     def test_completed_maintenance_can_restore(self):
         self.assertTrue(PAUSE.restore_allowed(self.task,self.operation,0,self.now))
+    def test_ready_task_requires_bound_terminal_startup_receipt(self):
+        self.operation["attemptReceiptRequired"] = True
+        self.assertFalse(PAUSE.restore_allowed(self.task,self.operation,0,self.now))
+        self.assertTrue(PAUSE.restore_allowed(self.task,self.operation,0,self.now,True))
+        self.assertFalse(PAUSE.restore_allowed(self.task,self.operation,1,self.now,True))
+
+    def test_cancel_or_expired_window_can_restore_without_startup_receipt(self):
+        self.operation["attemptReceiptRequired"] = True
+        self.task["enabled"] = False
+        self.assertTrue(PAUSE.restore_allowed(self.task,self.operation,0,self.now))
+        self.task["enabled"] = True
+        self.assertTrue(PAUSE.restore_allowed(self.task,self.operation,0,self.now+dt.timedelta(minutes=10)))
+
+    def test_startup_receipt_matches_permit_and_ignores_early_runs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            attempts = root/"attempt-log"
+            attempts.mkdir()
+            permit = root/"one-off"/"permit.json"
+            op = {**self.operation,"registration":{"permit":str(permit)}}
+            cfg = {"stateRoot":str(root)}
+            record = {"mode":"one-off","onceWindow":str(permit),"status":"failed","startedAt":"2026-10-26T21:29:59+08:00"}
+            file = attempts/"first.json"
+            file.write_text(json.dumps(record),encoding="utf-8")
+            self.assertFalse(PAUSE.startup_finished(cfg,op))
+            record.update(startedAt="2026-10-26T13:30:01+00:00",onceWindow=str(root/"other.json"))
+            file.write_text(json.dumps(record),encoding="utf-8")
+            self.assertFalse(PAUSE.startup_finished(cfg,op))
+            record["onceWindow"] = str(permit)
+            file.write_text(json.dumps(record),encoding="utf-8")
+            self.assertTrue(PAUSE.startup_finished(cfg,op))
+
+    def test_an_active_bound_attempt_prevents_restore_even_after_another_failure(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            attempts = root/"attempt-log"
+            attempts.mkdir()
+            permit = root/"one-off"/"permit.json"
+            op = {**self.operation,"registration":{"permit":str(permit)}}
+            cfg = {"stateRoot":str(root)}
+            base = {"mode":"one-off","onceWindow":str(permit),"startedAt":"2026-10-26T21:30:01+08:00"}
+            (attempts/"failed.json").write_text(json.dumps({**base,"status":"failed"}),encoding="utf-8")
+            live = attempts/"live.json"
+            live.write_text(json.dumps({**base,"status":"started"}),encoding="utf-8")
+            self.assertFalse(PAUSE.startup_finished(cfg,op))
+            live.write_text(json.dumps({**base,"status":"completed"}),encoding="utf-8")
+            self.assertTrue(PAUSE.startup_finished(cfg,op))
+
+    def test_missing_or_invalid_receipt_does_not_allow_early_restore(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            attempts = root/"attempt-log"
+            attempts.mkdir()
+            op = {**self.operation,"registration":{"permit":str(root/"permit.json")}}
+            cfg = {"stateRoot":str(root)}
+            self.assertFalse(PAUSE.startup_finished(cfg,op))
+            (attempts/"bad.json").write_text("invalid-json",encoding="utf-8")
+            self.assertFalse(PAUSE.startup_finished(cfg,op))
+
     def test_restore_compares_identity_value_and_update_time(self):
         original={"id":12,"value":"true","updated":"2026-10-25 12:00:00.000000"}
         expected={"id":12,"value":"false","updated":"2026-10-26 21:30:00.000000"}
