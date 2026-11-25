@@ -6,7 +6,7 @@
 
 | 日期 | 范围与最终结果 | 验证/恢复入口 |
 | --- | --- | --- |
-| 11月25日重启维护 | 11月15/22周日任务因夸克2262遗留RUNNING等空闲5分钟后取消；确认原执行结束后单行CAS标UNKNOWN，保留意图/次数、等待远端对账。新SQL加密/hash/完整认证、管理员readiness、111+8项及5入口通过；单次18:01:01已注册，Worker暂停/恢复守护运行，真实重启及登录恢复待journal核验 | [维护手册](../weekly-graceful-restart.md)；精确回退入口 G:/gying-tools/restart-20261018/fix-20261125/repair_stale_quark.py 默认检查，SQL检查点 G:/gying-backups/weekly-restart-repair-20261125/20261125T095117.220723Z |
+| 11月25日重启维护 | 11月15/22任务被夸克2262遗留RUNNING阻塞；认证SQL检查点后单行CAS标UNKNOWN待对账。控制器补锁前日志/限时锁等待/百度在途检查，Worker恢复绑定许可及执行回执；126+8项、实际管理员计划参数/原子日志诊断通过，已安装；18:55单次窗口及恢复守护就绪，实际重启/登录恢复待journal核验 | [维护手册](../weekly-graceful-restart.md)；指纹CAS回退、旧脚本/任务XML路径见手册 |
 | 11月23日百度搜索 | 自动采集保持仅种子，临时搜索在清理开启时允许视频；修复来源fragment/异常提取码及暂不可用误报。215项、入口/会话/QQ存活、启动ERROR0通过 | [机制](../cloud-drive-workflows.md#百度永久归档与临时搜索)；旧1b6220ae镜像保留，E:/gying-tools/releases/qq-baidu-temporary-video-20261123/rollback.py默认只检查；官方挑战及真实群内转存/自然删除待验 |
 | 11月23日 | cloudflared升级2026.11.1，固定HTTP/2/IPv4及独立已验节点；排除443测速通过但7844失败的候选，持久/生成配置同步。303秒内HA持续4、入口与匿名拒绝通过、新增错误0；只有一条已验出站 | [现役与验收](../current-project-status.md)；回退 E:/gying-tools/releases/tunnel-stability-20261123/Rollback-Tunnel.ps1（默认只检查，-Apply恢复原路由与9.1旧任务，保留后续配置改动保护） |
 | 11月19日 | TVmaze接入并改6小时10次；backend/frontend现役1b6220ae…/a8e00af6…，22:35上线。首轮9关联/1候选/0失败，真实6小时轮次待验 | [现役与两旧镜像/覆盖](../evaluation/tvmaze-frequency-20261119/README.md) · [首轮](../evaluation/tvmaze-metadata-20261119/README.md) |
