@@ -1,6 +1,6 @@
 # 当前项目状态
 
-更新时间：2026-11-23（Asia/Shanghai；本次仅复核隧道，其余内容保留各自观测日期）。
+更新时间：2026-11-25（Asia/Shanghai；本次复核周日重启，其余内容保留各自观测日期）。
 
 [文档导航](README.md) · [部署与回退](deployment.md) · [发布台账](history/releases.md) · [问题台账](history/issues.md)
 
@@ -34,6 +34,8 @@ QQBot每日推荐、原腾讯频道CLI、social-publisher分别维护。NapCat�
 | 网盘/P2P | 按盘独立工作流、自有分享、磁力文本/种子归档、百度逐文件校验 | [网盘手册](cloud-drive-workflows.md)、[P2P](p2p-cloud-archive.md) |
 | 重复治理 | 全库扫描、预览审核、分批合并、永久旧ID别名和关联历史 | [合并规则](duplicate-movie-merge.md) |
 | 主机维护 | 独立后台启动、迅雷会话续期、百度无控制台扫码、优雅重启/登录恢复 | [迅雷](xunlei-token-sync.md)、[重启](weekly-graceful-restart.md) |
+
+11月25日周日重启复核：11月15日、22日均已触发，因夸克2262遗留RUNNING而在5分钟等空闲后取消；原本机执行已结束，单行CAS改为UNKNOWN待远端对账，原请求/响应、次数及身份摘要保持。管理员readiness、111项维护测试、8项任务时间校验及5个本机/公网入口通过；0在途、0未完恢复。原周日09:30计划启用，下一次11月29日09:30:30；本次18:01:01单次窗口已注册，Worker暂false且恢复守护运行，系统重启及登录恢复仍须按journal核验。
 
 ## 配置与安全
 
