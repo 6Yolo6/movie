@@ -1,6 +1,6 @@
 # 当前项目状态
 
-更新时间：2026-11-25（Asia/Shanghai；本次复核周日重启，其余内容保留各自观测日期）。
+更新时间：2026-11-26（Asia/Shanghai；本次复核QQ频道与群机器人，其余内容保留各自观测日期）。
 
 [文档导航](README.md) · [部署与回退](deployment.md) · [发布台账](history/releases.md) · [问题台账](history/issues.md)
 
@@ -20,6 +20,8 @@
 | 部署 | 显式 -p gying-movie -f docker-compose.prod.yml，加各服务现役覆盖；私有配置在仓库外 |
 
 QQBot每日推荐、原腾讯频道CLI、social-publisher分别维护。NapCat停用，旧secondary/qq-v3目标为enabled=0。Tunnel配置仍在 E:/gying-tools/cloudflared/config.yml；原计划任务运行cloudflared 2026.11.1，产物在 E:/gying-tools/releases/tunnel-stability-20261123/，固定HTTP/2、IPv4与loopback 20241。
+
+11月26日QQ链路恢复：频道CLI因nvm切换留在旧Node全局目录，现使用LOCALAPPDATA下GYing/tools/tencent-channel-cli独立安装的1.0.10；扫码重新授权后登录及官方帖子读取通过，原每日09:00、3篇、间隔300秒计划启用，下一自然发帖待验。群机器人原连接期间有持续token刷新网络失败，12:57仅重启原OpenClaw恢复新连接；13:02及13:18后自然群消息/回复有官方200和消息ID，搜索后端认证、原插件/白名单/UTF-8文案保持，重连后错误0；30项离线发布回归通过。
 
 规则模式下，GYing-Tunnel独立固定到已验美国V6666，30秒主动健康检查；订阅增强、生成配置与运行态一致，普通代理选点不再牵连此出口。DIRECT及其他候选未通过实际7844握手/完整HA验收，只有一条已验出站，有效备用线路待补；回退见[发布台账](history/releases.md)。
 

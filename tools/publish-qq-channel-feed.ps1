@@ -18,7 +18,8 @@
     [string]$MovieChannelId = $env:QQ_CHANNEL_MOVIE_ID,
     [string]$TvChannelId = $env:QQ_CHANNEL_TV_ID,
     [string]$ContentTemplate = "",
-    [AllowNull()][AllowEmptyCollection()][object[]]$Resources = @()
+    [AllowNull()][AllowEmptyCollection()][object[]]$Resources = @(),
+    [string]$CliPath = $env:QQ_CHANNEL_CLI_PATH
 )
 
 $ErrorActionPreference = "Stop"
@@ -39,21 +40,39 @@ if (-not $ChannelId) {
     throw "QQ channel board is not configured for type '$ChannelType'. Set QQ_CHANNEL_MOVIE_ID or QQ_CHANNEL_TV_ID."
 }
 
-$cli = Get-Command tencent-channel-cli.cmd -ErrorAction SilentlyContinue
-if (-not $cli) {
-    $cli = Get-Command tencent-channel-cli -ErrorAction SilentlyContinue
+if ($CliPath) {
+    if (-not (Test-Path -LiteralPath $CliPath -PathType Leaf)) {
+        throw "QQ_CHANNEL_CLI_PATH does not point to an installed CLI file."
+    }
+} else {
+    # Keep scheduled publishing independent of nvm's active global packages.
+    $stableCli = if ($env:LOCALAPPDATA) {
+        Join-Path $env:LOCALAPPDATA "GYing\tools\tencent-channel-cli\tencent-channel-cli.cmd"
+    } else { $null }
+    if ($stableCli -and (Test-Path -LiteralPath $stableCli -PathType Leaf)) {
+        $CliPath = $stableCli
+    } else {
+        $cli = Get-Command tencent-channel-cli.cmd -ErrorAction SilentlyContinue
+        if (-not $cli) {
+            $cli = Get-Command tencent-channel-cli -ErrorAction SilentlyContinue
+        }
+        $CliPath = if ($cli) { $cli.Source } else { $null }
+        if (-not $CliPath -and $env:APPDATA) {
+            $userCli = Join-Path $env:APPDATA "npm\tencent-channel-cli.cmd"
+            if (Test-Path -LiteralPath $userCli -PathType Leaf) { $CliPath = $userCli }
+        }
+        if (-not $CliPath -and (Test-Path -LiteralPath "C:\Program Files\nodejs\tencent-channel-cli.cmd" -PathType Leaf)) {
+            $CliPath = "C:\Program Files\nodejs\tencent-channel-cli.cmd"
+        }
+    }
 }
-$cliPath = if ($cli) { $cli.Source } else { $null }
-if (-not $cliPath -and (Test-Path "C:\Program Files\nodejs\tencent-channel-cli.cmd")) {
-    $cliPath = "C:\Program Files\nodejs\tencent-channel-cli.cmd"
+if (-not $CliPath) {
+    throw 'tencent-channel-cli is not installed. Run: npm install -g --prefix "$env:LOCALAPPDATA\GYing\tools\tencent-channel-cli" tencent-channel-cli@1.0.10'
 }
-if (-not $cliPath) {
-    throw "tencent-channel-cli is not installed. Run: npm install -g tencent-channel-cli"
-}
-if ($cliPath.EndsWith(".ps1", [System.StringComparison]::OrdinalIgnoreCase)) {
-    $cmdPath = [System.IO.Path]::ChangeExtension($cliPath, ".cmd")
-    if (Test-Path $cmdPath) {
-        $cliPath = $cmdPath
+if ($CliPath.EndsWith(".ps1", [System.StringComparison]::OrdinalIgnoreCase)) {
+    $cmdPath = [System.IO.Path]::ChangeExtension($CliPath, ".cmd")
+    if (Test-Path -LiteralPath $cmdPath -PathType Leaf) {
+        $CliPath = $cmdPath
     }
 }
 

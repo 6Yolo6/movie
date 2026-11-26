@@ -16,6 +16,12 @@
 
 原任务每日09:00/3篇/间隔300秒/5候选、XML hash不变；“下一次10月16日”已是历史。公共helper后原子替换两个入口，候选hash匹配；初次替换绑定失败恢复旧文件后修复上线。11容器不变，本机/公网200，无DB/模板/计划/账号变更或真实发帖。原安全59/11/0，限定当次授权不关闭风险。
 
+## CLI 依赖与登录恢复
+
+宿主发布优先使用 `QQ_CHANNEL_CLI_PATH`（或 `-CliPath`）显式文件，其次使用 `$env:LOCALAPPDATA/GYing/tools/tencent-channel-cli/tencent-channel-cli.cmd`，最后兼容 PATH/用户npm及原Node目录。nvm切换不会迁移旧Node版本的全局包；独立安装命令为 `npm install -g --prefix "$env:LOCALAPPDATA/GYing/tools/tencent-channel-cli" tencent-channel-cli@1.0.10`。
+
+发现依赖缺失后，先用实际选中的CLI执行 `login status --json` 及只读 `feed get-guild-feeds`；凭证失效时通过 `login --json` / `login poll-token --json` 重新授权，凭证仅存系统密钥链。doctor显示凭证存在不足以证明有效；Windows任务返回0也不足以证明发帖成功，应核对POST success、发布审计与官方结果。恢复原调度后，真实发帖按下一自然轮次验收，未知结果不盲目补发。
+
 ## 回退与证据
 
 `E:/gying-tools/releases/qq-channel-multi-drive-20261015` 保存 previous/tools、candidate、release-manifest/activate-result/post-deploy-verification。确认无在途且hash仍匹配后：

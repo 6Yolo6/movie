@@ -405,6 +405,42 @@ class QqChannelBehaviorTests(unittest.TestCase):
         self.assertEqual(payloads[0]['content'].count('https://fixture.invalid/legacy'), 1)
         self.assertIn('查看资源', payloads[0]['content'])
 
+    def test_stable_cli_install_works_without_active_node_global_cli(self):
+        case = self.fixture()
+        install = case / 'localappdata/GYing/tools/tencent-channel-cli'
+        install.mkdir(parents=True)
+        shutil.move(case / 'bin/tencent-channel-cli.ps1', install / 'tencent-channel-cli.ps1')
+        shim = ('@echo off\r\n"' + str(POWERSHELL) + '" -NoProfile -ExecutionPolicy Bypass '
+                '-File "%~dp0tencent-channel-cli.ps1" %*\r\nexit /b %errorlevel%\r\n')
+        (install / 'tencent-channel-cli.cmd').write_bytes(shim.encode('utf-8'))
+        payloads = self.run_main(case)
+        self.assertEqual(len(payloads), 1, (case / 'run.log').read_text(encoding='utf-8-sig'))
+        self.assert_three_links(payloads[0]['content'])
+
+    def test_explicit_cli_path_with_spaces_overrides_path_lookup(self):
+        case = self.fixture()
+        install = case / 'custom CLI'
+        install.mkdir()
+        shutil.move(case / 'bin/tencent-channel-cli.ps1', install / 'tencent-channel-cli.ps1')
+        (case / 'bin/tencent-channel-cli.ps1').write_text("throw 'Unexpected PATH CLI'", encoding='utf-8-sig')
+        ps_run(['-File', case / 'tools/publish-qq-channel-feed.ps1', '-Title', '指定工具', '-Link',
+            'https://fixture.invalid/legacy', '-Intro', '简介', '-GuildId', 'fixture-guild',
+            '-ChannelId', 'fixture-movie', '-CliPath', install / 'tencent-channel-cli.ps1'], case)
+        payloads = (case / 'payloads.jsonl').read_text(encoding='utf-8').splitlines()
+        self.assertEqual(len(payloads), 1)
+
+    def test_missing_explicit_cli_fails_before_publishing(self):
+        case = self.fixture()
+        result = subprocess.run([str(POWERSHELL), '-NoProfile', '-NonInteractive', '-ExecutionPolicy',
+            'Bypass', '-File', str(case / 'tools/publish-qq-channel-feed.ps1'), '-Title', '缺失工具',
+            '-Link', 'https://fixture.invalid/legacy', '-Intro', '简介', '-GuildId', 'fixture-guild',
+            '-ChannelId', 'fixture-movie', '-CliPath', str(case / 'missing-cli.cmd')],
+            cwd=case, env=fixture_env(case), capture_output=True, timeout=30)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(b'QQ_CHANNEL_CLI_PATH', result.stderr)
+        self.assertFalse((case / 'payloads.jsonl').exists())
+        self.assertFalse((case / 'tmp/gying-qq-channel-content').exists())
+
     def test_resource_code_uses_url_fallback_and_explicit_code_takes_priority(self):
         resources = [dict(Provider='XUNLEI', Url='https://fixture.invalid/share?pwd=a%2Bb', Code='')]
         result = self.call_helper(dict(Action='links', Resources=resources, Link=''))
