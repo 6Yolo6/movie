@@ -85,6 +85,7 @@ function parseTicket(raw, now = Date.now()) {
     let ticket; try { ticket = JSON.parse(raw); } catch { throw new SafeFailure('ticket_rejected'); }
     if (!ticket || ticket.version !== 1 || !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(ticket.ticketId || '')
             || !STATUS_STATES.has(ticket.state) || !Number.isSafeInteger(ticket.createdAt) || !Number.isSafeInteger(ticket.expiresAt)
+            || (ticket.backupSlot !== undefined && ticket.backupSlot !== null && ![1, 2, 3].includes(ticket.backupSlot))
             || ticket.expiresAt <= ticket.createdAt || ticket.expiresAt - ticket.createdAt > 600000
             || ticket.createdAt > now + 10000) throw new SafeFailure('ticket_rejected');
     if (ticket.state !== 'PENDING' || ticket.expiresAt <= now) return null;
@@ -178,7 +179,11 @@ async function run(options, dependencies = {}) {
         browser = await puppeteer.launch({ executablePath: options.edgePath, userDataDir: profile, headless: false,
             args: browserArguments(options),
             dumpio: false });
-        const pages = await browser.pages(); const page = pages[0] || await browser.newPage();
+        // A backup login must not inherit or replace the primary browser session.
+        const backup = ticket.backupSlot != null;
+        const context = backup ? await browser.createBrowserContext() : null;
+        const pages = backup ? [] : await browser.pages();
+        const page = context ? await context.newPage() : (pages[0] || await browser.newPage());
         await page.setRequestInterception(true);
         page.on('request', request => { if (blockedRequest(request)) request.abort().catch(() => {}); else request.continue().catch(() => {}); });
         await page.goto('https://pan.baidu.com/disk/main#/index', { waitUntil: 'domcontentloaded', timeout: 45000 });
@@ -195,7 +200,7 @@ async function run(options, dependencies = {}) {
         }
         while (Date.now() < ticket.expiresAt) {
             if (await (dependencies.loggedIn || loggedIn)(page)) {
-                const cookies = browserCookies(await (browser.cookies ? browser.cookies() : page.cookies()));
+                const cookies = browserCookies(await (context ? context.cookies() : (browser.cookies ? browser.cookies() : page.cookies())));
                 // Recheck exact production application before importing. A deployment invalidates this handoff.
                 const fresh = JSON.parse(await (dependencies.docker || docker)(options, ['inspect', '--format', INSPECT_FORMAT, CONTAINER_NAME]));
                 if (validateBackend(fresh, options.expectedBackendImage) !== containerId) throw new SafeFailure('backend_identity_changed');

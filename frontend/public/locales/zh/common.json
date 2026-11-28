@@ -1326,6 +1326,20 @@
       "savePath": "请输入以 / 开头、最长 300 字符的网盘路径，不包含 .. 路径段、反斜杠或控制字符。",
       "batchLimit": "手动转存批次上限必须是 1–20 的整数。"
     },
+    "backupAccounts": {
+      "title": "网盘备用账号",
+      "help": "每个网盘可预存三个备用账号。保存备用凭证不会切换主账号或转移已有任务。",
+      "slot": "备用账号 {{number}}",
+      "xunleiSlot": "迅雷备用账号栏位",
+      "baiduSlot": "百度备用账号栏位",
+      "empty": "未保存",
+      "stored": "凭证已保存，尚未在迅雷验证",
+      "expired": "凭证已过期",
+      "authorization": "迅雷网页版 Authorization",
+      "save": "保存备用凭证",
+      "readFailed": "无法读取备用账号状态，请刷新页面重试。",
+      "saveFailed": "保存失败，请检查凭证是否完整且未过期。"
+    },
     "baiduAccount": {
       "scanLogin": "扫码登录",
       "refresh": "刷新登录状态",

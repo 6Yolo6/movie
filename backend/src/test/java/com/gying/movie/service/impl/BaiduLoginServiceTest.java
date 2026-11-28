@@ -151,4 +151,25 @@ class BaiduLoginServiceTest {
         assertEquals(503, assertThrows(ResponseStatusException.class, () -> service.start()).getStatusCode().value());
         assertEquals(original, Files.readString(requestPath));
     }
+
+    @Test void backupTicketKeepsThePrimarySessionAndOtherSlotsSeparate() throws Exception {
+        properties.getBaidu().setSessionStatePath(directory.resolve("vault/session.enc").toString());
+        properties.getBaidu().setSessionKeyPath(directory.resolve("vault/session.key").toString());
+        BaiduSessionVault storage = new BaiduSessionVault(properties, mapper);
+        storage.save("100", "原账号", cookies, false);
+        service = new BaiduLoginService(properties, storage, client, mapper, clock);
+        var login = service.startBackup(2);
+        assertEquals("CONNECTED", service.status().state());
+        assertEquals("DISCONNECTED", service.backupStatus(1).state());
+        assertEquals(409, assertThrows(ResponseStatusException.class, service::start).getStatusCode().value());
+        String secret = nonce();
+        service.helperState(login.ticketId(), secret, "WAITING_SCAN", null);
+        when(client.validateSession(cookies)).thenReturn(new BaiduWebClient.AccountInfo("200", "备用账号"));
+        assertEquals("CONNECTED", service.importSession(login.ticketId(), secret, cookies).state());
+        assertEquals("100", storage.metadata().uid());
+        assertEquals("200", storage.backup(2).metadata().uid());
+        assertFalse(storage.backup(1).metadata().configured());
+        assertEquals(401, assertThrows(ResponseStatusException.class,
+                () -> service.importSession(login.ticketId(), secret, cookies)).getStatusCode().value());
+    }
 }

@@ -41,6 +41,7 @@ import { api, readApiError } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import MetadataCrawlRanges from '@/components/admin/MetadataCrawlRanges';
 import DriveWorkflowSettings from '@/components/admin/DriveWorkflowSettings';
+import DriveBackupAccounts from '@/components/admin/DriveBackupAccounts';
 import DuplicateMovieScanner from '@/components/admin/DuplicateMovieScanner';
 import {
     baiduBackfillSettings, baiduBackfillStatus, baiduSessionStatus, canConfigureCloudDrive, cloudDriveWorkflowUpdate,
@@ -1771,10 +1772,11 @@ export default function ResourceHubAdminPage() {
                         {
                             key: 'drive-workflows',
                             label: t('cloudDriveWorkflows.title'),
-                            children: <DriveWorkflowSettings workflows={overview?.config.driveWorkflows} loading={loading} hubEnabled={overview?.config.enabled === true}
+                            children: <><DriveWorkflowSettings workflows={overview?.config.driveWorkflows} loading={loading} hubEnabled={overview?.config.enabled === true}
                                 onSave={saveDriveWorkflow} onRunTransfers={runDriveTransfers} onReadBaiduSession={readBaiduSession}
                                 onStartBaiduLogin={startBaiduLogin} onBaiduConnected={refreshBaiduConnection}
-                                onReadBaiduBackfill={readBaiduBackfill} onSaveBaiduBackfill={saveBaiduBackfill} onRunBaiduBackfill={runBaiduBackfill} onDeferBaiduUnknown={deferBaiduUnknown} />,
+                                onReadBaiduBackfill={readBaiduBackfill} onSaveBaiduBackfill={saveBaiduBackfill} onRunBaiduBackfill={runBaiduBackfill} onDeferBaiduUnknown={deferBaiduUnknown} />
+                                <DriveBackupAccounts request={requestJson} /></>,
                         },
                         {
                             key: 'manual',

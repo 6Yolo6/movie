@@ -122,18 +122,22 @@ test('only bounded live Baidu-domain session cookies leave the browser', () => {
     assert.throws(() => helper.browserCookies(new Array(501).fill(session)), /browser_session_rejected/);
 });
 
-test('requested QR login imports only after browser validation and closes the dedicated browser', async () => {
+for (const backupSlot of [null, 2]) test(backupSlot ? 'backup QR login imports only cookies from an isolated browser context'
+    : 'requested QR login imports only after browser validation and closes the dedicated browser', async () => {
     const fs = require('node:fs'); const os = require('node:os'); const path = require('node:path');
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'gying-baidu-qr-test-'));
     const profile = path.join(root, 'baidu-qr-profile'); fs.mkdirSync(profile);
     let closed = false; let launched = false; const requests = [];
     const page = { setRequestInterception: async () => {}, on: () => {}, goto: async url => assert.equal(url, 'https://pan.baidu.com/disk/main#/index'),
         frames: () => [], isClosed: () => false };
-    const browser = { pages: async () => [page], cookies: async () => [{ name: 'BDUSS', value: 'fixture-browser-session', domain: '.baidu.com', path: '/', expires: -1, secure: true }],
+    const session = { name: 'BDUSS', value: 'fixture-browser-session', domain: '.baidu.com', path: '/', expires: -1, secure: true };
+    const browser = { pages: async () => { assert.equal(backupSlot, null); return [page]; },
+        cookies: async () => { assert.equal(backupSlot, null); return [session]; },
+        createBrowserContext: async () => { assert.equal(backupSlot, 2); return { newPage: async () => page, cookies: async () => [session] }; },
         close: async () => { closed = true; } };
     try {
         const result = await helper.run({ ...options, profilePath: profile, edgePath: 'unused' }, {
-            docker: async (_, args) => args[0] === 'inspect' ? JSON.stringify(backend) : args[2] === 'id' ? '10001\n' : JSON.stringify(ticket),
+            docker: async (_, args) => args[0] === 'inspect' ? JSON.stringify(backend) : args[2] === 'id' ? '10001\n' : JSON.stringify({ ...ticket, backupSlot }),
             puppeteer: { launch: async launch => { assert.equal(launch.headless, false); assert.equal(launch.dumpio, false); assert.equal(launch.userDataDir, profile); launched = true; return browser; } },
             loggedIn: async () => true,
             fetch: async (url, request) => { const payload = JSON.parse(request.body); requests.push({ url, payload });

@@ -1326,6 +1326,20 @@
       "savePath": "Enter a drive path beginning with /, up to 300 characters, without .. path segments, backslashes or control characters.",
       "batchLimit": "The manual transfer batch limit must be an integer from 1 to 20."
     },
+    "backupAccounts": {
+      "title": "Backup drive accounts",
+      "help": "Save up to three backup accounts per drive. Saving a backup keeps the primary account and existing jobs in place.",
+      "slot": "Backup account {{number}}",
+      "xunleiSlot": "Xunlei backup slot",
+      "baiduSlot": "Baidu backup slot",
+      "empty": "Not saved",
+      "stored": "Authorization saved; not verified by Xunlei",
+      "expired": "Authorization expired",
+      "authorization": "Xunlei web Authorization header",
+      "save": "Save backup authorization",
+      "readFailed": "Could not read the backup status. Reload the page to try again.",
+      "saveFailed": "Could not save. Check that the authorization is complete and has not expired."
+    },
     "baiduAccount": {
       "scanLogin": "Sign in with QR code",
       "refresh": "Refresh sign-in status",

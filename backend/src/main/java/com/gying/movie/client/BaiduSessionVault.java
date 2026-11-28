@@ -34,10 +34,22 @@ public class BaiduSessionVault {
     private final ResourceHubProperties properties;
     private final ObjectMapper mapper;
     private final SecureRandom random = new SecureRandom();
+    private final int backupSlot;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public BaiduSessionVault(ResourceHubProperties properties, ObjectMapper mapper) {
+        this(properties, mapper, 0);
+    }
+
+    private BaiduSessionVault(ResourceHubProperties properties, ObjectMapper mapper, int backupSlot) {
         this.properties = properties;
         this.mapper = mapper;
+        this.backupSlot = backupSlot;
+    }
+
+    public BaiduSessionVault backup(int slot) {
+        if (slot < 1 || slot > 3) throw new IllegalArgumentException("Invalid backup slot");
+        return new BaiduSessionVault(properties, mapper, slot);
     }
 
     public record Cookie(String name, String value, String domain, String path, double expires, boolean secure) {
@@ -183,10 +195,16 @@ public class BaiduSessionVault {
         return domain.startsWith(".") ? host.equals(bare) || host.endsWith("." + bare) : host.equals(bare);
     }
 
-    private Path statePath() { return Path.of(properties.getBaidu().getSessionStatePath()).toAbsolutePath().normalize(); }
-    private Path keyPath() { return Path.of(properties.getBaidu().getSessionKeyPath()).toAbsolutePath().normalize(); }
+    private Path statePath() {
+        Path primary = Path.of(properties.getBaidu().getSessionStatePath()).toAbsolutePath().normalize();
+        return backupSlot == 0 ? primary : primary.getParent().resolve("backup-accounts/session-" + backupSlot + ".enc");
+    }
+    private Path keyPath() {
+        return backupSlot == 0 ? Path.of(properties.getBaidu().getSessionKeyPath()).toAbsolutePath().normalize()
+                : statePath().resolveSibling("session-" + backupSlot + ".key");
+    }
 
-    private static void checkPaths(Path state, Path key) throws Exception {
+    static void checkPaths(Path state, Path key) throws Exception {
         if (state.equals(key) || state.getParent() == null || !state.getParent().equals(key.getParent())
                 || state.getParent().getParent() == null
                 || !state.getFileName().toString().matches("[A-Za-z0-9_-][A-Za-z0-9._-]{0,100}")
@@ -199,7 +217,7 @@ public class BaiduSessionVault {
         }
     }
 
-    private static byte[] boundedRead(Path path) throws Exception {
+    static byte[] boundedRead(Path path) throws Exception {
         if (!Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS) || Files.size(path) <= 0 || Files.size(path) > MAX_BYTES) throw storageError();
         try (var stream = Files.newInputStream(path, LinkOption.NOFOLLOW_LINKS)) {
             byte[] bytes = stream.readNBytes(MAX_BYTES + 1);
@@ -208,7 +226,7 @@ public class BaiduSessionVault {
         }
     }
 
-    private static byte[] readKey(Path key) throws Exception {
+    static byte[] readKey(Path key) throws Exception {
         if (Files.getFileAttributeView(key, PosixFileAttributeView.class) != null
                 && Files.getPosixFilePermissions(key).stream().anyMatch(p -> p.name().startsWith("GROUP_") || p.name().startsWith("OTHERS_"))) throw storageError();
         byte[] bytes = boundedRead(key);
@@ -218,7 +236,7 @@ public class BaiduSessionVault {
         return decoded;
     }
 
-    private static void privateDirectory(Path parent) throws Exception {
+    static void privateDirectory(Path parent) throws Exception {
         Files.createDirectories(parent);
         if (Files.isSymbolicLink(parent)) throw storageError();
         if (Files.getFileAttributeView(parent, PosixFileAttributeView.class) != null) {
