@@ -81,9 +81,9 @@ ADMIN 全库扫描仍使用 `POST cleanup/duplicate-tmdb?dryRun=true&limit=100&p
 
 ADMIN `POST baidu/backfill/defer-unknown` 接受精确 `{taskId,childId,revision}`。仅将当前 UNKNOWN 子任务的来源身份、资源选择、原 payload SHA、操作者和时间记入父任务待审历史并推进游标，原子任务保持。状态或租约已变返回 409。状态接口追加 `revision/deferredCount/deferredItems`，列表最多返回最近 20 条；可在自动补全暂停时执行，操作保持原自动开关。同片未决提交仍阻止新上传。
 
-### 百度专用账号扫码登录（候选实现）
+### 百度专用账号扫码登录与网盘备用账号
 
-备用账号接口尚未部署。候选接口为 `GET /api/admin/resource-hub/backup-accounts/{xunlei|baidu}/{slot}`，`slot` 为 1–3。ADMIN 通过 `PUT …/xunlei/{slot}`（`{authorization}`）保存迅雷备用凭证，通过 `POST …/baidu/{slot}/login`（空请求或 `{}`）请求独立扫码。响应只含状态；备用凭证与主账号独立，保存和扫码均不会启用备用账号。
+备用账号接口为 `GET /api/admin/resource-hub/backup-accounts/{xunlei|baidu}/{slot}`，`slot` 为 1–3。ADMIN 通过 `PUT …/xunlei/{slot}`（`{authorization}`）保存迅雷备用凭证，通过 `POST …/baidu/{slot}/login`（空请求或 `{}`）请求独立扫码。响应只含状态；备用凭证与主账号独立，保存和扫码均不会启用备用账号。
 
 `GET baidu/session` 和 `POST baidu/login` 要求 ADMIN，统一返回 `ApiResponse.data`：`configured`、`state`、`ticketId`、`expiresAt`、`accountName`、`lastValidatedAt`、`failureCode`。时间为毫秒时间戳，未设置字段为 null；state 为 DISCONNECTED/PENDING/WAITING_SCAN/CONNECTED/FAILED/EXPIRED。`accountName` 脱敏，返回值不含 Cookie、密码、二维码材料或 nonce。`configured` 只表示已保存会话元数据，实际云盘任务仍会校验账号和会话有效性。
 

@@ -25,7 +25,7 @@ QQBot每日推荐、原腾讯频道CLI、social-publisher分别维护。NapCat�
 
 规则模式下，GYing-Tunnel独立固定到已验美国V6666，30秒主动健康检查；订阅增强、生成配置与运行态一致，普通代理选点不再牵连此出口。DIRECT及其他候选未通过实际7844握手/完整HA验收，只有一条已验出站，有效备用线路待补；回退见[发布台账](history/releases.md)。
 
-11月28日21:51夸克账号切换：旧账号被上游限制新建分享，已将已验证的备用账号移到首位。1,364条旧追更已停用，记录和旧账号保留。认证配置、夸克管理页及QQ后端健康检查返回200，实际新建分享待首条自然请求验证。
+11月28日21:51夸克账号切换：旧账号被上游限制新建分享，已将已验证的备用账号移到首位。1,364条旧追更已停用，记录和旧账号保留。认证配置、夸克管理页及QQ后端健康检查返回200，22:11群内首笔新请求因新账号根目录缺少 `救星小窝基地.jpg` 未生成分享；22:53补入原图并读回确认，重试分享待验证。
 
 ## 已具备能力
 
@@ -40,6 +40,8 @@ QQBot每日推荐、原腾讯频道CLI、social-publisher分别维护。NapCat�
 | 主机维护 | 独立后台启动、迅雷会话续期、百度无控制台扫码、优雅重启/登录恢复 | [迅雷](xunlei-token-sync.md)、[重启](weekly-graceful-restart.md) |
 
 11月25日周日重启已修复并实测完成：11月15/22任务被夸克2262遗留RUNNING阻塞，认证SQL检查点后单行CAS标UNKNOWN待远端对账，原请求/响应、次数及身份保持。控制器补锁前日志、限时锁等待、百度在途检查及Worker执行回执守护，126项维护测试、8项时间校验及管理员计划参数诊断通过。18:55启动维护，49项加密备份完整认证，19:03:48系统接受重启，主机19:04:21.5启动；19:09:20自然登录恢复完成，19:09:23 Worker恢复true，两个恢复任务均返回0。10个原容器同ID/镜像、4个本机AI服务、5个本机/公网入口及启动日志通过，无未完恢复；原周日计划启用，下一次11月29日09:30:30。
+
+11月28日22:57发布迅雷和百度备用账号：每盘三个加密栏位，主账号仍执行任务。六个状态接口、公网新页面资源、匿名拦截和百度扫码助手检查通过，真实录入及扫码待用户操作。
 
 ## 配置与安全
 
@@ -64,12 +66,12 @@ Worker=true，每60秒检查到期；TMDB/GYING旧RANGE游标和CSCORE暂停图�
 
 ## 当前部署与恢复基线
 
-以下为已有交付证据，未因本次文档整理重新查询生产。
+前后端与百度扫码助手为11月28日发布观测，其余保留各自的交付记录。
 
 | 服务 | 固定产物 | 最后记录的上线时间 |
 | --- | --- | --- |
-| backend | sha256:47b8c6e2d110f045a3dd3d7e830e4af24b7b384a7369ccfa223f9def08254a90 | 2026-11-23 12:13:06；Compose29层 |
-| frontend | sha256:a8e00af6b8c2e90f45a6211c1a85df8cb9108f6b540ba5d410c070cbc9ef39a6 | 2026-11-19 22:35:41；Compose18层 |
+| backend | sha256:0314e7430025d5dd64338ed0deb017ae6a209e8fc01997ea6a59668bc1d0f4d1 | 2026-11-28 22:57:24；Compose30层 |
+| frontend | sha256:958e2e174073fb78a91062bb6e5713ef5086db8ea74b9bfbd3d043aeb42c0998 | 2026-11-28 22:57:47；Compose19层 |
 | gying-source | sha256:f24203be8b93f2d64b0bfeec6069e13a1b072cd03ae667edc98f45f60bb083ed | 2026-11-18 13:05:58 |
 | 本机Agent | JAR 1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64；代码6c277a4 | 2026-11-04 22:42:34 |
 | social-publisher | sha256:8b6dd6e77fa93f012add7fb7cc6f17082d13fa937a9d5b21bfb62697185381cb；代码7152edb | 2026-11-01登录/身份预检修复 |
@@ -77,9 +79,9 @@ Worker=true，每60秒检查到期；TMDB/GYING旧RANGE游标和CSCORE暂停图�
 
 | 回退对象 | 保留材料 |
 | --- | --- |
-| backend | sha256:1b6220ae1e9041d1b2dbaa536bb004619acc54eb6a3d3cc5b26e7655b57cbe20 |
-| frontend | sha256:bb21744b05ec2bde1dfc8a360ce9580bfb75c687352d579f7b8ff457c3e42d69 |
-| 两应用覆盖 | backend：E:/gying-tools/releases/qq-baidu-temporary-video-20261123/，rollback.py默认只检查，--apply恢复旧28层及host镜像pin；frontend仍按tvmaze-frequency-20261119的24小时/Worker暂停要求回退 |
+| backend | sha256:47b8c6e2d110f045a3dd3d7e830e4af24b7b384a7369ccfa223f9def08254a90 |
+| frontend | sha256:a8e00af6b8c2e90f45a6211c1a85df8cb9108f6b540ba5d410c070cbc9ef39a6 |
+| 两应用覆盖 | `E:/gying-tools/releases/drive-backup-accounts-20261128/release.py rollback` 恢复两镜像和百度助手；有备用扫码票据时先做兼容性核对，保留加密凭证及密钥 |
 | gying-source | 旧镜像76fe318b24b1…；覆盖及三age认证检查点见[百度恢复](evaluation/baidu-torrent-recovery-20261118/README.md) |
 | Agent | G:/gying-backups/ai-agent-identity-theme-20261104-20261104T144159.678847Z；旧包及配置/state/key认证检查点 |
 | 日常/灾备 | 沿用[加密备份计划](security/backup-plan.md)；已记录的dry-run不等于完整自然备份或异机恢复 |
